@@ -1,9 +1,46 @@
 [package]
 name = "bevy_tween"
-version = "0.1.0"
+description = "Flexible tweening plugin library for Bevy"
+version = "0.2.0"
 edition = "2021"
+authors = [ "Multirious" ]
+license = "MIT OR Apache-2.0" 
+repository = "https://github.com/Multirious/bevy_tween"
+homepage = "https://github.com/Multirious/bevy_tween"
+documentation = "https://docs.rs/bevy_tween"
+readme = "README.md"
+keywords = [ "bevy", "tween", "tweening", "easing", "animation" ]
+categories = [ "game-development" ]
+
+[workspace]
+resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.13.0"
+bevy = { version = "0.13.0", default-features = false }
+
+[dev-dependencies]
+bevy-inspector-egui = "0.23"
+
+[features]
+default = [ "tween_unboxed", "span_tween", "bevy_asset", "bevy_render", "bevy_sprite" ]
+
+tween_boxed = []
+tween_unboxed = []
+span_tween = []
+
+bevy_asset = [ "bevy/bevy_asset" ]
+bevy_render = [ "bevy/bevy_render"]
+bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
+
+[package.metadata.docs.rs]
+features = [ "tween_boxed", "tween_unboxed", "span_tween", "bevy_asset", "bevy_render", "bevy_sprite" ]
+
+[[example]]
+name = "follow"
+required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_boxed","bevy_sprite", "bevy_asset" ]
+
+[[example]]
+name = "animated_banner"
+required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_boxed", "bevy_sprite", "bevy_asset"]

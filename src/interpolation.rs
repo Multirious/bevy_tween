@@ -1,0 +1,187 @@
+//! Module containing ease functions and related systems.
+//!
+//! [`EaseFunction`] is what you would be using most of the time.
+//! [`EaseFunctionPointer`] can be use for custom easing. As the name implies it
+//! uses a function pointer as its easing function which unfortunately can't be
+//! reflected.
+//! Though, it is actually possible to implements your own easing function!
+//! See this module's source code for example.
+
+use bevy::prelude::*;
+
+use crate::{
+    tween::{TweenInterpolationValue, TweenState},
+    tween_player::AnimationDirection,
+};
+
+mod ease_functions;
+
+pub trait Interpolator {
+    fn sample(&self, v: f32) -> f32;
+}
+
+/// Plugin for [`EaseFunction`]
+pub struct EaseFunctionPlugin;
+impl Plugin for EaseFunctionPlugin {
+    fn build(&self, app: &mut App) {
+        use crate::TweenSystemSet;
+        app.add_systems(
+            Update,
+            sample_interpolator_system::<EaseFunction>
+                .in_set(TweenSystemSet::SampleInterpolator),
+        );
+    }
+}
+
+/// Easing functions put into an enum.
+///
+/// See [`EaseFunctionPointer`].
+#[allow(missing_docs)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
+#[reflect(Component)]
+pub enum EaseFunction {
+    #[default]
+    Linear,
+    QuadraticIn,
+    QuadraticOut,
+    QuadraticInOut,
+    CubicIn,
+    CubicOut,
+    CubicInOut,
+    QuarticIn,
+    QuarticOut,
+    QuarticInOut,
+    QuinticIn,
+    QuinticOut,
+    QuinticInOut,
+    SineIn,
+    SineOut,
+    SineInOut,
+    CircularIn,
+    CircularOut,
+    CircularInOut,
+    ExponentialIn,
+    ExponentialOut,
+    ExponentialInOut,
+    ElasticIn,
+    ElasticOut,
+    ElasticInOut,
+    BackIn,
+    BackOut,
+    BackInOut,
+    BounceIn,
+    BounceOut,
+    BounceInOut,
+}
+impl EaseFunction {
+    pub fn sample(&self, v: f32) -> f32 {
+        use ease_functions::*;
+        use EaseFunction::*;
+        match self {
+            Linear => linear(v),
+            QuadraticIn => quadratic_in(v),
+            QuadraticOut => quadratic_out(v),
+            QuadraticInOut => quadratic_in_out(v),
+            CubicIn => cubic_in(v),
+            CubicOut => cubic_out(v),
+            CubicInOut => cubic_in_out(v),
+            QuarticIn => quartic_in(v),
+            QuarticOut => quartic_out(v),
+            QuarticInOut => quartic_in_out(v),
+            QuinticIn => quintic_in(v),
+            QuinticOut => quintic_out(v),
+            QuinticInOut => quintic_in_out(v),
+            SineIn => sine_in(v),
+            SineOut => sine_out(v),
+            SineInOut => sine_in_out(v),
+            CircularIn => circular_in(v),
+            CircularOut => circular_out(v),
+            CircularInOut => circular_in_out(v),
+            ExponentialIn => exponential_in(v),
+            ExponentialOut => exponential_out(v),
+            ExponentialInOut => exponential_in_out(v),
+            ElasticIn => elastic_in(v),
+            ElasticOut => elastic_out(v),
+            ElasticInOut => elastic_in_out(v),
+            BackIn => back_in(v),
+            BackOut => back_out(v),
+            BackInOut => back_in_out(v),
+            BounceIn => bounce_in(v),
+            BounceOut => bounce_out(v),
+            BounceInOut => bounce_in_out(v),
+        }
+    }
+}
+
+impl Interpolator for EaseFunction {
+    fn sample(&self, v: f32) -> f32 {
+        self.sample(v)
+    }
+}
+
+/// Plugin for [`EaseFunctionPointer`]. In case you want to use custom an ease
+/// function. Since most people likely wouldn't use this type, this plugin is
+/// not with [`DefaultTweenPlugins`] to reduce unused system.
+pub struct EaseFunctionPointerPlugin;
+impl Plugin for EaseFunctionPointerPlugin {
+    fn build(&self, app: &mut App) {
+        use crate::TweenSystemSet;
+        app.add_systems(
+            Update,
+            sample_interpolator_system::<EaseFunctionPointer>
+                .in_set(TweenSystemSet::SampleInterpolator),
+        );
+    }
+}
+
+/// Use a custom easing function via a function pointer.
+///
+/// See [`EaseFunction`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Component)]
+pub struct EaseFunctionPointer(fn(f32) -> f32);
+
+impl Default for EaseFunctionPointer {
+    fn default() -> Self {
+        EaseFunctionPointer(ease_functions::linear as _)
+    }
+}
+
+impl Interpolator for EaseFunctionPointer {
+    fn sample(&self, v: f32) -> f32 {
+        self.0(v)
+    }
+}
+
+#[allow(clippy::type_complexity)]
+pub fn sample_interpolator_system<I>(
+    mut commands: Commands,
+    query: Query<
+        (Entity, &I, &TweenState),
+        Or<(Changed<EaseFunctionPointer>, Changed<TweenState>)>,
+    >,
+) where
+    I: Interpolator + Component,
+{
+    query.iter().for_each(|(entity, interpolator, state)| {
+        match state.local_elasped {
+            Some(elasped) => {
+                let elasped = elasped.as_secs_f32();
+                let end = state.local_end.as_secs_f32();
+                let value = if end > 0. {
+                    interpolator.sample(elasped / end)
+                } else {
+                    match state.direction {
+                        AnimationDirection::Forward => 1.,
+                        AnimationDirection::Backward => 0.,
+                    }
+                };
+                commands
+                    .entity(entity)
+                    .insert(TweenInterpolationValue(value));
+            }
+            None => {
+                commands.entity(entity).remove::<TweenInterpolationValue>();
+            }
+        }
+    })
+}
