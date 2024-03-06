@@ -216,13 +216,21 @@ pub type ComponentTweenBoxed<C> = TweenBoxed<TargetComponent<C>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetComponent<C> {
+    /// Target the entity that contains this tween's TweenPlayer.
+    TweenPlayerEntity(#[reflect(ignore)] PhantomData<C>),
+    /// Target the parent of this tween's TweenPlayer.
     TweenPlayerParent(#[reflect(ignore)] PhantomData<C>),
+    /// Target this entity
     Entity(Entity, #[reflect(ignore)] PhantomData<C>),
+    /// Target these entities
     Entities(Vec<Entity>, #[reflect(ignore)] PhantomData<C>),
 }
 
 impl<C> TargetComponent<C> {
-    pub fn parent() -> TargetComponent<C> {
+    pub fn tween_player_entity() -> TargetComponent<C> {
+        TargetComponent::TweenPlayerEntity(PhantomData)
+    }
+    pub fn tween_player_parent() -> TargetComponent<C> {
         TargetComponent::TweenPlayerParent(PhantomData)
     }
     pub fn entity(entity: Entity) -> TargetComponent<C> {
@@ -242,7 +250,7 @@ impl<C> TweenTarget for TargetComponent<C> {
 
 impl<C> Default for TargetComponent<C> {
     fn default() -> Self {
-        TargetComponent::parent()
+        TargetComponent::tween_player_parent()
     }
 }
 
@@ -291,7 +299,7 @@ impl<C, const N: usize> From<&[Entity; N]> for TargetComponent<C> {
 #[cfg(feature = "tween_unboxed")]
 pub fn component_tween_system<L>(
     q_tween_player: Query<(
-        &Parent,
+        Option<&Parent>,
         Has<crate::tween_player::TweenPlayerState>,
     )>,
     q_tween: Query<(Entity, &ComponentTween<L>, &TweenInterpolationValue)>,
@@ -302,12 +310,26 @@ pub fn component_tween_system<L>(
 {
     q_tween.iter().for_each(|(entity, tween, ease_value)| {
         let target = match &tween.target {
+            TargetComponent::TweenPlayerEntity(_) => {
+                match q_tween_player.get(entity) {
+                    Ok((_, true)) => entity,
+                    Ok((Some(this_parent), false)) => {
+                        match q_tween_player.get(this_parent.get()) {
+                            Ok((_, true)) => this_parent.get(),
+                            _ => return,
+                        }
+                    }
+                    _ => return,
+                }
+            }
             TargetComponent::TweenPlayerParent(_) => {
                 match q_tween_player.get(entity) {
-                    Ok((this_parent, true)) => this_parent.get(),
-                    Ok((this_parent, false)) => {
+                    Ok((Some(this_parent), true)) => this_parent.get(),
+                    Ok((Some(this_parent), false)) => {
                         match q_tween_player.get(this_parent.get()) {
-                            Ok((player_parent, true)) => player_parent.get(),
+                            Ok((Some(player_parent), true)) => {
+                                player_parent.get()
+                            }
                             _ => return,
                         }
                     }
@@ -348,7 +370,7 @@ pub fn component_tween_system<L>(
 #[cfg(feature = "tween_boxed")]
 pub fn component_tween_boxed_system<C>(
     q_tween_player: Query<(
-        &Parent,
+        Option<&Parent>,
         Has<crate::tween_player::TweenPlayerState>,
     )>,
     q_tween: Query<(Entity, &ComponentTweenBoxed<C>, &TweenInterpolationValue)>,
@@ -358,12 +380,26 @@ pub fn component_tween_boxed_system<C>(
 {
     q_tween.iter().for_each(|(entity, tween, ease_value)| {
         let target = match &tween.target {
+            TargetComponent::TweenPlayerEntity(_) => {
+                match q_tween_player.get(entity) {
+                    Ok((_, true)) => entity,
+                    Ok((Some(this_parent), false)) => {
+                        match q_tween_player.get(this_parent.get()) {
+                            Ok((_, true)) => this_parent.get(),
+                            _ => return,
+                        }
+                    }
+                    _ => return,
+                }
+            }
             TargetComponent::TweenPlayerParent(_) => {
                 match q_tween_player.get(entity) {
-                    Ok((this_parent, true)) => this_parent.get(),
-                    Ok((this_parent, false)) => {
+                    Ok((Some(this_parent), true)) => this_parent.get(),
+                    Ok((Some(this_parent), false)) => {
                         match q_tween_player.get(this_parent.get()) {
-                            Ok((player_parent, true)) => player_parent.get(),
+                            Ok((Some(player_parent), true)) => {
+                                player_parent.get()
+                            }
                             _ => return,
                         }
                     }
