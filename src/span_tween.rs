@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use std::{ops, time::Duration};
 
 use crate::{
+    interpolation::Interpolator,
     tween::TweenState,
     tween_player::{AnimationDirection, TweenPlayerState},
 };
@@ -196,18 +197,18 @@ impl SpanTweenPlayerBundle {
 #[derive(Default, Bundle)]
 pub struct SpanTweenBundle<I>
 where
-    I: Send + Sync + 'static + Component,
+    I: Component + Interpolator,
 {
     pub span: TweenTimeSpan,
     pub interpolation: I,
     pub state: TweenState,
 }
 
-impl<E> SpanTweenBundle<E>
+impl<I> SpanTweenBundle<I>
 where
-    E: Send + Sync + 'static + Component,
+    I: Component + Interpolator,
 {
-    pub fn new<S>(span: S, interpolation: E) -> Self
+    pub fn new<S>(span: S, interpolation: I) -> Self
     where
         S: TryInto<TweenTimeSpan>,
         S::Error: std::fmt::Debug,
