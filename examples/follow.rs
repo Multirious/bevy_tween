@@ -114,7 +114,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ),
                 // Tween in the same entity as TweenPlayer:
                 SpanTweenBundle::new(
-                    // TweenTimeSpans implements From<Range> and others so lets use it
+                    // TweenTimeSpans implements TryFrom<Range> and others so
+                    // lets use it
                     //
                     // Tween from start at second 0
                     // and end at second 2.

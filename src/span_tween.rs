@@ -55,6 +55,26 @@ pub enum DurationQuotient {
     After,
 }
 
+#[derive(Debug)]
+pub enum NewTweenTimeSpanError {
+    NotTime { min: TimeBound, max: TimeBound },
+    MinGreaterThanMax { min: TimeBound, max: TimeBound },
+}
+
+impl std::error::Error for NewTweenTimeSpanError {}
+impl std::fmt::Display for NewTweenTimeSpanError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NewTweenTimeSpanError::NotTime { min, max } => {
+                write!(f, "This span does not contain any time: min {min:?} max {max:?}")
+            }
+            NewTweenTimeSpanError::MinGreaterThanMax { min, max } => {
+                write!(f, "This span has min greater than max: min {min:?} max {max:?}")
+            }
+        }
+    }
+}
+
 #[derive(Debug, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 #[reflect(Component)]
 pub struct TweenTimeSpan {
@@ -69,18 +89,20 @@ impl TweenTimeSpan {
         TweenTimeSpan { min, max }
     }
 
-    pub fn new(min: TimeBound, max: TimeBound) -> Option<TweenTimeSpan> {
-        match (min, max) {
+    pub fn new(
+        min: TimeBound,
+        max: TimeBound,
+    ) -> Result<TweenTimeSpan, NewTweenTimeSpanError> {
+        if matches!(
+            (min, max),
             (TimeBound::Exclusive(_), TimeBound::Exclusive(_))
-                if min.duration() != max.duration() =>
-            {
-                Some(Self::new_unchecked(min, max))
-            }
-            _ if min.duration() <= max.duration() => {
-                Some(Self::new_unchecked(min, max))
-            }
-            _ => None,
+        ) && min.duration() == max.duration()
+        {
+            return Err(NewTweenTimeSpanError::NotTime { min, max });
+        } else if min.duration() > max.duration() {
+            return Err(NewTweenTimeSpanError::MinGreaterThanMax { min, max });
         }
+        Ok(Self::new_unchecked(min, max))
     }
 
     pub fn quotient(&self, duration: Duration) -> DurationQuotient {
@@ -109,42 +131,50 @@ impl TweenTimeSpan {
 
 impl Default for TweenTimeSpan {
     fn default() -> Self {
-        TweenTimeSpan::from(Duration::ZERO..=Duration::ZERO)
+        TweenTimeSpan::try_from(Duration::ZERO..Duration::ZERO).unwrap()
     }
 }
 
-impl From<ops::Range<Duration>> for TweenTimeSpan {
-    fn from(range: ops::Range<Duration>) -> Self {
-        TweenTimeSpan {
-            min: TimeBound::Inclusive(range.start),
-            max: TimeBound::Exclusive(range.end),
-        }
+impl TryFrom<ops::Range<Duration>> for TweenTimeSpan {
+    type Error = NewTweenTimeSpanError;
+    fn try_from(range: ops::Range<Duration>) -> Result<Self, Self::Error> {
+        TweenTimeSpan::new(
+            TimeBound::Inclusive(range.start),
+            TimeBound::Exclusive(range.end),
+        )
     }
 }
-impl From<ops::RangeInclusive<Duration>> for TweenTimeSpan {
-    fn from(range: ops::RangeInclusive<Duration>) -> Self {
-        TweenTimeSpan {
-            min: TimeBound::Inclusive(*range.start()),
-            max: TimeBound::Exclusive(*range.end()),
-        }
-    }
-}
-
-impl From<ops::RangeTo<Duration>> for TweenTimeSpan {
-    fn from(range: ops::RangeTo<Duration>) -> Self {
-        TweenTimeSpan {
-            min: TimeBound::Inclusive(Duration::ZERO),
-            max: TimeBound::Exclusive(range.end),
-        }
+impl TryFrom<ops::RangeInclusive<Duration>> for TweenTimeSpan {
+    type Error = NewTweenTimeSpanError;
+    fn try_from(
+        range: ops::RangeInclusive<Duration>,
+    ) -> Result<Self, Self::Error> {
+        TweenTimeSpan::new(
+            TimeBound::Inclusive(*range.start()),
+            TimeBound::Exclusive(*range.end()),
+        )
     }
 }
 
-impl From<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
-    fn from(range: ops::RangeToInclusive<Duration>) -> Self {
-        TweenTimeSpan {
-            min: TimeBound::Inclusive(Duration::ZERO),
-            max: TimeBound::Exclusive(range.end),
-        }
+impl TryFrom<ops::RangeTo<Duration>> for TweenTimeSpan {
+    type Error = NewTweenTimeSpanError;
+    fn try_from(range: ops::RangeTo<Duration>) -> Result<Self, Self::Error> {
+        TweenTimeSpan::new(
+            TimeBound::Inclusive(Duration::ZERO),
+            TimeBound::Exclusive(range.end),
+        )
+    }
+}
+
+impl TryFrom<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
+    type Error = NewTweenTimeSpanError;
+    fn try_from(
+        range: ops::RangeToInclusive<Duration>,
+    ) -> Result<Self, Self::Error> {
+        TweenTimeSpan::new(
+            TimeBound::Inclusive(Duration::ZERO),
+            TimeBound::Exclusive(range.end),
+        )
     }
 }
 
@@ -177,9 +207,13 @@ impl<E> SpanTweenBundle<E>
 where
     E: Send + Sync + 'static + Component,
 {
-    pub fn new<S: Into<TweenTimeSpan>>(span: S, interpolation: E) -> Self {
+    pub fn new<S>(span: S, interpolation: E) -> Self
+    where
+        S: TryInto<TweenTimeSpan>,
+        S::Error: std::fmt::Debug,
+    {
         SpanTweenBundle {
-            span: span.into(),
+            span: span.try_into().unwrap(),
             interpolation,
             state: Default::default(),
         }
