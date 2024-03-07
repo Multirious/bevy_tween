@@ -1,6 +1,6 @@
 //! # `bevy_tween`
 
-#![warn(missing_docs)]
+// #![warn(missing_docs)]
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
@@ -43,7 +43,7 @@ pub mod prelude {
     };
 }
 
-/// Default plugins in this crate
+/// Default plugins for using crate.
 pub struct DefaultTweenPlugins;
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
@@ -57,7 +57,8 @@ impl PluginGroup for DefaultTweenPlugins {
     }
 }
 
-/// Core and basic types you need to get started with this plugin
+/// Core, necessary types, and configurations you need to get started with
+/// this plugin
 pub struct TweenCorePlugin;
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
@@ -89,9 +90,9 @@ impl Plugin for TweenCorePlugin {
 /// Enum of SystemSet in this crate
 /// After adding the plugin [`TweenCorePlugin`], these set will be configured
 /// to run in the [`PreUpdate`] schedule so any modification you've done after
-/// this schedule should be correctly apply in the next frame.
+/// this schedule should be correctly applied in the next frame.
 ///
-/// The sets will be configured to run in this order:
+/// The sets should be configured to run in this order:
 ///  1. TickTweenPlayer
 ///  2. TweenPlayer
 ///  3. UpdateTweenEaseValue

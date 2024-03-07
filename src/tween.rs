@@ -7,13 +7,12 @@
 //!   - [`TargetComponent`]
 //!   - [`TargetResource`]
 //!   - [`TargetAsset`]
-//!   See available lenses in [`lenses`].
 //!   
 //! - [`TweenBoxed`], like [`Tween`] but the inner [`TweenLens`] is boxed which
 //!   came with the pros and cons of boxing such as missing reflect but let you
 //!   use closure as a [`TweenLens`]!.
-//!   [`TweenBoxed`] is not incldued in the default features.
-//!   Include "tween_boxed" to enable.
+//!
+//! See available lenses in [`lenses`].
 //!
 //! [`lenses`]: crate::lenses
 
@@ -52,7 +51,7 @@ pub struct TweenState {
 /// [`sample_interpolator_system`]: crate::interpolation::sample_interpolator_system
 /// [`Interpolator`]: crate::interpolation::Interpolator
 /// [`EaseFunction`]: crate::interpolation::EaseFunction
-/// [`EaseFunctionPointer`]: crate::interpolation::EaseFunctionPointer
+/// [`EaseClosure`]: crate::interpolation::EaseClosure
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Component)]
 pub struct TweenInterpolationValue(pub f32);
@@ -205,37 +204,49 @@ where
     }
 }
 
+/// Useful for the implmentor to specify what this `target` will return the
+/// tweenable [`Self::Item`] which should match any [`TweenLens::Item`].
+/// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`]
 pub trait TweenTarget {
+    /// Specify the item for tweens
     type Item;
 }
 
+/// Convenient alias for [`Tween`] that [`TargetComponent`].
 #[cfg(feature = "tween_unboxed")]
 pub type ComponentTween<L> = Tween<TargetComponent<<L as TweenLens>::Item>, L>;
+
+/// Convenient alias for [`TweenBoxed`] that [`TargetComponent`].
 #[cfg(feature = "tween_boxed")]
 pub type ComponentTweenBoxed<C> = TweenBoxed<TargetComponent<C>>;
 
+/// Tell the tween what component of what entity to tween.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetComponent<C> {
-    /// Target the entity that contains this tween's TweenPlayer.
+    /// Target the entity that contains this tween's tween player.
     TweenPlayerEntity(#[reflect(ignore)] PhantomData<C>),
-    /// Target the parent of this tween's TweenPlayer.
+    /// Target the parent of this tween's tween_player.
     TweenPlayerParent(#[reflect(ignore)] PhantomData<C>),
-    /// Target this entity
+    /// Target this entity.
     Entity(Entity, #[reflect(ignore)] PhantomData<C>),
-    /// Target these entities
+    /// Target these entities.
     Entities(Vec<Entity>, #[reflect(ignore)] PhantomData<C>),
 }
 
 impl<C> TargetComponent<C> {
+    /// Target the entity that contains this tween's tween player.
     pub fn tween_player_entity() -> TargetComponent<C> {
         TargetComponent::TweenPlayerEntity(PhantomData)
     }
+    /// Target the parent of this tween's tween_player.
     pub fn tween_player_parent() -> TargetComponent<C> {
         TargetComponent::TweenPlayerParent(PhantomData)
     }
+    /// Target this entity.
     pub fn entity(entity: Entity) -> TargetComponent<C> {
         TargetComponent::Entity(entity, PhantomData)
     }
+    /// Target these entities.
     pub fn entities<I>(entities: I) -> TargetComponent<C>
     where
         I: IntoIterator<Item = Entity>,
@@ -296,6 +307,7 @@ impl<C, const N: usize> From<&[Entity; N]> for TargetComponent<C> {
     }
 }
 
+/// Tween any [`ComponentTween`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "tween_unboxed")]
 pub fn component_tween_system<L>(
     q_tween_player: Query<(
@@ -367,6 +379,7 @@ pub fn component_tween_system<L>(
     })
 }
 
+/// Tween any [`ComponentTweenBoxed`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "tween_boxed")]
 pub fn component_tween_boxed_system<C>(
     q_tween_player: Query<(
@@ -439,15 +452,21 @@ pub fn component_tween_boxed_system<C>(
         tween.lens.interpolate(&mut target_component, ease_value.0);
     })
 }
+
+/// Convenient alias for [`Tween`] that [`TargetResource`].
 #[cfg(feature = "tween_unboxed")]
 pub type ResourceTween<L> = Tween<TargetResource<<L as TweenLens>::Item>, L>;
+
+/// Convenient alias for [`TweenBoxed`] that [`TargetResource`].
 #[cfg(feature = "tween_boxed")]
 pub type ResourceTweenBoxed<R> = TweenBoxed<TargetResource<R>>;
 
+/// Tell the tween what resource to tween.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Reflect)]
 pub struct TargetResource<R>(#[reflect(ignore)] pub PhantomData<R>);
 
 impl<R> TargetResource<R> {
+    /// New resource target
     pub fn new() -> TargetResource<R> {
         TargetResource(PhantomData)
     }
@@ -457,6 +476,7 @@ impl<R> TweenTarget for TargetResource<R> {
     type Item = R;
 }
 
+/// Tween any [`ResourceTween`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "tween_unboxed")]
 pub fn resource_tween_system<L>(
     q_tween: Query<(&ResourceTween<L>, &TweenInterpolationValue)>,
@@ -474,6 +494,7 @@ pub fn resource_tween_system<L>(
     })
 }
 
+/// Tween any [`ResourceTweenBoxed`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "tween_boxed")]
 pub fn resource_tween_boxed_system<R>(
     q_tween: Query<(&ResourceTweenBoxed<R>, &TweenInterpolationValue)>,
@@ -490,24 +511,32 @@ pub fn resource_tween_boxed_system<R>(
     })
 }
 
+/// Convenient alias for [`Tween`] that [`TargetAsset`].
 #[cfg(all(feature = "bevy_asset", feature = "tween_unboxed"))]
 pub type AssetTween<L> = Tween<TargetAsset<<L as TweenLens>::Item>, L>;
+
+/// Convenient alias for [`TweenBoxed`] that [`TargetAsset`].
 #[cfg(all(feature = "bevy_asset", feature = "tween_boxed"))]
 pub type AssetTweenBoxed<A> = TweenBoxed<TargetAsset<A>>;
 
+/// Tell the tween what asset of what type to tween.
 #[cfg(feature = "bevy_asset")]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetAsset<A: Asset> {
+    /// Target this asset
     Asset(Handle<A>),
+    /// Target these assets
     Assets(Vec<Handle<A>>),
 }
 
 #[cfg(feature = "bevy_asset")]
 impl<A: Asset> TargetAsset<A> {
+    /// Target this asset
     pub fn asset(asset: Handle<A>) -> Self {
         TargetAsset::Asset(asset)
     }
 
+    /// Target these assets
     pub fn assets<I>(assets: I) -> Self
     where
         I: IntoIterator<Item = Handle<A>>,
@@ -577,6 +606,7 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
     }
 }
 
+/// Tween any [`AssetTween`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(all(feature = "bevy_asset", feature = "tween_unboxed"))]
 pub fn asset_tween_system<L>(
     q_tween: Query<(&AssetTween<L>, &TweenInterpolationValue)>,
@@ -611,6 +641,7 @@ pub fn asset_tween_system<L>(
         })
 }
 
+/// Tween any [`AssetTweenBoxed`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(all(feature = "bevy_asset", feature = "tween_boxed"))]
 pub fn asset_tween_boxed_system<A>(
     q_tween: Query<(&AssetTweenBoxed<A>, &TweenInterpolationValue)>,
