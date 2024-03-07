@@ -153,7 +153,7 @@ impl TryFrom<ops::RangeInclusive<Duration>> for TweenTimeSpan {
     ) -> Result<Self, Self::Error> {
         TweenTimeSpan::new(
             TimeBound::Inclusive(*range.start()),
-            TimeBound::Exclusive(*range.end()),
+            TimeBound::Inclusive(*range.end()),
         )
     }
 }
@@ -175,7 +175,7 @@ impl TryFrom<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
     ) -> Result<Self, Self::Error> {
         TweenTimeSpan::new(
             TimeBound::Inclusive(Duration::ZERO),
-            TimeBound::Exclusive(range.end),
+            TimeBound::Inclusive(range.end),
         )
     }
 }
@@ -473,7 +473,7 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
         T: Bundle,
         F: FnOnce(EntityCommands),
     {
-        self.tween_and(at..at, EaseFunction::Linear, tween, f)
+        self.tween_and(at..=at, EaseFunction::Linear, tween, f)
     }
 
     /// Create a new span tween that's 0 seconds in duration which basically
@@ -482,6 +482,6 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
     where
         T: Bundle,
     {
-        self.tween_and(at..at, EaseFunction::Linear, tween, |_| {})
+        self.tween_and(at..=at, EaseFunction::Linear, tween, |_| {})
     }
 }
