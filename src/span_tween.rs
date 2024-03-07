@@ -18,7 +18,6 @@ impl Plugin for SpanTweenPlugin {
         )
         .register_type::<SpanTweenPlayer>()
         .register_type::<TimeBound>()
-        .register_type::<DurationQuotient>()
         .register_type::<TweenTimeSpan>();
     }
 }
@@ -47,11 +46,8 @@ impl Default for TimeBound {
     }
 }
 
-#[derive(
-    Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Reflect,
-)]
-pub enum DurationQuotient {
-    #[default]
+#[derive(Debug, Clone, Copy)]
+enum DurationQuotient {
     Before,
     Inside,
     After,
@@ -107,7 +103,7 @@ impl TweenTimeSpan {
         Ok(Self::new_unchecked(min, max))
     }
 
-    pub fn quotient(&self, duration: Duration) -> DurationQuotient {
+    fn quotient(&self, duration: Duration) -> DurationQuotient {
         let after_min = match self.min {
             TimeBound::Inclusive(min) => duration >= min,
             TimeBound::Exclusive(min) => duration > min,
