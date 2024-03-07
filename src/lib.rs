@@ -36,7 +36,9 @@ pub mod prelude {
     pub use crate::tween::ResourceTweenBoxed;
 
     #[cfg(feature = "span_tween")]
-    pub use crate::span_tween::{SpanTweenBundle, SpanTweenPlayerBundle};
+    pub use crate::span_tween::{
+        BuildSpanTweens, SpanTweenBundle, SpanTweenPlayerBundle,
+    };
 }
 
 /// Default plugins in this crate

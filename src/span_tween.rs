@@ -1,10 +1,10 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{ops, time::Duration};
 
 use crate::{
     interpolation::Interpolator,
     tween::TweenState,
-    tween_player::{AnimationDirection, TweenPlayerState},
+    tween_player::{self, AnimationDirection, TweenPlayerState},
 };
 
 #[derive(Debug)]
@@ -186,10 +186,42 @@ pub struct SpanTweenPlayerBundle {
 }
 
 impl SpanTweenPlayerBundle {
-    pub fn new(tween_player: TweenPlayerState) -> Self {
+    pub fn new(duration: Duration) -> Self {
+        let mut t = SpanTweenPlayerBundle::default();
+        t.tween_player.set_duration(duration);
+        t
+    }
+    pub fn with_paused(mut self, paused: bool) -> Self {
+        self.tween_player.set_paused(paused);
+        self
+    }
+    pub fn with_elasped(mut self, elasped: Duration) -> Self {
+        self.tween_player.set_elasped(elasped);
+        self
+    }
+    pub fn with_direction(mut self, direction: AnimationDirection) -> Self {
+        self.tween_player.set_direction(direction);
+        self
+    }
+
+    pub fn with_repeat(mut self, repeat: Option<tween_player::Repeat>) -> Self {
+        self.tween_player.set_repeat(repeat);
+        self
+    }
+    pub fn with_repeat_style(
+        mut self,
+        repeat_style: Option<tween_player::RepeatStyle>,
+    ) -> Self {
+        self.tween_player.set_repeat_style(repeat_style);
+        self
+    }
+}
+
+impl From<TweenPlayerState> for SpanTweenPlayerBundle {
+    fn from(value: TweenPlayerState) -> Self {
         SpanTweenPlayerBundle {
-            tween_player,
-            ..Default::default()
+            tween_player: value,
+            span_player: SpanTweenPlayer,
         }
     }
 }
@@ -214,10 +246,33 @@ where
         S::Error: std::fmt::Debug,
     {
         SpanTweenBundle {
-            span: span.try_into().unwrap(),
+            span: span.try_into().expect("valid span"),
             interpolation,
             state: Default::default(),
         }
+    }
+
+    pub fn with_interpolation<NewI>(
+        self,
+        interpolation: NewI,
+    ) -> SpanTweenBundle<NewI>
+    where
+        NewI: Component + Interpolator,
+    {
+        SpanTweenBundle {
+            span: self.span,
+            interpolation,
+            state: self.state,
+        }
+    }
+
+    pub fn with_span<S>(mut self, span: S) -> Self
+    where
+        S: TryInto<TweenTimeSpan>,
+        S::Error: std::fmt::Debug,
+    {
+        self.span = span.try_into().expect("valid span");
+        self
     }
 }
 
@@ -345,4 +400,60 @@ pub fn span_tween_player_system(
                 *tween_state = new_tween_state;
             }
         });
+}
+
+pub trait BuildSpanTweens<'a> {
+    fn build_tweens(&mut self) -> SpanTweensBuilder<'a, '_>;
+}
+
+impl<'a> BuildSpanTweens<'a> for ChildBuilder<'a> {
+    fn build_tweens(&mut self) -> SpanTweensBuilder<'a, '_> {
+        SpanTweensBuilder {
+            child_builder: self,
+        }
+    }
+}
+
+pub struct SpanTweensBuilder<'a, 'b> {
+    child_builder: &'b mut ChildBuilder<'a>,
+}
+
+impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
+    pub fn tween<S, I, T>(
+        &mut self,
+        span: S,
+        interpolation: I,
+        tween: T,
+    ) -> &mut Self
+    where
+        S: TryInto<TweenTimeSpan>,
+        S::Error: std::fmt::Debug,
+        I: Component + Interpolator,
+        T: Bundle,
+    {
+        self.child_builder
+            .spawn((SpanTweenBundle::new(span, interpolation), tween));
+        self
+    }
+
+    pub fn tween_and<S, I, T, F>(
+        &mut self,
+        span: S,
+        interpolation: I,
+        tween: T,
+        f: F,
+    ) -> &mut Self
+    where
+        S: TryInto<TweenTimeSpan>,
+        S::Error: std::fmt::Debug,
+        I: Component + Interpolator,
+        T: Bundle,
+        F: FnOnce(EntityCommands),
+    {
+        let commands = self
+            .child_builder
+            .spawn((SpanTweenBundle::new(span, interpolation), tween));
+        f(commands);
+        self
+    }
 }

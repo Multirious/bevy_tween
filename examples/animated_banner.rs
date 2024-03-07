@@ -131,192 +131,166 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         Duration::from_secs_f32(secs)
     }
     commands
-        .spawn(SpanTweenPlayerBundle::new(
-            TweenPlayerState::new(secs(12.))
+        .spawn(
+            SpanTweenPlayerBundle::new(secs(12.))
                 .with_repeat(Some(Repeat::Infinitely)),
-        ))
+        )
         .with_children(|c| {
-            c.spawn((
-                SpanTweenBundle::new(secs(0.)..secs(0.), EaseFunction::Linear),
-                ComponentTween::new_target(
-                    bevy_tween_text,
-                    SpriteColorLens {
-                        start: Color::WHITE,
-                        end: Color::WHITE,
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(secs(0.)..secs(0.), EaseFunction::Linear),
-                ComponentTweenBoxed::new_target_map(
-                    [triangle, square],
-                    |sprite: &mut Sprite, value: f32| {
-                        sprite.color = sprite
-                            .color
-                            .with_a(sprite.color.a().lerp(1., value));
-                    },
-                ),
-            ));
-
-            c.spawn((
-                SpanTweenBundle::new(
+            c.build_tweens()
+                .tween(
+                    secs(0.)..secs(0.),
+                    EaseFunction::Linear,
+                    ComponentTween::new_target(
+                        bevy_tween_text,
+                        SpriteColorLens {
+                            start: Color::WHITE,
+                            end: Color::WHITE,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(0.)..secs(0.),
+                    EaseFunction::Linear,
+                    ComponentTweenBoxed::new_target_map(
+                        [triangle, square],
+                        |sprite: &mut Sprite, value: f32| {
+                            sprite.color = sprite
+                                .color
+                                .with_a(sprite.color.a().lerp(1., value));
+                        },
+                    ),
+                )
+                .tween(
                     secs(0.00)..secs(12.),
                     EaseFunction::Linear,
-                ),
-                ComponentTween::new_target(
-                    square,
-                    TransformAngleLens {
-                        start: 0.,
-                        end: PI * 10.,
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        square,
+                        TransformAngleLens {
+                            start: 0.,
+                            end: PI * 10.,
+                        },
+                    ),
+                )
+                .tween(
                     secs(0.00)..secs(12.),
                     EaseFunction::Linear,
-                ),
-                ComponentTween::new_target(
-                    triangle,
-                    TransformAngleLens {
-                        start: 0.,
-                        end: -PI * 10.,
-                    },
-                ),
-            ));
-
-            // ================================================================
-
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        triangle,
+                        TransformAngleLens {
+                            start: 0.,
+                            end: -PI * 10.,
+                        },
+                    ),
+                )
+                // ================================================================
+                .tween(
                     secs(0.)..secs(9.),
                     EaseFunction::CircularOut,
-                ),
-                ComponentTween::new_target(
-                    [bevy_tween_text, square, triangle],
-                    TransformScaleLens {
-                        start: Vec3::ZERO,
-                        end: Vec3::ONE,
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        [bevy_tween_text, square, triangle],
+                        TransformScaleLens {
+                            start: Vec3::ZERO,
+                            end: Vec3::ONE,
+                        },
+                    ),
+                )
+                .tween(
                     secs(0.)..secs(5.),
                     EaseFunction::QuinticOut,
-                ),
-                ComponentTween::new_target(
-                    bevy_tween_text,
-                    TransformAngleLens {
-                        start: PI,
-                        end: PI * 2.,
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        bevy_tween_text,
+                        TransformAngleLens {
+                            start: PI,
+                            end: PI * 2.,
+                        },
+                    ),
+                )
+                .tween(
                     secs(0.)..secs(5.),
                     EaseFunction::QuinticOut,
-                ),
-                ComponentTween::new_target(
-                    dot_grid,
-                    TransformScaleLens {
-                        start: Vec3::new(0.01, 0.01, 0.),
-                        end: Vec3::new(0.4, 0.4, 0.),
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        dot_grid,
+                        TransformScaleLens {
+                            start: Vec3::new(0.01, 0.01, 0.),
+                            end: Vec3::new(0.4, 0.4, 0.),
+                        },
+                    ),
+                )
+                .tween(
                     secs(0.)..secs(4.),
                     EaseFunction::ExponentialOut,
-                ),
-                ComponentTween::new_target(
-                    triangle,
-                    TransformTranslationLens {
-                        start: Vec3::new(0., 0., 0.),
-                        end: Vec3::new(150., -20., 0.),
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        triangle,
+                        TransformTranslationLens {
+                            start: Vec3::new(0., 0., 0.),
+                            end: Vec3::new(150., -20., 0.),
+                        },
+                    ),
+                )
+                .tween(
                     secs(0.)..secs(4.),
                     EaseFunction::ExponentialOut,
-                ),
-                ComponentTween::new_target(
-                    square,
-                    TransformTranslationLens {
-                        start: Vec3::new(0., 0., 0.),
-                        end: Vec3::new(-150., 20., 0.),
-                    },
-                ),
-            ));
-
-            // ================================================================
-
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        square,
+                        TransformTranslationLens {
+                            start: Vec3::new(0., 0., 0.),
+                            end: Vec3::new(-150., 20., 0.),
+                        },
+                    ),
+                )
+                // ================================================================
+                .tween(
                     secs(10.)..secs(12.),
                     EaseFunction::QuinticIn,
-                ),
-                ComponentTween::new_target(
-                    bevy_tween_text,
-                    SpriteColorLens {
-                        start: Color::WHITE,
-                        end: Color::WHITE.with_a(0.0),
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        bevy_tween_text,
+                        SpriteColorLens {
+                            start: Color::WHITE,
+                            end: Color::WHITE.with_a(0.0),
+                        },
+                    ),
+                )
+                .tween(
                     secs(9.)..secs(12.),
                     EaseFunction::QuinticIn,
-                ),
-                ComponentTween::new_target(
-                    bevy_tween_text,
-                    TransformScaleLens {
-                        start: Vec3::ONE,
-                        end: Vec3::new(0.0, 0.0, 0.),
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        bevy_tween_text,
+                        TransformScaleLens {
+                            start: Vec3::ONE,
+                            end: Vec3::new(0.0, 0.0, 0.),
+                        },
+                    ),
+                )
+                .tween(
                     secs(10.)..secs(12.),
                     EaseFunction::QuinticIn,
-                ),
-                ComponentTween::new_target(
-                    bevy_tween_text,
-                    TransformAngleLens { start: 0., end: PI },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        bevy_tween_text,
+                        TransformAngleLens { start: 0., end: PI },
+                    ),
+                )
+                .tween(
                     secs(10.)..secs(12.),
                     EaseFunction::QuadraticInOut,
-                ),
-                ComponentTween::new_target(
-                    dot_grid,
-                    TransformScaleLens {
-                        start: Vec3::new(0.4, 0.4, 0.),
-                        end: Vec3::new(0.01, 0.01, 0.),
-                    },
-                ),
-            ));
-            c.spawn((
-                SpanTweenBundle::new(
+                    ComponentTween::new_target(
+                        dot_grid,
+                        TransformScaleLens {
+                            start: Vec3::new(0.4, 0.4, 0.),
+                            end: Vec3::new(0.01, 0.01, 0.),
+                        },
+                    ),
+                )
+                .tween(
                     secs(4.)..secs(12.),
                     EaseFunction::ExponentialInOut,
-                ),
-                ComponentTweenBoxed::new_target_map(
-                    [triangle, square],
-                    |sprite: &mut Sprite, value: f32| {
-                        sprite.color = sprite
-                            .color
-                            .with_a(sprite.color.a().lerp(0., value));
-                    },
-                ),
-            ));
+                    ComponentTweenBoxed::new_target_map(
+                        [triangle, square],
+                        |sprite: &mut Sprite, value: f32| {
+                            sprite.color = sprite
+                                .color
+                                .with_a(sprite.color.a().lerp(0., value));
+                        },
+                    ),
+                );
         });
 }
