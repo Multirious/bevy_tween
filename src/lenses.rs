@@ -16,7 +16,10 @@ use crate::utils::color_lerp;
 pub trait TweenLens {
     /// Type to be interpolated.
     type Item;
-    /// Interpolate an item using `value`.
+    /// Interpolate an item using `value` which is typically between 0 and 1.
+    /// The value should be already sampled from the [`Interpolator`]
+    ///
+    /// [`Interpolator`]: crate::interpolation::Interpolator
     fn interpolate(&self, item: &mut Self::Item, value: f32);
 }
 

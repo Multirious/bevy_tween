@@ -1,11 +1,4 @@
 //! Module containing ease functions and related systems.
-//!
-//! [`EaseFunction`] is what you would be using most of the time.
-//! [`EaseFunctionPointer`] can be use for custom easing. As the name implies it
-//! uses a function pointer as its easing function which unfortunately can't be
-//! reflected.
-//! Though, it is actually possible to implements your own easing function!
-//! See this module's source code for example.
 
 use bevy::prelude::*;
 
@@ -16,7 +9,12 @@ use crate::{
 
 mod ease_functions;
 
+/// A trait for implementing interpolation algorithms.
+/// Use with [`sample_interpolator_system`]
 pub trait Interpolator {
+    /// Sample a value from this interpolator.
+    /// Input should be between 0 to 1 and returns value that should be
+    /// between 0 to 1
     fn sample(&self, v: f32) -> f32;
 }
 
@@ -28,14 +26,12 @@ impl Plugin for EaseFunctionPlugin {
         app.add_systems(
             Update,
             sample_interpolator_system::<EaseFunction>
-                .in_set(TweenSystemSet::SampleInterpolator),
+                .in_set(TweenSystemSet::UpdateTweenEaseValue),
         );
     }
 }
 
 /// Easing functions put into an enum.
-///
-/// See [`EaseFunctionPointer`].
 #[allow(missing_docs)]
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
@@ -74,6 +70,7 @@ pub enum EaseFunction {
     BounceInOut,
 }
 impl EaseFunction {
+    /// Sample a value from this ease function.
     pub fn sample(&self, v: f32) -> f32 {
         use ease_functions::*;
         use EaseFunction::*;
@@ -122,42 +119,53 @@ impl Interpolator for EaseFunction {
 /// Plugin for [`EaseFunctionPointer`]. In case you want to use custom an ease
 /// function. Since most people likely wouldn't use this type, this plugin is
 /// not with [`DefaultTweenPlugins`] to reduce unused system.
-pub struct EaseFunctionPointerPlugin;
-impl Plugin for EaseFunctionPointerPlugin {
+pub struct EaseClosurePlugin;
+impl Plugin for EaseClosurePlugin {
     fn build(&self, app: &mut App) {
         use crate::TweenSystemSet;
         app.add_systems(
             Update,
-            sample_interpolator_system::<EaseFunctionPointer>
-                .in_set(TweenSystemSet::SampleInterpolator),
+            sample_interpolator_system::<EaseClosure>
+                .in_set(TweenSystemSet::UpdateTweenEaseValue),
         );
     }
 }
 
-/// Use a custom easing function via a function pointer.
+/// Use a custom easing function via a closure.
 ///
 /// See [`EaseFunction`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Component)]
-pub struct EaseFunctionPointer(fn(f32) -> f32);
+#[derive(Component)]
+pub struct EaseClosure(pub Box<dyn Fn(f32) -> f32 + Send + Sync + 'static>);
 
-impl Default for EaseFunctionPointer {
-    fn default() -> Self {
-        EaseFunctionPointer(ease_functions::linear as _)
+impl EaseClosure {
+    /// Create new `EaseClosure`
+    pub fn new<F: Fn(f32) -> f32 + Send + Sync + 'static>(f: F) -> EaseClosure {
+        EaseClosure(Box::new(f))
     }
 }
 
-impl Interpolator for EaseFunctionPointer {
+impl Default for EaseClosure {
+    fn default() -> Self {
+        EaseClosure::new(ease_functions::linear)
+    }
+}
+
+impl Interpolator for EaseClosure {
     fn sample(&self, v: f32) -> f32 {
         self.0(v)
     }
 }
 
+/// This system will automatically sample in each entities with the [`TweenState`]
+/// and specified interpolator component then insert [`TweenInterpolationValue`]
+/// If [`TweenState::local_elasped`] is some, otherwise remove [`TweenInterpolationValue`]
+/// from the entity.
 #[allow(clippy::type_complexity)]
 pub fn sample_interpolator_system<I>(
     mut commands: Commands,
     query: Query<
         (Entity, &I, &TweenState),
-        Or<(Changed<EaseFunctionPointer>, Changed<TweenState>)>,
+        Or<(Changed<I>, Changed<TweenState>)>,
     >,
 ) where
     I: Interpolator + Component,

@@ -1,6 +1,6 @@
 //! # `bevy_tween`
 
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
@@ -66,7 +66,7 @@ impl Plugin for TweenCorePlugin {
             (
                 TweenSystemSet::TickTweenPlayer,
                 TweenSystemSet::TweenPlayer,
-                TweenSystemSet::SampleInterpolator,
+                TweenSystemSet::UpdateTweenEaseValue,
                 TweenSystemSet::ApplyTween,
             )
                 .chain(),
@@ -86,10 +86,40 @@ impl Plugin for TweenCorePlugin {
     }
 }
 
+/// Enum of SystemSet in this crate
+/// After adding the plugin [`TweenCorePlugin`], these set will be configured
+/// to run in the [`PreUpdate`] schedule so any modification you've done after
+/// this schedule should be correctly apply in the next frame.
+///
+/// The sets will be configured to run in this order:
+///  1. TickTweenPlayer
+///  2. TweenPlayer
+///  3. UpdateTweenEaseValue
+///  4. ApplyTween
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
+    /// This set is for systems that responsible for updating [`TweenPlayerState`]'s
+    /// elasped.
+    ///
+    /// [`TweenPlayerState`]: tween_player::TweenPlayerState
     TickTweenPlayer,
+    /// This set is for systems that responsible for updating any specific
+    /// tween player implementation such as the [`span_tween::span_tween_player_system`]
+    /// by this crate
     TweenPlayer,
-    SampleInterpolator,
+    /// This set is for systems that responsible for updating any
+    /// [`tween::TweenEaseValue`] such as
+    /// [`interpolation::sample_interpolator_system`] by this crate.
+    UpdateTweenEaseValue,
+    /// This set is for systems that responsible for actually executing any
+    /// active tween and setting the value to its respective tweening item such
+    /// as these systems by this crate:
+    /// - [`tween::component_tween_system`]
+    /// - [`tween::component_tween_boxed_system`]
+    /// - [`tween::resource_tween_system`]
+    /// - [`tween::resource_tween_boxed_system`]
+    /// - [`tween::asset_tween_system`]
+    /// - [`tween::asset_tween_boxed_system`]
+    /// - [`tween::asset_tween_boxed_system`]
     ApplyTween,
 }
