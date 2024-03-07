@@ -183,7 +183,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             transform: Transform {
-                translation: destinated_cornering_left,
+                translation: cornering_left_tween_start,
                 rotation: Quat::from_rotation_z(PI / 4.),
                 scale: Vec3::ONE * 5. * SCALE,
             },
@@ -198,7 +198,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             transform: Transform {
-                translation: destinated_cornering_right,
+                translation: cornering_right_tween_start,
                 rotation: Quat::from_rotation_z(PI / 4.),
                 scale: Vec3::ONE * 5. * SCALE,
             },
