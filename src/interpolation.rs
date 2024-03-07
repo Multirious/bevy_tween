@@ -26,7 +26,7 @@ impl Plugin for EaseFunctionPlugin {
         app.add_systems(
             Update,
             sample_interpolator_system::<EaseFunction>
-                .in_set(TweenSystemSet::UpdateTweenEaseValue),
+                .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
 }
@@ -128,7 +128,7 @@ impl Plugin for EaseClosurePlugin {
         app.add_systems(
             Update,
             sample_interpolator_system::<EaseClosure>
-                .in_set(TweenSystemSet::UpdateTweenEaseValue),
+                .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
 }

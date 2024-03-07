@@ -67,7 +67,7 @@ impl Plugin for TweenCorePlugin {
             (
                 TweenSystemSet::TickTweenPlayer,
                 TweenSystemSet::TweenPlayer,
-                TweenSystemSet::UpdateTweenEaseValue,
+                TweenSystemSet::UpdateInterpolationValue,
                 TweenSystemSet::ApplyTween,
             )
                 .chain(),
@@ -111,7 +111,7 @@ pub enum TweenSystemSet {
     /// This set is for systems that responsible for updating any
     /// [`tween::TweenInterpolationValue`] such as
     /// [`interpolation::sample_interpolator_system`] by this crate.
-    UpdateTweenEaseValue,
+    UpdateInterpolationValue,
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
     /// as these systems by this crate:
