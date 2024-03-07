@@ -8,6 +8,16 @@ pub struct Elasped {
     pub repeat_style: Option<RepeatStyle>,
 }
 
+impl Elasped {
+    pub fn new(elasped: Duration) -> Elasped {
+        Elasped {
+            now: elasped,
+            previous: elasped,
+            repeat_style: None,
+        }
+    }
+}
+
 #[derive(Debug, Default, Component, Clone, PartialEq, Eq, Hash, Reflect)]
 #[reflect(Component)]
 pub struct TweenPlayerState {
@@ -26,27 +36,34 @@ impl TweenPlayerState {
             ..Default::default()
         }
     }
-    pub fn with_paused(mut self, paused: bool) -> Self {
+    pub fn set_duration(&mut self, duration: Duration) -> &mut Self {
+        self.duration_limit = duration;
+        self
+    }
+    pub fn set_paused(&mut self, paused: bool) -> &mut Self {
         self.paused = paused;
         self
     }
-    // pub fn with_elasped(mut self, elasped: Duration) -> Self {
-    //     self.elasped = elasped;
-    //     self
-    // }
-    pub fn with_direction(mut self, direction: AnimationDirection) -> Self {
+    pub fn set_elasped(&mut self, elasped: Duration) -> &mut Self {
+        self.elasped = Elasped::new(elasped);
+        self
+    }
+    pub fn set_direction(
+        &mut self,
+        direction: AnimationDirection,
+    ) -> &mut Self {
         self.direction = direction;
         self
     }
 
-    pub fn with_repeat(mut self, repeat: Option<Repeat>) -> Self {
+    pub fn set_repeat(&mut self, repeat: Option<Repeat>) -> &mut Self {
         self.repeat = repeat;
         self
     }
-    pub fn with_repeat_style(
-        mut self,
+    pub fn set_repeat_style(
+        &mut self,
         repeat_style: Option<RepeatStyle>,
-    ) -> Self {
+    ) -> &mut Self {
         self.repeat_style = repeat_style;
         self
     }
