@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 fn clamp(p: f32) -> f32 {
     match () {
         _ if p > 1.0 => 1.0,
@@ -94,17 +95,17 @@ pub fn quintic_in_out(v: f32) -> f32 {
 
 pub fn sine_in(v: f32) -> f32 {
     let p = clamp(v);
-    ((p - 1.0) * std::f32::consts::TAU).sin() + 1.0
+    1. - (p * PI * 0.5).cos()
 }
 
 pub fn sine_out(v: f32) -> f32 {
     let p = clamp(v);
-    (p * std::f32::consts::TAU).sin()
+    (p * PI * 0.5).sin()
 }
 
 pub fn sine_in_out(v: f32) -> f32 {
     let p = clamp(v);
-    0.5 * (1.0 - (p * std::f32::consts::PI).cos())
+    -((p * PI).cos() - 1.) * 0.5
 }
 
 pub fn circular_in(v: f32) -> f32 {
@@ -182,20 +183,17 @@ pub fn elastic_in_out(v: f32) -> f32 {
 }
 
 pub fn back_in(v: f32) -> f32 {
-    use std::f32::consts::PI;
     let p = clamp(v);
     p * p * p - p * (p * PI).sin()
 }
 
 pub fn back_out(v: f32) -> f32 {
-    use std::f32::consts::PI;
     let p = clamp(v);
     let f = 1.0 - p;
     1.0 - (f * f * f - f * (f * PI).sin())
 }
 
 pub fn back_in_out(v: f32) -> f32 {
-    use std::f32::consts::PI;
     let p = clamp(v);
     if p < 0.5 {
         let f = 2.0 * p;
