@@ -1,4 +1,4 @@
-<img src="https://github.com/Multirious/bevy_tween/assets/77918086/623d2432-a2e4-4fcf-8b80-115bf850a042" width="100%"/>
+<img src="https://github.com/Multirious/bevy_tween/assets/77918086/38ab44e1-67a4-4c2d-b17c-3a35128e6930" width="100%"/>
 
 # `bevy_tween`
 
