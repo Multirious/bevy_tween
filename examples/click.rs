@@ -1,7 +1,5 @@
-use std::time::Duration;
-
 use bevy::prelude::*;
-use bevy_tween::{prelude::*, span_tween::SpanTweenPlayer};
+use bevy_tween::prelude::*;
 mod utils;
 
 fn main() {

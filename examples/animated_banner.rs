@@ -1,7 +1,11 @@
-use std::{f32::consts::PI, time::Duration};
+use std::f32::consts::PI;
 
-use bevy::{prelude::*, window};
-use bevy_tween::{prelude::*, tween_player::TweenPlayerState};
+use bevy::{
+    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
+    prelude::*,
+    window,
+};
+use bevy_tween::prelude::*;
 
 struct TransformAngleLens {
     start: f32,
@@ -44,9 +48,17 @@ fn main() {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2dBundle {
-        ..Default::default()
-    },));
+    commands.spawn((
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true,
+                ..Default::default()
+            },
+            tonemapping: Tonemapping::Reinhard,
+            ..Default::default()
+        },
+        BloomSettings::default(),
+    ));
 }
 
 fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -59,8 +71,10 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // ========================================================================
 
-    let blue = Color::rgb(103. / 255., 163. / 255., 217. / 255.);
-    let pink = Color::rgb(248. / 255., 183. / 255., 205. / 255.);
+    let blue =
+        Color::rgb(103. / 255. + 1.0, 163. / 255. + 1.0, 217. / 255. + 1.0);
+    let pink =
+        Color::rgb(248. / 255. + 1.0, 183. / 255. + 1.0, 205. / 255. + 1.0);
 
     // ========================================================================
 
@@ -137,9 +151,8 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         )
         .with_children(|c| {
             c.build_tweens()
-                .tween(
-                    secs(0.)..secs(0.),
-                    EaseFunction::Linear,
+                .jump(
+                    secs(0.),
                     ComponentTween::new_target(
                         bevy_tween_text,
                         SpriteColorLens {
@@ -148,9 +161,8 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
-                    secs(0.)..secs(0.),
-                    EaseFunction::Linear,
+                .jump(
+                    secs(0.),
                     ComponentTweenBoxed::new_target_map(
                         [triangle, square],
                         |sprite: &mut Sprite, value: f32| {
@@ -160,8 +172,9 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
+                // ============================================================
                 .tween(
-                    secs(0.00)..secs(12.),
+                    secs(0.)..secs(12.),
                     EaseFunction::Linear,
                     ComponentTween::new_target(
                         square,
@@ -172,7 +185,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ),
                 )
                 .tween(
-                    secs(0.00)..secs(12.),
+                    secs(0.)..secs(12.),
                     EaseFunction::Linear,
                     ComponentTween::new_target(
                         triangle,
@@ -182,7 +195,6 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                // ================================================================
                 .tween(
                     secs(0.)..secs(9.),
                     EaseFunction::CircularOut,
@@ -238,7 +250,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                // ================================================================
+                // ============================================================
                 .tween(
                     secs(10.)..secs(12.),
                     EaseFunction::QuinticIn,

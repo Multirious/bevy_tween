@@ -1,11 +1,11 @@
-use std::time::Duration;
-
 mod utils;
+
+use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 
-use bevy_tween::{prelude::*, tween_player::TweenPlayerState};
+use bevy_tween::prelude::*;
 
 fn main() {
     App::new()
@@ -83,42 +83,34 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             Jeb,
         ))
         .with_children(|c| {
-            // Spawning the marker for TweenPlayer that will be responsible for
-            // the follow effect
+            // Spawning the marker for a tween player that will be responsible
+            // for the follow effect
             c.spawn(JebTranslationTween);
 
-            // Spawning a TweenPlayer that's responsible for a rotating effect
-            //
-            // This is a TweenPlayer and they handles the timing and playback
-            // of `Tween`s inside them.
+            // Spawning a tween player that's responsible for a rotating effect
             //
             // We will be using the "span_tween" feature in this example.
-            // SpanTween uses time relative to the current player to specify
-            // when is start and when is end for each tween, a range of time, a span.
+            // Span tween uses a time input relative to the current player to
+            // specify when is start and when is end for each tween, a range of
+            // time, a time span.
             //
-            // `Tween`s are like the argument to a TweenPlayer. You will be
-            // specify how to tween things through this component.
-            //
-            // This crate supports having `Tween` as a child of `TweenPlayer`
-            // and having `Tween` in the same entity as a `TweenPlayer`
-            //
-            // We will be putting `Tween` in the same entity as `TweenPlayer`
-            // like below
+            // We will be putting the tween in the same entity with the tween player
+            // to keep the structure simple.
             c.spawn((
-                // TweenPlayer:
-                SpanTweenPlayerBundle::new(
-                    TweenPlayerState::new(Duration::from_secs(2))
-                        .with_repeat(Some(Repeat::Infinitely))
-                        // bouncy
-                        .with_repeat_style(Some(RepeatStyle::PingPong)),
-                ),
-                // Tween in the same entity as TweenPlayer:
+                // tween player:
+                SpanTweenPlayerBundle::new(Duration::from_secs(2))
+                    .with_repeat(Some(Repeat::Infinitely))
+                    // bouncy
+                    .with_repeat_style(Some(RepeatStyle::PingPong)),
+                //
+                // Tween:
+                //
+                // Putting a tween in the same entity with the tween player as said:
                 SpanTweenBundle::new(
                     // TweenTimeSpans implements TryFrom<Range> and others so
                     // lets use it
                     //
-                    // Tween from start at second 0
-                    // and end at second 2.
+                    // Tween from second 0 to second 2.
                     ..Duration::from_secs(2),
                     // Specifying the ease function
                     EaseFunction::CubicInOut,
@@ -127,7 +119,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ComponentTweenBoxed::new_map(
                     |transform: &mut Transform, value| {
                         let start = 0.;
-                        let end = std::f32::consts::TAU;
+                        let end = TAU;
                         let angle = (end - start).mul_add(value, start);
                         transform.rotation = Quat::from_rotation_z(angle);
                     },
@@ -135,11 +127,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ));
 
             // Spawning a TweenPlayer that's responsible for scaling effect
-            // when you launch up the game.
+            // when you launch up the demo.
             c.spawn((
-                SpanTweenPlayerBundle::new(TweenPlayerState::new(
-                    Duration::from_secs(1),
-                )),
+                SpanTweenPlayerBundle::new(Duration::from_secs(1)),
                 SpanTweenBundle::new(
                     ..Duration::from_secs(1),
                     EaseFunction::QuinticIn,
@@ -168,9 +158,7 @@ fn jeb_follows_cursor(
     if cursor_moved.read().next().is_some() {
         // inserting a new TweenPlayer everytime the cursor moved
         commands.entity(jeb_tween).insert((
-            SpanTweenPlayerBundle::new(TweenPlayerState::new(
-                config.tween_duration,
-            )),
+            SpanTweenPlayerBundle::new(config.tween_duration),
             SpanTweenBundle::new(..config.tween_duration, config.tween_ease),
             // You can have multiple tween in the same Entity as long as their
             // type is differernt.
