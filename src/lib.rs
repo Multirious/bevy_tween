@@ -16,6 +16,8 @@ pub mod span_tween;
 
 /// Commonly used items
 pub mod prelude {
+    pub use std::time::Duration;
+
     pub use crate::interpolation::EaseFunction;
     pub use crate::lenses::{self, TweenLens};
     pub use crate::tween_player::{Repeat, RepeatStyle};
