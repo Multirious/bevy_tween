@@ -7,6 +7,8 @@ use bevy::{
 };
 use bevy_tween::prelude::*;
 
+const SCALE: f32 = 2.0;
+
 struct TransformAngleLens {
     start: f32,
     end: f32,
@@ -27,7 +29,10 @@ fn main() {
                 primary_window: Some(Window {
                     title: "bevy_tween animated banner".to_string(),
                     resizable: false,
-                    resolution: window::WindowResolution::new(550., 100.),
+                    resolution: window::WindowResolution::new(
+                        550. * SCALE,
+                        100. * SCALE,
+                    ),
                     enabled_buttons: window::EnabledButtons {
                         maximize: false,
                         ..Default::default()
@@ -54,7 +59,7 @@ fn setup_camera(mut commands: Commands) {
                 hdr: true,
                 ..Default::default()
             },
-            tonemapping: Tonemapping::Reinhard,
+            tonemapping: Tonemapping::TonyMcMapface,
             ..Default::default()
         },
         BloomSettings::default(),
@@ -66,15 +71,43 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let triangle_image = asset_server.load("triangle.png");
     let square_image = asset_server.load("square.png");
+    let square_filled_image = asset_server.load("square_filled.png");
     let bevy_tween_image = asset_server.load("bevy_tween.png");
     let dot_image = asset_server.load("dot.png");
 
     // ========================================================================
 
-    let blue =
-        Color::rgb(103. / 255. + 1.0, 163. / 255. + 1.0, 217. / 255. + 1.0);
-    let pink =
-        Color::rgb(248. / 255. + 1.0, 183. / 255. + 1.0, 205. / 255. + 1.0);
+    let dot_color = Color::WHITE.with_a(0.2);
+    let white_color = Color::WHITE * 2.;
+    let text_pop_scale = 1.2;
+
+    let blue_glow = Color::rgb(103. / 255., 163. / 255., 217. / 255.) * 5.;
+    let pink_glow = Color::rgb(248. / 255., 183. / 255., 205. / 255.) * 5.;
+
+    let cornering_tween_offset = 200. * SCALE;
+    let destinated_cornering_left = Vec3::new(-300., -100., 0.) * SCALE;
+    let destinated_cornering_right = Vec3::new(300., 100., 0.) * SCALE;
+
+    let cornering_left_tween_start = Vec3::new(
+        destinated_cornering_left.x + cornering_tween_offset,
+        destinated_cornering_left.y - cornering_tween_offset,
+        0.,
+    );
+    let cornering_left_tween_end = Vec3::new(
+        destinated_cornering_left.x - cornering_tween_offset,
+        destinated_cornering_left.y + cornering_tween_offset,
+        0.,
+    );
+    let cornering_right_tween_start = Vec3::new(
+        destinated_cornering_right.x + cornering_tween_offset,
+        destinated_cornering_right.y - cornering_tween_offset,
+        0.,
+    );
+    let cornering_right_tween_end = Vec3::new(
+        destinated_cornering_right.x - cornering_tween_offset,
+        destinated_cornering_right.y + cornering_tween_offset,
+        0.,
+    );
 
     // ========================================================================
 
@@ -101,7 +134,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     0.,
                                 ),
                                 sprite: Sprite {
-                                    color: Color::WHITE.with_a(0.2),
+                                    color: dot_color,
                                     ..Default::default()
                                 },
                                 ..Default::default()
@@ -117,9 +150,10 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(SpriteBundle {
             texture: triangle_image,
             sprite: Sprite {
-                color: pink,
+                color: pink_glow,
                 ..Default::default()
             },
+            transform: Transform::from_scale(Vec3::ONE * SCALE),
             ..Default::default()
         })
         .id();
@@ -127,15 +161,47 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(SpriteBundle {
             texture: square_image,
             sprite: Sprite {
-                color: blue,
+                color: blue_glow,
                 ..Default::default()
             },
+            transform: Transform::from_scale(Vec3::ONE * SCALE),
             ..Default::default()
         })
         .id();
     let bevy_tween_text = commands
         .spawn(SpriteBundle {
             texture: bevy_tween_image,
+            transform: Transform::from_scale(Vec3::ONE * SCALE),
+            ..Default::default()
+        })
+        .id();
+    let cornering_left = commands
+        .spawn(SpriteBundle {
+            texture: square_filled_image.clone(),
+            sprite: Sprite {
+                color: white_color,
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: destinated_cornering_left,
+                rotation: Quat::from_rotation_z(PI / 4.),
+                scale: Vec3::ONE * 5. * SCALE,
+            },
+            ..Default::default()
+        })
+        .id();
+    let cornering_right = commands
+        .spawn(SpriteBundle {
+            texture: square_filled_image.clone(),
+            sprite: Sprite {
+                color: white_color,
+                ..Default::default()
+            },
+            transform: Transform {
+                translation: destinated_cornering_right,
+                rotation: Quat::from_rotation_z(PI / 4.),
+                scale: Vec3::ONE * 5. * SCALE,
+            },
             ..Default::default()
         })
         .id();
@@ -151,58 +217,14 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         )
         .with_children(|c| {
             c.build_tweens()
+                // [ bevy_tween_text ] ========================================
                 .jump(
                     secs(0.),
                     ComponentTween::new_target(
                         bevy_tween_text,
                         SpriteColorLens {
-                            start: Color::WHITE,
-                            end: Color::WHITE,
-                        },
-                    ),
-                )
-                .jump(
-                    secs(0.),
-                    ComponentTweenBoxed::new_target_map(
-                        [triangle, square],
-                        |sprite: &mut Sprite, value: f32| {
-                            sprite.color = sprite
-                                .color
-                                .with_a(sprite.color.a().lerp(1., value));
-                        },
-                    ),
-                )
-                // ============================================================
-                .tween(
-                    secs(0.)..secs(12.),
-                    EaseFunction::Linear,
-                    ComponentTween::new_target(
-                        square,
-                        TransformAngleLens {
-                            start: 0.,
-                            end: PI * 10.,
-                        },
-                    ),
-                )
-                .tween(
-                    secs(0.)..secs(12.),
-                    EaseFunction::Linear,
-                    ComponentTween::new_target(
-                        triangle,
-                        TransformAngleLens {
-                            start: 0.,
-                            end: -PI * 10.,
-                        },
-                    ),
-                )
-                .tween(
-                    secs(0.)..secs(9.),
-                    EaseFunction::CircularOut,
-                    ComponentTween::new_target(
-                        [bevy_tween_text, square, triangle],
-                        TransformScaleLens {
-                            start: Vec3::ZERO,
-                            end: Vec3::ONE,
+                            start: white_color,
+                            end: white_color,
                         },
                     ),
                 )
@@ -213,63 +235,40 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         bevy_tween_text,
                         TransformAngleLens {
                             start: PI,
-                            end: PI * 2.,
+                            end: PI * 4.,
                         },
                     ),
                 )
                 .tween(
-                    secs(0.)..secs(5.),
-                    EaseFunction::QuinticOut,
-                    ComponentTween::new_target(
-                        dot_grid,
-                        TransformScaleLens {
-                            start: Vec3::new(0.01, 0.01, 0.),
-                            end: Vec3::new(0.4, 0.4, 0.),
-                        },
-                    ),
-                )
-                .tween(
-                    secs(0.)..secs(4.),
-                    EaseFunction::ExponentialOut,
-                    ComponentTween::new_target(
-                        triangle,
-                        TransformTranslationLens {
-                            start: Vec3::new(0., 0., 0.),
-                            end: Vec3::new(150., -20., 0.),
-                        },
-                    ),
-                )
-                .tween(
-                    secs(0.)..secs(4.),
-                    EaseFunction::ExponentialOut,
-                    ComponentTween::new_target(
-                        square,
-                        TransformTranslationLens {
-                            start: Vec3::new(0., 0., 0.),
-                            end: Vec3::new(-150., 20., 0.),
-                        },
-                    ),
-                )
-                // ============================================================
-                .tween(
-                    secs(10.)..secs(12.),
-                    EaseFunction::QuinticIn,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        SpriteColorLens {
-                            start: Color::WHITE,
-                            end: Color::WHITE.with_a(0.0),
-                        },
-                    ),
-                )
-                .tween(
-                    secs(9.)..secs(12.),
-                    EaseFunction::QuinticIn,
+                    secs(0.)..secs(9.),
+                    EaseFunction::CircularOut,
                     ComponentTween::new_target(
                         bevy_tween_text,
                         TransformScaleLens {
-                            start: Vec3::ONE,
-                            end: Vec3::new(0.0, 0.0, 0.),
+                            start: Vec3::ZERO * SCALE,
+                            end: Vec3::ONE * SCALE,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(11.)..secs(11.5),
+                    EaseFunction::SineOut,
+                    ComponentTween::new_target(
+                        bevy_tween_text,
+                        TransformScaleLens {
+                            start: Vec3::ONE * SCALE,
+                            end: Vec3::ONE * text_pop_scale * SCALE,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(11.5)..secs(12.),
+                    EaseFunction::SineIn,
+                    ComponentTween::new_target(
+                        bevy_tween_text,
+                        TransformScaleLens {
+                            start: Vec3::ONE * text_pop_scale * SCALE,
+                            end: Vec3::ZERO * SCALE,
                         },
                     ),
                 )
@@ -278,17 +277,42 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuinticIn,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        TransformAngleLens { start: 0., end: PI },
+                        SpriteColorLens {
+                            start: white_color,
+                            end: white_color.with_a(0.0),
+                        },
                     ),
                 )
                 .tween(
-                    secs(10.)..secs(12.),
-                    EaseFunction::QuadraticInOut,
+                    secs(11.)..secs(12.),
+                    EaseFunction::QuinticIn,
                     ComponentTween::new_target(
-                        dot_grid,
+                        bevy_tween_text,
+                        TransformAngleLens {
+                            start: PI * 4.,
+                            end: PI * 7.,
+                        },
+                    ),
+                )
+                // [ square and triangle ] ====================================
+                .jump(
+                    secs(0.),
+                    ComponentTweenBoxed::new_target_map(
+                        [square, triangle],
+                        |sprite: &mut Sprite, value: f32| {
+                            sprite.color =
+                                sprite.color.with_a(1_f32.lerp(1., value));
+                        },
+                    ),
+                )
+                .tween(
+                    secs(0.)..secs(9.),
+                    EaseFunction::CircularOut,
+                    ComponentTween::new_target(
+                        [square, triangle],
                         TransformScaleLens {
-                            start: Vec3::new(0.4, 0.4, 0.),
-                            end: Vec3::new(0.01, 0.01, 0.),
+                            start: Vec3::ZERO * SCALE,
+                            end: Vec3::ONE * SCALE,
                         },
                     ),
                 )
@@ -301,6 +325,118 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                             sprite.color = sprite
                                 .color
                                 .with_a(sprite.color.a().lerp(0., value));
+                        },
+                    ),
+                )
+                .tween(
+                    secs(0.)..secs(12.),
+                    EaseFunction::ExponentialOut,
+                    ComponentTween::new_target(
+                        square,
+                        TransformAngleLens {
+                            start: 0.,
+                            end: PI * 10.,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(0.)..secs(12.),
+                    EaseFunction::ExponentialOut,
+                    ComponentTween::new_target(
+                        triangle,
+                        TransformAngleLens {
+                            start: 0.,
+                            end: -PI * 10.,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(0.)..secs(4.),
+                    EaseFunction::ExponentialOut,
+                    ComponentTween::new_target(
+                        triangle,
+                        TransformTranslationLens {
+                            start: Vec3::new(0., 0., 0.) * SCALE,
+                            end: Vec3::new(150., -20., 0.) * SCALE,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(0.)..secs(4.),
+                    EaseFunction::ExponentialOut,
+                    ComponentTween::new_target(
+                        square,
+                        TransformTranslationLens {
+                            start: Vec3::new(0., 0., 0.) * SCALE,
+                            end: Vec3::new(-150., 20., 0.) * SCALE,
+                        },
+                    ),
+                )
+                // [ cornering ] ===============================================
+                .tween(
+                    secs(6.)..secs(6.2),
+                    EaseFunction::Linear,
+                    ComponentTween::new_target(
+                        cornering_left,
+                        TransformTranslationLens {
+                            start: cornering_left_tween_start,
+                            end: destinated_cornering_left,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(6.)..secs(6.2),
+                    EaseFunction::Linear,
+                    ComponentTween::new_target(
+                        cornering_right,
+                        TransformTranslationLens {
+                            start: cornering_right_tween_start,
+                            end: destinated_cornering_right,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(9.8)..secs(10.),
+                    EaseFunction::Linear,
+                    ComponentTween::new_target(
+                        cornering_left,
+                        TransformTranslationLens {
+                            start: destinated_cornering_left,
+                            end: cornering_left_tween_end,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(9.8)..secs(10.),
+                    EaseFunction::Linear,
+                    ComponentTween::new_target(
+                        cornering_right,
+                        TransformTranslationLens {
+                            start: destinated_cornering_right,
+                            end: cornering_right_tween_end,
+                        },
+                    ),
+                )
+                // [ dot_grid ] ===============================================
+                .tween(
+                    secs(0.)..secs(5.),
+                    EaseFunction::QuinticOut,
+                    ComponentTween::new_target(
+                        dot_grid,
+                        TransformScaleLens {
+                            start: Vec3::new(0.01, 0.01, 0.) * SCALE,
+                            end: Vec3::new(0.4, 0.4, 0.) * SCALE,
+                        },
+                    ),
+                )
+                .tween(
+                    secs(11.5)..secs(12.),
+                    EaseFunction::QuadraticInOut,
+                    ComponentTween::new_target(
+                        dot_grid,
+                        TransformScaleLens {
+                            start: Vec3::new(0.4, 0.4, 0.) * SCALE,
+                            end: Vec3::new(0.01, 0.01, 0.) * SCALE,
                         },
                     ),
                 );
