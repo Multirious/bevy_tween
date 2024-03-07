@@ -109,7 +109,7 @@ pub enum TweenSystemSet {
     /// by this crate
     TweenPlayer,
     /// This set is for systems that responsible for updating any
-    /// [`tween::TweenEaseValue`] such as
+    /// [`tween::TweenInterpolationValue`] such as
     /// [`interpolation::sample_interpolator_system`] by this crate.
     UpdateTweenEaseValue,
     /// This set is for systems that responsible for actually executing any

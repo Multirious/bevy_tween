@@ -116,9 +116,11 @@ impl Interpolator for EaseFunction {
     }
 }
 
-/// Plugin for [`EaseFunctionPointer`]. In case you want to use custom an ease
+/// Plugin for [`EaseClosure`]. In case you want to use custom an ease
 /// function. Since most people likely wouldn't use this type, this plugin is
 /// not with [`DefaultTweenPlugins`] to reduce unused system.
+///
+/// [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
 pub struct EaseClosurePlugin;
 impl Plugin for EaseClosurePlugin {
     fn build(&self, app: &mut App) {
