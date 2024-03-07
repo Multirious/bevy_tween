@@ -196,10 +196,10 @@ impl SpanTweenPlayerBundle {
         self.tween_player.set_paused(paused);
         self
     }
-    pub fn with_elasped(mut self, elasped: Duration) -> Self {
-        self.tween_player.set_elasped(elasped);
-        self
-    }
+    // pub fn with_elasped(mut self, elasped: Duration) -> Self {
+    //     self.tween_player.set_elasped(elasped);
+    //     self
+    // }
     pub fn with_direction(mut self, direction: AnimationDirection) -> Self {
         self.tween_player.set_direction(direction);
         self
@@ -303,15 +303,16 @@ pub fn span_tween_player_system(
                     continue;
                 };
 
-                let elasped_quotient = tween_span.quotient(player.elasped.now);
+                let elasped_quotient =
+                    tween_span.quotient(player.elasped().now);
                 let previous_quotient =
-                    tween_span.quotient(player.elasped.previous);
+                    tween_span.quotient(player.elasped().previous);
 
                 let tween_min = Duration::ZERO;
                 let tween_max =
                     tween_span.max().duration() - tween_span.min().duration();
                 let tween_elasped = player
-                    .elasped
+                    .elasped()
                     .now
                     .saturating_sub(tween_span.min().duration())
                     .min(tween_max);
@@ -331,7 +332,7 @@ pub fn span_tween_player_system(
                     player.direction,
                     previous_quotient,
                     elasped_quotient,
-                    player.elasped.repeat_style,
+                    player.elasped().repeat_style,
                 ) {
                     (_, Inside, Inside, None) => Some(tween_elasped),
                     // -------------------------------------------------------

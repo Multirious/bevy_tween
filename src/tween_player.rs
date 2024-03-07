@@ -22,7 +22,7 @@ impl Elasped {
 #[reflect(Component)]
 pub struct TweenPlayerState {
     pub paused: bool,
-    pub elasped: Elasped,
+    elasped: Elasped,
     pub duration_limit: Duration,
     pub direction: AnimationDirection,
     pub repeat: Option<Repeat>,
@@ -66,6 +66,11 @@ impl TweenPlayerState {
     ) -> &mut Self {
         self.repeat_style = repeat_style;
         self
+    }
+
+    /// Get current elasped
+    pub fn elasped(&self) -> Elasped {
+        self.elasped
     }
 }
 
