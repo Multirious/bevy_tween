@@ -47,4 +47,4 @@ required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_dyn", 
 
 [[example]]
 name = "click"
-required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "bevy_sprite", "bevy_asset"]
+required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_dyn", "bevy_sprite", "bevy_asset"]
