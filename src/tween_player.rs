@@ -55,7 +55,7 @@ impl Elasped {
 }
 
 /// State of a tween player, animation direction, and repeat configuration
-#[derive(Debug, Default, Component, Clone, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, Component, Clone, PartialEq, Eq, Hash, Reflect)]
 #[reflect(Component)]
 pub struct TweenPlayerState {
     /// Stop the ticking system from updating this player.
@@ -66,6 +66,8 @@ pub struct TweenPlayerState {
     pub duration_limit: Duration,
     /// Playback direction of the current player.
     pub direction: AnimationDirection,
+    /// Set speed of the playback to `speed_scale` second per second.
+    pub speed_scale: Duration,
     /// Configure to repeat.
     pub repeat: Option<Repeat>,
     /// Configure to repeat with a style.
@@ -136,6 +138,20 @@ impl TweenPlayerState {
         match self.repeat {
             Some(repeat) => repeat.is_finished() && is_edge,
             None => is_edge,
+        }
+    }
+}
+
+impl Default for TweenPlayerState {
+    fn default() -> Self {
+        TweenPlayerState {
+            paused: Default::default(),
+            elasped: Default::default(),
+            duration_limit: Default::default(),
+            direction: Default::default(),
+            speed_scale: Duration::from_secs(1),
+            repeat: Default::default(),
+            repeat_style: Default::default(),
         }
     }
 }
@@ -269,6 +285,9 @@ pub fn tick_tween_player_state_system(
         if tween_player.paused {
             return;
         }
+        let delta = Duration::from_secs_f32(
+            delta.as_secs_f32() * tween_player.speed_scale.as_secs_f32(),
+        );
         match (
             tween_player.direction,
             tween_player.repeat,
