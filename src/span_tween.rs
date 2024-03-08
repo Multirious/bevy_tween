@@ -2,7 +2,7 @@ use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{ops, time::Duration};
 
 use crate::{
-    interpolation::Interpolator,
+    interpolation::Interpolation,
     prelude::EaseFunction,
     tween::TweenState,
     tween_player::{self, AnimationDirection, TweenPlayerState},
@@ -226,7 +226,7 @@ impl From<TweenPlayerState> for SpanTweenPlayerBundle {
 #[derive(Default, Bundle)]
 pub struct SpanTweenBundle<I>
 where
-    I: Component + Interpolator,
+    I: Component + Interpolation,
 {
     pub span: TweenTimeSpan,
     pub interpolation: I,
@@ -235,7 +235,7 @@ where
 
 impl<I> SpanTweenBundle<I>
 where
-    I: Component + Interpolator,
+    I: Component + Interpolation,
 {
     pub fn new<S>(span: S, interpolation: I) -> Self
     where
@@ -254,7 +254,7 @@ where
         interpolation: NewI,
     ) -> SpanTweenBundle<NewI>
     where
-        NewI: Component + Interpolator,
+        NewI: Component + Interpolation,
     {
         SpanTweenBundle {
             span: self.span,
@@ -432,7 +432,7 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
     where
         S: TryInto<TweenTimeSpan>,
         S::Error: std::fmt::Debug,
-        I: Component + Interpolator,
+        I: Component + Interpolation,
         T: Bundle,
     {
         self.tween_and(span, interpolation, tween, |_| {})
@@ -450,7 +450,7 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
     where
         S: TryInto<TweenTimeSpan>,
         S::Error: std::fmt::Debug,
-        I: Component + Interpolator,
+        I: Component + Interpolation,
         T: Bundle,
         F: FnOnce(EntityCommands),
     {

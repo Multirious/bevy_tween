@@ -11,8 +11,8 @@ mod ease_functions;
 
 /// A trait for implementing interpolation algorithms.
 /// Use with [`sample_interpolator_system`]
-pub trait Interpolator {
-    /// Sample a value from this interpolator.
+pub trait Interpolation {
+    /// Sample a value from this algorithm.
     /// Input should be between 0 to 1 and returns value that should be
     /// between 0 to 1
     fn sample(&self, v: f32) -> f32;
@@ -110,7 +110,7 @@ impl EaseFunction {
     }
 }
 
-impl Interpolator for EaseFunction {
+impl Interpolation for EaseFunction {
     fn sample(&self, v: f32) -> f32 {
         self.sample(v)
     }
@@ -152,7 +152,7 @@ impl Default for EaseClosure {
     }
 }
 
-impl Interpolator for EaseClosure {
+impl Interpolation for EaseClosure {
     fn sample(&self, v: f32) -> f32 {
         self.0(v)
     }
@@ -170,7 +170,7 @@ pub fn sample_interpolator_system<I>(
         Or<(Changed<I>, Changed<TweenState>)>,
     >,
 ) where
-    I: Interpolator + Component,
+    I: Interpolation + Component,
 {
     query.iter().for_each(|(entity, interpolator, state)| {
         match state.local_elasped {

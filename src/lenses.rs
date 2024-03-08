@@ -17,9 +17,9 @@ pub trait TweenLens {
     /// Type to be interpolated.
     type Item;
     /// Interpolate an item using `value` which is typically between 0 and 1.
-    /// The value should be already sampled from the [`Interpolator`]
+    /// The value should be already sampled from the [`Interpolation`]
     ///
-    /// [`Interpolator`]: crate::interpolation::Interpolator
+    /// [`Interpolation`]: crate::interpolation::Interpolation
     fn interpolate(&self, item: &mut Self::Item, value: f32);
 }
 
