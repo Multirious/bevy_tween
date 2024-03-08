@@ -10,7 +10,7 @@ use crate::{
 mod ease_functions;
 
 /// A trait for implementing interpolation algorithms.
-/// Use with [`sample_interpolator_system`]
+/// Use with [`sample_interpolations_system`]
 pub trait Interpolation {
     /// Sample a value from this algorithm.
     /// Input should be between 0 to 1 and returns value that should be

@@ -46,9 +46,9 @@ pub struct TweenState {
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
 /// [`EaseClosure`] when a tween has the component `TweenState`.
-/// See [`sample_interpolator_system`]
+/// See [`sample_interpolations_system`]
 ///
-/// [`sample_interpolator_system`]: crate::interpolation::sample_interpolator_system
+/// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
 /// [`Interpolation`]: crate::interpolation::Interpolation
 /// [`EaseFunction`]: crate::interpolation::EaseFunction
 /// [`EaseClosure`]: crate::interpolation::EaseClosure
