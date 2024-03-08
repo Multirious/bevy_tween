@@ -135,8 +135,12 @@ impl TweenPlayerState {
         let is_edge = match self.direction {
             AnimationDirection::Forward => {
                 self.elasped.now >= self.duration_limit
+                    && self.elasped.now == self.elasped.previous
             }
-            AnimationDirection::Backward => self.elasped.now == Duration::ZERO,
+            AnimationDirection::Backward => {
+                self.elasped.now == Duration::ZERO
+                    && self.elasped.now == self.elasped.previous
+            }
         };
         match self.repeat {
             Some(repeat) => repeat.is_finished() && is_edge,
@@ -313,6 +317,11 @@ pub fn tick_tween_player_state_system(
                         if tween_player.elasped.now
                             >= tween_player.duration_limit
                         {
+                            tween_player.elasped = Elasped {
+                                now: tween_player.duration_limit,
+                                previous: tween_player.elasped.now,
+                                repeat_style: None,
+                            };
                             break 'm (true, false);
                         }
                         let new_now = (tween_player.elasped.now + delta)
@@ -326,6 +335,11 @@ pub fn tick_tween_player_state_system(
                     }
                     (Backward, None, _) => {
                         if tween_player.elasped.now == Duration::ZERO {
+                            tween_player.elasped = Elasped {
+                                now: Duration::ZERO,
+                                previous: tween_player.elasped.now,
+                                repeat_style: None,
+                            };
                             break 'm (true, false);
                         }
                         let new_now =
