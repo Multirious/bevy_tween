@@ -1,8 +1,8 @@
 //! Module containg implementations for tween
 //!
 //! This crate currently have 2 tween implementation which is:
-//! - [`Tween`], containg information about a target and a lens which uses
-//!   generic all the way.
+//! - [`Tween`], containg information about a target and an interpolator which
+//!   uses generic all the way.
 //!   Built-in supported [`TweenTarget`]s are:
 //!   - [`TargetComponent`]
 //!   - [`TargetResource`]
@@ -21,7 +21,7 @@ use std::{marker::PhantomData, time::Duration};
 
 #[cfg(any(feature = "tween_dyn", feature = "tween_generic",))]
 use crate::interpolate::Interpolator;
-use crate::tween_player::AnimationDirection;
+use crate::tween_timer::AnimationDirection;
 #[cfg(any(feature = "tween_dyn", feature = "tween_generic",))]
 use std::any::type_name;
 
@@ -66,29 +66,29 @@ pub struct TweenInterpolationValue(pub f32);
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]
 #[reflect(Component)]
-pub struct Tween<T, L>
+pub struct Tween<T, I>
 where
     T: TweenTarget,
-    L: Interpolator<Item = T::Item>,
+    I: Interpolator<Item = T::Item>,
 {
     #[allow(missing_docs)]
     pub target: T,
     #[allow(missing_docs)]
-    pub lens: L,
+    pub interpolator: I,
 }
 #[cfg(feature = "tween_generic")]
-impl<T, L> Tween<T, L>
+impl<T, I> Tween<T, I>
 where
     T: TweenTarget,
-    L: Interpolator<Item = T::Item>,
+    I: Interpolator<Item = T::Item>,
 {
-    /// Create a new [`Tween`] with the following target and lens.
-    pub fn new_target<G>(target: G, lens: L) -> Self
+    /// Create a new [`Tween`] with a target and an interpolator.
+    pub fn new_target<G>(target: G, interpolator: I) -> Self
     where
         G: Into<T>,
     {
         Tween {
-            lens,
+            interpolator,
             target: target.into(),
         }
     }
@@ -99,27 +99,31 @@ impl<T> Tween<T, fn(&mut T::Item, f32)>
 where
     T: TweenTarget,
 {
-    /// Create a new [`Tween`] with the following target and lens as function pointer.
-    pub fn new_target_map<G>(target: G, lens: fn(&mut T::Item, f32)) -> Self
+    /// Create a new [`Tween`] with a target and a function pointer as an
+    /// interpolator.
+    pub fn new_target_map<G>(
+        target: G,
+        interpolator: fn(&mut T::Item, f32),
+    ) -> Self
     where
         G: Into<T>,
     {
         Tween {
-            lens,
+            interpolator,
             target: target.into(),
         }
     }
 }
 
 #[cfg(feature = "tween_generic")]
-impl<T, L> Tween<T, L>
+impl<T, I> Tween<T, I>
 where
     T: TweenTarget + Default,
-    L: Interpolator<Item = T::Item>,
+    I: Interpolator<Item = T::Item>,
 {
-    /// Create a new [`Tween`] with the following lens and using the default target.
-    pub fn new(lens: L) -> Self {
-        Tween::new_target(T::default(), lens)
+    /// Create a new [`Tween`] with the default target and an interpolator.
+    pub fn new(interpolator: I) -> Self {
+        Tween::new_target(T::default(), interpolator)
     }
 }
 
@@ -128,15 +132,16 @@ impl<T> Tween<T, fn(&mut T::Item, f32)>
 where
     T: TweenTarget + Default,
 {
-    /// Create a new [`Tween`] with the following lens as a function pointer and using the default target.
-    pub fn new_map(lens: fn(&mut T::Item, f32)) -> Self {
-        Tween::new_target(T::default(), lens)
+    /// Create a new [`Tween`] with the default target and a function pointer
+    /// as an interpolator.
+    pub fn new_map(interpolator: fn(&mut T::Item, f32)) -> Self {
+        Tween::new_target(T::default(), interpolator)
     }
 }
 
-/// [`Tween`] but the inner lens is boxed.
+/// [`Tween`] but interpolator is dynamic.
 ///
-/// See [`Tween`] for more information.
+/// See [`Tween`] for more information about a tween.
 #[cfg(feature = "tween_dyn")]
 #[derive(Component)]
 pub struct TweenDyn<T>
@@ -146,26 +151,28 @@ where
     #[allow(missing_docs)]
     pub target: T,
     #[allow(missing_docs)]
-    pub lens: Box<dyn Interpolator<Item = T::Item> + Send + Sync + 'static>,
+    pub interpolator:
+        Box<dyn Interpolator<Item = T::Item> + Send + Sync + 'static>,
 }
 #[cfg(feature = "tween_dyn")]
 impl<T> TweenDyn<T>
 where
     T: TweenTarget,
 {
-    /// Create a new [`TweenDyn`] with the following target and lens.
-    pub fn new_target<L, G>(target: G, lens: L) -> Self
+    /// Create a new [`TweenDyn`] with a target and an interpolator.
+    pub fn new_target<I, G>(target: G, interpolator: I) -> Self
     where
-        L: Interpolator<Item = T::Item> + Send + Sync + 'static,
+        I: Interpolator<Item = T::Item> + Send + Sync + 'static,
         G: Into<T>,
     {
         TweenDyn {
             target: target.into(),
-            lens: Box::new(lens),
+            interpolator: Box::new(interpolator),
         }
     }
 
-    /// Create a new [`TweenDyn`] with the following target and lens as a closure.
+    /// Create a new [`TweenDyn`] with a target and a closure as an
+    /// interpolator.
     pub fn new_target_map<F, G>(target: G, map: F) -> Self
     where
         F: Fn(&mut T::Item, f32) + Send + Sync + 'static,
@@ -185,15 +192,16 @@ impl<T> TweenDyn<T>
 where
     T: TweenTarget + Default,
 {
-    /// Create a new [`TweenDyn`] with the following lens and using the default target.
-    pub fn new<L>(lens: L) -> Self
+    /// Create a new [`TweenDyn`] with the default target and an interpolator.
+    pub fn new<I>(interpolator: I) -> Self
     where
-        L: Interpolator<Item = T::Item> + Send + Sync + 'static,
+        I: Interpolator<Item = T::Item> + Send + Sync + 'static,
     {
-        TweenDyn::new_target(T::default(), lens)
+        TweenDyn::new_target(T::default(), interpolator)
     }
 
-    /// Create a new [`TweenDyn`] with the following lens as a closure and using the default target.
+    /// Create a new [`TweenDyn`] with the default target and a closure as an
+    /// interpolator.
     pub fn new_map<F>(map: F) -> Self
     where
         F: Fn(&mut T::Item, f32) + Send + Sync + 'static,
@@ -205,17 +213,17 @@ where
 }
 
 /// Useful for the implmentor to specify what this *target* will return the
-/// tweenable [`Self::Item`] which should match any [`Interpolator::Item`].
+/// tweenable [`Self::Item`] which should match [`Interpolator::Item`].
 /// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`].
 pub trait TweenTarget {
-    /// Specify the item for tweens
+    /// Type to be interpolated
     type Item;
 }
 
 /// Convenient alias for [`Tween`] that [`TargetComponent`].
 #[cfg(feature = "tween_generic")]
-pub type ComponentTween<L> =
-    Tween<TargetComponent<<L as Interpolator>::Item>, L>;
+pub type ComponentTween<I> =
+    Tween<TargetComponent<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`TweenDyn`] that [`TargetComponent`].
 #[cfg(feature = "tween_dyn")]
@@ -226,7 +234,7 @@ pub type ComponentTweenDyn<C> = TweenDyn<TargetComponent<C>>;
 pub enum TargetComponent<C> {
     /// Target the entity that contains this tween's tween player.
     TweenPlayerEntity(#[reflect(ignore)] PhantomData<C>),
-    /// Target the parent of this tween's tween_player.
+    /// Target the parent of this tween's tween player.
     TweenPlayerParent(#[reflect(ignore)] PhantomData<C>),
     /// Target this entity.
     Entity(Entity, #[reflect(ignore)] PhantomData<C>),
@@ -308,18 +316,20 @@ impl<C, const N: usize> From<&[Entity; N]> for TargetComponent<C> {
     }
 }
 
+/// A tween player must have this marker with them to let the component tween
+/// system correctly search for the player that owns them.
+#[derive(Debug, Default, PartialEq, Eq, Hash, Component, Reflect)]
+pub struct TweenPlayerMarker;
+
 /// Tween any [`ComponentTween`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "tween_generic")]
-pub fn component_tween_system<L>(
-    q_tween_player: Query<(
-        Option<&Parent>,
-        Has<crate::tween_player::TweenPlayerState>,
-    )>,
-    q_tween: Query<(Entity, &ComponentTween<L>, &TweenInterpolationValue)>,
-    mut q_component: Query<&mut L::Item>,
+pub fn component_tween_system<I>(
+    q_tween_player: Query<(Option<&Parent>, Has<TweenPlayerMarker>)>,
+    q_tween: Query<(Entity, &ComponentTween<I>, &TweenInterpolationValue)>,
+    mut q_component: Query<&mut I::Item>,
 ) where
-    L: Interpolator + Send + Sync + 'static,
-    L::Item: Component,
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Component,
 {
     q_tween.iter().for_each(|(entity, tween, ease_value)| {
         let target = match &tween.target {
@@ -358,12 +368,14 @@ pub fn component_tween_system<L>(
                         Err(e) => {
                             warn!(
                                 "{} query error: {e}",
-                                type_name::<ComponentTween<L>>()
+                                type_name::<ComponentTween<I>>()
                             );
                             continue;
                         }
                     };
-                    tween.lens.interpolate(&mut target_component, ease_value.0);
+                    tween
+                        .interpolator
+                        .interpolate(&mut target_component, ease_value.0);
                 }
                 return;
             }
@@ -372,11 +384,13 @@ pub fn component_tween_system<L>(
         let mut target_component = match q_component.get_mut(target) {
             Ok(target_component) => target_component,
             Err(e) => {
-                warn!("{} query error: {e}", type_name::<ComponentTween<L>>());
+                warn!("{} query error: {e}", type_name::<ComponentTween<I>>());
                 return;
             }
         };
-        tween.lens.interpolate(&mut target_component, ease_value.0);
+        tween
+            .interpolator
+            .interpolate(&mut target_component, ease_value.0);
     })
 }
 
@@ -385,7 +399,7 @@ pub fn component_tween_system<L>(
 pub fn component_tween_dyn_system<C>(
     q_tween_player: Query<(
         Option<&Parent>,
-        Has<crate::tween_player::TweenPlayerState>,
+        Has<crate::tween_timer::TweenTimer>,
     )>,
     q_tween: Query<(Entity, &ComponentTweenDyn<C>, &TweenInterpolationValue)>,
     mut q_component: Query<&mut C>,
@@ -434,7 +448,9 @@ pub fn component_tween_dyn_system<C>(
                             continue;
                         }
                     };
-                    tween.lens.interpolate(&mut target_component, ease_value.0);
+                    tween
+                        .interpolator
+                        .interpolate(&mut target_component, ease_value.0);
                 }
                 return;
             }
@@ -450,13 +466,15 @@ pub fn component_tween_dyn_system<C>(
                 return;
             }
         };
-        tween.lens.interpolate(&mut target_component, ease_value.0);
+        tween
+            .interpolator
+            .interpolate(&mut target_component, ease_value.0);
     })
 }
 
 /// Convenient alias for [`Tween`] that [`TargetResource`].
 #[cfg(feature = "tween_generic")]
-pub type ResourceTween<L> = Tween<TargetResource<<L as Interpolator>::Item>, L>;
+pub type ResourceTween<I> = Tween<TargetResource<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`TweenDyn`] that [`TargetResource`].
 #[cfg(feature = "tween_dyn")]
@@ -479,19 +497,19 @@ impl<R> TweenTarget for TargetResource<R> {
 
 /// Tween any [`ResourceTween`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "tween_generic")]
-pub fn resource_tween_system<L>(
-    q_tween: Query<(&ResourceTween<L>, &TweenInterpolationValue)>,
-    resource: Option<ResMut<L::Item>>,
+pub fn resource_tween_system<I>(
+    q_tween: Query<(&ResourceTween<I>, &TweenInterpolationValue)>,
+    resource: Option<ResMut<I::Item>>,
 ) where
-    L: Interpolator + Send + Sync + 'static,
-    L::Item: Resource,
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Resource,
 {
     let Some(mut resource) = resource else {
         warn!("Resource does not exists for a resource tween.");
         return;
     };
     q_tween.iter().for_each(|(tween, ease_value)| {
-        tween.lens.interpolate(&mut resource, ease_value.0);
+        tween.interpolator.interpolate(&mut resource, ease_value.0);
     })
 }
 
@@ -508,13 +526,13 @@ pub fn resource_tween_dyn_system<R>(
         return;
     };
     q_tween.iter().for_each(|(tween, ease_value)| {
-        tween.lens.interpolate(&mut resource, ease_value.0);
+        tween.interpolator.interpolate(&mut resource, ease_value.0);
     })
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`].
 #[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
-pub type AssetTween<L> = Tween<TargetAsset<<L as Interpolator>::Item>, L>;
+pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`TweenDyn`] that [`TargetAsset`].
 #[cfg(all(feature = "bevy_asset", feature = "tween_dyn"))]
@@ -609,12 +627,12 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
 
 /// Tween any [`AssetTween`] with value provided by [`TweenInterpolationValue`] component.
 #[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
-pub fn asset_tween_system<L>(
-    q_tween: Query<(&AssetTween<L>, &TweenInterpolationValue)>,
-    asset: Option<ResMut<Assets<L::Item>>>,
+pub fn asset_tween_system<I>(
+    q_tween: Query<(&AssetTween<I>, &TweenInterpolationValue)>,
+    asset: Option<ResMut<Assets<I::Item>>>,
 ) where
-    L: Interpolator + Send + Sync + 'static,
-    L::Item: Asset,
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Asset,
 {
     let Some(mut asset) = asset else {
         warn!("Asset resource does not exists for an asset tween.");
@@ -628,7 +646,7 @@ pub fn asset_tween_system<L>(
                     warn!("Asset not found for an asset tween");
                     return;
                 };
-                tween.lens.interpolate(asset, ease_value.0);
+                tween.interpolator.interpolate(asset, ease_value.0);
             }
             TargetAsset::Assets(assets) => {
                 for a in assets {
@@ -636,7 +654,7 @@ pub fn asset_tween_system<L>(
                         warn!("Asset not found for an asset tween");
                         continue;
                     };
-                    tween.lens.interpolate(a, ease_value.0);
+                    tween.interpolator.interpolate(a, ease_value.0);
                 }
             }
         })
@@ -662,7 +680,7 @@ pub fn asset_tween_dyn_system<A>(
                     warn!("Asset not found for an asset tween");
                     return;
                 };
-                tween.lens.interpolate(asset, ease_value.0);
+                tween.interpolator.interpolate(asset, ease_value.0);
             }
             TargetAsset::Assets(assets) => {
                 for a in assets {
@@ -670,7 +688,7 @@ pub fn asset_tween_dyn_system<A>(
                         warn!("Asset not found for an asset tween");
                         continue;
                     };
-                    tween.lens.interpolate(a, ease_value.0);
+                    tween.interpolator.interpolate(a, ease_value.0);
                 }
             }
         })

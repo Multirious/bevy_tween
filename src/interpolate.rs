@@ -1,10 +1,4 @@
-//! Module containg the [`Interpolator`] trait and some basic built-in lens
-//!
-//! # Interpolator
-//!
-//! [`Interpolator`] in this crate will be used to specify *how* an `item` will be
-//! interpolated. Which also could be anything. This crate has built-in supports
-//! for tweening component, resource, and asset.
+//! Module containg the [`Interpolator`] trait and some basic built-in interpolator
 
 use bevy::prelude::*;
 

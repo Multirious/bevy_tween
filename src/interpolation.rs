@@ -1,10 +1,14 @@
 //! Module containing ease functions and related systems.
+//!
+//! # [`Interpolation`]
+//! - [`EaseFunction`]
+//! - [`EaseClosure`]
 
 use bevy::prelude::*;
 
 use crate::{
     tween::{TweenInterpolationValue, TweenState},
-    tween_player::AnimationDirection,
+    tween_timer::AnimationDirection,
 };
 
 mod ease_functions;

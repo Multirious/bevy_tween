@@ -9,16 +9,20 @@ use bevy_tween::prelude::*;
 
 const SCALE: f32 = 2.0;
 
-struct TransformAngleLens {
-    start: f32,
-    end: f32,
-}
-impl Interpolator for TransformAngleLens {
-    type Item = Transform;
+mod my_interpolate {
+    use bevy::prelude::*;
+    use bevy_tween::prelude::*;
+    pub struct Angle {
+        pub start: f32,
+        pub end: f32,
+    }
+    impl Interpolator for Angle {
+        type Item = Transform;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        let angle = (self.end - self.start).mul_add(value, self.start);
-        item.rotation = Quat::from_rotation_z(angle);
+        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+            let angle = (self.end - self.start).mul_add(value, self.start);
+            item.rotation = Quat::from_rotation_z(angle);
+        }
     }
 }
 
@@ -46,7 +50,7 @@ fn main() {
         .add_systems(Startup, (animation, setup_camera))
         .add_systems(
             Update,
-            bevy_tween::tween::component_tween_system::<TransformAngleLens>
+            bevy_tween::tween::component_tween_system::<my_interpolate::Angle>
                 .in_set(bevy_tween::TweenSystemSet::ApplyTween),
         )
         .run();
@@ -213,7 +217,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(
             SpanTweenPlayerBundle::new(secs(12.))
-                .with_repeat(Some(Repeat::Infinitely)),
+                .with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
             c.build_tweens()
@@ -233,7 +237,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuinticOut,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        TransformAngleLens {
+                        my_interpolate::Angle {
                             start: PI,
                             end: PI * 4.,
                         },
@@ -288,7 +292,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuinticIn,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        TransformAngleLens {
+                        my_interpolate::Angle {
                             start: PI * 4.,
                             end: PI * 7.,
                         },
@@ -297,7 +301,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 // [ square and triangle ] ====================================
                 .jump(
                     secs(0.),
-                    ComponentTweenBoxed::new_target_map(
+                    ComponentTweenDyn::new_target_map(
                         [square, triangle],
                         |sprite: &mut Sprite, value: f32| {
                             sprite.color =
@@ -319,7 +323,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .tween(
                     secs(4.)..secs(12.),
                     EaseFunction::ExponentialInOut,
-                    ComponentTweenBoxed::new_target_map(
+                    ComponentTweenDyn::new_target_map(
                         [triangle, square],
                         |sprite: &mut Sprite, value: f32| {
                             sprite.color = sprite
@@ -333,7 +337,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
                         square,
-                        TransformAngleLens {
+                        my_interpolate::Angle {
                             start: 0.,
                             end: PI * 10.,
                         },
@@ -344,7 +348,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
                         triangle,
-                        TransformAngleLens {
+                        my_interpolate::Angle {
                             start: 0.,
                             end: -PI * 10.,
                         },

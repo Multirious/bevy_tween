@@ -99,9 +99,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             c.spawn((
                 // tween player:
                 SpanTweenPlayerBundle::new(Duration::from_secs(2))
-                    .with_repeat(Some(Repeat::Infinitely))
+                    .with_repeat(Repeat::Infinitely)
                     // bouncy
-                    .with_repeat_style(Some(RepeatStyle::PingPong)),
+                    .with_repeat_style(RepeatStyle::PingPong),
                 //
                 // Tween:
                 //

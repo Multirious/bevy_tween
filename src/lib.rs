@@ -9,7 +9,7 @@ mod utils;
 pub mod interpolate;
 pub mod interpolation;
 pub mod tween;
-pub mod tween_player;
+pub mod tween_timer;
 
 #[cfg(feature = "span_tween")]
 pub mod span_tween;
@@ -20,7 +20,7 @@ pub mod prelude {
 
     pub use crate::interpolate::{self, Interpolator};
     pub use crate::interpolation::EaseFunction;
-    pub use crate::tween_player::{Repeat, RepeatStyle, TweenPlayerEnded};
+    pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
     pub use crate::DefaultTweenPlugins;
 
     #[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
@@ -65,7 +65,7 @@ impl Plugin for TweenCorePlugin {
         app.configure_sets(
             Update,
             (
-                TweenSystemSet::TickTweenPlayer,
+                TweenSystemSet::TickTweenTimer,
                 TweenSystemSet::TweenPlayer,
                 TweenSystemSet::UpdateInterpolationValue,
                 TweenSystemSet::ApplyTween,
@@ -74,15 +74,16 @@ impl Plugin for TweenCorePlugin {
         )
         .add_systems(
             Update,
-            (tween_player::tick_tween_player_state_system,)
-                .in_set(TweenSystemSet::TickTweenPlayer),
+            (tween_timer::tick_tween_timer_system,)
+                .in_set(TweenSystemSet::TickTweenTimer),
         )
-        .add_event::<tween_player::TweenPlayerEnded>()
-        .register_type::<tween_player::TweenPlayerState>()
-        .register_type::<tween_player::AnimationDirection>()
-        .register_type::<tween_player::Repeat>()
-        .register_type::<tween_player::RepeatStyle>()
+        .add_event::<tween_timer::TweenTimerEnded>()
+        .register_type::<tween_timer::TweenTimer>()
+        .register_type::<tween_timer::AnimationDirection>()
+        .register_type::<tween_timer::Repeat>()
+        .register_type::<tween_timer::RepeatStyle>()
         .register_type::<tween::TweenState>()
+        .register_type::<tween::TweenPlayerMarker>()
         .register_type::<tween::TweenInterpolationValue>();
     }
 }
@@ -93,17 +94,17 @@ impl Plugin for TweenCorePlugin {
 /// this schedule should be correctly applied in the next frame.
 ///
 /// The sets should be configured to run in this order:
-///  1. TickTweenPlayer
+///  1. TickTweenTimer
 ///  2. TweenPlayer
 ///  3. UpdateTweenEaseValue
 ///  4. ApplyTween
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
-    /// This set is for systems that responsible for updating [`TweenPlayerState`]'s
+    /// This set is for systems that responsible for updating [`TweenTimer`]'s
     /// elasped.
     ///
-    /// [`TweenPlayerState`]: tween_player::TweenPlayerState
-    TickTweenPlayer,
+    /// [`TweenTimer`]: tween_player::TweenTimer
+    TickTweenTimer,
     /// This set is for systems that responsible for updating any specific
     /// tween player implementation such as the [`span_tween::span_tween_player_system`]
     /// by this crate

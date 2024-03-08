@@ -127,10 +127,10 @@ fn click_spawn_circle(
 
 fn despawn_finished_circle(
     mut commands: Commands,
-    mut tween_player_ended_reader: EventReader<TweenPlayerEnded>,
+    mut tween_player_ended_reader: EventReader<TweenTimerEnded>,
 ) {
     for t in tween_player_ended_reader.read() {
-        commands.entity(t.tween_player).despawn();
+        commands.entity(t.timer).despawn();
     }
 }
 

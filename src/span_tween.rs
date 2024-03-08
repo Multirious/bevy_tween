@@ -1,11 +1,15 @@
+//! Module containing a tween player implementation of time range.
+//!
+//!
+
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{ops, time::Duration};
 
 use crate::{
     interpolation::Interpolation,
     prelude::EaseFunction,
-    tween::TweenState,
-    tween_player::{self, AnimationDirection, TweenPlayerState},
+    tween::{TweenPlayerMarker, TweenState},
+    tween_timer::{self, AnimationDirection, TweenTimer},
 };
 
 #[derive(Debug)]
@@ -178,8 +182,9 @@ impl TryFrom<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
 
 #[derive(Default, Bundle)]
 pub struct SpanTweenPlayerBundle {
-    pub tween_player: TweenPlayerState,
+    pub tween_player: TweenTimer,
     pub span_player: SpanTweenPlayer,
+    pub tween_player_marker: TweenPlayerMarker,
 }
 
 impl SpanTweenPlayerBundle {
@@ -201,24 +206,33 @@ impl SpanTweenPlayerBundle {
         self
     }
 
-    pub fn with_repeat(mut self, repeat: Option<tween_player::Repeat>) -> Self {
-        self.tween_player.set_repeat(repeat);
+    pub fn with_repeat(mut self, repeat: tween_timer::Repeat) -> Self {
+        self.tween_player.set_repeat(Some(repeat));
         self
     }
     pub fn with_repeat_style(
         mut self,
-        repeat_style: Option<tween_player::RepeatStyle>,
+        repeat_style: tween_timer::RepeatStyle,
     ) -> Self {
-        self.tween_player.set_repeat_style(repeat_style);
+        self.tween_player.set_repeat_style(Some(repeat_style));
+        self
+    }
+    pub fn without_repeat(mut self) -> Self {
+        self.tween_player.set_repeat(None);
+        self
+    }
+    pub fn without_repeat_style(mut self) -> Self {
+        self.tween_player.set_repeat_style(None);
         self
     }
 }
 
-impl From<TweenPlayerState> for SpanTweenPlayerBundle {
-    fn from(value: TweenPlayerState) -> Self {
+impl From<TweenTimer> for SpanTweenPlayerBundle {
+    fn from(value: TweenTimer) -> Self {
         SpanTweenPlayerBundle {
             tween_player: value,
             span_player: SpanTweenPlayer,
+            tween_player_marker: TweenPlayerMarker,
         }
     }
 }
@@ -274,23 +288,23 @@ where
 }
 
 pub fn span_tween_player_system(
-    q_no_tween_player: Query<(), Without<TweenPlayerState>>,
+    q_other_tween_player: Query<(), With<TweenTimer>>,
     q_tween_span_player: Query<
-        (Entity, &TweenPlayerState, Option<&Children>),
+        (Entity, &TweenTimer, Option<&Children>),
         With<SpanTweenPlayer>,
     >,
     mut q_tween: Query<(&mut TweenState, &TweenTimeSpan)>,
 ) {
-    use crate::tween_player::RepeatStyle::*;
+    use crate::tween_timer::RepeatStyle::*;
     use AnimationDirection::*;
     use DurationQuotient::*;
     q_tween_span_player
         .iter()
-        .for_each(|(player_entity, player, children)| {
+        .for_each(|(player_entity, timer, children)| {
             let children = children
                 .iter()
                 .flat_map(|a| a.iter())
-                .filter(|c| q_no_tween_player.contains(**c));
+                .filter(|c| !q_other_tween_player.contains(**c));
             let tweens = [&player_entity].into_iter().chain(children);
             for &tween_entity in tweens {
                 let Ok((mut tween_state, tween_span)) =
@@ -299,22 +313,20 @@ pub fn span_tween_player_system(
                     continue;
                 };
 
-                let elasped_quotient =
-                    tween_span.quotient(player.elasped().now);
+                let elasped_quotient = tween_span.quotient(timer.elasped().now);
                 let previous_quotient =
-                    tween_span.quotient(player.elasped().previous);
+                    tween_span.quotient(timer.elasped().previous);
 
                 let tween_min = Duration::ZERO;
                 let tween_max =
                     tween_span.max().duration() - tween_span.min().duration();
-                let tween_elasped = player
+                let tween_elasped = timer
                     .elasped()
                     .now
                     .saturating_sub(tween_span.min().duration())
                     .min(tween_max);
                 // Look at this behemoth of edge case handling.
                 //
-                // I manually take care of all this shit out.
                 // The edge cases are the time when the tween are really short
                 // or delta is really long per frame.
                 //
@@ -322,13 +334,13 @@ pub fn span_tween_player_system(
                 //
                 // This is not accounted for when the tween might repeat
                 // multiple time in one frame. When that tween is this ridiculously
-                // fast or the game heavily lagged,
-                // I don't think that need to be accounted.
+                // fast or the game heavily lagged, I don't think that need to
+                // be accounted.
                 let new_tween_elasped = match (
-                    player.direction,
+                    timer.direction,
                     previous_quotient,
                     elasped_quotient,
-                    player.elasped().repeat_style,
+                    timer.elasped().repeat_style,
                 ) {
                     (_, Inside, Inside, None) => Some(tween_elasped),
                     // -------------------------------------------------------
@@ -342,6 +354,7 @@ pub fn span_tween_player_system(
                         | (Backward, After, Before, None)
                         => Some(tween_elasped),
                     // --------------------------------------------------------
+                    // don't remove these comments, may use for debugging in the future
                     (Forward, Before, Before, Some(WrapAround)) // 1&2 max
                         | (Forward, Inside, Before, Some(WrapAround)) // 1 max
                         => Some(tween_max),
@@ -393,7 +406,7 @@ pub fn span_tween_player_system(
                     local_elasped: new_tween_elasped,
                     local_previous_elasped: tween_state.local_elasped,
                     local_end: tween_max,
-                    direction: player.direction,
+                    direction: timer.direction,
                 };
                 *tween_state = new_tween_state;
             }
@@ -444,7 +457,7 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
         &mut self,
         span: S,
         interpolation: I,
-        tween: T,
+        bundle: T,
         f: F,
     ) -> &mut Self
     where
@@ -456,7 +469,7 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
     {
         let commands = self
             .child_builder
-            .spawn((SpanTweenBundle::new(span, interpolation), tween));
+            .spawn((SpanTweenBundle::new(span, interpolation), bundle));
         f(commands);
         self
     }
@@ -464,20 +477,20 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
     /// Create a new span tween that's 0 seconds in duration which basically
     /// not tween anything but change the value instantly at some input time
     /// then call a closure with the tween's [`EntityCommands`].
-    pub fn jump_and<T, F>(&mut self, at: Duration, tween: T, f: F) -> &mut Self
+    pub fn jump_and<T, F>(&mut self, at: Duration, bundle: T, f: F) -> &mut Self
     where
         T: Bundle,
         F: FnOnce(EntityCommands),
     {
-        self.tween_and(at..=at, EaseFunction::Linear, tween, f)
+        self.tween_and(at..=at, EaseFunction::Linear, bundle, f)
     }
 
     /// Create a new span tween that's 0 seconds in duration which basically
     /// not tween anything but change the value instantly at some input time.
-    pub fn jump<T>(&mut self, at: Duration, tween: T) -> &mut Self
+    pub fn jump<T>(&mut self, at: Duration, bundle: T) -> &mut Self
     where
         T: Bundle,
     {
-        self.tween_and(at..=at, EaseFunction::Linear, tween, |_| {})
+        self.tween_and(at..=at, EaseFunction::Linear, bundle, |_| {})
     }
 }
