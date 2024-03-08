@@ -9,10 +9,9 @@ Credits:
 
   The first crate I discovered and tried to do tweening with in Bevy. I like
   the idea of `TweenLens` of theirs. I decided to take that, expand on them,
-  learn their potential and that I did, making lens even more
-  capable and flexible. It's now called `Interpolator` in this crate because
-  it's just that and it can be implemented to interpolate anything, not just
-  a subset of some component.
+  learn their potential, making lens even more capable and flexible. It's now
+  called `Interpolator` in this crate because it's just that and it can be
+  implemented to interpolate anything, not just a subset of some component.
 
 - Godot
 
