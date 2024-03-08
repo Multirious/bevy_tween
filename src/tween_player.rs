@@ -3,7 +3,8 @@
 //! A tween player is one big part of a tween in this crate.
 //!
 //! [`TweenPlayerState`] alone do not handles any tweening behavior but instead
-//! delegates it through components and systems like below as documented in [`TweenSystemSet`]:
+//! delegates it through components and systems like below with system order as
+//! documented in [`TweenSystemSet`]:
 //!  1. Update [`TweenPlayerState`]'s elasped time
 //!  2. Any tween player implementation updates any [`TweenState`] that
 //!     it responsibles for.
