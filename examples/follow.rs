@@ -116,7 +116,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::CubicInOut,
                 ),
                 // Tweening the rotation using closure
-                ComponentTweenBoxed::new_map(
+                ComponentTweenDyn::new_map(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;

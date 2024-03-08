@@ -42,11 +42,11 @@ impl<I> Interpolator for fn(&mut I, f32) {
 /// Default lenses
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
-    #[cfg(any(feature = "tween_unboxed", feature = "tween_boxed",))]
+    #[cfg(any(feature = "tween_generic", feature = "tween_dyn",))]
     fn build(&self, app: &mut App) {
         use crate::{tween, TweenSystemSet};
 
-        #[cfg(feature = "tween_unboxed")]
+        #[cfg(feature = "tween_generic")]
         app.add_systems(
             Update,
             (
@@ -60,14 +60,14 @@ impl Plugin for DefaultInterpolatorsPlugin {
         .register_type::<tween::ComponentTween<TransformRotationLens>>()
         .register_type::<tween::ComponentTween<TransformScaleLens>>();
 
-        #[cfg(feature = "tween_boxed")]
+        #[cfg(feature = "tween_dyn")]
         app.add_systems(
             Update,
-            tween::component_tween_boxed_system::<Transform>
+            tween::component_tween_dyn_system::<Transform>
                 .in_set(TweenSystemSet::ApplyTween),
         );
 
-        #[cfg(all(feature = "bevy_sprite", feature = "tween_unboxed"))]
+        #[cfg(all(feature = "bevy_sprite", feature = "tween_generic"))]
         app.add_systems(
             Update,
             (tween::component_tween_system::<SpriteColorLens>,)
@@ -75,17 +75,17 @@ impl Plugin for DefaultInterpolatorsPlugin {
         )
         .register_type::<tween::ComponentTween<SpriteColorLens>>();
 
-        #[cfg(all(feature = "bevy_sprite", feature = "tween_boxed"))]
+        #[cfg(all(feature = "bevy_sprite", feature = "tween_dyn"))]
         app.add_systems(
             Update,
-            tween::component_tween_boxed_system::<Sprite>
+            tween::component_tween_dyn_system::<Sprite>
                 .in_set(TweenSystemSet::ApplyTween),
         );
 
         #[cfg(all(
             feature = "bevy_sprite",
             feature = "bevy_asset",
-            feature = "tween_unboxed"
+            feature = "tween_generic"
         ))]
         app.add_systems(
             Update,
@@ -97,17 +97,17 @@ impl Plugin for DefaultInterpolatorsPlugin {
         #[cfg(all(
             feature = "bevy_sprite",
             feature = "bevy_asset",
-            feature = "tween_boxed"
+            feature = "tween_dyn"
         ))]
         app.add_systems(
             Update,
-            tween::asset_tween_boxed_system::<ColorMaterial>
+            tween::asset_tween_dyn_system::<ColorMaterial>
                 .in_set(TweenSystemSet::ApplyTween),
         );
     }
-    #[cfg(not(any(feature = "tween_unboxed", feature = "tween_boxed",)))]
+    #[cfg(not(any(feature = "tween_generic", feature = "tween_dyn",)))]
     fn build(&self, _app: &mut App) {
-        panic!("This plugin is empty without any feature flag! Enable either the feature \"tween_unboxed\" or \"tween_boxed\".")
+        panic!("This plugin is empty without any feature flag! Enable either the feature \"tween_generic\" or \"tween_dyn\".")
     }
 }
 

@@ -24,10 +24,10 @@ bevy = { version = "0.13.0", default-features = false }
 bevy-inspector-egui = "0.23"
 
 [features]
-default = [ "tween_unboxed", "span_tween", "bevy_asset", "bevy_render", "bevy_sprite" ]
+default = [ "tween_generic", "span_tween", "bevy_asset", "bevy_render", "bevy_sprite" ]
 
-tween_boxed = []
-tween_unboxed = []
+tween_dyn = []
+tween_generic = []
 span_tween = []
 
 bevy_asset = [ "bevy/bevy_asset" ]
@@ -35,15 +35,15 @@ bevy_render = [ "bevy/bevy_render"]
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
 
 [package.metadata.docs.rs]
-features = [ "tween_boxed", "tween_unboxed", "span_tween", "bevy_asset", "bevy_render", "bevy_sprite" ]
+features = [ "tween_dyn", "tween_generic", "span_tween", "bevy_asset", "bevy_render", "bevy_sprite" ]
 
 [[example]]
 name = "follow"
-required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_boxed","bevy_sprite", "bevy_asset" ]
+required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_dyn","bevy_sprite", "bevy_asset" ]
 
 [[example]]
 name = "animated_banner"
-required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_boxed", "bevy_sprite", "bevy_asset"]
+required-features = [ "bevy/bevy_winit", "bevy/png", "span_tween", "tween_dyn", "bevy_sprite", "bevy_asset"]
 
 [[example]]
 name = "click"

@@ -23,19 +23,19 @@ pub mod prelude {
     pub use crate::tween_player::{Repeat, RepeatStyle};
     pub use crate::DefaultTweenPlugins;
 
-    #[cfg(all(feature = "bevy_asset", feature = "tween_unboxed"))]
+    #[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
     pub use crate::tween::AssetTween;
-    #[cfg(feature = "tween_unboxed")]
+    #[cfg(feature = "tween_generic")]
     pub use crate::tween::ComponentTween;
-    #[cfg(feature = "tween_unboxed")]
+    #[cfg(feature = "tween_generic")]
     pub use crate::tween::ResourceTween;
 
-    #[cfg(all(feature = "tween_boxed", feature = "bevy_asset"))]
-    pub use crate::tween::AssetTweenBoxed;
-    #[cfg(feature = "tween_boxed")]
-    pub use crate::tween::ComponentTweenBoxed;
-    #[cfg(feature = "tween_boxed")]
-    pub use crate::tween::ResourceTweenBoxed;
+    #[cfg(all(feature = "tween_dyn", feature = "bevy_asset"))]
+    pub use crate::tween::AssetTweenDyn;
+    #[cfg(feature = "tween_dyn")]
+    pub use crate::tween::ComponentTweenDyn;
+    #[cfg(feature = "tween_dyn")]
+    pub use crate::tween::ResourceTweenDyn;
 
     #[cfg(feature = "span_tween")]
     pub use crate::span_tween::{
@@ -116,11 +116,11 @@ pub enum TweenSystemSet {
     /// active tween and setting the value to its respective tweening item such
     /// as these systems by this crate:
     /// - [`tween::component_tween_system`]
-    /// - [`tween::component_tween_boxed_system`]
+    /// - [`tween::component_tween_dyn_system`]
     /// - [`tween::resource_tween_system`]
-    /// - [`tween::resource_tween_boxed_system`]
+    /// - [`tween::resource_tween_dyn_system`]
     /// - [`tween::asset_tween_system`]
-    /// - [`tween::asset_tween_boxed_system`]
-    /// - [`tween::asset_tween_boxed_system`]
+    /// - [`tween::asset_tween_dyn_system`]
+    /// - [`tween::asset_tween_dyn_system`]
     ApplyTween,
 }
