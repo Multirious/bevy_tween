@@ -13,7 +13,7 @@ struct TransformAngleLens {
     start: f32,
     end: f32,
 }
-impl TweenLens for TransformAngleLens {
+impl Interpolator for TransformAngleLens {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {

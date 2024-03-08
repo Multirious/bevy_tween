@@ -8,9 +8,9 @@
 //!   - [`TargetResource`]
 //!   - [`TargetAsset`]
 //!   
-//! - [`TweenBoxed`], like [`Tween`] but the inner [`TweenLens`] is boxed which
+//! - [`TweenBoxed`], like [`Tween`] but the inner [`Interpolator`] is boxed which
 //!   came with the pros and cons of boxing such as missing reflect but let you
-//!   use closure as a [`TweenLens`]!.
+//!   use closure as a [`Interpolator`]!.
 //!
 //! See available lenses in [`lenses`].
 //!
@@ -20,7 +20,7 @@ use bevy::prelude::*;
 use std::{marker::PhantomData, time::Duration};
 
 #[cfg(any(feature = "tween_boxed", feature = "tween_unboxed",))]
-use crate::lenses::TweenLens;
+use crate::lenses::Interpolator;
 use crate::tween_player::AnimationDirection;
 #[cfg(any(feature = "tween_boxed", feature = "tween_unboxed",))]
 use std::any::type_name;
@@ -58,9 +58,9 @@ pub struct TweenInterpolationValue(pub f32);
 
 /// A [`Tween`] is used as a information for a tween player like:
 /// - "What to tween" by using [`TweenTarget`]
-/// - "How to tween" by using [`TweenLens`]
+/// - "How to tween" by using [`Interpolator`]
 ///
-/// [`TweenLens`]: crate::lenses::TweenLens
+/// [`Interpolator`]: crate::lenses::Interpolator
 #[cfg(feature = "tween_unboxed")]
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
@@ -69,7 +69,7 @@ pub struct TweenInterpolationValue(pub f32);
 pub struct Tween<T, L>
 where
     T: TweenTarget,
-    L: TweenLens<Item = T::Item>,
+    L: Interpolator<Item = T::Item>,
 {
     #[allow(missing_docs)]
     pub target: T,
@@ -80,7 +80,7 @@ where
 impl<T, L> Tween<T, L>
 where
     T: TweenTarget,
-    L: TweenLens<Item = T::Item>,
+    L: Interpolator<Item = T::Item>,
 {
     /// Create a new [`Tween`] with the following target and lens.
     pub fn new_target<G>(target: G, lens: L) -> Self
@@ -115,7 +115,7 @@ where
 impl<T, L> Tween<T, L>
 where
     T: TweenTarget + Default,
-    L: TweenLens<Item = T::Item>,
+    L: Interpolator<Item = T::Item>,
 {
     /// Create a new [`Tween`] with the following lens and using the default target.
     pub fn new(lens: L) -> Self {
@@ -146,7 +146,7 @@ where
     #[allow(missing_docs)]
     pub target: T,
     #[allow(missing_docs)]
-    pub lens: Box<dyn TweenLens<Item = T::Item> + Send + Sync + 'static>,
+    pub lens: Box<dyn Interpolator<Item = T::Item> + Send + Sync + 'static>,
 }
 #[cfg(feature = "tween_boxed")]
 impl<T> TweenBoxed<T>
@@ -156,7 +156,7 @@ where
     /// Create a new [`TweenBoxed`] with the following target and lens.
     pub fn new_target<L, G>(target: G, lens: L) -> Self
     where
-        L: TweenLens<Item = T::Item> + Send + Sync + 'static,
+        L: Interpolator<Item = T::Item> + Send + Sync + 'static,
         G: Into<T>,
     {
         TweenBoxed {
@@ -188,7 +188,7 @@ where
     /// Create a new [`TweenBoxed`] with the following lens and using the default target.
     pub fn new<L>(lens: L) -> Self
     where
-        L: TweenLens<Item = T::Item> + Send + Sync + 'static,
+        L: Interpolator<Item = T::Item> + Send + Sync + 'static,
     {
         TweenBoxed::new_target(T::default(), lens)
     }
@@ -205,7 +205,7 @@ where
 }
 
 /// Useful for the implmentor to specify what this `target` will return the
-/// tweenable [`Self::Item`] which should match any [`TweenLens::Item`].
+/// tweenable [`Self::Item`] which should match any [`Interpolator::Item`].
 /// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`]
 pub trait TweenTarget {
     /// Specify the item for tweens
@@ -214,7 +214,8 @@ pub trait TweenTarget {
 
 /// Convenient alias for [`Tween`] that [`TargetComponent`].
 #[cfg(feature = "tween_unboxed")]
-pub type ComponentTween<L> = Tween<TargetComponent<<L as TweenLens>::Item>, L>;
+pub type ComponentTween<L> =
+    Tween<TargetComponent<<L as Interpolator>::Item>, L>;
 
 /// Convenient alias for [`TweenBoxed`] that [`TargetComponent`].
 #[cfg(feature = "tween_boxed")]
@@ -317,7 +318,7 @@ pub fn component_tween_system<L>(
     q_tween: Query<(Entity, &ComponentTween<L>, &TweenInterpolationValue)>,
     mut q_component: Query<&mut L::Item>,
 ) where
-    L: TweenLens + Send + Sync + 'static,
+    L: Interpolator + Send + Sync + 'static,
     L::Item: Component,
 {
     q_tween.iter().for_each(|(entity, tween, ease_value)| {
@@ -455,7 +456,7 @@ pub fn component_tween_boxed_system<C>(
 
 /// Convenient alias for [`Tween`] that [`TargetResource`].
 #[cfg(feature = "tween_unboxed")]
-pub type ResourceTween<L> = Tween<TargetResource<<L as TweenLens>::Item>, L>;
+pub type ResourceTween<L> = Tween<TargetResource<<L as Interpolator>::Item>, L>;
 
 /// Convenient alias for [`TweenBoxed`] that [`TargetResource`].
 #[cfg(feature = "tween_boxed")]
@@ -482,7 +483,7 @@ pub fn resource_tween_system<L>(
     q_tween: Query<(&ResourceTween<L>, &TweenInterpolationValue)>,
     resource: Option<ResMut<L::Item>>,
 ) where
-    L: TweenLens + Send + Sync + 'static,
+    L: Interpolator + Send + Sync + 'static,
     L::Item: Resource,
 {
     let Some(mut resource) = resource else {
@@ -513,7 +514,7 @@ pub fn resource_tween_boxed_system<R>(
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`].
 #[cfg(all(feature = "bevy_asset", feature = "tween_unboxed"))]
-pub type AssetTween<L> = Tween<TargetAsset<<L as TweenLens>::Item>, L>;
+pub type AssetTween<L> = Tween<TargetAsset<<L as Interpolator>::Item>, L>;
 
 /// Convenient alias for [`TweenBoxed`] that [`TargetAsset`].
 #[cfg(all(feature = "bevy_asset", feature = "tween_boxed"))]
@@ -612,7 +613,7 @@ pub fn asset_tween_system<L>(
     q_tween: Query<(&AssetTween<L>, &TweenInterpolationValue)>,
     asset: Option<ResMut<Assets<L::Item>>>,
 ) where
-    L: TweenLens + Send + Sync + 'static,
+    L: Interpolator + Send + Sync + 'static,
     L::Item: Asset,
 {
     let Some(mut asset) = asset else {

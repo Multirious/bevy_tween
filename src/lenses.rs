@@ -1,8 +1,8 @@
-//! Module containg the [`TweenLens`] trait and some basic built-in lens
+//! Module containg the [`Interpolator`] trait and some basic built-in lens
 //!
-//! # TweenLens
+//! # Interpolator
 //!
-//! [`TweenLens`] in this crate will be used to specify *how* an `item` will be
+//! [`Interpolator`] in this crate will be used to specify *how* an `item` will be
 //! interpolated. Which also could be anything. This crate has built-in supports
 //! for tweening component, resource, and asset.
 
@@ -11,9 +11,9 @@ use bevy::prelude::*;
 #[cfg(feature = "bevy_sprite")]
 use crate::utils::color_lerp;
 
-/// [`TweenLens`] is used to specify how to interpolate an [`Self::Item`] by the
+/// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
-pub trait TweenLens {
+pub trait Interpolator {
     /// Type to be interpolated.
     type Item;
     /// Interpolate an item using `value` which is typically between 0 and 1.
@@ -23,7 +23,7 @@ pub trait TweenLens {
     fn interpolate(&self, item: &mut Self::Item, value: f32);
 }
 
-impl<I> TweenLens for Box<dyn Fn(&mut I, f32) + Send + Sync + 'static> {
+impl<I> Interpolator for Box<dyn Fn(&mut I, f32) + Send + Sync + 'static> {
     type Item = I;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -31,7 +31,7 @@ impl<I> TweenLens for Box<dyn Fn(&mut I, f32) + Send + Sync + 'static> {
     }
 }
 
-impl<I> TweenLens for fn(&mut I, f32) {
+impl<I> Interpolator for fn(&mut I, f32) {
     type Item = I;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -40,8 +40,8 @@ impl<I> TweenLens for fn(&mut I, f32) {
 }
 
 /// Default lenses
-pub struct DefaultTweenLensesPlugin;
-impl Plugin for DefaultTweenLensesPlugin {
+pub struct DefaultInterpolatorsPlugin;
+impl Plugin for DefaultInterpolatorsPlugin {
     #[cfg(any(feature = "tween_unboxed", feature = "tween_boxed",))]
     fn build(&self, app: &mut App) {
         use crate::{tween, TweenSystemSet};
@@ -111,7 +111,7 @@ impl Plugin for DefaultTweenLensesPlugin {
     }
 }
 
-/// [`TweenLens`] for [`Transform`]'s translation.
+/// [`Interpolator`] for [`Transform`]'s translation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 pub struct TransformTranslationLens {
     #[allow(missing_docs)]
@@ -119,7 +119,7 @@ pub struct TransformTranslationLens {
     #[allow(missing_docs)]
     pub end: Vec3,
 }
-impl TweenLens for TransformTranslationLens {
+impl Interpolator for TransformTranslationLens {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -127,7 +127,7 @@ impl TweenLens for TransformTranslationLens {
     }
 }
 
-/// [`TweenLens`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
+/// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 pub struct TransformRotationLens {
     #[allow(missing_docs)]
@@ -135,7 +135,7 @@ pub struct TransformRotationLens {
     #[allow(missing_docs)]
     pub end: Quat,
 }
-impl TweenLens for TransformRotationLens {
+impl Interpolator for TransformRotationLens {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -143,7 +143,7 @@ impl TweenLens for TransformRotationLens {
     }
 }
 
-/// [`TweenLens`] for [`Transform`]'s scale
+/// [`Interpolator`] for [`Transform`]'s scale
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 pub struct TransformScaleLens {
     #[allow(missing_docs)]
@@ -151,7 +151,7 @@ pub struct TransformScaleLens {
     #[allow(missing_docs)]
     pub end: Vec3,
 }
-impl TweenLens for TransformScaleLens {
+impl Interpolator for TransformScaleLens {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -159,7 +159,7 @@ impl TweenLens for TransformScaleLens {
     }
 }
 
-/// [`TweenLens`] for [`Sprite`]'s color
+/// [`Interpolator`] for [`Sprite`]'s color
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 pub struct SpriteColorLens {
@@ -170,7 +170,7 @@ pub struct SpriteColorLens {
 }
 
 #[cfg(feature = "bevy_sprite")]
-impl TweenLens for SpriteColorLens {
+impl Interpolator for SpriteColorLens {
     type Item = Sprite;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -178,7 +178,7 @@ impl TweenLens for SpriteColorLens {
     }
 }
 
-/// [`TweenLens`] for [`Sprite`]'s [`ColorMaterial`]
+/// [`Interpolator`] for [`Sprite`]'s [`ColorMaterial`]
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 pub struct ColorMaterialLens {
@@ -189,7 +189,7 @@ pub struct ColorMaterialLens {
 }
 
 #[cfg(feature = "bevy_sprite")]
-impl TweenLens for ColorMaterialLens {
+impl Interpolator for ColorMaterialLens {
     type Item = ColorMaterial;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {

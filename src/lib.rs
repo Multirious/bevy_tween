@@ -19,7 +19,7 @@ pub mod prelude {
     pub use std::time::Duration;
 
     pub use crate::interpolation::EaseFunction;
-    pub use crate::lenses::{self, TweenLens};
+    pub use crate::lenses::{self, Interpolator};
     pub use crate::tween_player::{Repeat, RepeatStyle};
     pub use crate::DefaultTweenPlugins;
 
@@ -49,7 +49,7 @@ impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         let p = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin)
-            .add(lenses::DefaultTweenLensesPlugin)
+            .add(lenses::DefaultInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin);
         #[cfg(feature = "span_tween")]
         let p = p.add(span_tween::SpanTweenPlugin);
