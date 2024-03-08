@@ -8,9 +8,9 @@
 //!   - [`TargetResource`]
 //!   - [`TargetAsset`]
 //!   
-//! - [`TweenDyn`], like [`Tween`] but the inner [`Interpolator`] is boxed which
-//!   came with the pros and cons of boxing such as missing reflect but let you
-//!   use closure as a [`Interpolator`]!.
+//! - [`TweenDyn`], like [`Tween`] but the inner [`Interpolator`] is boxed and
+//!   uses dynamic dispatch which you can use closure as an [`Interpolator`]
+//!   and reduce system registration!.
 //!
 //! See available lenses in [`lenses`].
 //!
