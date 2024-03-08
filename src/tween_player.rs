@@ -129,6 +129,8 @@ impl TweenPlayerState {
         self.elasped
     }
 
+    /// Returns true if the tween player is actually finished for real,
+    /// accounting its repeat configuration.
     pub fn is_finished(&self) -> bool {
         let is_edge = match self.direction {
             AnimationDirection::Forward => {
@@ -253,180 +255,220 @@ pub enum AnimationDirection {
     Backward,
 }
 
-// #[derive(Debug, Clone, PartialEq, Eq, Hash, Event, Reflect)]
-// pub struct TweenPlayerEnded {
-//     pub tween_player: Entity,
-//     pub repeat: Option<(Repeat, RepeatStyle, AnimationDirection)>,
-// }
+/// Event that emitted when a tween player just ended. This will be emitted for
+/// the one that just repeated as well.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Event, Reflect)]
+pub struct TweenPlayerEnded {
+    /// Tween player that just ended
+    pub tween_player: Entity,
+    /// Currently direction. If is [`RepeatStyle::PingPong`], the current direction
+    /// will be its already changed direction.
+    pub current_direction: AnimationDirection,
+    /// The repeat this tween player had.
+    pub with_repeat: Option<Repeat>,
+}
 
-// impl TweenPlayerEnded {
-//     pub fn will_repeat(&self) -> bool {
-//         self.repeat
-//             .map(|(repeat, ..)| match repeat {
-//                 Repeat::Infinitely => true,
-//                 Repeat::InfinitelyCounted { .. } => true,
-//                 Repeat::Times {
-//                     times,
-//                     times_repeated,
-//                 } => times < times_repeated,
-//             })
-//             .unwrap_or(false)
-//     }
-// }
+impl TweenPlayerEnded {
+    /// Returns true if the tween player is actually finished for real,
+    /// accounting its repeat configuration.
+    pub fn is_finished(&self) -> bool {
+        self.with_repeat
+            .map(|repeat| repeat.is_finished())
+            .unwrap_or(true)
+    }
+}
 
 /// Updates any [`TweenPlayerState`] elasped time and handles the repeat if configured.
 pub fn tick_tween_player_state_system(
     time: Res<Time<Real>>,
-    mut q_tween_player: Query<&mut TweenPlayerState>,
+    mut q_tween_player: Query<(Entity, &mut TweenPlayerState)>,
+    mut ended_writer: EventWriter<TweenPlayerEnded>,
 ) {
     use AnimationDirection::*;
     use RepeatStyle::*;
     let delta = time.delta();
-    q_tween_player.iter_mut().for_each(|mut tween_player| {
-        if tween_player.paused {
-            return;
-        }
-        let delta = Duration::from_secs_f32(
-            delta.as_secs_f32() * tween_player.speed_scale.as_secs_f32(),
-        );
-        match (
-            tween_player.direction,
-            tween_player.repeat,
-            tween_player.repeat_style.unwrap_or_default(),
-        ) {
-            (Forward, None, _) => {
-                if tween_player.elasped.now >= tween_player.duration_limit {
-                    return;
-                }
-                let new_now = (tween_player.elasped.now + delta)
-                    .min(tween_player.duration_limit);
-                tween_player.elasped = Elasped {
-                    now: new_now,
-                    previous: tween_player.elasped.now,
-                    repeat_style: None,
-                };
+    q_tween_player
+        .iter_mut()
+        .for_each(|(entity, mut tween_player)| {
+            if tween_player.paused {
+                return;
             }
-            (Backward, None, _) => {
-                if tween_player.elasped.now == Duration::ZERO {
-                    return;
-                }
-                let new_now = tween_player.elasped.now.saturating_sub(delta);
-                tween_player.elasped = Elasped {
-                    now: new_now,
-                    previous: tween_player.elasped.now,
-                    repeat_style: None,
-                };
+
+            let is_prev_finished = tween_player.is_finished();
+            if is_prev_finished {
+                return;
             }
-            (Forward, Some(mut r), WrapAround) => {
-                let new_now = tween_player.elasped.now + delta;
-                let will_wrap = new_now >= tween_player.duration_limit;
-                if will_wrap && !r.try_advance_counter() {
-                    tween_player.elasped = Elasped {
-                        now: tween_player.duration_limit,
-                        previous: tween_player.elasped.now,
-                        repeat_style: None,
-                    };
-                    return;
-                }
-                let new_now =
-                    duration_rem(new_now, tween_player.duration_limit);
-                tween_player.elasped = Elasped {
-                    now: new_now,
-                    previous: tween_player.elasped.now,
-                    repeat_style: if will_wrap {
-                        Some(WrapAround)
-                    } else {
-                        None
-                    },
-                };
-            }
-            (Backward, Some(mut r), WrapAround) => {
-                let will_wrap = delta > tween_player.elasped.now;
-                if will_wrap && !r.try_advance_counter() {
-                    tween_player.elasped = Elasped {
-                        now: Duration::ZERO,
-                        previous: tween_player.elasped.now,
-                        repeat_style: None,
-                    };
-                    return;
-                }
-                let new_now = if will_wrap {
-                    neg_duration_rem(
-                        delta - tween_player.elasped.now,
-                        tween_player.duration_limit,
-                    )
-                } else {
-                    tween_player.elasped.now - delta
-                };
-                tween_player.elasped = Elasped {
-                    now: new_now,
-                    previous: tween_player.elasped.now,
-                    repeat_style: if will_wrap {
-                        Some(WrapAround)
-                    } else {
-                        None
-                    },
-                };
-            }
-            (Forward, Some(mut r), PingPong) => {
-                let new_now = tween_player.elasped.now + delta;
-                let will_pingpong = new_now > tween_player.duration_limit;
-                if will_pingpong {
-                    if !r.try_advance_counter() {
+
+            let delta = Duration::from_secs_f32(
+                delta.as_secs_f32() * tween_player.speed_scale.as_secs_f32(),
+            );
+
+            let (is_now_finished, is_repeated) = 'm: {
+                match (
+                    tween_player.direction,
+                    tween_player.repeat,
+                    tween_player.repeat_style.unwrap_or_default(),
+                ) {
+                    (Forward, None, _) => {
+                        if tween_player.elasped.now
+                            >= tween_player.duration_limit
+                        {
+                            break 'm (true, false);
+                        }
+                        let new_now = (tween_player.elasped.now + delta)
+                            .min(tween_player.duration_limit);
                         tween_player.elasped = Elasped {
-                            now: tween_player.duration_limit,
-                            previous: tween_player.elasped.previous,
+                            now: new_now,
+                            previous: tween_player.elasped.now,
                             repeat_style: None,
                         };
-                        return;
+                        (false, false)
                     }
-                    let new_now =
-                        neg_duration_rem(new_now, tween_player.duration_limit);
-                    tween_player.direction = Backward;
-                    tween_player.elasped = Elasped {
-                        now: new_now,
-                        previous: tween_player.elasped.now,
-                        repeat_style: Some(PingPong),
-                    };
-                } else {
-                    tween_player.elasped = Elasped {
-                        now: new_now,
-                        previous: tween_player.elasped.now,
-                        repeat_style: None,
-                    };
-                }
-            }
-            (Backward, Some(mut r), PingPong) => {
-                let will_pingpong = delta > tween_player.elasped.now;
-                if will_pingpong {
-                    if !r.try_advance_counter() {
+                    (Backward, None, _) => {
+                        if tween_player.elasped.now == Duration::ZERO {
+                            break 'm (true, false);
+                        }
+                        let new_now =
+                            tween_player.elasped.now.saturating_sub(delta);
                         tween_player.elasped = Elasped {
-                            now: Duration::ZERO,
-                            previous: tween_player.elasped.previous,
+                            now: new_now,
+                            previous: tween_player.elasped.now,
                             repeat_style: None,
                         };
-                        return;
+                        (false, false)
                     }
-                    let new_now = duration_rem(
-                        delta - tween_player.elasped.now,
-                        tween_player.duration_limit,
-                    );
-                    tween_player.direction = Forward;
-                    tween_player.elasped = Elasped {
-                        now: new_now,
-                        previous: tween_player.elasped.now,
-                        repeat_style: Some(PingPong),
-                    };
-                } else {
-                    tween_player.elasped = Elasped {
-                        now: tween_player.elasped.now - delta,
-                        previous: tween_player.elasped.now,
-                        repeat_style: None,
-                    };
+                    (Forward, Some(mut r), WrapAround) => {
+                        let new_now = tween_player.elasped.now + delta;
+                        let will_wrap = new_now >= tween_player.duration_limit;
+                        if will_wrap && !r.try_advance_counter() {
+                            tween_player.elasped = Elasped {
+                                now: tween_player.duration_limit,
+                                previous: tween_player.elasped.now,
+                                repeat_style: None,
+                            };
+                            break 'm (true, false);
+                        }
+                        let new_now =
+                            duration_rem(new_now, tween_player.duration_limit);
+                        tween_player.elasped = Elasped {
+                            now: new_now,
+                            previous: tween_player.elasped.now,
+                            repeat_style: if will_wrap {
+                                Some(WrapAround)
+                            } else {
+                                None
+                            },
+                        };
+                        (false, true)
+                    }
+                    (Backward, Some(mut r), WrapAround) => {
+                        let will_wrap = delta > tween_player.elasped.now;
+                        if will_wrap && !r.try_advance_counter() {
+                            tween_player.elasped = Elasped {
+                                now: Duration::ZERO,
+                                previous: tween_player.elasped.now,
+                                repeat_style: None,
+                            };
+                            break 'm (true, false);
+                        }
+                        let new_now = if will_wrap {
+                            neg_duration_rem(
+                                delta - tween_player.elasped.now,
+                                tween_player.duration_limit,
+                            )
+                        } else {
+                            tween_player.elasped.now - delta
+                        };
+                        tween_player.elasped = Elasped {
+                            now: new_now,
+                            previous: tween_player.elasped.now,
+                            repeat_style: if will_wrap {
+                                Some(WrapAround)
+                            } else {
+                                None
+                            },
+                        };
+                        (false, true)
+                    }
+                    (Forward, Some(mut r), PingPong) => {
+                        let new_now = tween_player.elasped.now + delta;
+                        let will_pingpong =
+                            new_now > tween_player.duration_limit;
+                        if will_pingpong {
+                            if !r.try_advance_counter() {
+                                tween_player.elasped = Elasped {
+                                    now: tween_player.duration_limit,
+                                    previous: tween_player.elasped.previous,
+                                    repeat_style: None,
+                                };
+                                break 'm (true, false);
+                            }
+                            let new_now = neg_duration_rem(
+                                new_now,
+                                tween_player.duration_limit,
+                            );
+                            tween_player.direction = Backward;
+                            tween_player.elasped = Elasped {
+                                now: new_now,
+                                previous: tween_player.elasped.now,
+                                repeat_style: Some(PingPong),
+                            };
+                            (false, true)
+                        } else {
+                            tween_player.elasped = Elasped {
+                                now: new_now,
+                                previous: tween_player.elasped.now,
+                                repeat_style: None,
+                            };
+                            (false, false)
+                        }
+                    }
+                    (Backward, Some(mut r), PingPong) => {
+                        let will_pingpong = delta > tween_player.elasped.now;
+                        if will_pingpong {
+                            if !r.try_advance_counter() {
+                                tween_player.elasped = Elasped {
+                                    now: Duration::ZERO,
+                                    previous: tween_player.elasped.previous,
+                                    repeat_style: None,
+                                };
+                                break 'm (true, false);
+                            }
+                            let new_now = duration_rem(
+                                delta - tween_player.elasped.now,
+                                tween_player.duration_limit,
+                            );
+                            tween_player.direction = Forward;
+                            tween_player.elasped = Elasped {
+                                now: new_now,
+                                previous: tween_player.elasped.now,
+                                repeat_style: Some(PingPong),
+                            };
+                            (false, true)
+                        } else {
+                            tween_player.elasped = Elasped {
+                                now: tween_player.elasped.now - delta,
+                                previous: tween_player.elasped.now,
+                                repeat_style: None,
+                            };
+                            (false, false)
+                        }
+                    }
                 }
+            };
+
+            match (is_now_finished, is_repeated) {
+                (true, false) | (false, true) => {
+                    ended_writer.send(TweenPlayerEnded {
+                        tween_player: entity,
+                        current_direction: tween_player.direction,
+                        with_repeat: tween_player.repeat,
+                    });
+                }
+                (true, true) => unreachable!(),
+                (false, false) => {}
             }
-        }
-    })
+        })
 }
 
 fn duration_rem(duration: Duration, max: Duration) -> Duration {

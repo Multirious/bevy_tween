@@ -77,7 +77,7 @@ impl Plugin for TweenCorePlugin {
             (tween_player::tick_tween_player_state_system,)
                 .in_set(TweenSystemSet::TickTweenPlayer),
         )
-        // .add_event::<tween_player::TweenPlayerEnded>()
+        .add_event::<tween_player::TweenPlayerEnded>()
         .register_type::<tween_player::TweenPlayerState>()
         .register_type::<tween_player::AnimationDirection>()
         .register_type::<tween_player::Repeat>()
