@@ -125,6 +125,19 @@ impl TweenPlayerState {
     pub fn elasped(&self) -> Elasped {
         self.elasped
     }
+
+    pub fn is_finished(&self) -> bool {
+        let is_edge = match self.direction {
+            AnimationDirection::Forward => {
+                self.elasped.now >= self.duration_limit
+            }
+            AnimationDirection::Backward => self.elasped.now == Duration::ZERO,
+        };
+        match self.repeat {
+            Some(repeat) => repeat.is_finished() && is_edge,
+            None => is_edge,
+        }
+    }
 }
 
 /// Repeat the tween
@@ -162,6 +175,16 @@ impl Repeat {
         Repeat::Times {
             times,
             times_repeated: 0,
+        }
+    }
+    pub fn is_finished(&self) -> bool {
+        match self {
+            Repeat::Infinitely => false,
+            Repeat::InfinitelyCounted { .. } => false,
+            Repeat::Times {
+                times,
+                times_repeated,
+            } => times_repeated >= times,
         }
     }
     /// true if still can repeat, false otherwise.
