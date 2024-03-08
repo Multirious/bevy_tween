@@ -39,7 +39,7 @@ impl<I> Interpolator for fn(&mut I, f32) {
     }
 }
 
-/// Default lenses
+/// Default interpolators
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
     #[cfg(any(feature = "tween_generic", feature = "tween_dyn",))]

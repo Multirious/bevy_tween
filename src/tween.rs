@@ -12,15 +12,15 @@
 //!   uses dynamic dispatch which you can use closure as an [`Interpolator`]
 //!   and reduce system registration!.
 //!
-//! See available lenses in [`lenses`].
+//! See available interpolator in [`interpolate`].
 //!
-//! [`lenses`]: crate::lenses
+//! [`interpolate`]: crate::interpolate
 
 use bevy::prelude::*;
 use std::{marker::PhantomData, time::Duration};
 
 #[cfg(any(feature = "tween_dyn", feature = "tween_generic",))]
-use crate::lenses::Interpolator;
+use crate::interpolate::Interpolator;
 use crate::tween_player::AnimationDirection;
 #[cfg(any(feature = "tween_dyn", feature = "tween_generic",))]
 use std::any::type_name;
@@ -60,7 +60,7 @@ pub struct TweenInterpolationValue(pub f32);
 /// - "What to tween" by using [`TweenTarget`]
 /// - "How to tween" by using [`Interpolator`]
 ///
-/// [`Interpolator`]: crate::lenses::Interpolator
+/// [`Interpolator`]: crate::interpolate::Interpolator
 #[cfg(feature = "tween_generic")]
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,

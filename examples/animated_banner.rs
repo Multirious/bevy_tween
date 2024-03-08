@@ -67,7 +67,7 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
-    use lenses::*;
+    use interpolate::*;
 
     let triangle_image = asset_server.load("triangle.png");
     let square_image = asset_server.load("square.png");
