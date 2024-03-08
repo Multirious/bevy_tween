@@ -25,7 +25,7 @@ impl Plugin for EaseFunctionPlugin {
         use crate::TweenSystemSet;
         app.add_systems(
             Update,
-            sample_interpolator_system::<EaseFunction>
+            sample_interpolations_system::<EaseFunction>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
@@ -127,7 +127,7 @@ impl Plugin for EaseClosurePlugin {
         use crate::TweenSystemSet;
         app.add_systems(
             Update,
-            sample_interpolator_system::<EaseClosure>
+            sample_interpolations_system::<EaseClosure>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
@@ -163,7 +163,7 @@ impl Interpolation for EaseClosure {
 /// If [`TweenState::local_elasped`] is some, otherwise remove [`TweenInterpolationValue`]
 /// from the entity.
 #[allow(clippy::type_complexity)]
-pub fn sample_interpolator_system<I>(
+pub fn sample_interpolations_system<I>(
     mut commands: Commands,
     query: Query<
         (Entity, &I, &TweenState),
