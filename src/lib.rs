@@ -23,11 +23,11 @@ pub mod prelude {
     pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
     pub use crate::DefaultTweenPlugins;
 
-    #[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
+    #[cfg(all(feature = "bevy_asset", feature = "tween_static"))]
     pub use crate::tween::AssetTween;
-    #[cfg(feature = "tween_generic")]
+    #[cfg(feature = "tween_static")]
     pub use crate::tween::ComponentTween;
-    #[cfg(feature = "tween_generic")]
+    #[cfg(feature = "tween_static")]
     pub use crate::tween::ResourceTween;
 
     #[cfg(all(feature = "tween_dyn", feature = "bevy_asset"))]

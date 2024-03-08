@@ -36,11 +36,11 @@ impl<I> Interpolator for fn(&mut I, f32) {
 /// Default interpolators
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
-    #[cfg(any(feature = "tween_generic", feature = "tween_dyn",))]
+    #[cfg(any(feature = "tween_static", feature = "tween_dyn",))]
     fn build(&self, app: &mut App) {
         use crate::{tween, TweenSystemSet};
 
-        #[cfg(feature = "tween_generic")]
+        #[cfg(feature = "tween_static")]
         app.add_systems(
             Update,
             (
@@ -61,7 +61,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
                 .in_set(TweenSystemSet::ApplyTween),
         );
 
-        #[cfg(all(feature = "bevy_sprite", feature = "tween_generic"))]
+        #[cfg(all(feature = "bevy_sprite", feature = "tween_static"))]
         app.add_systems(
             Update,
             (tween::component_tween_system::<SpriteColor>,)
@@ -79,7 +79,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
         #[cfg(all(
             feature = "bevy_sprite",
             feature = "bevy_asset",
-            feature = "tween_generic"
+            feature = "tween_static"
         ))]
         app.add_systems(
             Update,
@@ -99,9 +99,9 @@ impl Plugin for DefaultInterpolatorsPlugin {
                 .in_set(TweenSystemSet::ApplyTween),
         );
     }
-    #[cfg(not(any(feature = "tween_generic", feature = "tween_dyn",)))]
+    #[cfg(not(any(feature = "tween_static", feature = "tween_dyn",)))]
     fn build(&self, _app: &mut App) {
-        panic!("This plugin is empty without any feature flag! Enable either the feature \"tween_generic\" or \"tween_dyn\".")
+        panic!("This plugin is empty without any feature flag! Enable either the feature \"tween_static\" or \"tween_dyn\".")
     }
 }
 

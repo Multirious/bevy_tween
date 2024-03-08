@@ -19,10 +19,10 @@
 use bevy::prelude::*;
 use std::{marker::PhantomData, time::Duration};
 
-#[cfg(any(feature = "tween_dyn", feature = "tween_generic",))]
+#[cfg(any(feature = "tween_dyn", feature = "tween_static",))]
 use crate::interpolate::Interpolator;
 use crate::tween_timer::AnimationDirection;
-#[cfg(any(feature = "tween_dyn", feature = "tween_generic",))]
+#[cfg(any(feature = "tween_dyn", feature = "tween_static",))]
 use std::any::type_name;
 
 /// [`TweenState`] should be automatically managed by a tween player.
@@ -61,7 +61,7 @@ pub struct TweenInterpolationValue(pub f32);
 /// - "How to tween" by using [`Interpolator`]
 ///
 /// [`Interpolator`]: crate::interpolate::Interpolator
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]
@@ -76,7 +76,7 @@ where
     #[allow(missing_docs)]
     pub interpolator: I,
 }
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 impl<T, I> Tween<T, I>
 where
     T: TweenTarget,
@@ -94,7 +94,7 @@ where
     }
 }
 
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 impl<T> Tween<T, fn(&mut T::Item, f32)>
 where
     T: TweenTarget,
@@ -115,7 +115,7 @@ where
     }
 }
 
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 impl<T, I> Tween<T, I>
 where
     T: TweenTarget + Default,
@@ -127,7 +127,7 @@ where
     }
 }
 
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 impl<T> Tween<T, fn(&mut T::Item, f32)>
 where
     T: TweenTarget + Default,
@@ -221,7 +221,7 @@ pub trait TweenTarget {
 }
 
 /// Convenient alias for [`Tween`] that [`TargetComponent`].
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 pub type ComponentTween<I> =
     Tween<TargetComponent<<I as Interpolator>::Item>, I>;
 
@@ -322,7 +322,7 @@ impl<C, const N: usize> From<&[Entity; N]> for TargetComponent<C> {
 pub struct TweenPlayerMarker;
 
 /// Tween any [`ComponentTween`] with value provided by [`TweenInterpolationValue`] component.
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 pub fn component_tween_system<I>(
     q_tween_player: Query<(Option<&Parent>, Has<TweenPlayerMarker>)>,
     q_tween: Query<(Entity, &ComponentTween<I>, &TweenInterpolationValue)>,
@@ -473,7 +473,7 @@ pub fn component_tween_dyn_system<C>(
 }
 
 /// Convenient alias for [`Tween`] that [`TargetResource`].
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 pub type ResourceTween<I> = Tween<TargetResource<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`TweenDyn`] that [`TargetResource`].
@@ -496,7 +496,7 @@ impl<R> TweenTarget for TargetResource<R> {
 }
 
 /// Tween any [`ResourceTween`] with value provided by [`TweenInterpolationValue`] component.
-#[cfg(feature = "tween_generic")]
+#[cfg(feature = "tween_static")]
 pub fn resource_tween_system<I>(
     q_tween: Query<(&ResourceTween<I>, &TweenInterpolationValue)>,
     resource: Option<ResMut<I::Item>>,
@@ -531,7 +531,7 @@ pub fn resource_tween_dyn_system<R>(
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`].
-#[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
+#[cfg(all(feature = "bevy_asset", feature = "tween_static"))]
 pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`TweenDyn`] that [`TargetAsset`].
@@ -626,7 +626,7 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
 }
 
 /// Tween any [`AssetTween`] with value provided by [`TweenInterpolationValue`] component.
-#[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
+#[cfg(all(feature = "bevy_asset", feature = "tween_static"))]
 pub fn asset_tween_system<I>(
     q_tween: Query<(&AssetTween<I>, &TweenInterpolationValue)>,
     asset: Option<ResMut<Assets<I::Item>>>,
