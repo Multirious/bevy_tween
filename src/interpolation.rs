@@ -140,7 +140,7 @@ impl Plugin for EaseClosurePlugin {
 pub struct EaseClosure(pub Box<dyn Fn(f32) -> f32 + Send + Sync + 'static>);
 
 impl EaseClosure {
-    /// Create new `EaseClosure`
+    /// Create new [`EaseClosure`]
     pub fn new<F: Fn(f32) -> f32 + Send + Sync + 'static>(f: F) -> EaseClosure {
         EaseClosure(Box::new(f))
     }

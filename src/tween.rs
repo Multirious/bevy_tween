@@ -25,7 +25,7 @@ use crate::tween_player::AnimationDirection;
 #[cfg(any(feature = "tween_boxed", feature = "tween_unboxed",))]
 use std::any::type_name;
 
-/// `TweenState` should be automatically managed by a tween player.
+/// [`TweenState`] should be automatically managed by a tween player.
 /// User just have to add this component to a tween entity and an assigned
 /// tween player will take care of it.
 #[derive(
@@ -204,9 +204,9 @@ where
     }
 }
 
-/// Useful for the implmentor to specify what this `target` will return the
+/// Useful for the implmentor to specify what this *target* will return the
 /// tweenable [`Self::Item`] which should match any [`Interpolator::Item`].
-/// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`]
+/// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`].
 pub trait TweenTarget {
     /// Specify the item for tweens
     type Item;
