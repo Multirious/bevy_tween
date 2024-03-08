@@ -20,7 +20,7 @@ pub mod prelude {
 
     pub use crate::interpolate::{self, Interpolator};
     pub use crate::interpolation::EaseFunction;
-    pub use crate::tween_player::{Repeat, RepeatStyle};
+    pub use crate::tween_player::{Repeat, RepeatStyle, TweenPlayerEnded};
     pub use crate::DefaultTweenPlugins;
 
     #[cfg(all(feature = "bevy_asset", feature = "tween_generic"))]
