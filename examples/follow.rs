@@ -134,7 +134,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..Duration::from_secs(1),
                     EaseFunction::QuinticIn,
                 ),
-                ComponentTween::new(lenses::TransformScaleLens {
+                ComponentTween::new(lenses::Scale {
                     start: Vec3::ZERO,
                     end: Vec3::ONE,
                 }),
@@ -164,12 +164,12 @@ fn jeb_follows_cursor(
             // type is differernt.
             //
             // This one for translation
-            ComponentTween::new(lenses::TransformTranslationLens {
+            ComponentTween::new(lenses::Translation {
                 start: jeb_transform.translation,
                 end: Vec3::new(coord.x, coord.y, 0.),
             }),
             // This one for color
-            ComponentTween::new(lenses::SpriteColorLens {
+            ComponentTween::new(lenses::SpriteColor {
                 start: Color::PINK,
                 end: Color::WHITE,
             }),

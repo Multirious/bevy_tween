@@ -222,7 +222,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     secs(0.),
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        SpriteColorLens {
+                        SpriteColor {
                             start: white_color,
                             end: white_color,
                         },
@@ -244,7 +244,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::CircularOut,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        TransformScaleLens {
+                        Scale {
                             start: Vec3::ZERO * SCALE,
                             end: Vec3::ONE * SCALE,
                         },
@@ -255,7 +255,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::SineOut,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        TransformScaleLens {
+                        Scale {
                             start: Vec3::ONE * SCALE,
                             end: Vec3::ONE * text_pop_scale * SCALE,
                         },
@@ -266,7 +266,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::SineIn,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        TransformScaleLens {
+                        Scale {
                             start: Vec3::ONE * text_pop_scale * SCALE,
                             end: Vec3::ZERO * SCALE,
                         },
@@ -277,7 +277,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuinticIn,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        SpriteColorLens {
+                        SpriteColor {
                             start: white_color,
                             end: white_color.with_a(0.0),
                         },
@@ -310,7 +310,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::CircularOut,
                     ComponentTween::new_target(
                         [square, triangle],
-                        TransformScaleLens {
+                        Scale {
                             start: Vec3::ZERO * SCALE,
                             end: Vec3::ONE * SCALE,
                         },
@@ -355,7 +355,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
                         triangle,
-                        TransformTranslationLens {
+                        Translation {
                             start: Vec3::new(0., 0., 0.) * SCALE,
                             end: Vec3::new(150., -20., 0.) * SCALE,
                         },
@@ -366,7 +366,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
                         square,
-                        TransformTranslationLens {
+                        Translation {
                             start: Vec3::new(0., 0., 0.) * SCALE,
                             end: Vec3::new(-150., 20., 0.) * SCALE,
                         },
@@ -378,7 +378,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::Linear,
                     ComponentTween::new_target(
                         cornering_left,
-                        TransformTranslationLens {
+                        Translation {
                             start: cornering_left_tween_start,
                             end: destinated_cornering_left,
                         },
@@ -389,7 +389,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::Linear,
                     ComponentTween::new_target(
                         cornering_right,
-                        TransformTranslationLens {
+                        Translation {
                             start: cornering_right_tween_start,
                             end: destinated_cornering_right,
                         },
@@ -400,7 +400,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::Linear,
                     ComponentTween::new_target(
                         cornering_left,
-                        TransformTranslationLens {
+                        Translation {
                             start: destinated_cornering_left,
                             end: cornering_left_tween_end,
                         },
@@ -411,7 +411,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::Linear,
                     ComponentTween::new_target(
                         cornering_right,
-                        TransformTranslationLens {
+                        Translation {
                             start: destinated_cornering_right,
                             end: cornering_right_tween_end,
                         },
@@ -423,7 +423,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuinticOut,
                     ComponentTween::new_target(
                         dot_grid,
-                        TransformScaleLens {
+                        Scale {
                             start: Vec3::new(0.01, 0.01, 0.) * SCALE,
                             end: Vec3::new(0.4, 0.4, 0.) * SCALE,
                         },
@@ -434,7 +434,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuadraticInOut,
                     ComponentTween::new_target(
                         dot_grid,
-                        TransformScaleLens {
+                        Scale {
                             start: Vec3::new(0.4, 0.4, 0.) * SCALE,
                             end: Vec3::new(0.01, 0.01, 0.) * SCALE,
                         },

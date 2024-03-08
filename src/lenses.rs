@@ -50,15 +50,15 @@ impl Plugin for DefaultInterpolatorsPlugin {
         app.add_systems(
             Update,
             (
-                tween::component_tween_system::<TransformTranslationLens>,
-                tween::component_tween_system::<TransformRotationLens>,
-                tween::component_tween_system::<TransformScaleLens>,
+                tween::component_tween_system::<Translation>,
+                tween::component_tween_system::<Rotation>,
+                tween::component_tween_system::<Scale>,
             )
                 .in_set(TweenSystemSet::ApplyTween),
         )
-        .register_type::<tween::ComponentTween<TransformTranslationLens>>()
-        .register_type::<tween::ComponentTween<TransformRotationLens>>()
-        .register_type::<tween::ComponentTween<TransformScaleLens>>();
+        .register_type::<tween::ComponentTween<Translation>>()
+        .register_type::<tween::ComponentTween<Rotation>>()
+        .register_type::<tween::ComponentTween<Scale>>();
 
         #[cfg(feature = "tween_dyn")]
         app.add_systems(
@@ -70,10 +70,10 @@ impl Plugin for DefaultInterpolatorsPlugin {
         #[cfg(all(feature = "bevy_sprite", feature = "tween_generic"))]
         app.add_systems(
             Update,
-            (tween::component_tween_system::<SpriteColorLens>,)
+            (tween::component_tween_system::<SpriteColor>,)
                 .in_set(TweenSystemSet::ApplyTween),
         )
-        .register_type::<tween::ComponentTween<SpriteColorLens>>();
+        .register_type::<tween::ComponentTween<SpriteColor>>();
 
         #[cfg(all(feature = "bevy_sprite", feature = "tween_dyn"))]
         app.add_systems(
@@ -89,10 +89,10 @@ impl Plugin for DefaultInterpolatorsPlugin {
         ))]
         app.add_systems(
             Update,
-            (tween::asset_tween_system::<ColorMaterialLens>,)
+            (tween::asset_tween_system::<ColorMaterial>,)
                 .in_set(TweenSystemSet::ApplyTween),
         )
-        .register_type::<tween::AssetTween<ColorMaterialLens>>();
+        .register_type::<tween::AssetTween<ColorMaterial>>();
 
         #[cfg(all(
             feature = "bevy_sprite",
@@ -101,7 +101,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
         ))]
         app.add_systems(
             Update,
-            tween::asset_tween_dyn_system::<ColorMaterial>
+            tween::asset_tween_dyn_system::<bevy::sprite::ColorMaterial>
                 .in_set(TweenSystemSet::ApplyTween),
         );
     }
@@ -113,13 +113,13 @@ impl Plugin for DefaultInterpolatorsPlugin {
 
 /// [`Interpolator`] for [`Transform`]'s translation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct TransformTranslationLens {
+pub struct Translation {
     #[allow(missing_docs)]
     pub start: Vec3,
     #[allow(missing_docs)]
     pub end: Vec3,
 }
-impl Interpolator for TransformTranslationLens {
+impl Interpolator for Translation {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -129,13 +129,13 @@ impl Interpolator for TransformTranslationLens {
 
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct TransformRotationLens {
+pub struct Rotation {
     #[allow(missing_docs)]
     pub start: Quat,
     #[allow(missing_docs)]
     pub end: Quat,
 }
-impl Interpolator for TransformRotationLens {
+impl Interpolator for Rotation {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -145,13 +145,13 @@ impl Interpolator for TransformRotationLens {
 
 /// [`Interpolator`] for [`Transform`]'s scale
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct TransformScaleLens {
+pub struct Scale {
     #[allow(missing_docs)]
     pub start: Vec3,
     #[allow(missing_docs)]
     pub end: Vec3,
 }
-impl Interpolator for TransformScaleLens {
+impl Interpolator for Scale {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -162,7 +162,7 @@ impl Interpolator for TransformScaleLens {
 /// [`Interpolator`] for [`Sprite`]'s color
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct SpriteColorLens {
+pub struct SpriteColor {
     #[allow(missing_docs)]
     pub start: Color,
     #[allow(missing_docs)]
@@ -170,7 +170,7 @@ pub struct SpriteColorLens {
 }
 
 #[cfg(feature = "bevy_sprite")]
-impl Interpolator for SpriteColorLens {
+impl Interpolator for SpriteColor {
     type Item = Sprite;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -181,7 +181,7 @@ impl Interpolator for SpriteColorLens {
 /// [`Interpolator`] for [`Sprite`]'s [`ColorMaterial`]
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct ColorMaterialLens {
+pub struct ColorMaterial {
     #[allow(missing_docs)]
     pub start: Color,
     #[allow(missing_docs)]
@@ -189,8 +189,8 @@ pub struct ColorMaterialLens {
 }
 
 #[cfg(feature = "bevy_sprite")]
-impl Interpolator for ColorMaterialLens {
-    type Item = ColorMaterial;
+impl Interpolator for ColorMaterial {
+    type Item = bevy::sprite::ColorMaterial;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         item.color = color_lerp(self.start, self.end, value);
