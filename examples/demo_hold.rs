@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
     prelude::*,
@@ -8,15 +10,28 @@ use rand::prelude::*;
 mod my_interpolate {
     use bevy::prelude::*;
     use bevy_tween::prelude::*;
-    pub struct ShakeIntensity {
+    pub struct EffectIntensity {
         pub start: f32,
         pub end: f32,
     }
-    impl Interpolator for ShakeIntensity {
-        type Item = super::ShakeIntensitiy;
+    impl Interpolator for EffectIntensity {
+        type Item = super::EffectIntensitiy;
 
         fn interpolate(&self, item: &mut Self::Item, value: f32) {
             item.0 = self.start.lerp(self.end, value)
+        }
+    }
+    pub struct Angle {
+        pub start: f32,
+        pub end: f32,
+    }
+
+    impl Interpolator for Angle {
+        type Item = Transform;
+
+        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+            let angle = (self.end - self.start).mul_add(value, self.start);
+            item.rotation = Quat::from_rotation_z(angle);
         }
     }
 }
@@ -25,14 +40,19 @@ fn main() {
     App::new()
         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
-        .add_systems(Update, (shake_big_x, mouse_hold_then_shake))
+        .add_systems(Update, (big_x_do_effect, mouse_hold))
         .add_systems(
             PostUpdate,
-            bevy_tween::tween::resource_tween_system::<
-                my_interpolate::ShakeIntensity,
-            >,
+            (
+                bevy_tween::tween::resource_tween_system::<
+                    my_interpolate::EffectIntensity,
+                >,
+                bevy_tween::tween::component_tween_system::<
+                    my_interpolate::Angle,
+                >,
+            ),
         )
-        .init_resource::<ShakeIntensitiy>()
+        .init_resource::<EffectIntensitiy>()
         .run();
 }
 
@@ -40,10 +60,13 @@ fn main() {
 pub struct BigX;
 
 #[derive(Component)]
-pub struct ShakeTween;
+pub struct EffectTweenPlayer;
+
+#[derive(Component)]
+pub struct RotateTweenPlayer;
 
 #[derive(Default, Resource)]
-pub struct ShakeIntensitiy(f32);
+pub struct EffectIntensitiy(f32);
 
 fn setup(
     mut commands: Commands,
@@ -62,10 +85,10 @@ fn setup(
         ))
         .id();
     commands.spawn((
-        ShakeTween,
+        EffectTweenPlayer,
         SpanTweenPlayerBundle::new(Duration::from_secs(1)),
         SpanTweenBundle::new(..Duration::from_secs(1), EaseFunction::QuarticIn),
-        ResourceTween::new(my_interpolate::ShakeIntensity {
+        ResourceTween::new(my_interpolate::EffectIntensity {
             start: 0.,
             end: 1.,
         }),
@@ -77,26 +100,46 @@ fn setup(
             },
         ),
     ));
+    commands.spawn((
+        RotateTweenPlayer,
+        SpanTweenPlayerBundle::new(Duration::from_secs_f32(1.))
+            .with_repeat(Repeat::Infinitely),
+        SpanTweenBundle::new(
+            ..Duration::from_secs_f32(1.),
+            EaseFunction::Linear,
+        ),
+        ComponentTween::new_target(
+            big_x,
+            my_interpolate::Angle {
+                start: 0.,
+                end: PI * 0.5,
+            },
+        ),
+    ));
 }
 
-fn mouse_hold_then_shake(
-    mut q_shake_tween: Query<&mut TweenTimer, With<ShakeTween>>,
+fn mouse_hold(
+    mut q_effect_tween_timer: Query<&mut TweenTimer, With<EffectTweenPlayer>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
-    q_shake_tween.single_mut().direction = if mouse_down {
+    q_effect_tween_timer.single_mut().direction = if mouse_down {
         AnimationDirection::Forward
     } else {
         AnimationDirection::Backward
     };
 }
-fn shake_big_x(
-    shake_intensity: Res<ShakeIntensitiy>,
+fn big_x_do_effect(
+    effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
+    mut q_rotate_tween_player: Query<&mut TweenTimer, With<RotateTweenPlayer>>,
 ) {
     let mut rng = rand::thread_rng();
     let dx: f32 = rng.gen();
     let dy: f32 = rng.gen();
     q_big_x.single_mut().translation =
-        Vec3::new(dx - 0.5, dy - 0.5, 0.) * 100. * shake_intensity.0;
+        Vec3::new(dx - 0.5, dy - 0.5, 0.) * 100. * effect_intensity.0;
+
+    q_rotate_tween_player.single_mut().speed_scale =
+        Duration::from_secs_f32(effect_intensity.0);
 }
