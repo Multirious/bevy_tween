@@ -42,7 +42,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
 
         #[cfg(feature = "tween_static")]
         app.add_systems(
-            Update,
+            PostUpdate,
             (
                 tween::component_tween_system::<Translation>,
                 tween::component_tween_system::<Rotation>,
@@ -56,14 +56,14 @@ impl Plugin for DefaultInterpolatorsPlugin {
 
         #[cfg(feature = "tween_dyn")]
         app.add_systems(
-            Update,
+            PostUpdate,
             tween::component_tween_dyn_system::<Transform>
                 .in_set(TweenSystemSet::ApplyTween),
         );
 
         #[cfg(all(feature = "bevy_sprite", feature = "tween_static"))]
         app.add_systems(
-            Update,
+            PostUpdate,
             (tween::component_tween_system::<SpriteColor>,)
                 .in_set(TweenSystemSet::ApplyTween),
         )
@@ -71,7 +71,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
 
         #[cfg(all(feature = "bevy_sprite", feature = "tween_dyn"))]
         app.add_systems(
-            Update,
+            PostUpdate,
             tween::component_tween_dyn_system::<Sprite>
                 .in_set(TweenSystemSet::ApplyTween),
         );
@@ -82,7 +82,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
             feature = "tween_static"
         ))]
         app.add_systems(
-            Update,
+            PostUpdate,
             (tween::asset_tween_system::<ColorMaterial>,)
                 .in_set(TweenSystemSet::ApplyTween),
         )
@@ -94,7 +94,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
             feature = "tween_dyn"
         ))]
         app.add_systems(
-            Update,
+            PostUpdate,
             tween::asset_tween_dyn_system::<bevy::sprite::ColorMaterial>
                 .in_set(TweenSystemSet::ApplyTween),
         );

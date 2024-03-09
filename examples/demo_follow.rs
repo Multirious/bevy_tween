@@ -20,13 +20,7 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(
             Update,
-            (
-                utils::main_cursor_world_coord_system,
-                // use `.after(bevy_tween::TweenSystemSet::ApplyTween)`
-                // to make sure the animation doesn't lag
-                jeb_follows_cursor
-                    .after(bevy_tween::TweenSystemSet::ApplyTween),
-            ),
+            (utils::main_cursor_world_coord_system, jeb_follows_cursor),
         )
         .init_resource::<Config>()
         .init_resource::<utils::MainCursorWorldCoord>()

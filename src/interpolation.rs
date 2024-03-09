@@ -28,7 +28,7 @@ impl Plugin for EaseFunctionPlugin {
     fn build(&self, app: &mut App) {
         use crate::TweenSystemSet;
         app.add_systems(
-            Update,
+            PostUpdate,
             sample_interpolations_system::<EaseFunction>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
@@ -130,7 +130,7 @@ impl Plugin for EaseClosurePlugin {
     fn build(&self, app: &mut App) {
         use crate::TweenSystemSet;
         app.add_systems(
-            Update,
+            PostUpdate,
             sample_interpolations_system::<EaseClosure>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );

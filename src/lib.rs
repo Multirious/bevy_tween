@@ -63,7 +63,7 @@ pub struct TweenCorePlugin;
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
-            Update,
+            PostUpdate,
             (
                 TweenSystemSet::TickTweenTimer,
                 TweenSystemSet::TweenPlayer,
@@ -73,7 +73,7 @@ impl Plugin for TweenCorePlugin {
                 .chain(),
         )
         .add_systems(
-            Update,
+            PostUpdate,
             (tween_timer::tick_tween_timer_system,)
                 .in_set(TweenSystemSet::TickTweenTimer),
         )
@@ -90,7 +90,7 @@ impl Plugin for TweenCorePlugin {
 
 /// Enum of SystemSet in this crate
 /// After adding the plugin [`TweenCorePlugin`], these set will be configured
-/// to run in the [`PreUpdate`] schedule so any modification you've done after
+/// to run in the [`PostUpdate`] schedule so any modification you've done after
 /// this schedule should be correctly applied in the next frame.
 ///
 /// The sets should be configured to run in this order:

@@ -17,7 +17,7 @@ pub struct SpanTweenPlugin;
 impl Plugin for SpanTweenPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
+            PostUpdate,
             span_tween_player_system.in_set(crate::TweenSystemSet::TweenPlayer),
         )
         .register_type::<SpanTweenPlayer>()

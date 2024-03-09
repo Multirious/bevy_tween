@@ -49,7 +49,7 @@ fn main() {
         ))
         .add_systems(Startup, (animation, setup_camera))
         .add_systems(
-            Update,
+            PostUpdate,
             bevy_tween::tween::component_tween_system::<my_interpolate::Angle>
                 .in_set(bevy_tween::TweenSystemSet::ApplyTween),
         )
