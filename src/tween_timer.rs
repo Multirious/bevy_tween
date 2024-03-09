@@ -223,7 +223,11 @@ impl TweenTimer {
                         None
                     },
                 };
-                TickResult::Repeated
+                if will_wrap {
+                    TickResult::Repeated
+                } else {
+                    TickResult::Continue
+                }
             }
             (Backward, Some(mut r), WrapAround) => {
                 let will_wrap = duration > self.elasped.now;
@@ -252,7 +256,11 @@ impl TweenTimer {
                         None
                     },
                 };
-                TickResult::Repeated
+                if will_wrap {
+                    TickResult::Repeated
+                } else {
+                    TickResult::Continue
+                }
             }
             (Forward, Some(mut r), PingPong) => {
                 let new_now = self.elasped.now + duration;
@@ -458,8 +466,8 @@ pub fn tick_tween_timer_system(
             return;
         }
 
-        let is_prev_completed = timer.is_all_done();
-        if is_prev_completed {
+        let is_prev_all_done = timer.is_all_done();
+        if is_prev_all_done {
             return;
         }
 
@@ -471,14 +479,14 @@ pub fn tick_tween_timer_system(
         let tick_result = timer.tick(delta, timer_direction);
 
         match tick_result {
-            TickResult::Continue | TickResult::Repeated => {
+            TickResult::AllDone | TickResult::Repeated => {
                 ended_writer.send(TweenTimerEnded {
                     timer: entity,
                     current_direction: timer.direction,
                     with_repeat: timer.repeat,
                 });
             }
-            TickResult::AllDone => {}
+            TickResult::Continue => {}
         }
     })
 }
