@@ -5,7 +5,7 @@ use bevy_tween::{
 };
 use rand::prelude::*;
 
-mod my_interpolator {
+mod my_interpolate {
     use bevy::prelude::*;
     use bevy_tween::prelude::*;
     pub struct ShakeIntensity {
@@ -29,7 +29,7 @@ fn main() {
         .add_systems(
             PostUpdate,
             bevy_tween::tween::resource_tween_system::<
-                my_interpolator::ShakeIntensity,
+                my_interpolate::ShakeIntensity,
             >,
         )
         .init_resource::<ShakeIntensitiy>()
@@ -52,21 +52,30 @@ fn setup(
 ) {
     window.single_mut().cursor.icon = CursorIcon::Pointer;
     commands.spawn(Camera2dBundle::default());
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("big_x.png"),
-            ..Default::default()
-        },
-        BigX,
-    ));
+    let big_x = commands
+        .spawn((
+            SpriteBundle {
+                texture: asset_server.load("big_x.png"),
+                ..Default::default()
+            },
+            BigX,
+        ))
+        .id();
     commands.spawn((
         ShakeTween,
         SpanTweenPlayerBundle::new(Duration::from_secs(1)),
-        SpanTweenBundle::new(..Duration::from_secs(1), EaseFunction::Linear),
-        ResourceTween::new(my_interpolator::ShakeIntensity {
+        SpanTweenBundle::new(..Duration::from_secs(1), EaseFunction::QuarticIn),
+        ResourceTween::new(my_interpolate::ShakeIntensity {
             start: 0.,
             end: 1.,
         }),
+        ComponentTween::new_target(
+            big_x,
+            interpolate::SpriteColor {
+                start: Color::WHITE,
+                end: Color::PINK,
+            },
+        ),
     ));
 }
 
@@ -74,12 +83,12 @@ fn mouse_hold_then_shake(
     mut q_shake_tween: Query<&mut TweenTimer, With<ShakeTween>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
-    q_shake_tween.single_mut().direction =
-        if mouse_button.pressed(MouseButton::Left) {
-            AnimationDirection::Forward
-        } else {
-            AnimationDirection::Backward
-        };
+    let mouse_down = mouse_button.pressed(MouseButton::Left);
+    q_shake_tween.single_mut().direction = if mouse_down {
+        AnimationDirection::Forward
+    } else {
+        AnimationDirection::Backward
+    };
 }
 fn shake_big_x(
     shake_intensity: Res<ShakeIntensitiy>,
