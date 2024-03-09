@@ -22,10 +22,12 @@ bevy = { version = "0.13.0", default-features = false }
 
 [dev-dependencies]
 bevy-inspector-egui = "0.23"
+bevy = { version = "0.13.0", default-features = false, features = [ "bevy_winit", "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
 
 [features]
 default = [
   "tween_static",
+  "tween_dyn",
   "span_tween",
   "bevy_asset",
   "bevy_render",
@@ -54,10 +56,6 @@ features = [
 [[example]]
 name = "animated_banner"
 required-features = [
-  "bevy/bevy_winit",
-  "bevy/png",
-  "bevy/tonemapping_luts",
-
   "bevy_sprite",
   "bevy_asset",
 
@@ -66,11 +64,8 @@ required-features = [
 ]
 
 [[example]]
-name = "follow"
+name = "demo_follow"
 required-features = [
-  "bevy/bevy_winit",
-  "bevy/png",
-
   "bevy_sprite",
   "bevy_asset",
 
@@ -79,7 +74,7 @@ required-features = [
 ]
 
 [[example]]
-name = "click"
+name = "demo_click"
 required-features = [
   "bevy/bevy_winit",
   "bevy/png",
