@@ -1,6 +1,4 @@
-//! Module containing a tween player implementation of time range.
-//!
-//!
+//! Module containing a tween player that process tweens with time span.
 
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{ops, time::Duration};

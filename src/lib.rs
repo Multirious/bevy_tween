@@ -1,4 +1,15 @@
-//! # `bevy_tween`
+//! # Getting started
+//! ```rust
+//! # use crate as bevy_tween;
+//! use bevy::prelude::*;
+//! use bevy_tween::prelude::*;
+//! fn main() {
+//!     App::new().add_plugins((
+//!         DefaultPlugins,
+//!         DefaultTweenPlugins
+//!     ))
+//! }
+//! ```
 
 // #![warn(missing_docs)]
 
@@ -110,7 +121,7 @@ pub enum TweenSystemSet {
     /// This set is for systems that responsible for updating [`TweenTimer`]'s
     /// elasped.
     ///
-    /// [`TweenTimer`]: tween_player::TweenTimer
+    /// [`TweenTimer`]: tween_timer::TweenTimer
     TickTweenTimer,
     /// This set is for systems that responsible for updating any specific
     /// tween player implementation such as the [`span_tween::span_tween_player_system`]
