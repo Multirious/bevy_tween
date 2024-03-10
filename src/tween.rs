@@ -139,6 +139,27 @@ where
     }
 }
 
+impl<I> ComponentTween<I>
+where
+    I: Interpolator,
+{
+    /// Convenient method for targetting tween player's entity.
+    pub fn player_entity(interpolator: I) -> Self {
+        ComponentTween::new_target(
+            TargetComponent::tween_player_entity(),
+            interpolator,
+        )
+    }
+
+    /// Convenient method for targetting tween player's parent.
+    pub fn player_parent(interpolator: I) -> Self {
+        ComponentTween::new_target(
+            TargetComponent::tween_player_parent(),
+            interpolator,
+        )
+    }
+}
+
 /// [`Tween`] but interpolator is dynamic.
 ///
 /// See [`Tween`] for more information about a tween.
