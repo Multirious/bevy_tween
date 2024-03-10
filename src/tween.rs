@@ -270,7 +270,7 @@ impl<C> TweenTarget for TargetComponent<C> {
 
 impl<C> Default for TargetComponent<C> {
     fn default() -> Self {
-        TargetComponent::tween_player_parent()
+        TargetComponent::tween_player_entity()
     }
 }
 
