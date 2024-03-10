@@ -85,7 +85,8 @@ fn setup(
     commands.spawn((
         EffectTweenPlayer,
         SpanTweenPlayerBundle::new(Duration::from_secs(1)),
-        SpanTweenBundle::new(..Duration::from_secs(1), EaseFunction::QuarticIn),
+        SpanTweenBundle::new(..Duration::from_secs(1)),
+        EaseFunction::QuarticIn,
         ResourceTween::new(my_interpolate::EffectIntensity {
             start: 0.,
             end: 1.,
@@ -102,10 +103,8 @@ fn setup(
         RotateTweenPlayer,
         SpanTweenPlayerBundle::new(Duration::from_secs_f32(1.))
             .with_repeat(Repeat::Infinitely),
-        SpanTweenBundle::new(
-            ..Duration::from_secs_f32(1.),
-            EaseFunction::Linear,
-        ),
+        SpanTweenBundle::new(..Duration::from_secs_f32(1.)),
+        EaseFunction::Linear,
         ComponentTween::new_target(
             big_x,
             my_interpolate::Angle {

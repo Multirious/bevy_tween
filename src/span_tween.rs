@@ -236,52 +236,21 @@ impl From<TweenTimer> for SpanTweenPlayerBundle {
 }
 
 #[derive(Default, Bundle)]
-pub struct SpanTweenBundle<I>
-where
-    I: Component + Interpolation,
-{
+pub struct SpanTweenBundle {
     pub span: TweenTimeSpan,
-    pub interpolation: I,
     pub state: TweenState,
 }
 
-impl<I> SpanTweenBundle<I>
-where
-    I: Component + Interpolation,
-{
-    pub fn new<S>(span: S, interpolation: I) -> Self
+impl SpanTweenBundle {
+    pub fn new<S>(span: S) -> Self
     where
         S: TryInto<TweenTimeSpan>,
         S::Error: std::fmt::Debug,
     {
         SpanTweenBundle {
             span: span.try_into().expect("valid span"),
-            interpolation,
             state: Default::default(),
         }
-    }
-
-    pub fn with_interpolation<NewI>(
-        self,
-        interpolation: NewI,
-    ) -> SpanTweenBundle<NewI>
-    where
-        NewI: Component + Interpolation,
-    {
-        SpanTweenBundle {
-            span: self.span,
-            interpolation,
-            state: self.state,
-        }
-    }
-
-    pub fn with_span<S>(mut self, span: S) -> Self
-    where
-        S: TryInto<TweenTimeSpan>,
-        S::Error: std::fmt::Debug,
-    {
-        self.span = span.try_into().expect("valid span");
-        self
     }
 }
 
@@ -465,9 +434,11 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
         T: Bundle,
         F: FnOnce(EntityCommands),
     {
-        let commands = self
-            .child_builder
-            .spawn((SpanTweenBundle::new(span, interpolation), bundle));
+        let commands = self.child_builder.spawn((
+            SpanTweenBundle::new(span),
+            interpolation,
+            bundle,
+        ));
         f(commands);
         self
     }

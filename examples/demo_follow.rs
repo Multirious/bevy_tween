@@ -106,9 +106,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     //
                     // Tween from second 0 to second 2.
                     ..Duration::from_secs(2),
-                    // Specifying the ease function
-                    EaseFunction::CubicInOut,
                 ),
+                // Specifying the ease function
+                EaseFunction::CubicInOut,
                 // Tweening the rotation using closure
                 ComponentTweenDyn::new_map(
                     |transform: &mut Transform, value| {
@@ -124,10 +124,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             // when you launch up the demo.
             c.spawn((
                 SpanTweenPlayerBundle::new(Duration::from_secs(1)),
-                SpanTweenBundle::new(
-                    ..Duration::from_secs(1),
-                    EaseFunction::QuinticIn,
-                ),
+                SpanTweenBundle::new(..Duration::from_secs(1)),
+                EaseFunction::QuinticIn,
                 ComponentTween::new(interpolate::Scale {
                     start: Vec3::ZERO,
                     end: Vec3::ONE,
@@ -153,7 +151,8 @@ fn jeb_follows_cursor(
         // inserting a new TweenPlayer everytime the cursor moved
         commands.entity(jeb_tween).insert((
             SpanTweenPlayerBundle::new(config.tween_duration),
-            SpanTweenBundle::new(..config.tween_duration, config.tween_ease),
+            SpanTweenBundle::new(..config.tween_duration),
+            config.tween_ease, // don't forget the ease
             // You can have multiple tween in the same Entity as long as their
             // type is differernt.
             //
