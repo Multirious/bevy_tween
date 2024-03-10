@@ -35,13 +35,22 @@ default = [
   "bevy_sprite"
 ]
 
+# Use tween with dynamic dispatch.
 tween_dyn = []
+# Use tween with static dispatch.
 tween_static = []
 
+# Tween player implementation by defining a tween in range of time.
 span_tween = []
 
+# Enable bevy/bevy_asset feature.
+# Adds tweening system for asset
 bevy_asset = [ "bevy/bevy_asset" ]
+# Enable bevy/bevy_render feature.
+# Adds nothing just yet but required by the "bevy_sprite" feature.
 bevy_render = [ "bevy/bevy_render"]
+# Enable bevy/bevy_sprite feature.
+# Add some built-in interpoaltor related to sprite
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
 
 [package.metadata.docs.rs]
