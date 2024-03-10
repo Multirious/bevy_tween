@@ -8,10 +8,9 @@ Credits:
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 
   The first crate I discovered and tried to do tweening with in Bevy. I like
-  the idea of `TweenLens` of theirs. I decided to take that, expand on them,
-  learn their potential, making lens even more capable and flexible. It's now
-  called `Interpolator` in this crate because it's just that and it can be
-  implemented to interpolate anything, not just a subset of some component.
+  the idea of `Lens` of theirs. As I've been experimenting with this, I believe
+  that "lens" is a bit misleading as it sounds like a subset of something. So,
+  I've renamed this to `Interpolator` to reflect its behavior.
 
 - Godot
 
