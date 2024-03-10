@@ -53,7 +53,7 @@ pub struct TweenState {
 /// [`EaseFunction`]: crate::interpolation::EaseFunction
 /// [`EaseClosure`]: crate::interpolation::EaseClosure
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
-#[reflect(Component)]
+#[reflect(Component)] // might want to use sparseset but i'm not sure yet
 pub struct TweenInterpolationValue(pub f32);
 
 /// A [`Tween`] is used as a information for a tween player like:
