@@ -43,6 +43,13 @@ pub mod prelude {
     };
 }
 
+pub use tween::asset_tween_dyn_system;
+pub use tween::asset_tween_system;
+pub use tween::component_tween_dyn_system;
+pub use tween::component_tween_system;
+pub use tween::resource_tween_dyn_system;
+pub use tween::resource_tween_system;
+
 /// Default plugins for using crate.
 pub struct DefaultTweenPlugins;
 impl PluginGroup for DefaultTweenPlugins {

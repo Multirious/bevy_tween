@@ -44,12 +44,10 @@ fn main() {
         .add_systems(
             PostUpdate,
             (
-                bevy_tween::tween::resource_tween_system::<
+                bevy_tween::resource_tween_system::<
                     my_interpolate::EffectIntensity,
                 >,
-                bevy_tween::tween::component_tween_system::<
-                    my_interpolate::Angle,
-                >,
+                bevy_tween::component_tween_system::<my_interpolate::Angle>,
             ),
         )
         .init_resource::<EffectIntensitiy>()
