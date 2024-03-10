@@ -90,7 +90,7 @@ impl Plugin for TweenCorePlugin {
 
 /// Enum of SystemSet in this crate
 /// After adding the plugin [`TweenCorePlugin`], these set will be configured
-/// to run in the [`PostUpdate`] schedule so any modification you've done after
+/// to run in the [`PostUpdate`] schedule so any modification you've done before
 /// this schedule should be correctly applied in the next frame.
 ///
 /// The sets should be configured to run in this order:
@@ -121,7 +121,6 @@ pub enum TweenSystemSet {
     /// - [`tween::resource_tween_system`]
     /// - [`tween::resource_tween_dyn_system`]
     /// - [`tween::asset_tween_system`]
-    /// - [`tween::asset_tween_dyn_system`]
     /// - [`tween::asset_tween_dyn_system`]
     ApplyTween,
 }
