@@ -1,15 +1,134 @@
+//! All examples in this crate will be using the [`span_tween`] implementation
+//! which requires the feature "span_tween" and it is enabled by default.
+//!
 //! # Getting started
-//! ```rust
-//! # use crate as bevy_tween;
+//!
+//! [`DefaultTweenPlugins`] provide most the stuff
+//! you will need.
+//! Add the plugin to your app:
+//! ```no_run
 //! use bevy::prelude::*;
-//! use bevy_tween::prelude::*;
+//! use bevy_tween::*;
+//!
 //! fn main() {
-//!     App::new().add_plugins((
-//!         DefaultPlugins,
-//!         DefaultTweenPlugins
-//!     ))
+//!     App::default()
+//!         .add_plugins((
+//!             DefaultPlugins,
+//!             DefaultTweenPlugins,
+//!         ))
+//!         .run();
 //! }
 //! ```
+//!
+//! ## Tween and Tween player
+//!
+//! Tween player handles the current actual playback timing of any tweens that
+//! it's responsible for.
+//!
+//! Tween is your animation parameters that declares:
+//! - "What" to interpolate
+//! - "How" to interpolate
+//! - "When" to interpolate.
+//!
+//! ## Entity structure
+//!
+//! If we have this entity:
+//!   ```
+//!   # use bevy::prelude::*;
+//!   # use bevy_tween::prelude::*;
+//!   # let world = World::new();
+//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
+//!   # let mut commands = Commands::new(&mut commands_queue, &world);
+//!   let my_entity = commands.spawn(SpriteBundle::default()).id();
+//!   ```
+//!  
+//!   We can create a tween player with tween in 2 ways:
+//! - Tween in the same entity as a tween player.<br/>
+//!   This is the case where you might want to make a simple animation where
+//!   there's not many parameteres. Because an entity can only have one unique
+//!   component, it limits on what animation you can achieve with this.
+//!   ```
+//!   # use bevy::prelude::*;
+//!   # use bevy_tween::prelude::*;
+//!   # let world = World::new();
+//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
+//!   # let mut commands = Commands::new(&mut commands_queue, &world);
+//!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
+//!   // Spawning some tween
+//!   commands.spawn((
+//!       // The tween player:
+//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+//!       // The tween:
+//!       // Tween this from the start to the second 1.
+//!       SpanTweenBundle::new(..Duration::from_secs(1)),
+//!       // Tween this with ease quadratic out.
+//!       EaseFunction::QuadraticOut,
+//!       // Tween a component.
+//!       ComponentTween::new_target(
+//!           // Tween the component of this entity
+//!           my_entity,
+//!           // Tween transform's translation of the entity
+//!           interpolate::Translation {
+//!               start: Vec3::new(0., 0., 0.),
+//!               end: Vec3::new(0., 100., 0.),
+//!           }
+//!       )
+//!   ));
+//!   ```
+//! - Tween(s) as a child of a tween player.<br/>
+//!   This is the case where you want to make a more complex animation. By having
+//!   tweens as tween player's children, you can have any number of tweens and types
+//!   you wanted .
+//!   ```
+//!   # use bevy::prelude::*;
+//!   # use bevy_tween::prelude::*;
+//!   # let world = World::new();
+//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
+//!   # let mut commands = Commands::new(&mut commands_queue, &world);
+//!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
+//!   // Spawning some tween
+//!   commands.spawn(
+//!       // The tween player:
+//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+//!   ).with_children(|c| {
+//!       // The tween:
+//!       c.spawn((
+//!           // Tween this from the start to the second 1.
+//!           SpanTweenBundle::new(..Duration::from_secs(1)),
+//!           // Tween this with ease quadratic out.
+//!           EaseFunction::QuadraticOut,
+//!           // Tween a component.
+//!           ComponentTween::new_target(
+//!               // Tween the component of this entity
+//!               my_entity,
+//!               // Tween transform's translation of the entity
+//!               interpolate::Translation {
+//!                   start: Vec3::new(0., 0., 0.),
+//!                   end: Vec3::new(0., 100., 0.),
+//!               }
+//!           )
+//!       ));
+//!      // spawn some more tween if needed.
+//!      // c.spawn();
+//!   });
+//!   ```
+//!
+//! ## Examples
+//!
+//! This example show the basic way you would do to create some entity with
+//! tweening on them.
+//!
+//! Run `cargo run --example simple_tween` to see this in action.
+//! ```no_run
+#![doc = include_str!("../examples/simple_tween.rs")]
+//! ```
+//!
+//! [`Tween`]: tween::Tween
+//! [`TweenDyn`]: tween::Tween
+//! [`Interpolator`]: interpolate::Interpolator
+//! [`TargetComponent`]: tween::TargetComponent
+//! [`TargetAsset`]: tween::TargetAsset
+//! [`TargetResource`]: tween::TargetResource
 
 // #![warn(missing_docs)]
 
