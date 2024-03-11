@@ -171,7 +171,9 @@ pub mod prelude {
     };
 }
 
+#[cfg(feature = "bevy_asset")]
 pub use tween::asset_tween_dyn_system;
+#[cfg(feature = "bevy_asset")]
 pub use tween::asset_tween_system;
 pub use tween::component_tween_dyn_system;
 pub use tween::component_tween_system;

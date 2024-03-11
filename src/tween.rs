@@ -557,8 +557,10 @@ pub fn asset_tween_system_full<A, I>(
         })
 }
 
+#[cfg(feature = "bevy_asset")]
 #[rustfmt::skip]
 type AssetTweenSystem<I> = for<'a, 'b, 'c, 'd, 'e> fn(bevy::prelude::Query<'a, 'b, (&'c Tween<TargetAsset<<I as Interpolator>::Item>, I>, &'d TweenInterpolationValue)>, std::option::Option<bevy::prelude::ResMut<'e, bevy::prelude::Assets<<I as Interpolator>::Item>>>);
+#[cfg(feature = "bevy_asset")]
 pub fn asset_tween_system<I>() -> AssetTweenSystem<I>
 where
     I: Interpolator,
@@ -567,8 +569,10 @@ where
     asset_tween_system_full::<I::Item, I>
 }
 
+#[cfg(feature = "bevy_asset")]
 #[rustfmt::skip]
 type AssetTweenDynSysytem<A> = for<'a, 'b, 'c, 'd, 'e> fn(bevy::prelude::Query<'a, 'b, (&'c Tween<TargetAsset<A>, std::boxed::Box<(dyn Interpolator<Item = A> + 'static)>>, &'d TweenInterpolationValue)>, std::option::Option<bevy::prelude::ResMut<'e, bevy::prelude::Assets<<std::boxed::Box<(dyn Interpolator<Item = A> + 'static)> as Interpolator>::Item>>>);
+#[cfg(feature = "bevy_asset")]
 pub fn asset_tween_dyn_system<A>() -> AssetTweenDynSysytem<A>
 where
     A: Asset,
