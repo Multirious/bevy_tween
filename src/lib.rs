@@ -26,9 +26,12 @@
 //! it's responsible for.
 //!
 //! Tween is your animation parameters that declares:
-//! - "What" to interpolate
-//! - "How" to interpolate
-//! - "When" to interpolate.
+//! - "**What**" to interpolate, such as [`TargetComponent`], [`TargetAsset`], and
+//!   [`TargetResource`]. These implemented the [`TweenTarget`] trait.
+//! - "**How**" to interpolate, such as [`interpolate::Translation`] and
+//!   [`interpolate::SpriteColor`]. These implemented the [`Interpolator`]
+//!   trait.
+//! - "**When**" to interpolate such as [`TweenTimeSpan`].
 //!
 //! ## Entity structure
 //!
@@ -93,15 +96,10 @@
 //!   ).with_children(|c| {
 //!       // The tween:
 //!       c.spawn((
-//!           // Tween this from the start to the second 1.
 //!           SpanTweenBundle::new(..Duration::from_secs(1)),
-//!           // Tween this with ease quadratic out.
 //!           EaseFunction::QuadraticOut,
-//!           // Tween a component.
 //!           ComponentTween::new_target(
-//!               // Tween the component of this entity
 //!               my_entity,
-//!               // Tween transform's translation of the entity
 //!               interpolate::Translation {
 //!                   start: Vec3::new(0., 0., 0.),
 //!                   end: Vec3::new(0., 100., 0.),
@@ -109,9 +107,10 @@
 //!           )
 //!       ));
 //!      // spawn some more tween if needed.
-//!      // c.spawn();
+//!      // c.spawn( ... );
 //!   });
 //!   ```
+//! - Also the above 2 combined will works just fine btw.
 //!
 //! ## Examples
 //!
@@ -129,6 +128,8 @@
 //! [`TargetComponent`]: tween::TargetComponent
 //! [`TargetAsset`]: tween::TargetAsset
 //! [`TargetResource`]: tween::TargetResource
+//! [`TweenTimeSpan`]: span_tween::TweenTimeSpan
+//! [`TweenTarget`]: tween::TweenTarget
 
 // #![warn(missing_docs)]
 

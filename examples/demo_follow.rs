@@ -110,14 +110,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 // Specifying the ease function
                 EaseFunction::CubicInOut,
                 // Tweening the rotation using closure
-                ComponentTweenDyn::new_map(
+                ComponentTweenDyn::player_parent(Box::new(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;
                         let angle = (end - start).mul_add(value, start);
                         transform.rotation = Quat::from_rotation_z(angle);
                     },
-                ),
+                )
+                    as Box<dyn Fn(&mut Transform, _) + Send + Sync + 'static>),
             ));
 
             // Spawning a TweenPlayer that's responsible for scaling effect
@@ -126,7 +127,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 SpanTweenPlayerBundle::new(Duration::from_secs(1)),
                 SpanTweenBundle::new(..Duration::from_secs(1)),
                 EaseFunction::QuinticIn,
-                ComponentTween::new(interpolate::Scale {
+                ComponentTween::player_parent(interpolate::Scale {
                     start: Vec3::ZERO,
                     end: Vec3::ONE,
                 }),
@@ -157,12 +158,12 @@ fn jeb_follows_cursor(
             // type is differernt.
             //
             // This one for translation
-            ComponentTween::new(interpolate::Translation {
+            ComponentTween::player_parent(interpolate::Translation {
                 start: jeb_transform.translation,
                 end: Vec3::new(coord.x, coord.y, 0.),
             }),
             // This one for color
-            ComponentTween::new(interpolate::SpriteColor {
+            ComponentTween::player_parent(interpolate::SpriteColor {
                 start: Color::PINK,
                 end: Color::WHITE,
             }),

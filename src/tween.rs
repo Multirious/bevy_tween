@@ -233,6 +233,33 @@ where
     }
 }
 
+impl<C> ComponentTweenDyn<C>
+where
+    C: Component,
+{
+    /// Convenient method for targetting tween player's entity.
+    pub fn player_entity<I>(interpolator: I) -> Self
+    where
+        I: Interpolator<Item = C> + Send + Sync + 'static,
+    {
+        ComponentTweenDyn::new_target(
+            TargetComponent::tween_player_entity(),
+            interpolator,
+        )
+    }
+
+    /// Convenient method for targetting tween player's parent.
+    pub fn player_parent<I>(interpolator: I) -> Self
+    where
+        I: Interpolator<Item = C> + Send + Sync + 'static,
+    {
+        ComponentTweenDyn::new_target(
+            TargetComponent::tween_player_parent(),
+            interpolator,
+        )
+    }
+}
+
 /// Useful for the implmentor to specify what this *target* will return the
 /// tweenable [`Self::Item`] which should match [`Interpolator::Item`].
 /// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`].
