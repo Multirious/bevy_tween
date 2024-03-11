@@ -1,54 +1,58 @@
-use std::sync::OnceLock;
-
 use bevy::prelude::*;
-use bevy_tween::{prelude::*, tween::TargetComponent};
+use bevy_tween::prelude::*;
 mod utils;
 
-pub struct JustTranslateTo {
-    start: OnceLock<Vec3>,
-    end: Vec3,
-}
+mod my_interpolate {
+    use bevy::prelude::*;
+    use bevy_tween::prelude::*;
+    use std::sync::OnceLock;
 
-impl JustTranslateTo {
-    pub fn end(end: Vec3) -> JustTranslateTo {
-        JustTranslateTo {
-            start: OnceLock::new(),
-            end,
+    pub struct JustTranslateTo {
+        pub start: OnceLock<Vec3>,
+        pub end: Vec3,
+    }
+
+    impl JustTranslateTo {
+        pub fn end(end: Vec3) -> JustTranslateTo {
+            JustTranslateTo {
+                start: OnceLock::new(),
+                end,
+            }
         }
     }
-}
 
-impl Interpolator for JustTranslateTo {
-    type Item = Transform;
+    impl Interpolator for JustTranslateTo {
+        type Item = Transform;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        let start = self.start.get_or_init(|| item.translation);
-        let end = self.end;
-        item.translation = start.lerp(end, value);
-    }
-}
-
-pub struct JustScaleTo {
-    start: OnceLock<Vec3>,
-    end: Vec3,
-}
-
-impl JustScaleTo {
-    pub fn end(end: Vec3) -> JustScaleTo {
-        JustScaleTo {
-            start: OnceLock::new(),
-            end,
+        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+            let start = self.start.get_or_init(|| item.translation);
+            let end = self.end;
+            item.translation = start.lerp(end, value);
         }
     }
-}
 
-impl Interpolator for JustScaleTo {
-    type Item = Transform;
+    pub struct JustScaleTo {
+        pub start: OnceLock<Vec3>,
+        pub end: Vec3,
+    }
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        let start = self.start.get_or_init(|| item.scale);
-        let end = self.end;
-        item.scale = start.lerp(end, value);
+    impl JustScaleTo {
+        pub fn end(end: Vec3) -> JustScaleTo {
+            JustScaleTo {
+                start: OnceLock::new(),
+                end,
+            }
+        }
+    }
+
+    impl Interpolator for JustScaleTo {
+        type Item = Transform;
+
+        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+            let start = self.start.get_or_init(|| item.scale);
+            let end = self.end;
+            item.scale = start.lerp(end, value);
+        }
     }
 }
 
@@ -107,18 +111,16 @@ fn click_spawn_circle(
                         .tween(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
-                            ComponentTweenDyn::new_target(
-                                TargetComponent::tween_player_entity(),
-                                Box::new(JustTranslateTo::end(end)),
-                            ),
+                            ComponentTweenDyn::player_entity(Box::new(
+                                my_interpolate::JustTranslateTo::end(end),
+                            )),
                         )
                         .tween(
                             ..Duration::from_secs(1),
                             EaseFunction::BackIn,
-                            ComponentTweenDyn::new_target(
-                                TargetComponent::tween_player_entity(),
-                                Box::new(JustScaleTo::end(Vec3::ZERO)),
-                            ),
+                            ComponentTweenDyn::player_entity(Box::new(
+                                my_interpolate::JustScaleTo::end(Vec3::ZERO),
+                            )),
                         );
                 });
         }
