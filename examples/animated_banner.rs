@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
     window,
 };
-use bevy_tween::prelude::*;
+use bevy_tween::{component_tween_system, prelude::*};
 
 const SCALE: f32 = 2.0;
 
@@ -48,11 +48,7 @@ fn main() {
             DefaultTweenPlugins,
         ))
         .add_systems(Startup, (animation, setup_camera))
-        .add_systems(
-            PostUpdate,
-            bevy_tween::component_tween_system::<my_interpolate::Angle>()
-                .in_set(bevy_tween::TweenSystemSet::ApplyTween),
-        )
+        .add_tween_systems(component_tween_system::<my_interpolate::Angle>())
         .run();
 }
 

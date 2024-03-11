@@ -2,7 +2,9 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
+    component_tween_system,
     prelude::*,
+    resource_tween_system,
     tween_timer::{AnimationDirection, TweenTimer},
 };
 use rand::prelude::*;
@@ -41,15 +43,10 @@ fn main() {
         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
         .add_systems(Update, (big_x_do_effect, mouse_hold))
-        .add_systems(
-            PostUpdate,
-            (
-                bevy_tween::resource_tween_system::<
-                    my_interpolate::EffectIntensity,
-                >(),
-                bevy_tween::component_tween_system::<my_interpolate::Angle>(),
-            ),
-        )
+        .add_tween_systems((
+            resource_tween_system::<my_interpolate::EffectIntensity>(),
+            component_tween_system::<my_interpolate::Angle>(),
+        ))
         .init_resource::<EffectIntensitiy>()
         .run();
 }

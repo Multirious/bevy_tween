@@ -152,6 +152,7 @@ pub mod prelude {
     pub use crate::interpolate::{self, Interpolator};
     pub use crate::interpolation::EaseFunction;
     pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
+    pub use crate::AddTweenSystems;
     pub use crate::DefaultTweenPlugins;
 
     #[cfg(feature = "bevy_asset")]
@@ -257,4 +258,24 @@ pub enum TweenSystemSet {
     /// - [`tween::asset_tween_system`]
     /// - [`tween::asset_dyn_system`]
     ApplyTween,
+}
+
+pub trait AddTweenSystems {
+    /// Convenient function to add tween systems to app and prevent unintended configuration.
+    fn add_tween_systems<M>(
+        &mut self,
+        tween_systems: impl IntoSystemConfigs<M>,
+    ) -> &mut Self;
+}
+
+impl AddTweenSystems for App {
+    fn add_tween_systems<M>(
+        &mut self,
+        tween_systems: impl IntoSystemConfigs<M>,
+    ) -> &mut Self {
+        self.add_systems(
+            PostUpdate,
+            tween_systems.in_set(TweenSystemSet::ApplyTween),
+        )
+    }
 }
