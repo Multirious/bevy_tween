@@ -262,6 +262,9 @@ pub enum TweenSystemSet {
     ApplyTween,
 }
 
+/// Convenient trait to add tween systems to app and avoid mistake from
+/// forgetting to use the correct [`PostUpdate`] schedule and calling
+/// `.in_set(TweenSystemSet::ApplyTween)`.
 pub trait AddTweenSystems {
     /// Convenient function to add tween systems to app and avoid mistake from
     /// forgetting to use the correct [`PostUpdate`] schedule and calling
