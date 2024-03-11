@@ -109,7 +109,7 @@ fn click_spawn_circle(
                             EaseFunction::ExponentialOut,
                             ComponentTweenDyn::new_target(
                                 TargetComponent::tween_player_entity(),
-                                JustTranslateTo::end(end),
+                                Box::new(JustTranslateTo::end(end)),
                             ),
                         )
                         .tween(
@@ -117,7 +117,7 @@ fn click_spawn_circle(
                             EaseFunction::BackIn,
                             ComponentTweenDyn::new_target(
                                 TargetComponent::tween_player_entity(),
-                                JustScaleTo::end(Vec3::ZERO),
+                                Box::new(JustScaleTo::end(Vec3::ZERO)),
                             ),
                         );
                 });

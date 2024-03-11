@@ -50,7 +50,7 @@ fn main() {
         .add_systems(Startup, (animation, setup_camera))
         .add_systems(
             PostUpdate,
-            bevy_tween::component_tween_system::<my_interpolate::Angle>
+            bevy_tween::component_tween_system::<my_interpolate::Angle>()
                 .in_set(bevy_tween::TweenSystemSet::ApplyTween),
         )
         .run();
@@ -301,12 +301,14 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 // [ square and triangle ] ====================================
                 .jump(
                     secs(0.),
-                    ComponentTweenDyn::new_target_map(
+                    ComponentTweenDyn::new_target(
                         [square, triangle],
-                        |sprite: &mut Sprite, value: f32| {
-                            sprite.color =
-                                sprite.color.with_a(1_f32.lerp(1., value));
-                        },
+                        interpolate::closure(
+                            |sprite: &mut Sprite, value: f32| {
+                                sprite.color =
+                                    sprite.color.with_a(1_f32.lerp(1., value));
+                            },
+                        ),
                     ),
                 )
                 .tween(
@@ -323,13 +325,15 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .tween(
                     secs(4.)..secs(12.),
                     EaseFunction::ExponentialInOut,
-                    ComponentTweenDyn::new_target_map(
+                    ComponentTweenDyn::new_target(
                         [triangle, square],
-                        |sprite: &mut Sprite, value: f32| {
-                            sprite.color = sprite
-                                .color
-                                .with_a(sprite.color.a().lerp(0., value));
-                        },
+                        interpolate::closure(
+                            |sprite: &mut Sprite, value: f32| {
+                                sprite.color = sprite
+                                    .color
+                                    .with_a(sprite.color.a().lerp(0., value));
+                            },
+                        ),
                     ),
                 )
                 .tween(

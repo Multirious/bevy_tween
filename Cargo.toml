@@ -27,18 +27,11 @@ rand = "0.8.5"
 
 [features]
 default = [
-  "tween_static",
-  "tween_dyn",
   "span_tween",
   "bevy_asset",
   "bevy_render",
   "bevy_sprite"
 ]
-
-# Use tween with dynamic dispatch.
-tween_dyn = []
-# Use tween with static dispatch.
-tween_static = []
 
 # Tween player implementation by defining a tween in range of time.
 span_tween = []
@@ -55,8 +48,6 @@ bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
 
 [package.metadata.docs.rs]
 features = [
-  "tween_dyn",
-  "tween_static",
   "span_tween",
   "bevy_asset",
   "bevy_render",
@@ -70,7 +61,6 @@ required-features = [
   "bevy_asset",
 
   "span_tween",
-  "tween_dyn",
 ]
 
 [[example]]
@@ -80,7 +70,6 @@ required-features = [
   "bevy_asset",
 
   "span_tween",
-  "tween_dyn",
 ]
 
 [[example]]
@@ -93,5 +82,4 @@ required-features = [
   "bevy_asset",
 
   "span_tween",
-  "tween_dyn",
 ]

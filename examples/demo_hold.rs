@@ -46,8 +46,8 @@ fn main() {
             (
                 bevy_tween::resource_tween_system::<
                     my_interpolate::EffectIntensity,
-                >,
-                bevy_tween::component_tween_system::<my_interpolate::Angle>,
+                >(),
+                bevy_tween::component_tween_system::<my_interpolate::Angle>(),
             ),
         )
         .init_resource::<EffectIntensitiy>()

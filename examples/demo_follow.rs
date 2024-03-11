@@ -110,15 +110,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 // Specifying the ease function
                 EaseFunction::CubicInOut,
                 // Tweening the rotation using closure
-                ComponentTweenDyn::player_parent(Box::new(
+                ComponentTweenDyn::player_parent(interpolate::closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;
                         let angle = (end - start).mul_add(value, start);
                         transform.rotation = Quat::from_rotation_z(angle);
                     },
-                )
-                    as Box<dyn Fn(&mut Transform, _) + Send + Sync + 'static>),
+                )),
             ));
 
             // Spawning a TweenPlayer that's responsible for scaling effect

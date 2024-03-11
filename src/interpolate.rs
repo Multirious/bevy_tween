@@ -7,7 +7,7 @@ use crate::utils::color_lerp;
 
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
-pub trait Interpolator {
+pub trait Interpolator: Send + Sync + 'static {
     /// Type to be interpolated.
     type Item;
     /// Interpolate an item using `value` which is typically between 0 and 1.
@@ -17,7 +17,9 @@ pub trait Interpolator {
     fn interpolate(&self, item: &mut Self::Item, value: f32);
 }
 
-impl<I> Interpolator for Box<dyn Fn(&mut I, f32) + Send + Sync + 'static> {
+impl<I: 'static> Interpolator
+    for Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>
+{
     type Item = I;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -25,28 +27,51 @@ impl<I> Interpolator for Box<dyn Fn(&mut I, f32) + Send + Sync + 'static> {
     }
 }
 
-impl<I> Interpolator for fn(&mut I, f32) {
+impl<I: 'static> Interpolator for Box<dyn Interpolator<Item = I>> {
     type Item = I;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        self(item, value)
+        (**self).interpolate(item, value)
     }
+}
+
+pub trait InterpolatorReflected: Interpolator + Reflect {}
+
+impl<T> InterpolatorReflected for T where T: Interpolator + Reflect {}
+
+impl<I: 'static> Interpolator for Box<dyn InterpolatorReflected<Item = I>> {
+    type Item = I;
+    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        (**self).interpolate(item, value);
+    }
+}
+
+pub fn closure<I, F>(f: F) -> Box<dyn Interpolator<Item = I>>
+where
+    I: 'static,
+    F: Fn(&mut I, f32) + Send + Sync + 'static,
+{
+    let f = Box::new(f) as Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>;
+    Box::new(f)
 }
 
 /// Default interpolators
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
-    #[cfg(any(feature = "tween_static", feature = "tween_dyn",))]
     fn build(&self, app: &mut App) {
         use crate::{tween, TweenSystemSet};
 
-        #[cfg(feature = "tween_static")]
+        // type InterpolatorDyn<I> = Box<dyn Interpolator<Item = I>>;
+        // type InterpolatorReflectedDyn<I> =
+        // Box<dyn InterpolatorReflected<Item = I>>;
+
         app.add_systems(
             PostUpdate,
             (
-                tween::component_tween_system::<Translation>,
-                tween::component_tween_system::<Rotation>,
-                tween::component_tween_system::<Scale>,
+                tween::component_tween_dyn_system::<Transform>(),
+                tween::component_tween_system::<Translation>(),
+                tween::component_tween_system::<Rotation>(),
+                tween::component_tween_system::<Scale>(),
             )
                 .in_set(TweenSystemSet::ApplyTween),
         )
@@ -54,54 +79,27 @@ impl Plugin for DefaultInterpolatorsPlugin {
         .register_type::<tween::ComponentTween<Rotation>>()
         .register_type::<tween::ComponentTween<Scale>>();
 
-        #[cfg(feature = "tween_dyn")]
+        #[cfg(feature = "bevy_sprite")]
         app.add_systems(
             PostUpdate,
-            tween::component_tween_dyn_system::<Transform>
-                .in_set(TweenSystemSet::ApplyTween),
-        );
-
-        #[cfg(all(feature = "bevy_sprite", feature = "tween_static"))]
-        app.add_systems(
-            PostUpdate,
-            (tween::component_tween_system::<SpriteColor>,)
+            (
+                tween::component_tween_dyn_system::<Sprite>(),
+                tween::component_tween_system::<SpriteColor>(),
+            )
                 .in_set(TweenSystemSet::ApplyTween),
         )
         .register_type::<tween::ComponentTween<SpriteColor>>();
 
-        #[cfg(all(feature = "bevy_sprite", feature = "tween_dyn"))]
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
         app.add_systems(
             PostUpdate,
-            tween::component_tween_dyn_system::<Sprite>
-                .in_set(TweenSystemSet::ApplyTween),
-        );
-
-        #[cfg(all(
-            feature = "bevy_sprite",
-            feature = "bevy_asset",
-            feature = "tween_static"
-        ))]
-        app.add_systems(
-            PostUpdate,
-            (tween::asset_tween_system::<ColorMaterial>,)
+            (
+                tween::asset_tween_dyn_system::<bevy::sprite::ColorMaterial>(),
+                tween::asset_tween_system::<ColorMaterial>(),
+            )
                 .in_set(TweenSystemSet::ApplyTween),
         )
         .register_type::<tween::AssetTween<ColorMaterial>>();
-
-        #[cfg(all(
-            feature = "bevy_sprite",
-            feature = "bevy_asset",
-            feature = "tween_dyn"
-        ))]
-        app.add_systems(
-            PostUpdate,
-            tween::asset_tween_dyn_system::<bevy::sprite::ColorMaterial>
-                .in_set(TweenSystemSet::ApplyTween),
-        );
-    }
-    #[cfg(not(any(feature = "tween_static", feature = "tween_dyn",)))]
-    fn build(&self, _app: &mut App) {
-        panic!("This plugin is empty without any feature flag! Enable either the feature \"tween_static\" or \"tween_dyn\".")
     }
 }
 
