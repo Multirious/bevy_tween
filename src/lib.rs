@@ -261,7 +261,9 @@ pub enum TweenSystemSet {
 }
 
 pub trait AddTweenSystems {
-    /// Convenient function to add tween systems to app and prevent unintended configuration.
+    /// Convenient function to add tween systems to app and avoid mistake from
+    /// forgetting to use the correct [`PostUpdate`] schedule and calling
+    /// `.in_set(TweenSystemSet::ApplyTween)`.
     fn add_tween_systems<M>(
         &mut self,
         tween_systems: impl IntoSystemConfigs<M>,
