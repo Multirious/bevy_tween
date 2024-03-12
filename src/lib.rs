@@ -250,12 +250,9 @@ pub enum TweenSystemSet {
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
     /// as these systems by this crate:
-    /// - [`tween::component_tween_system`]
-    /// - [`tween::component_dyn_system`]
-    /// - [`tween::resource_tween_system`]
-    /// - [`tween::resource_dyn_system`]
-    /// - [`tween::asset_tween_system`]
-    /// - [`tween::asset_dyn_system`]
+    /// - [`tween::component_tween_system_full`]
+    /// - [`tween::resource_tween_system_full`]
+    /// - [`tween::asset_tween_system_full`]
     ApplyTween,
 }
 

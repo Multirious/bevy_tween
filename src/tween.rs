@@ -1,16 +1,11 @@
 //! Module containg implementations for tween
 //!
-//! This crate currently have 2 tween implementation which is:
-//! - [`Tween`], containg information about a target and an interpolator which
-//!   uses generic all the way.
-//!   Built-in supported [`TweenTarget`]s are:
-//!   - [`TargetComponent`]
-//!   - [`TargetResource`]
-//!   - [`TargetAsset`]
-//!   
-//! - [`TweenDyn`], like [`Tween`] but the inner [`Interpolator`] is boxed and
-//!   uses dynamic dispatch which you can use closure as an [`Interpolator`]
-//!   and reduce system registration!.
+//! # [`Tween`]
+//! Containg information about a target and an interpolator.
+//! Built-in supported [`TweenTarget`]s are:
+//! - [`TargetComponent`]
+//! - [`TargetResource`]
+//! - [`TargetAsset`]
 //!
 //! See available interpolator in [`interpolate`].
 //!
