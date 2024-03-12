@@ -27,10 +27,9 @@
 //!
 //! Tween is your animation parameters that declares:
 //! - "**What**" to interpolate, such as [`TargetComponent`], [`TargetAsset`], and
-//!   [`TargetResource`]. These implemented the [`TweenTarget`] trait.
+//!   [`TargetResource`].
 //! - "**How**" to interpolate, such as [`interpolate::Translation`] and
-//!   [`interpolate::SpriteColor`]. These implemented the [`Interpolator`]
-//!   trait.
+//!   [`interpolate::SpriteColor`]. And they're used with something like [`EaseFunction`]
 //! - "**When**" to interpolate such as [`TweenTimeSpan`].
 //!
 //! ## Entity structure
@@ -114,6 +113,7 @@
 //!
 //! ## Examples
 //!
+//!
 //! Run `cargo run --example simple_tween` to see this in action.
 //! ```no_run
 #![doc = include_str!("../examples/simple_tween.rs")]
@@ -122,6 +122,8 @@
 //! [`Tween`]: tween::Tween
 //! [`TweenDyn`]: tween::Tween
 //! [`Interpolator`]: interpolate::Interpolator
+//! [`Interpolation`]: interpolation::Interpolation
+//! [`EaseFunction`]: interpolation::EaseFunction
 //! [`TargetComponent`]: tween::TargetComponent
 //! [`TargetAsset`]: tween::TargetAsset
 //! [`TargetResource`]: tween::TargetResource
