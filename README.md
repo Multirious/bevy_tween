@@ -7,6 +7,12 @@
 
 Flexible tweening plugin for Bevy.
 
+# Feature gates
+- `"span_tween"`, tween player implementation by defining a tween in range of time.
+- `"bevy_asset"`, enable `"bevy/bevy_asset"`, adds tweening systems for asset.
+- `"bevy_render"`, enable `"bevy/bevy_render"`, adds nothing just yet but required by the `"bevy_sprite"` feature.
+- `"bevy_sprite"`, enable `"bevy/bevy_sprite"`, add some built-in interpoaltor related to sprite.
+
 # Bevy Version Support
 
 |`bevy`|`bevy_tween`|

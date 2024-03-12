@@ -39,10 +39,10 @@
 //!
 //! # Your own [`Interpolator`]
 //!
-//! There are a few amount of built-in [`Interpolator`] such as
-//! [`interpolate::Translation`] or [`interpolate::SpriteColor`].
-//! These are the most common ones to be implemented and for the sake of being
-//! examples. But, for others, you must implemented your own!
+//! There are a few amount of built-in [`Interpolator`] because this crate only
+//! implemented the most common ones such as [`interpolate::Translation`] or
+//! [`interpolate::SpriteColor`] and some more.
+//! For others, you must implemented your own!
 //!
 //! Let's say you've created some custom component and you want to interpolate it:
 //! ```
