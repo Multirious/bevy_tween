@@ -30,8 +30,9 @@
 // //! [`TweenInterpolationValue`]: crate::tween::TweenInterpolationValue
 // //! [`TweenSystemSet`]: crate::TweenSystemSet
 
-use bevy::prelude::*;
 use std::time::Duration;
+
+use bevy::prelude::*;
 
 /// Contains the current elasped time and other useful information
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
@@ -93,11 +94,13 @@ impl TweenTimer {
             ..Default::default()
         }
     }
+
     /// Set the duration limit of this timer
     pub fn set_duration(&mut self, duration: Duration) -> &mut Self {
         self.duration_limit = duration;
         self
     }
+
     /// Set paused
     pub fn set_paused(&mut self, paused: bool) -> &mut Self {
         self.paused = paused;
@@ -396,6 +399,7 @@ impl Repeat {
             } => times_repeated >= times,
         }
     }
+
     /// true if still can repeat, false otherwise.
     pub fn try_advance_counter(&mut self) -> bool {
         match self {

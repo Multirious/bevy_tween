@@ -11,9 +11,10 @@
 //!
 //! [`interpolate`]: crate::interpolate
 
+use std::{any::type_name, marker::PhantomData, time::Duration};
+
 use bevy::ecs::schedule::SystemConfigs;
 use bevy::prelude::*;
-use std::{any::type_name, marker::PhantomData, time::Duration};
 
 use crate::interpolate::Interpolator;
 use crate::tween_timer::AnimationDirection;
@@ -161,14 +162,17 @@ where
     pub fn tween_player_entity() -> TargetComponent<C> {
         TargetComponent::TweenPlayerEntity(PhantomData)
     }
+
     /// Target the parent of this tween's tween_player.
     pub fn tween_player_parent() -> TargetComponent<C> {
         TargetComponent::TweenPlayerParent(PhantomData)
     }
+
     /// Target this entity.
     pub fn entity(entity: Entity) -> TargetComponent<C> {
         TargetComponent::Entity(entity, PhantomData)
     }
+
     /// Target these entities.
     pub fn entities<I>(entities: I) -> TargetComponent<C>
     where

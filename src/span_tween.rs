@@ -1,7 +1,8 @@
 //! Module containing a tween player that process tweens with time span.
 
-use bevy::{ecs::system::EntityCommands, prelude::*};
 use std::{ops, time::Duration};
+
+use bevy::{ecs::system::EntityCommands, prelude::*};
 
 use crate::{
     interpolation::Interpolation,
@@ -147,10 +148,12 @@ impl TweenTimeSpan {
             (false, false) => unreachable!(),
         }
     }
+
     /// Get the min time
     pub fn min(&self) -> TimeBound {
         self.min
     }
+
     /// Get the max time
     pub fn max(&self) -> TimeBound {
         self.max
@@ -165,6 +168,7 @@ impl Default for TweenTimeSpan {
 
 impl TryFrom<ops::Range<Duration>> for TweenTimeSpan {
     type Error = NewTweenTimeSpanError;
+
     fn try_from(range: ops::Range<Duration>) -> Result<Self, Self::Error> {
         TweenTimeSpan::new(
             TimeBound::Inclusive(range.start),
@@ -174,6 +178,7 @@ impl TryFrom<ops::Range<Duration>> for TweenTimeSpan {
 }
 impl TryFrom<ops::RangeInclusive<Duration>> for TweenTimeSpan {
     type Error = NewTweenTimeSpanError;
+
     fn try_from(
         range: ops::RangeInclusive<Duration>,
     ) -> Result<Self, Self::Error> {
@@ -186,6 +191,7 @@ impl TryFrom<ops::RangeInclusive<Duration>> for TweenTimeSpan {
 
 impl TryFrom<ops::RangeTo<Duration>> for TweenTimeSpan {
     type Error = NewTweenTimeSpanError;
+
     fn try_from(range: ops::RangeTo<Duration>) -> Result<Self, Self::Error> {
         TweenTimeSpan::new(
             TimeBound::Inclusive(Duration::ZERO),
@@ -196,6 +202,7 @@ impl TryFrom<ops::RangeTo<Duration>> for TweenTimeSpan {
 
 impl TryFrom<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
     type Error = NewTweenTimeSpanError;
+
     fn try_from(
         range: ops::RangeToInclusive<Duration>,
     ) -> Result<Self, Self::Error> {
@@ -224,12 +231,14 @@ impl SpanTweenPlayerBundle {
         t.tween_timer.set_duration(duration);
         t
     }
+
     /// [`SpanTweenPlayerBundle`] with the specified `paused` for the inner
     /// [`TweenTimer`]
     pub fn with_paused(mut self, paused: bool) -> Self {
         self.tween_timer.set_paused(paused);
         self
     }
+
     // pub fn with_elasped(mut self, elasped: Duration) -> Self {
     //     self.tween_player.set_elasped(elasped);
     //     self
@@ -247,6 +256,7 @@ impl SpanTweenPlayerBundle {
         self.tween_timer.set_repeat(Some(repeat));
         self
     }
+
     /// [`SpanTweenPlayerBundle`] with the specified `repeat_style`
     /// setting the inner [`TweenTimer`]'s repeat_style to Some
     pub fn with_repeat_style(
@@ -256,12 +266,14 @@ impl SpanTweenPlayerBundle {
         self.tween_timer.set_repeat_style(Some(repeat_style));
         self
     }
+
     /// [`SpanTweenPlayerBundle`] with without repeat,
     /// setting the inner [`TweenTimer`]'s repeat to None.
     pub fn without_repeat(mut self) -> Self {
         self.tween_timer.set_repeat(None);
         self
     }
+
     /// [`SpanTweenPlayerBundle`] with without repeat_style
     /// setting the inner [`TweenTimer`]'s repeat_style to None.
     pub fn without_repeat_style(mut self) -> Self {
@@ -313,9 +325,11 @@ pub fn span_tween_player_system(
     >,
     mut q_tween: Query<(&mut TweenState, &TweenTimeSpan)>,
 ) {
-    use crate::tween_timer::RepeatStyle::*;
     use AnimationDirection::*;
     use DurationQuotient::*;
+
+    use crate::tween_timer::RepeatStyle::*;
+
     q_tween_span_player
         .iter()
         .for_each(|(player_entity, timer, children)| {
@@ -362,61 +376,66 @@ pub fn span_tween_player_system(
                 ) {
                     (_, Inside, Inside, None) => Some(tween_elasped),
                     // -------------------------------------------------------
-                    (Forward, Before, Inside, None)
-                        | (Forward, Inside, After, None)
-                        | (Forward, Before, After, None)
+                    | (Forward, Before, Inside, None)
+                    | (Forward, Inside, After, None)
+                    | (Forward, Before, After, None)
                         => Some(tween_elasped),
+
                     // -------------------------------------------------------
-                    (Backward, After, Inside, None)
-                        | (Backward, Inside, Before, None)
-                        | (Backward, After, Before, None)
+                    | (Backward, After, Inside, None)
+                    | (Backward, Inside, Before, None)
+                    | (Backward, After, Before, None)
                         => Some(tween_elasped),
+
                     // --------------------------------------------------------
                     // don't remove these comments, may use for debugging in the future
-                    (Forward, Before, Before, Some(WrapAround)) // 1&2 max
-                        | (Forward, Inside, Before, Some(WrapAround)) // 1 max
+                    | (Forward, Before, Before, Some(WrapAround)) // 1&2 max
+                    | (Forward, Inside, Before, Some(WrapAround)) // 1 max
                         => Some(tween_max),
-                    (Forward, Before, Inside, Some(WrapAround)) // 2 now
-                        | (Forward, Before, After, Some(WrapAround)) // 2 now, max
-                        | (Forward, Inside, Inside, Some(WrapAround)) // 1&2 now
-                        | (Forward, Inside, After, Some(WrapAround)) // 2 now, max
-                        | (Forward, After, Inside, Some(WrapAround)) // 1 now 
-                        | (Forward, After, After, Some(WrapAround)) // 1&2 now, max
-                        // | (Forward, After, Before, Some(WrapAround)) // 1
+                    | (Forward, Before, Inside, Some(WrapAround)) // 2 now
+                    | (Forward, Before, After, Some(WrapAround)) // 2 now, max
+                    | (Forward, Inside, Inside, Some(WrapAround)) // 1&2 now
+                    | (Forward, Inside, After, Some(WrapAround)) // 2 now, max
+                    | (Forward, After, Inside, Some(WrapAround)) // 1 now 
+                    | (Forward, After, After, Some(WrapAround)) // 1&2 now, max
+                    // | (Forward, After, Before, Some(WrapAround)) // 1
                         => Some(tween_elasped),
+
                     // -------------------------------------------------------
-                    (Backward, After, After, Some(WrapAround)) // 1&2 min
-                        | (Backward, Inside, After, Some(WrapAround)) // 1 min
+                    | (Backward, After, After, Some(WrapAround)) // 1&2 min
+                    | (Backward, Inside, After, Some(WrapAround)) // 1 min
                         => Some(tween_min),
-                    (Backward, Before, Before, Some(WrapAround)) // 1&2 now, min
-                        | (Backward, Before, Inside, Some(WrapAround)) // 1 now 
-                        | (Backward, Inside, Before, Some(WrapAround)) // 2 now, min
-                        | (Backward, Inside, Inside, Some(WrapAround)) // 1&2 now
-                        | (Backward, After, Before, Some(WrapAround)) // 2 now, min
-                        | (Backward, After, Inside, Some(WrapAround)) // 2 now
-                        // | (Backward, Before, After, Some(WrapAround)) // 1
+                    | (Backward, Before, Before, Some(WrapAround)) // 1&2 now, min
+                    | (Backward, Before, Inside, Some(WrapAround)) // 1 now 
+                    | (Backward, Inside, Before, Some(WrapAround)) // 2 now, min
+                    | (Backward, Inside, Inside, Some(WrapAround)) // 1&2 now
+                    | (Backward, After, Before, Some(WrapAround)) // 2 now, min
+                    | (Backward, After, Inside, Some(WrapAround)) // 2 now
+                    // | (Backward, Before, After, Some(WrapAround)) // 1
                         => Some(tween_elasped),
+
                     // -------------------------------------------------------
-                    (Backward, Before, Before, Some(PingPong)) // 1&2 now, min
-                        | (Backward, Before, Inside, Some(PingPong)) // 1 now
-                        | (Backward, Before, After, Some(PingPong)) // 1 now, max
-                        | (Backward, Inside, Before, Some(PingPong)) // 2 now, min
-                        | (Backward, Inside, Inside, Some(PingPong)) // 1&2 now
-                        | (Backward, Inside, After, Some(PingPong)) // 1 now, max
-                        | (Backward, After, Before, Some(PingPong)) // 2 now, min
-                        | (Backward, After, Inside, Some(PingPong)) // 2 now
+                    | (Backward, Before, Before, Some(PingPong)) // 1&2 now, min
+                    | (Backward, Before, Inside, Some(PingPong)) // 1 now
+                    | (Backward, Before, After, Some(PingPong)) // 1 now, max
+                    | (Backward, Inside, Before, Some(PingPong)) // 2 now, min
+                    | (Backward, Inside, Inside, Some(PingPong)) // 1&2 now
+                    | (Backward, Inside, After, Some(PingPong)) // 1 now, max
+                    | (Backward, After, Before, Some(PingPong)) // 2 now, min
+                    | (Backward, After, Inside, Some(PingPong)) // 2 now
+                    // | (Backward, After, After, Some(PingPong)) // 1&2
                         => Some(tween_elasped),
-                        // | (Backward, After, After, Some(PingPong)) // 1&2
+
                     // -------------------------------------------------------
-                        // | (Forward, Before, Before, Some(PingPong)) // 1&2
-                        | (Forward, Before, Inside, Some(PingPong)) // 2 now
-                        | (Forward, Before, After, Some(PingPong)) // 2 now, max
-                        | (Forward, Inside, Before, Some(PingPong)) // 1 now, min
-                        | (Forward, Inside, Inside, Some(PingPong)) // 1&2 now
-                        | (Forward, Inside, After, Some(PingPong)) // 2 now, max
-                        | (Forward, After, Before, Some(PingPong)) // 1 now, min
-                        | (Forward, After, Inside, Some(PingPong)) // 1 now
-                        | (Forward, After, After, Some(PingPong)) // 1&2 now, max
+                    // | (Forward, Before, Before, Some(PingPong)) // 1&2
+                    | (Forward, Before, Inside, Some(PingPong)) // 2 now
+                    | (Forward, Before, After, Some(PingPong)) // 2 now, max
+                    | (Forward, Inside, Before, Some(PingPong)) // 1 now, min
+                    | (Forward, Inside, Inside, Some(PingPong)) // 1&2 now
+                    | (Forward, Inside, After, Some(PingPong)) // 2 now, max
+                    | (Forward, After, Before, Some(PingPong)) // 1 now, min
+                    | (Forward, After, Inside, Some(PingPong)) // 1 now
+                    | (Forward, After, After, Some(PingPong)) // 1&2 now, max
                         => Some(tween_elasped),
                     _ => None,
                 };

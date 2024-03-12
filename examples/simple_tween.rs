@@ -1,6 +1,7 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_tween::prelude::*;
-use std::time::Duration;
 
 fn main() {
     App::new()

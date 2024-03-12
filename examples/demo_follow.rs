@@ -4,7 +4,6 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-
 use bevy_tween::prelude::*;
 
 fn main() {

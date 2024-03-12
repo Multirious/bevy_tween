@@ -12,10 +12,7 @@
 //!
 //! fn main() {
 //!     App::default()
-//!         .add_plugins((
-//!             DefaultPlugins,
-//!             DefaultTweenPlugins,
-//!         ))
+//!         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
 //!         .run();
 //! }
 //! ```
@@ -118,7 +115,7 @@
 //! ```no_run
 #![doc = include_str!("../examples/simple_tween.rs")]
 //! ```
-//!
+//! 
 //! [`Tween`]: tween::Tween
 //! [`TweenDyn`]: tween::Tween
 //! [`Interpolator`]: interpolate::Interpolator
@@ -150,24 +147,21 @@ pub mod prelude {
 
     pub use crate::interpolate::{self, Interpolator};
     pub use crate::interpolation::EaseFunction;
-    pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
-    pub use crate::BevyTweenRegisterSystems;
-    pub use crate::DefaultTweenPlugins;
-
-    #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetTween;
-    pub use crate::tween::ComponentTween;
-    pub use crate::tween::ResourceTween;
-
-    #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetTweenDyn;
-    pub use crate::tween::ComponentTweenDyn;
-    pub use crate::tween::ResourceTweenDyn;
-
     #[cfg(feature = "span_tween")]
     pub use crate::span_tween::{
         BuildSpanTweens, SpanTweenBundle, SpanTweenPlayerBundle,
     };
+    #[cfg(feature = "bevy_asset")]
+    pub use crate::tween::AssetTween;
+    #[cfg(feature = "bevy_asset")]
+    pub use crate::tween::AssetTweenDyn;
+    pub use crate::tween::ComponentTween;
+    pub use crate::tween::ComponentTweenDyn;
+    pub use crate::tween::ResourceTween;
+    pub use crate::tween::ResourceTweenDyn;
+    pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
+    pub use crate::BevyTweenRegisterSystems;
+    pub use crate::DefaultTweenPlugins;
 }
 
 #[cfg(feature = "bevy_asset")]

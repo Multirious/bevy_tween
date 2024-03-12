@@ -2,7 +2,7 @@
 
 # `bevy_tween`
 
-WIP Flexible tweening plugin for Bevy.
+Flexible tweening plugin for Bevy.
 
 Credits:
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)

@@ -42,6 +42,7 @@ impl<T> InterpolatorReflected for T where T: Interpolator + Reflect {}
 
 impl<I: 'static> Interpolator for Box<dyn InterpolatorReflected<Item = I>> {
     type Item = I;
+
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         (**self).interpolate(item, value);
     }

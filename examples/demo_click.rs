@@ -3,9 +3,10 @@ use bevy_tween::prelude::*;
 mod utils;
 
 mod my_interpolate {
+    use std::sync::OnceLock;
+
     use bevy::prelude::*;
     use bevy_tween::prelude::*;
-    use std::sync::OnceLock;
 
     pub struct JustTranslateTo {
         pub start: OnceLock<Vec3>,
