@@ -358,13 +358,6 @@ pub trait BevyTweenRegisterSystems {
         &mut self,
         tween_systems: impl IntoSystemConfigs<M>,
     ) -> &mut Self;
-
-    /// Register tween systems in schedule [`PostUpdate`] with set
-    /// [`TweenSystemSet::UpdateInterpolationValue`]
-    fn add_interpolation_systems<M>(
-        &mut self,
-        interpolation_systems: impl IntoSystemConfigs<M>,
-    ) -> &mut Self;
 }
 
 impl BevyTweenRegisterSystems for App {
@@ -375,17 +368,6 @@ impl BevyTweenRegisterSystems for App {
         self.add_systems(
             PostUpdate,
             tween_systems.in_set(TweenSystemSet::ApplyTween),
-        )
-    }
-
-    fn add_interpolation_systems<M>(
-        &mut self,
-        interpolation_systems: impl IntoSystemConfigs<M>,
-    ) -> &mut Self {
-        self.add_systems(
-            PostUpdate,
-            interpolation_systems
-                .in_set(TweenSystemSet::UpdateInterpolationValue),
         )
     }
 }
