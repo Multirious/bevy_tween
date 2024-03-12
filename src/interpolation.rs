@@ -9,6 +9,7 @@ use bevy::prelude::*;
 use crate::{
     tween::{TweenInterpolationValue, TweenState},
     tween_timer::AnimationDirection,
+    RegisterSystems,
 };
 
 mod ease_functions;
@@ -26,11 +27,8 @@ pub trait Interpolation {
 pub struct EaseFunctionPlugin;
 impl Plugin for EaseFunctionPlugin {
     fn build(&self, app: &mut App) {
-        use crate::TweenSystemSet;
-        app.add_systems(
-            PostUpdate,
-            sample_interpolations_system::<EaseFunction>
-                .in_set(TweenSystemSet::UpdateInterpolationValue),
+        app.add_interpolation_systems(
+            sample_interpolations_system::<EaseFunction>,
         );
     }
 }
@@ -128,11 +126,8 @@ impl Interpolation for EaseFunction {
 pub struct EaseClosurePlugin;
 impl Plugin for EaseClosurePlugin {
     fn build(&self, app: &mut App) {
-        use crate::TweenSystemSet;
-        app.add_systems(
-            PostUpdate,
-            sample_interpolations_system::<EaseClosure>
-                .in_set(TweenSystemSet::UpdateInterpolationValue),
+        app.add_interpolation_systems(
+            sample_interpolations_system::<EaseClosure>,
         );
     }
 }

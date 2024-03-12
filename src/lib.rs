@@ -149,8 +149,8 @@ pub mod prelude {
     pub use crate::interpolate::{self, Interpolator};
     pub use crate::interpolation::EaseFunction;
     pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
-    pub use crate::AddTweenSystems;
     pub use crate::DefaultTweenPlugins;
+    pub use crate::RegisterSystems;
 
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetTween;
@@ -259,20 +259,25 @@ pub enum TweenSystemSet {
     ApplyTween,
 }
 
-/// Convenient trait to add tween systems to app and avoid mistake from
-/// forgetting to use the correct [`PostUpdate`] schedule and calling
-/// `.in_set(TweenSystemSet::ApplyTween)`.
-pub trait AddTweenSystems {
-    /// Convenient function to add tween systems to app and avoid mistake from
-    /// forgetting to use the correct [`PostUpdate`] schedule and calling
-    /// `.in_set(TweenSystemSet::ApplyTween)`.
+/// Helper trait to add systems by this crate to your app and avoid mistake
+/// from forgetting to use the intended schedule and set.
+pub trait RegisterSystems {
+    /// Register tween systems in schedule [`PostUpdate`] with set
+    /// [`TweenSystemSet::ApplyTween`]
     fn add_tween_systems<M>(
         &mut self,
         tween_systems: impl IntoSystemConfigs<M>,
     ) -> &mut Self;
+
+    /// Register tween systems in schedule [`PostUpdate`] with set
+    /// [`TweenSystemSet::UpdateInterpolationValue`]
+    fn add_interpolation_systems<M>(
+        &mut self,
+        interpolation_systems: impl IntoSystemConfigs<M>,
+    ) -> &mut Self;
 }
 
-impl AddTweenSystems for App {
+impl RegisterSystems for App {
     fn add_tween_systems<M>(
         &mut self,
         tween_systems: impl IntoSystemConfigs<M>,
@@ -280,6 +285,17 @@ impl AddTweenSystems for App {
         self.add_systems(
             PostUpdate,
             tween_systems.in_set(TweenSystemSet::ApplyTween),
+        )
+    }
+
+    fn add_interpolation_systems<M>(
+        &mut self,
+        interpolation_systems: impl IntoSystemConfigs<M>,
+    ) -> &mut Self {
+        self.add_systems(
+            PostUpdate,
+            interpolation_systems
+                .in_set(TweenSystemSet::UpdateInterpolationValue),
         )
     }
 }
