@@ -153,6 +153,24 @@ impl Interpolator for Scale {
     }
 }
 
+/// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
+/// Usually used for 2D rotation.
+#[derive(Debug, Default, Clone, PartialEq, Reflect)]
+pub struct AngleZ {
+    #[allow(missing_docs)]
+    pub start: f32,
+    #[allow(missing_docs)]
+    pub end: f32,
+}
+impl Interpolator for AngleZ {
+    type Item = Transform;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        let angle = (self.end - self.start).mul_add(value, self.start);
+        item.rotation = Quat::from_rotation_z(angle);
+    }
+}
+
 /// [`Interpolator`] for [`Sprite`]'s color
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]

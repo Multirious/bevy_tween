@@ -108,8 +108,12 @@
 //!   ```
 //! - Also the above 2 combined will works just fine btw.
 //!
-//! ## Examples
+//! # Your own [`Interpolator`]
 //!
+//! There are a few amount of built-in [`Interpolator`].
+//! They've only been made for the most common usage.
+//!
+//! ## Examples
 //!
 //! Run `cargo run --example simple_tween` to see this in action.
 //! ```no_run
