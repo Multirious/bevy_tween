@@ -10,6 +10,7 @@ use crate::{
     tween_timer::{self, AnimationDirection, TweenTimer},
 };
 
+/// Plugin for using span tween
 #[derive(Debug)]
 pub struct SpanTweenPlugin;
 impl Plugin for SpanTweenPlugin {
@@ -24,17 +25,23 @@ impl Plugin for SpanTweenPlugin {
     }
 }
 
+/// Marker component for a span tween player
 #[derive(Debug, Default, Component, Clone, PartialEq, Eq, Hash, Reflect)]
 #[reflect(Component)]
 pub struct SpanTweenPlayer;
 
+/// Bouding enum for [`Duration`] to be exclusivively checked or inclusivively
+/// checked.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 pub enum TimeBound {
+    /// Inclusively check this duration
     Inclusive(Duration),
+    /// Exclusively check this duration
     Exclusive(Duration),
 }
 
 impl TimeBound {
+    /// Get the inner duration
     pub fn duration(&self) -> Duration {
         match self {
             TimeBound::Inclusive(d) | TimeBound::Exclusive(d) => *d,
@@ -55,10 +62,24 @@ enum DurationQuotient {
     After,
 }
 
+/// Error type for when creating a new [`TweenTimeSpan`].
 #[derive(Debug)]
 pub enum NewTweenTimeSpanError {
-    NotTime { min: TimeBound, max: TimeBound },
-    MinGreaterThanMax { min: TimeBound, max: TimeBound },
+    /// The provided min, max will result in a [`TweenTimeSpan`] that does not
+    /// appear on a timeline
+    NotTime {
+        #[allow(missing_docs)]
+        min: TimeBound,
+        #[allow(missing_docs)]
+        max: TimeBound,
+    },
+    /// The provided min is greater than max and it's not allowed.
+    MinGreaterThanMax {
+        #[allow(missing_docs)]
+        min: TimeBound,
+        #[allow(missing_docs)]
+        max: TimeBound,
+    },
 }
 
 impl std::error::Error for NewTweenTimeSpanError {}
@@ -75,13 +96,17 @@ impl std::fmt::Display for NewTweenTimeSpanError {
     }
 }
 
+/// Define the range of time for a span tween that will be interpolating for.
 #[derive(Debug, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 #[reflect(Component)]
 pub struct TweenTimeSpan {
+    /// Minimum time for the span tween.
     min: TimeBound,
+    /// Maximum time for the span tween.
     max: TimeBound,
 }
 impl TweenTimeSpan {
+    /// Create a new [`TweenTimeSpan`] unchecked for invalid min, max.
     pub(crate) fn new_unchecked(
         min: TimeBound,
         max: TimeBound,
@@ -89,6 +114,7 @@ impl TweenTimeSpan {
         TweenTimeSpan { min, max }
     }
 
+    /// Create a new [`TweenTimerSpan`]
     pub fn new(
         min: TimeBound,
         max: TimeBound,
@@ -121,9 +147,11 @@ impl TweenTimeSpan {
             (false, false) => unreachable!(),
         }
     }
+    /// Get the min time
     pub fn min(&self) -> TimeBound {
         self.min
     }
+    /// Get the max time
     pub fn max(&self) -> TimeBound {
         self.max
     }
@@ -178,49 +206,66 @@ impl TryFrom<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
     }
 }
 
+/// Bundle for a span tween player
 #[derive(Default, Bundle)]
 pub struct SpanTweenPlayerBundle {
-    pub tween_player: TweenTimer,
+    /// [`TweenTimer`] as required to work with a span tween
+    pub tween_timer: TweenTimer,
+    /// [`SpanTweenPlayer`] marker to declare a span tween player
     pub span_player: SpanTweenPlayer,
+    /// [`TweenTimer`] marker to declare a tween player
     pub tween_player_marker: TweenPlayerMarker,
 }
 
 impl SpanTweenPlayerBundle {
+    /// Create new [`SpanTweenPlayerBundle`] with `duration`
     pub fn new(duration: Duration) -> Self {
         let mut t = SpanTweenPlayerBundle::default();
-        t.tween_player.set_duration(duration);
+        t.tween_timer.set_duration(duration);
         t
     }
+    /// [`SpanTweenPlayerBundle`] with the specified `paused` for the inner
+    /// [`TweenTimer`]
     pub fn with_paused(mut self, paused: bool) -> Self {
-        self.tween_player.set_paused(paused);
+        self.tween_timer.set_paused(paused);
         self
     }
     // pub fn with_elasped(mut self, elasped: Duration) -> Self {
     //     self.tween_player.set_elasped(elasped);
     //     self
     // }
+    /// [`SpanTweenPlayerBundle`] with the specified `direction` for the inner
+    /// [`TweenTimer`]
     pub fn with_direction(mut self, direction: AnimationDirection) -> Self {
-        self.tween_player.set_direction(direction);
+        self.tween_timer.set_direction(direction);
         self
     }
 
+    /// [`SpanTweenPlayerBundle`] with the specified `repeat`
+    /// setting the inner [`TweenTimer`]'s repeat to Some
     pub fn with_repeat(mut self, repeat: tween_timer::Repeat) -> Self {
-        self.tween_player.set_repeat(Some(repeat));
+        self.tween_timer.set_repeat(Some(repeat));
         self
     }
+    /// [`SpanTweenPlayerBundle`] with the specified `repeat_style`
+    /// setting the inner [`TweenTimer`]'s repeat_style to Some
     pub fn with_repeat_style(
         mut self,
         repeat_style: tween_timer::RepeatStyle,
     ) -> Self {
-        self.tween_player.set_repeat_style(Some(repeat_style));
+        self.tween_timer.set_repeat_style(Some(repeat_style));
         self
     }
+    /// [`SpanTweenPlayerBundle`] with without repeat,
+    /// setting the inner [`TweenTimer`]'s repeat to None.
     pub fn without_repeat(mut self) -> Self {
-        self.tween_player.set_repeat(None);
+        self.tween_timer.set_repeat(None);
         self
     }
+    /// [`SpanTweenPlayerBundle`] with without repeat_style
+    /// setting the inner [`TweenTimer`]'s repeat_style to None.
     pub fn without_repeat_style(mut self) -> Self {
-        self.tween_player.set_repeat_style(None);
+        self.tween_timer.set_repeat_style(None);
         self
     }
 }
@@ -228,20 +273,24 @@ impl SpanTweenPlayerBundle {
 impl From<TweenTimer> for SpanTweenPlayerBundle {
     fn from(value: TweenTimer) -> Self {
         SpanTweenPlayerBundle {
-            tween_player: value,
+            tween_timer: value,
             span_player: SpanTweenPlayer,
             tween_player_marker: TweenPlayerMarker,
         }
     }
 }
 
+/// Bundle for a span tween
 #[derive(Default, Bundle)]
 pub struct SpanTweenBundle {
+    /// [`TweenTimeSpan`] to define the range of time this span tween will work for.
     pub span: TweenTimeSpan,
+    /// [`TweenState`] required to work as a span tween
     pub state: TweenState,
 }
 
 impl SpanTweenBundle {
+    /// Create a new [`SpanTweenBundle`] from this `span`
     pub fn new<S>(span: S) -> Self
     where
         S: TryInto<TweenTimeSpan>,
@@ -254,6 +303,8 @@ impl SpanTweenBundle {
     }
 }
 
+/// System for updating any span tweens to the correct [`TweenState`] as playing
+/// by its span tween player
 pub fn span_tween_player_system(
     q_other_tween_player: Query<(), With<TweenTimer>>,
     q_tween_span_player: Query<

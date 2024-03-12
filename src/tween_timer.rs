@@ -55,9 +55,13 @@ impl Elasped {
     }
 }
 
+/// Report the result after using the method [`TweenTimer::tick`]
 pub enum TickResult {
+    /// Result from ticking is normal.
     Continue,
+    /// Result from ticking is timer has repeated.
     Repeated,
+    /// Result from ticking is all done.
     AllDone,
 }
 
@@ -155,6 +159,7 @@ impl TweenTimer {
         }
     }
 
+    /// Update the timer by ticking for `duration` in a `direction`.
     pub fn tick(
         &mut self,
         duration: Duration,
@@ -415,8 +420,10 @@ impl Repeat {
 /// Tween timer repeat behavior
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 pub enum RepeatStyle {
+    /// Timer will wrap around.
     #[default]
     WrapAround,
+    /// Timer will flip its direction.
     PingPong,
 }
 

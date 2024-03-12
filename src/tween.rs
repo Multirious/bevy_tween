@@ -49,6 +49,7 @@ pub struct TweenState {
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
 pub struct TweenInterpolationValue(pub f32);
 
+/// Containg [`Target`] and [`Interpolator`]
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]
@@ -310,8 +311,8 @@ where
     }
 }
 
-// /// Tween any [`Tween`] with any [`Interpolator`] that [`TargetComponent`] with
-// /// value provided by [`TweenInterpolationValue`] component.
+/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
+/// value provided by [`TweenInterpolationValue`] component.
 pub fn component_tween_system_full<C, I>(
     q_tween_player: Query<(Option<&Parent>, Has<TweenPlayerMarker>)>,
     q_tween: Query<(
@@ -435,7 +436,8 @@ where
     type Item = R;
 }
 
-// /// Tween any [`ResourceTween`] with value provided by [`TweenInterpolationValue`] component.
+/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
+/// value provided by [`TweenInterpolationValue`] component.
 pub fn resource_tween_system_full<R, I>(
     q_tween: Query<(&Tween<TargetResource<R>, I>, &TweenInterpolationValue)>,
     resource: Option<ResMut<I::Item>>,
@@ -569,7 +571,8 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
     }
 }
 
-/// Tween any [`AssetTween`] with value provided by [`TweenInterpolationValue`] component.
+/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
+/// value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "bevy_asset")]
 pub fn asset_tween_system_full<A, I>(
     q_tween: Query<(&Tween<TargetAsset<A>, I>, &TweenInterpolationValue)>,

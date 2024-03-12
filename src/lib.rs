@@ -130,7 +130,7 @@
 //! [`TweenTimeSpan`]: span_tween::TweenTimeSpan
 //! [`TweenTarget`]: tween::TweenTarget
 
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
 

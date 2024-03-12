@@ -35,7 +35,8 @@ impl<I: 'static> Interpolator for Box<dyn Interpolator<Item = I>> {
     }
 }
 
-pub trait InterpolatorReflected: Interpolator + Reflect {}
+#[allow(unused)]
+trait InterpolatorReflected: Interpolator + Reflect {}
 
 impl<T> InterpolatorReflected for T where T: Interpolator + Reflect {}
 
