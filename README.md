@@ -4,7 +4,13 @@
 
 Flexible tweening plugin for Bevy.
 
-Credits:
+# Bevy Version Support
+
+|`bevy`|`bevy_tween`|
+|------|------------|
+|0.13  |0.2         |
+
+# Credits
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 
   The first crate I discovered and tried to do tweening with in Bevy. I like
