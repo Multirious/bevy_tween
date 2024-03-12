@@ -1,4 +1,83 @@
 //! Module containing a tween player that process tweens with time span.
+//!
+//! # Entity structure
+//!
+//! If we have this entity:
+//!   ```
+//!   # use bevy::prelude::*;
+//!   # use bevy_tween::prelude::*;
+//!   # let world = World::new();
+//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
+//!   # let mut commands = Commands::new(&mut commands_queue, &world);
+//!   let my_entity = commands.spawn(SpriteBundle::default()).id();
+//!   ```
+//!  
+//!   We can create a span tween player with span tween in 2 ways:
+//! - Span tween in the same entity as a span tween player.<br/>
+//!   This is the case where you might want to make a simple animation where
+//!   there's not many parameteres. Because an entity can only have one unique
+//!   component, it limits on what animation you can achieve with this.
+//!   ```
+//!   # use bevy::prelude::*;
+//!   # use bevy_tween::prelude::*;
+//!   # let world = World::new();
+//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
+//!   # let mut commands = Commands::new(&mut commands_queue, &world);
+//!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
+//!   // Spawning some span tween player
+//!   commands.spawn((
+//!       // The span tween player:
+//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+//!       // The tween:
+//!       // Tween this from the start to the second 1.
+//!       SpanTweenBundle::new(..Duration::from_secs(1)),
+//!       // Tween this with ease quadratic out.
+//!       EaseFunction::QuadraticOut,
+//!       // Tween a component.
+//!       ComponentTween::new_target(
+//!           // Tween the component of this entity
+//!           my_entity,
+//!           // Tween transform's translation of the entity
+//!           interpolate::Translation {
+//!               start: Vec3::new(0., 0., 0.),
+//!               end: Vec3::new(0., 100., 0.),
+//!           }
+//!       )
+//!   ));
+//!   ```
+//! - Span tween(s) as a child of a span tween player.<br/>
+//!   This is the case where you want to make a more complex animation. By having
+//!   span tweens as span tween player's children, you can have any number of
+//!   span tween types you wanted .
+//!   ```
+//!   # use bevy::prelude::*;
+//!   # use bevy_tween::prelude::*;
+//!   # let world = World::new();
+//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
+//!   # let mut commands = Commands::new(&mut commands_queue, &world);
+//!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
+//!   // Spawning some span tween player
+//!   commands.spawn(
+//!       // The span tween player:
+//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+//!   ).with_children(|c| {
+//!       // The span tween:
+//!       c.spawn((
+//!           SpanTweenBundle::new(..Duration::from_secs(1)),
+//!           EaseFunction::QuadraticOut,
+//!           ComponentTween::new_target(
+//!               my_entity,
+//!               interpolate::Translation {
+//!                   start: Vec3::new(0., 0., 0.),
+//!                   end: Vec3::new(0., 100., 0.),
+//!               }
+//!           )
+//!       ));
+//!      // spawn some more span tween if needed.
+//!      // c.spawn( ... );
+//!   });
+//!   ```
+//! - Also the above 2 combined will works just fine btw.
 
 use std::{ops, time::Duration};
 

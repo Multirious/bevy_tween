@@ -17,7 +17,7 @@
 //! }
 //! ```
 //!
-//! ## Tween and Tween player
+//! # Tween and Tween player
 //!
 //! Tween player handles the current actual playback timing of any tweens that
 //! it's responsible for.
@@ -29,84 +29,13 @@
 //!   [`interpolate::SpriteColor`]. And they're used with something like [`EaseFunction`]
 //! - "**When**" to interpolate such as [`TweenTimeSpan`].
 //!
-//! ## Entity structure
+//! # Child-Parent Hierarchy
 //!
-//! If we have this entity:
-//!   ```
-//!   # use bevy::prelude::*;
-//!   # use bevy_tween::prelude::*;
-//!   # let world = World::new();
-//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
-//!   # let mut commands = Commands::new(&mut commands_queue, &world);
-//!   let my_entity = commands.spawn(SpriteBundle::default()).id();
-//!   ```
-//!  
-//!   We can create a tween player with tween in 2 ways:
-//! - Tween in the same entity as a tween player.<br/>
-//!   This is the case where you might want to make a simple animation where
-//!   there's not many parameteres. Because an entity can only have one unique
-//!   component, it limits on what animation you can achieve with this.
-//!   ```
-//!   # use bevy::prelude::*;
-//!   # use bevy_tween::prelude::*;
-//!   # let world = World::new();
-//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
-//!   # let mut commands = Commands::new(&mut commands_queue, &world);
-//!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
-//!   // Spawning some tween
-//!   commands.spawn((
-//!       // The tween player:
-//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
-//!       // The tween:
-//!       // Tween this from the start to the second 1.
-//!       SpanTweenBundle::new(..Duration::from_secs(1)),
-//!       // Tween this with ease quadratic out.
-//!       EaseFunction::QuadraticOut,
-//!       // Tween a component.
-//!       ComponentTween::new_target(
-//!           // Tween the component of this entity
-//!           my_entity,
-//!           // Tween transform's translation of the entity
-//!           interpolate::Translation {
-//!               start: Vec3::new(0., 0., 0.),
-//!               end: Vec3::new(0., 100., 0.),
-//!           }
-//!       )
-//!   ));
-//!   ```
-//! - Tween(s) as a child of a tween player.<br/>
-//!   This is the case where you want to make a more complex animation. By having
-//!   tweens as tween player's children, you can have any number of tweens and types
-//!   you wanted .
-//!   ```
-//!   # use bevy::prelude::*;
-//!   # use bevy_tween::prelude::*;
-//!   # let world = World::new();
-//!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
-//!   # let mut commands = Commands::new(&mut commands_queue, &world);
-//!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
-//!   // Spawning some tween
-//!   commands.spawn(
-//!       // The tween player:
-//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
-//!   ).with_children(|c| {
-//!       // The tween:
-//!       c.spawn((
-//!           SpanTweenBundle::new(..Duration::from_secs(1)),
-//!           EaseFunction::QuadraticOut,
-//!           ComponentTween::new_target(
-//!               my_entity,
-//!               interpolate::Translation {
-//!                   start: Vec3::new(0., 0., 0.),
-//!                   end: Vec3::new(0., 100., 0.),
-//!               }
-//!           )
-//!       ));
-//!      // spawn some more tween if needed.
-//!      // c.spawn( ... );
-//!   });
-//!   ```
-//! - Also the above 2 combined will works just fine btw.
+//! This crate let you create paramters for your animation by using child-parent
+//! hierarchy. This has the benefit of exposing the whole entity structure and
+//! let users modify anything they wanted while also being flexible.
+//! The specific entity structure is based on the specific tween player implementation.
+//! You may want to see [`span_tween`]
 //!
 //! # Your own [`Interpolator`]
 //!
@@ -203,7 +132,7 @@
 //! After this, you should be good to go!
 //! Note that the same process goes for resource and asset.
 //!
-//! ## Examples
+//! # Examples
 //!
 //! Run `cargo run --example simple_tween` to see this in action.
 //! ```no_run
