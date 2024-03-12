@@ -40,7 +40,7 @@ span_tween = []
 bevy_asset = [ "bevy/bevy_asset" ]
 # Adds nothing just yet but required by the "bevy_sprite" feature.
 bevy_render = [ "bevy/bevy_render"]
-# Add some built-in interpoaltor related to sprite
+# Add some built-in interpolator related to sprite
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
 
 [package.metadata.docs.rs]
