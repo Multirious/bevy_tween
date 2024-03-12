@@ -46,12 +46,12 @@ impl<I: 'static> Interpolator for Box<dyn InterpolatorReflected<Item = I>> {
     }
 }
 
-pub fn closure<I, F>(f: F) -> Box<dyn Interpolator<Item = I>>
+/// Create boxed closure in order to be used with dynamic [`Interpolator`]
+pub fn closure<I, F>(f: F) -> Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>
 where
     I: 'static,
     F: Fn(&mut I, f32) + Send + Sync + 'static,
 {
-    let f = Box::new(f) as Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>;
     Box::new(f)
 }
 
