@@ -114,9 +114,6 @@
 //!
 //! ## Examples
 //!
-//! This example show the basic way you would do to create some entity with
-//! tweening on them.
-//!
 //! Run `cargo run --example simple_tween` to see this in action.
 //! ```no_run
 #![doc = include_str!("../examples/simple_tween.rs")]
