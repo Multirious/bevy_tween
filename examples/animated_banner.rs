@@ -297,7 +297,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 // [ square and triangle ] ====================================
                 .jump(
                     secs(0.),
-                    ComponentTweenDyn::new_target(
+                    ComponentTweenDyn::new_target_dyn(
                         [square, triangle],
                         interpolate::closure(
                             |sprite: &mut Sprite, value: f32| {
@@ -321,7 +321,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .tween(
                     secs(4.)..secs(12.),
                     EaseFunction::ExponentialInOut,
-                    ComponentTweenDyn::new_target(
+                    ComponentTweenDyn::new_target_dyn(
                         [triangle, square],
                         interpolate::closure(
                             |sprite: &mut Sprite, value: f32| {

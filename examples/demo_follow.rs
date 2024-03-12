@@ -62,7 +62,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // we will be using
     // `TargetComponent::TweenPlayerParent`
-    // which make the tween automatically search for their parent to tween on.
+    // which make the tween automatically search for their parent to tween.
     // But you will not be seeing `TargetComponent` any where in here because it
     // implements Default and `ComponentTween*::new` will use just that.
     // Convenient!
@@ -110,7 +110,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 // Specifying the ease function
                 EaseFunction::CubicInOut,
                 // Tweening the rotation using closure
-                ComponentTweenDyn::player_parent(interpolate::closure(
+                ComponentTweenDyn::player_parent_dyn(interpolate::closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;
