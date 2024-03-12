@@ -50,7 +50,7 @@ pub struct TweenState {
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
 pub struct TweenInterpolationValue(pub f32);
 
-/// Containg [`Target`] and [`Interpolator`]
+/// Containg [`TweenTarget`] and [`Interpolator`]
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]

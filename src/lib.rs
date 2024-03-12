@@ -110,8 +110,98 @@
 //!
 //! # Your own [`Interpolator`]
 //!
-//! There are a few amount of built-in [`Interpolator`].
-//! They've only been made for the most common usage.
+//! There are a few amount of built-in [`Interpolator`] such as
+//! [`interpolate::Translation`] or [`interpolate::SpriteColor`].
+//! These are the most common ones to be implemented and for the sake of being
+//! examples. But, for others, you must implemented your own!
+//!
+//! Let's say you've created some custom component and you want to interpolate it:
+//! ```
+//! use bevy::prelude::*;
+//!
+//! #[derive(Component)]
+//! struct Foo(f32);
+//! ```
+//!
+//! You'll need to create a specific interpolator for this component by:
+//! ```
+//! # use bevy::prelude::*;
+//! # #[derive(Component)]
+//! # struct Foo(f32);
+//! use bevy_tween::prelude::*;
+//! // First we define an interpolator type for `Foo`.
+//! struct InterpolateFoo {
+//!     start: f32,
+//!     end: f32,
+//! }
+//! impl Interpolator for InterpolateFoo {
+//!     // We define the asscioate type `Item` as the `Foo` component
+//!     type Item = Foo;
+//!
+//!     // Then we define how we want to interpolate `Foo`
+//!     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//!         // Usually if the type already have the `.lerp` function provided
+//!         // by the `FloatExt` trait then we can use just that
+//!         item.0 = self.start.lerp(self.end, value);
+//!     }
+//! }
+//! ```
+//!
+//! And we're not done just yet.
+//! In order for `bevy` to recognize and properly tween your custom component.
+//! You have to register some necessary systems.
+//! We'll be using the [`BevyTweenRegisterSystems`] trait for convenient.
+//! Check out the docs to see what they actually do.
+//!
+//! Currently we have 2 choices for system to add.
+//! - [`component_tween_system`] to be used with [`ComponentTween`]<br/>
+//!   You have to add this system for **every individual interpolator you have**
+//!   (The same goes for resouce and asset)
+//!   because this uses no dyanamic dispatch and hold all the types data through
+//!   generic.
+//!   This is preferred if `Box<dyn Interpolator>` by the dyn systems doesn't
+//!   have all the type information you needed.
+//!
+//! - [`component_tween_dyn_system`] to be used with [`ComponentTweenDyn`]<br/>
+//!   You only have to add this system for **every individual component you want
+//!   to tween**. (The same goes for resouce and asset)
+//!   Information regarding interpolator will be dynamically dispatched.
+//!   This is preferred if you want to reduce the amount of system registration
+//!   and use closure.
+//!   
+//! - Add both if needed
+//!
+//! ```
+//! # use bevy::prelude::*;
+//! # #[derive(Component)]
+//! # struct Foo(f32);
+//! # use bevy_tween::prelude::*;
+//! # struct InterpolateFoo {
+//! #     start: f32,
+//! #     end: f32,
+//! # }
+//! # impl interpolate::Interpolator for InterpolateFoo {
+//! #     type Item = Foo;
+//! #     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//! #         item.0 = self.start.lerp(self.end, value);
+//! #     }
+//! # }
+//! fn main() {
+//!     App::new().add_tween_systems((
+//!         // Directly write in the interpolator type with this.
+//!         bevy_tween::component_tween_system::<InterpolateFoo>(),
+//!         // You may need to register more of this if you've got more
+//!         // interpolator(s)
+//!         // bevy_tween::component_tween_system::<InterpolateFoo2>(),
+//!
+//!         // Or just write the component type with this.
+//!         bevy_tween::component_tween_dyn_system::<Foo>(),
+//!     ));
+//! }
+//! ```
+//!
+//! After this, you should be good to go!
+//! Note that the same process goes for resource and asset.
 //!
 //! ## Examples
 //!
@@ -130,6 +220,8 @@
 //! [`TargetResource`]: tween::TargetResource
 //! [`TweenTimeSpan`]: span_tween::TweenTimeSpan
 //! [`TweenTarget`]: tween::TweenTarget
+//! [`ComponentTween`]: tween::ComponentTween
+//! [`ComponentTweenDyn`]: tween::ComponentTweenDyn
 
 #![warn(missing_docs)]
 

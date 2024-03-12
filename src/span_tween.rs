@@ -115,7 +115,7 @@ impl TweenTimeSpan {
         TweenTimeSpan { min, max }
     }
 
-    /// Create a new [`TweenTimerSpan`]
+    /// Create a new [`TweenTimeSpan`]
     pub fn new(
         min: TimeBound,
         max: TimeBound,
