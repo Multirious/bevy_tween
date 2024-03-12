@@ -10,10 +10,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            // `DefaultTweenPlugins` for all the default stuff we need!
             DefaultTweenPlugins,
-            // Here we're using `bevy_inspector_egui` to help us in making
-            // some simple UI.
             ResourceInspectorPlugin::<Config>::new(),
         ))
         .add_systems(Startup, setup)
@@ -59,13 +56,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         utils::MainCamera,
     ));
 
-    // we will be using
-    // `TargetComponent::TweenPlayerParent`
-    // which make the tween automatically search for their parent to tween.
-    // But you will not be seeing `TargetComponent` any where in here because it
-    // implements Default and `ComponentTween*::new` will use just that.
-    // Convenient!
-
     // Spawning the square
     commands
         .spawn((
@@ -81,34 +71,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             c.spawn(JebTranslationTween);
 
             // Spawning a tween player that's responsible for a rotating effect
-            //
-            // We will be using the "span_tween" feature in this example.
-            // Span tween uses a time input relative to the current player to
-            // specify when is start and when is end for each tween, a range of
-            // time, a time span.
-            //
-            // We will be putting the tween in the same entity with the tween player
-            // to keep the structure simple.
             c.spawn((
-                // tween player:
                 SpanTweenPlayerBundle::new(Duration::from_secs(2))
                     .with_repeat(Repeat::Infinitely)
-                    // bouncy
                     .with_repeat_style(RepeatStyle::PingPong),
-                //
-                // Tween:
-                //
-                // Putting a tween in the same entity with the tween player as said:
-                SpanTweenBundle::new(
-                    // TweenTimeSpans implements TryFrom<Range> and others so
-                    // lets use it
-                    //
-                    // Tween from second 0 to second 2.
-                    ..Duration::from_secs(2),
-                ),
-                // Specifying the ease function
+                SpanTweenBundle::new(..Duration::from_secs(2)),
                 EaseFunction::CubicInOut,
-                // Tweening the rotation using closure
                 ComponentTweenDyn::player_parent_dyn(interpolate::closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
