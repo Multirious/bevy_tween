@@ -16,12 +16,12 @@
 //!
 //! [`interpolate`]: crate::interpolate
 
+use bevy::ecs::schedule::SystemConfigs;
 use bevy::prelude::*;
-use std::{marker::PhantomData, time::Duration};
+use std::{any::type_name, marker::PhantomData, time::Duration};
 
 use crate::interpolate::Interpolator;
 use crate::tween_timer::AnimationDirection;
-use std::any::type_name;
 
 /// [`TweenState`] should be automatically managed by a tween player.
 /// User just have to add this component to a tween entity and an assigned
@@ -96,8 +96,34 @@ where
     }
 }
 
-type InterpolatorDyn<Item> = Box<dyn Interpolator<Item = Item>>;
-// type InterpolatorReflectedDyn<I> = Box<dyn InterpolatorReflected<Item = I>>;
+impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
+where
+    T: TweenTarget,
+    T::Item: 'static,
+{
+    /// Create a new [`Tween`] with a target and a dynamic interpolator.
+    pub fn new_target_dyn<G, I>(target: G, interpolator: I) -> Self
+    where
+        G: Into<T>,
+        I: Interpolator<Item = T::Item>,
+    {
+        Self::new_target(target, Box::new(interpolator))
+    }
+}
+
+impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
+where
+    T: TweenTarget + Default,
+    T::Item: 'static,
+{
+    /// Create a new [`Tween`] with the default target and a dynamic interpolator.
+    pub fn new_dyn<I>(interpolator: I) -> Self
+    where
+        I: Interpolator<Item = T::Item>,
+    {
+        Self::new(Box::new(interpolator))
+    }
+}
 
 /// Useful for the implementor to specify what this *target* will return the
 /// tweenable [`Self::Item`] which should match [`Interpolator::Item`].
@@ -112,7 +138,8 @@ pub type ComponentTween<I> =
     Tween<TargetComponent<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`Tween`] that [`TargetComponent`] with dyanmic [`Interpolator`].
-pub type ComponentTweenDyn<C> = Tween<TargetComponent<C>, InterpolatorDyn<C>>;
+pub type ComponentTweenDyn<C> =
+    Tween<TargetComponent<C>, Box<dyn Interpolator<Item = C>>>;
 
 /// Tell the tween what component of what entity to tween.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
@@ -261,6 +288,33 @@ where
     }
 }
 
+impl<C> ComponentTweenDyn<C>
+where
+    C: Component,
+{
+    /// Convenient method for targetting tween player's entity.
+    pub fn player_entity_dyn<I>(interpolator: I) -> Self
+    where
+        I: Interpolator<Item = C>,
+    {
+        ComponentTween::new_target(
+            TargetComponent::tween_player_entity(),
+            Box::new(interpolator),
+        )
+    }
+
+    /// Convenient method for targetting tween player's parent.
+    pub fn player_parent_dyn<I>(interpolator: I) -> Self
+    where
+        I: Interpolator<Item = C>,
+    {
+        ComponentTween::new_target(
+            TargetComponent::tween_player_parent(),
+            Box::new(interpolator),
+        )
+    }
+}
+
 // /// Tween any [`Tween`] with any [`Interpolator`] that [`TargetComponent`] with
 // /// value provided by [`TweenInterpolationValue`] component.
 pub fn component_tween_system_full<C, I>(
@@ -338,32 +392,30 @@ pub fn component_tween_system_full<C, I>(
     })
 }
 
-#[rustfmt::skip]
-type ComponentTweenSystem<I> = for<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j> fn(bevy::prelude::Query<'a, 'b, (std::option::Option<&'c bevy::prelude::Parent>, bevy::prelude::Has<TweenPlayerMarker>)>, bevy::prelude::Query<'d, 'e, (bevy::prelude::Entity, &'f Tween<TargetComponent<<I as Interpolator>::Item>, I>, &'g TweenInterpolationValue)>, bevy::prelude::Query<'h, 'i, &'j mut <I as Interpolator>::Item>);
-
-pub fn component_tween_system<I>() -> ComponentTweenSystem<I>
+/// System alias for [`component_tween_system_full`] that uses generic [`Interpolator`]
+pub fn component_tween_system<I>() -> SystemConfigs
 where
     I: Interpolator,
     I::Item: Component,
 {
-    component_tween_system_full::<I::Item, I>
+    component_tween_system_full::<I::Item, I>.into_configs()
 }
 
-#[rustfmt::skip]
-type ComponentTweenDynSysytem<C> = for<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j> fn(bevy::prelude::Query<'a, 'b, (std::option::Option<&'c bevy::prelude::Parent>, bevy::prelude::Has<TweenPlayerMarker>)>, bevy::prelude::Query<'d, 'e, (bevy::prelude::Entity, &'f Tween<TargetComponent<C>, std::boxed::Box<(dyn Interpolator<Item = C> + 'static)>>, &'g TweenInterpolationValue)>, bevy::prelude::Query<'h, 'i, &'j mut <std::boxed::Box<(dyn Interpolator<Item = C> + 'static)> as Interpolator>::Item>);
-
-pub fn component_tween_dyn_system<C>() -> ComponentTweenDynSysytem<C>
+/// System alias for [`component_tween_system_full`] that uses dynamic [`Interpolator`]
+pub fn component_tween_dyn_system<C>() -> SystemConfigs
 where
     C: Component,
 {
-    component_tween_system_full::<C, InterpolatorDyn<C>>
+    component_tween_system_full::<C, Box<dyn Interpolator<Item = C>>>
+        .into_configs()
 }
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with generic [`Interpolator`].
 pub type ResourceTween<I> = Tween<TargetResource<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with dyanmic [`Interpolator`].
-pub type ResourceTweenDyn<R> = Tween<TargetResource<R>, InterpolatorDyn<R>>;
+pub type ResourceTweenDyn<R> =
+    Tween<TargetResource<R>, Box<dyn Interpolator<Item = R>>>;
 
 /// Tell the tween what resource to tween.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Reflect)]
@@ -405,23 +457,22 @@ pub fn resource_tween_system_full<R, I>(
     })
 }
 
-#[rustfmt::skip]
-type ResourceTweenSystem<I> = for<'a, 'b, 'c, 'd, 'e> fn(bevy::prelude::Query<'a, 'b, (&'c Tween<TargetResource<<I as Interpolator>::Item>, I>, &'d TweenInterpolationValue)>, std::option::Option<bevy::prelude::ResMut<'e, <I as Interpolator>::Item>>);
-pub fn resource_tween_system<I>() -> ResourceTweenSystem<I>
+/// System alias for [`resource_tween_system_full`] that uses generic [`Interpolator`]
+pub fn resource_tween_system<I>() -> SystemConfigs
 where
     I: Interpolator,
     I::Item: Resource,
 {
-    resource_tween_system_full::<I::Item, I>
+    resource_tween_system_full::<I::Item, I>.into_configs()
 }
 
-#[rustfmt::skip]
-type ResourceTweenDynSysytem<R> = for<'a, 'b, 'c, 'd, 'e> fn(bevy::prelude::Query<'a, 'b, (&'c Tween<TargetResource<R>, std::boxed::Box<(dyn Interpolator<Item = R> + 'static)>>, &'d TweenInterpolationValue)>, std::option::Option<bevy::prelude::ResMut<'e, <std::boxed::Box<(dyn Interpolator<Item = R> + 'static)> as Interpolator>::Item>>);
-pub fn resource_tween_dyn_system<R>() -> ResourceTweenDynSysytem<R>
+/// System alias for [`resource_tween_system_full`] that uses dynamic [`Interpolator`]
+pub fn resource_tween_dyn_system<R>() -> SystemConfigs
 where
     R: Resource,
 {
-    resource_tween_system_full::<R, InterpolatorDyn<R>>
+    resource_tween_system_full::<R, Box<dyn Interpolator<Item = R>>>
+        .into_configs()
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with generic [`Interpolator`].
@@ -430,7 +481,8 @@ pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with dyanmic [`Interpolator`].
 #[cfg(feature = "bevy_asset")]
-pub type AssetTweenDyn<A> = Tween<TargetAsset<A>, InterpolatorDyn<A>>;
+pub type AssetTweenDyn<A> =
+    Tween<TargetAsset<A>, Box<dyn Interpolator<Item = A>>>;
 
 /// Tell the tween what asset of what type to tween.
 #[cfg(feature = "bevy_asset")]
@@ -557,25 +609,21 @@ pub fn asset_tween_system_full<A, I>(
         })
 }
 
+/// System alias for [`asset_tween_system_full`] that uses generic [`Interpolator`]
 #[cfg(feature = "bevy_asset")]
-#[rustfmt::skip]
-type AssetTweenSystem<I> = for<'a, 'b, 'c, 'd, 'e> fn(bevy::prelude::Query<'a, 'b, (&'c Tween<TargetAsset<<I as Interpolator>::Item>, I>, &'d TweenInterpolationValue)>, std::option::Option<bevy::prelude::ResMut<'e, bevy::prelude::Assets<<I as Interpolator>::Item>>>);
-#[cfg(feature = "bevy_asset")]
-pub fn asset_tween_system<I>() -> AssetTweenSystem<I>
+pub fn asset_tween_system<I>() -> SystemConfigs
 where
     I: Interpolator,
     I::Item: Asset,
 {
-    asset_tween_system_full::<I::Item, I>
+    asset_tween_system_full::<I::Item, I>.into_configs()
 }
 
+/// System alias for [`asset_tween_system_full`] that uses dynamic [`Interpolator`]
 #[cfg(feature = "bevy_asset")]
-#[rustfmt::skip]
-type AssetTweenDynSysytem<A> = for<'a, 'b, 'c, 'd, 'e> fn(bevy::prelude::Query<'a, 'b, (&'c Tween<TargetAsset<A>, std::boxed::Box<(dyn Interpolator<Item = A> + 'static)>>, &'d TweenInterpolationValue)>, std::option::Option<bevy::prelude::ResMut<'e, bevy::prelude::Assets<<std::boxed::Box<(dyn Interpolator<Item = A> + 'static)> as Interpolator>::Item>>>);
-#[cfg(feature = "bevy_asset")]
-pub fn asset_tween_dyn_system<A>() -> AssetTweenDynSysytem<A>
+pub fn asset_tween_dyn_system<A>() -> SystemConfigs
 where
     A: Asset,
 {
-    asset_tween_system_full::<A, InterpolatorDyn<A>>
+    asset_tween_system_full::<A, Box<dyn Interpolator<Item = A>>>.into_configs()
 }
