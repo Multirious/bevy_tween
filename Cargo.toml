@@ -59,7 +59,6 @@ name = "animated_banner"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-
   "span_tween",
 ]
 
@@ -68,18 +67,25 @@ name = "demo_follow"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-
   "span_tween",
 ]
 
 [[example]]
 name = "demo_click"
 required-features = [
-  "bevy/bevy_winit",
-  "bevy/png",
-
   "bevy_sprite",
   "bevy_asset",
+  "span_tween",
+]
 
+[[example]]
+name = "simple_tween"
+required-features = [
+  "span_tween",
+]
+
+[[example]]
+name = "simple_tween_builder"
+required-features = [
   "span_tween",
 ]
