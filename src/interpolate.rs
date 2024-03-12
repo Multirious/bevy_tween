@@ -7,6 +7,74 @@ use crate::utils::color_lerp;
 
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
+///
+/// # Examples
+///
+/// Interpolator for components.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_tween::prelude::*;
+///
+/// #[derive(Component)]
+/// struct MyComponent(f32);
+///
+/// struct InterpolateMyComponent {
+///     start: f32,
+///     end: f32,
+/// }
+///
+/// impl Interpolator for InterpolateMyComponent {
+///     type Item = MyComponent;
+///
+///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///         item.0 = self.start.lerp(self.end, value);
+///     }
+/// }
+/// ```
+///
+/// Interpolator for asset.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_tween::prelude::*;
+///
+/// #[derive(TypePath, Asset)]
+/// struct MyAsset(f32);
+///
+/// struct InterpolateMyAsset {
+///     start: f32,
+///     end: f32,
+/// }
+///
+/// impl Interpolator for InterpolateMyAsset {
+///     type Item = MyAsset;
+///
+///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///         item.0 = self.start.lerp(self.end, value);
+///     }
+/// }
+/// ```
+///
+/// Interpolator for resource.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_tween::prelude::*;
+///
+/// #[derive(Resource)]
+/// struct MyResource(f32);
+///
+/// struct InterpolateMyResource {
+///     start: f32,
+///     end: f32,
+/// }
+///
+/// impl Interpolator for InterpolateMyResource {
+///     type Item = MyResource;
+///
+///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///         item.0 = self.start.lerp(self.end, value);
+///     }
+/// }
+/// ```
 pub trait Interpolator: Send + Sync + 'static {
     /// Type to be interpolated.
     type Item;
@@ -62,10 +130,6 @@ pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
     fn build(&self, app: &mut App) {
         use crate::{tween, TweenSystemSet};
-
-        // type InterpolatorDyn<I> = Box<dyn Interpolator<Item = I>>;
-        // type InterpolatorReflectedDyn<I> =
-        // Box<dyn InterpolatorReflected<Item = I>>;
 
         app.add_systems(
             PostUpdate,
