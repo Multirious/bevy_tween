@@ -276,6 +276,7 @@ impl PluginGroup for DefaultTweenPlugins {
         let p = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin)
             .add(interpolate::DefaultInterpolatorsPlugin)
+            .add(interpolate::DefaultDynInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin);
         #[cfg(feature = "span_tween")]
         let p = p.add(span_tween::SpanTweenPlugin);

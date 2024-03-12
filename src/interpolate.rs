@@ -4,6 +4,7 @@ use bevy::prelude::*;
 
 #[cfg(feature = "bevy_sprite")]
 use crate::utils::color_lerp;
+use crate::{tween, BevyTweenRegisterSystems};
 
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
@@ -129,43 +130,38 @@ where
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
     fn build(&self, app: &mut App) {
-        use crate::{tween, TweenSystemSet};
-
-        app.add_systems(
-            PostUpdate,
-            (
-                tween::component_tween_dyn_system::<Transform>(),
-                tween::component_tween_system::<Translation>(),
-                tween::component_tween_system::<Rotation>(),
-                tween::component_tween_system::<Scale>(),
-            )
-                .in_set(TweenSystemSet::ApplyTween),
-        )
+        app.add_tween_systems((
+            tween::component_tween_system::<Translation>(),
+            tween::component_tween_system::<Rotation>(),
+            tween::component_tween_system::<Scale>(),
+        ))
         .register_type::<tween::ComponentTween<Translation>>()
         .register_type::<tween::ComponentTween<Rotation>>()
         .register_type::<tween::ComponentTween<Scale>>();
 
         #[cfg(feature = "bevy_sprite")]
-        app.add_systems(
-            PostUpdate,
-            (
-                tween::component_tween_dyn_system::<Sprite>(),
-                tween::component_tween_system::<SpriteColor>(),
-            )
-                .in_set(TweenSystemSet::ApplyTween),
-        )
-        .register_type::<tween::ComponentTween<SpriteColor>>();
+        app.add_tween_systems(tween::component_tween_system::<SpriteColor>())
+            .register_type::<tween::ComponentTween<SpriteColor>>();
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
-        app.add_systems(
-            PostUpdate,
-            (
-                tween::asset_tween_dyn_system::<bevy::sprite::ColorMaterial>(),
-                tween::asset_tween_system::<ColorMaterial>(),
-            )
-                .in_set(TweenSystemSet::ApplyTween),
-        )
-        .register_type::<tween::AssetTween<ColorMaterial>>();
+        app.add_tween_systems(tween::asset_tween_system::<ColorMaterial>())
+            .register_type::<tween::AssetTween<ColorMaterial>>();
+    }
+}
+
+/// Default dynamic interpolators
+pub struct DefaultDynInterpolatorsPlugin;
+impl Plugin for DefaultDynInterpolatorsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_tween_systems(tween::component_tween_dyn_system::<Transform>());
+
+        #[cfg(feature = "bevy_sprite")]
+        app.add_tween_systems(tween::component_tween_dyn_system::<Sprite>());
+
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
+        app.add_tween_systems(tween::asset_tween_dyn_system::<
+            bevy::sprite::ColorMaterial,
+        >());
     }
 }
 
