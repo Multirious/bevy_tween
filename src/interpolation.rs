@@ -9,7 +9,7 @@ use bevy::prelude::*;
 use crate::{
     tween::{TweenInterpolationValue, TweenState},
     tween_timer::AnimationDirection,
-    RegisterSystems,
+    BevyTweenRegisterSystems,
 };
 
 mod ease_functions;
