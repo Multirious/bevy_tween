@@ -30,7 +30,7 @@ impl Plugin for SpanTweenPlugin {
 #[reflect(Component)]
 pub struct SpanTweenPlayer;
 
-/// Bouding enum for [`Duration`] to be exclusivively checked or inclusivively
+/// Bounding enum for [`Duration`] to be exclusivively checked or inclusivively
 /// checked.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 pub enum TimeBound {
