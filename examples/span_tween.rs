@@ -26,7 +26,7 @@ fn setup(mut commands: Commands) {
                 transform: Transform::from_translation(start),
                 ..Default::default()
             },
-            SpanTweenPlayerBundle::new(Duration::from_secs(5)),
+            SpanTweenerBundle::new(Duration::from_secs(5)),
         ))
         .with_children(|c| {
             c.spawn((

@@ -241,9 +241,9 @@ use bevy::prelude::*;
 use crate::interpolate::Interpolator;
 use crate::tween_timer::AnimationDirection;
 
-/// [`TweenState`] should be automatically managed by a tween player.
+/// [`TweenState`] should be automatically managed by a tweener.
 /// User just have to add this component to a tween entity and an assigned
-/// tween player will take care of it.
+/// tweener will take care of it.
 #[derive(
     Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Component, Reflect,
 )]
@@ -366,10 +366,10 @@ pub enum TargetComponent<C>
 where
     C: Component,
 {
-    /// Target the entity that contains this tween's tween player.
-    TweenPlayerEntity(#[reflect(ignore)] PhantomData<C>),
-    /// Target the parent of this tween's tween player.
-    TweenPlayerParent(#[reflect(ignore)] PhantomData<C>),
+    /// Target the entity that contains this tween's tweener.
+    TweenerEntity(#[reflect(ignore)] PhantomData<C>),
+    /// Target the parent of this tween's tweener.
+    TweenerParent(#[reflect(ignore)] PhantomData<C>),
     /// Target this entity.
     Entity(Entity, #[reflect(ignore)] PhantomData<C>),
     /// Target these entities.
@@ -380,14 +380,14 @@ impl<C> TargetComponent<C>
 where
     C: Component,
 {
-    /// Target the entity that contains this tween's tween player.
-    pub fn tween_player_entity() -> TargetComponent<C> {
-        TargetComponent::TweenPlayerEntity(PhantomData)
+    /// Target the entity that contains this tween's tweener.
+    pub fn tweener_entity() -> TargetComponent<C> {
+        TargetComponent::TweenerEntity(PhantomData)
     }
 
-    /// Target the parent of this tween's tween_player.
-    pub fn tween_player_parent() -> TargetComponent<C> {
-        TargetComponent::TweenPlayerParent(PhantomData)
+    /// Target the parent of this tween's tweener.
+    pub fn tweener_parent() -> TargetComponent<C> {
+        TargetComponent::TweenerParent(PhantomData)
     }
 
     /// Target this entity.
@@ -416,7 +416,7 @@ where
     C: Component,
 {
     fn default() -> Self {
-        TargetComponent::tween_player_entity()
+        TargetComponent::tweener_entity()
     }
 }
 
@@ -483,28 +483,28 @@ where
     }
 }
 
-/// A tween player must have this marker within the entity to let
-/// [`ComponentTween`]s' system correctly search for the player that owns them.
+/// A tweener must have this marker within the entity to let
+/// [`ComponentTween`]s' system correctly search for the tweener that owns them.
 #[derive(Debug, Default, PartialEq, Eq, Hash, Component, Reflect)]
-pub struct TweenPlayerMarker;
+pub struct TweenerMarker;
 
 impl<I> ComponentTween<I>
 where
     I: Interpolator,
     I::Item: Component,
 {
-    /// Convenient method for targetting tween player's entity.
-    pub fn player_entity(interpolator: I) -> Self {
+    /// Convenient method for targetting tweener's entity.
+    pub fn tweener_entity(interpolator: I) -> Self {
         ComponentTween::new_target(
-            TargetComponent::tween_player_entity(),
+            TargetComponent::tweener_entity(),
             interpolator,
         )
     }
 
-    /// Convenient method for targetting tween player's parent.
-    pub fn player_parent(interpolator: I) -> Self {
+    /// Convenient method for targetting tweener's parent.
+    pub fn tweener_parent(interpolator: I) -> Self {
         ComponentTween::new_target(
-            TargetComponent::tween_player_parent(),
+            TargetComponent::tweener_parent(),
             interpolator,
         )
     }
@@ -514,24 +514,24 @@ impl<C> ComponentDynTween<C>
 where
     C: Component,
 {
-    /// Convenient method for targetting tween player's entity.
-    pub fn player_entity_dyn<I>(interpolator: I) -> Self
+    /// Convenient method for targetting tweener's entity.
+    pub fn tweener_entity_boxed<I>(interpolator: I) -> Self
     where
         I: Interpolator<Item = C>,
     {
         ComponentTween::new_target(
-            TargetComponent::tween_player_entity(),
+            TargetComponent::tweener_entity(),
             Box::new(interpolator),
         )
     }
 
-    /// Convenient method for targetting tween player's parent.
-    pub fn player_parent_dyn<I>(interpolator: I) -> Self
+    /// Convenient method for targetting tweener's parent.
+    pub fn tweener_parent_boxed<I>(interpolator: I) -> Self
     where
         I: Interpolator<Item = C>,
     {
         ComponentTween::new_target(
-            TargetComponent::tween_player_parent(),
+            TargetComponent::tweener_parent(),
             Box::new(interpolator),
         )
     }
@@ -540,7 +540,7 @@ where
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
 pub fn component_tween_system_full<C, I>(
-    q_tween_player: Query<(Option<&Parent>, Has<TweenPlayerMarker>)>,
+    q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
     q_tween: Query<(
         Entity,
         &Tween<TargetComponent<C>, I>,
@@ -553,32 +553,28 @@ pub fn component_tween_system_full<C, I>(
 {
     q_tween.iter().for_each(|(entity, tween, ease_value)| {
         let target = match &tween.target {
-            TargetComponent::TweenPlayerEntity(_) => {
-                match q_tween_player.get(entity) {
-                    Ok((_, true)) => entity,
-                    Ok((Some(this_parent), false)) => {
-                        match q_tween_player.get(this_parent.get()) {
-                            Ok((_, true)) => this_parent.get(),
-                            _ => return,
-                        }
+            TargetComponent::TweenerEntity(_) => match q_tweener.get(entity) {
+                Ok((_, true)) => entity,
+                Ok((Some(this_parent), false)) => {
+                    match q_tweener.get(this_parent.get()) {
+                        Ok((_, true)) => this_parent.get(),
+                        _ => return,
                     }
-                    _ => return,
                 }
-            }
-            TargetComponent::TweenPlayerParent(_) => {
-                match q_tween_player.get(entity) {
-                    Ok((Some(this_parent), true)) => this_parent.get(),
-                    Ok((Some(this_parent), false)) => {
-                        match q_tween_player.get(this_parent.get()) {
-                            Ok((Some(player_parent), true)) => {
-                                player_parent.get()
-                            }
-                            _ => return,
+                _ => return,
+            },
+            TargetComponent::TweenerParent(_) => match q_tweener.get(entity) {
+                Ok((Some(this_parent), true)) => this_parent.get(),
+                Ok((Some(this_parent), false)) => {
+                    match q_tweener.get(this_parent.get()) {
+                        Ok((Some(tweener_parent), true)) => {
+                            tweener_parent.get()
                         }
+                        _ => return,
                     }
-                    _ => return,
                 }
-            }
+                _ => return,
+            },
             TargetComponent::Entity(e, _) => *e,
             TargetComponent::Entities(e, _) => {
                 for &target in e {

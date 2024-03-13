@@ -105,21 +105,21 @@ fn click_spawn_circle(
                         transform: Transform::from_translation(start),
                         ..Default::default()
                     },
-                    SpanTweenPlayerBundle::new(Duration::from_secs(2)),
+                    SpanTweenerBundle::new(Duration::from_secs(2)),
                 ))
                 .with_children(|c| {
                     c.build_tweens()
                         .tween(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
-                            ComponentDynTween::player_entity(Box::new(
+                            ComponentDynTween::tweener_entity(Box::new(
                                 my_interpolate::JustTranslateTo::end(end),
                             )),
                         )
                         .tween(
                             ..Duration::from_secs(1),
                             EaseFunction::BackIn,
-                            ComponentDynTween::player_entity(Box::new(
+                            ComponentDynTween::tweener_entity(Box::new(
                                 my_interpolate::JustScaleTo::end(Vec3::ZERO),
                             )),
                         );
@@ -130,10 +130,10 @@ fn click_spawn_circle(
 
 fn despawn_finished_circle(
     mut commands: Commands,
-    mut tween_player_ended_reader: EventReader<SpanTweenPlayerEnded>,
+    mut tweener_ended_reader: EventReader<SpanTweenerEnded>,
 ) {
-    for t in tween_player_ended_reader.read() {
-        commands.entity(t.tween_player).despawn();
+    for t in tweener_ended_reader.read() {
+        commands.entity(t.tweener).despawn();
     }
 }
 

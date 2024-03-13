@@ -55,10 +55,10 @@ fn main() {
 pub struct BigX;
 
 #[derive(Component)]
-pub struct EffectTweenPlayer;
+pub struct EffectTweener;
 
 #[derive(Component)]
-pub struct RotateTweenPlayer;
+pub struct RotateTweener;
 
 #[derive(Default, Resource)]
 pub struct EffectIntensitiy(f32);
@@ -80,8 +80,8 @@ fn setup(
         ))
         .id();
     commands.spawn((
-        EffectTweenPlayer,
-        SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+        EffectTweener,
+        SpanTweenerBundle::new(Duration::from_secs(1)),
         SpanTweenBundle::new(..Duration::from_secs(1)),
         EaseFunction::QuarticIn,
         ResourceTween::new(my_interpolate::EffectIntensity {
@@ -97,8 +97,8 @@ fn setup(
         ),
     ));
     commands.spawn((
-        RotateTweenPlayer,
-        SpanTweenPlayerBundle::new(Duration::from_secs_f32(1.))
+        RotateTweener,
+        SpanTweenerBundle::new(Duration::from_secs_f32(1.))
             .with_repeat(Repeat::Infinitely),
         SpanTweenBundle::new(..Duration::from_secs_f32(1.)),
         EaseFunction::Linear,
@@ -113,7 +113,7 @@ fn setup(
 }
 
 fn mouse_hold(
-    mut q_effect_tween_timer: Query<&mut TweenTimer, With<EffectTweenPlayer>>,
+    mut q_effect_tween_timer: Query<&mut TweenTimer, With<EffectTweener>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
@@ -126,7 +126,7 @@ fn mouse_hold(
 fn big_x_do_effect(
     effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
-    mut q_rotate_tween_player: Query<&mut TweenTimer, With<RotateTweenPlayer>>,
+    mut q_rotate_tweener: Query<&mut TweenTimer, With<RotateTweener>>,
 ) {
     let mut rng = rand::thread_rng();
     let dx: f32 = rng.gen();
@@ -134,6 +134,6 @@ fn big_x_do_effect(
     q_big_x.single_mut().translation =
         Vec3::new(dx - 0.5, dy - 0.5, 0.) * 100. * effect_intensity.0;
 
-    q_rotate_tween_player.single_mut().speed_scale =
+    q_rotate_tweener.single_mut().speed_scale =
         Duration::from_secs_f32(effect_intensity.0);
 }

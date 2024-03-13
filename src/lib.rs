@@ -17,9 +17,9 @@
 //! }
 //! ```
 //!
-//! # Tween and Tween player
+//! # Tween and Tweener
 //!
-//! Tween player handles the current actual playback timing of any tweens that
+//! Tweener handles the current actual playback timing of any tweens that
 //! it's responsible for.
 //!
 //! Tween is your animation parameters that declares:
@@ -34,7 +34,7 @@
 //! This crate let you create paramters for your animation by using child-parent
 //! hierarchy. This has the benefit of exposing the whole entity structure and
 //! let users modify anything they wanted while also being flexible.
-//! The specific entity structure is based on the specific tween player implementation.
+//! The specific entity structure is based on the specific tweener implementation.
 //! You may want to see [`span_tween`]
 //!
 //! # Examples
@@ -131,8 +131,7 @@ pub mod prelude {
     pub use crate::interpolation::EaseFunction;
     #[cfg(feature = "span_tween")]
     pub use crate::span_tween::{
-        BuildSpanTweens, SpanTweenBundle, SpanTweenPlayerBundle,
-        SpanTweenPlayerEnded,
+        BuildSpanTweens, SpanTweenBundle, SpanTweenerBundle, SpanTweenerEnded,
     };
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
@@ -183,7 +182,7 @@ impl Plugin for TweenCorePlugin {
         app.configure_sets(
             PostUpdate,
             (
-                TweenSystemSet::TweenPlayer,
+                TweenSystemSet::Tweener,
                 TweenSystemSet::UpdateInterpolationValue,
                 TweenSystemSet::ApplyTween,
             )
@@ -194,7 +193,7 @@ impl Plugin for TweenCorePlugin {
         .register_type::<tween_timer::Repeat>()
         .register_type::<tween_timer::RepeatStyle>()
         .register_type::<tween::TweenState>()
-        .register_type::<tween::TweenPlayerMarker>()
+        .register_type::<tween::TweenerMarker>()
         .register_type::<tween::TweenInterpolationValue>();
     }
 }
@@ -205,15 +204,15 @@ impl Plugin for TweenCorePlugin {
 /// this schedule should be correctly applied in the next frame.
 ///
 /// The sets should be configured to run in this order:
-///  1. TweenPlayer
+///  1. Tweener
 ///  2. UpdateTweenEaseValue
 ///  3. ApplyTween
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
     /// This set is for systems that responsible for updating any
-    /// tween player such as the [`span_tween::span_tween_player_system`]
+    /// tweener such as the [`span_tween::span_tweener_system`]
     /// by this crate
-    TweenPlayer,
+    Tweener,
     /// This set is for systems that responsible for updating any
     /// [`tween::TweenInterpolationValue`] such as
     /// [`interpolation::sample_interpolations_system`] by this crate.

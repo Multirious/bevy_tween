@@ -1,4 +1,4 @@
-//! Module containing a tween player that process tweens with time span.
+//! Module containing a tweener that process tweens with time span.
 //!
 //! # Entity structure
 //!
@@ -12,8 +12,8 @@
 //!   let my_entity = commands.spawn(SpriteBundle::default()).id();
 //!   ```
 //!  
-//!   We can create a span tween player with span tween in 2 ways:
-//! - Span tween in the same entity as a span tween player.<br/>
+//!   We can create a span tweener with span tween in 2 ways:
+//! - Span tween in the same entity as a span tweener.<br/>
 //!   This is the case where you might want to make a simple animation where
 //!   there's not many parameteres. Because an entity can only have one unique
 //!   component, it limits on what animation you can achieve with this.
@@ -24,10 +24,10 @@
 //!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
 //!   # let mut commands = Commands::new(&mut commands_queue, &world);
 //!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
-//!   // Spawning some span tween player
+//!   // Spawning some span tweener
 //!   commands.spawn((
-//!       // The span tween player:
-//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+//!       // The span tweener:
+//!       SpanTweenerBundle::new(Duration::from_secs(1)),
 //!       // The tween:
 //!       // Tween this from the start to the second 1.
 //!       SpanTweenBundle::new(..Duration::from_secs(1)),
@@ -45,9 +45,9 @@
 //!       )
 //!   ));
 //!   ```
-//! - Span tween(s) as a child of a span tween player.<br/>
+//! - Span tween(s) as a child of a span tweener.<br/>
 //!   This is the case where you want to make a more complex animation. By having
-//!   span tweens as span tween player's children, you can have any number of
+//!   span tweens as span tweener's children, you can have any number of
 //!   span tween types you wanted .
 //!   ```no_run
 //!   # use bevy::prelude::*;
@@ -56,10 +56,10 @@
 //!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
 //!   # let mut commands = Commands::new(&mut commands_queue, &world);
 //!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
-//!   // Spawning some span tween player
+//!   // Spawning some span tweener
 //!   commands.spawn(
-//!       // The span tween player:
-//!       SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+//!       // The span tweener:
+//!       SpanTweenerBundle::new(Duration::from_secs(1)),
 //!   ).with_children(|c| {
 //!       // The span tween:
 //!       c.spawn((
@@ -87,7 +87,7 @@ use tween_timer::Repeat;
 use crate::{
     interpolation::Interpolation,
     prelude::EaseFunction,
-    tween::{TweenPlayerMarker, TweenState},
+    tween::{TweenState, TweenerMarker},
     tween_timer::{self, AnimationDirection, TickResult, TweenTimer},
 };
 
@@ -98,25 +98,25 @@ impl Plugin for SpanTweenPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             PostUpdate,
-            span_tween_player_system.in_set(crate::TweenSystemSet::TweenPlayer),
+            span_tweener_system.in_set(crate::TweenSystemSet::Tweener),
         )
-        .register_type::<SpanTweenPlayer>()
+        .register_type::<SpanTweener>()
         .register_type::<TimeBound>()
         .register_type::<TweenTimeSpan>();
     }
 }
 
-/// Span tween player
+/// Span tweener
 #[derive(Debug, Default, Component, Clone, PartialEq, Eq, Hash, Reflect)]
 #[reflect(Component)]
-pub struct SpanTweenPlayer {
+pub struct SpanTweener {
     /// The inner timer
     pub timer: TweenTimer,
 }
 
-impl From<TweenTimer> for SpanTweenPlayer {
+impl From<TweenTimer> for SpanTweener {
     fn from(value: TweenTimer) -> Self {
-        SpanTweenPlayer { timer: value }
+        SpanTweener { timer: value }
     }
 }
 
@@ -302,78 +302,74 @@ impl TryFrom<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
     }
 }
 
-/// Bundle for a span tween player
+/// Bundle for a span tweener
 #[derive(Default, Bundle)]
-pub struct SpanTweenPlayerBundle {
-    /// [`SpanTweenPlayer`] span player intestine
-    pub span_player: SpanTweenPlayer,
-    /// [`TweenTimer`] marker to declare a tween player
-    pub tween_player_marker: TweenPlayerMarker,
+pub struct SpanTweenerBundle {
+    /// [`SpanTweener`] span tweener intestine
+    pub span_tweener: SpanTweener,
+    /// [`TweenTimer`] marker to declare a tweener
+    pub tweener_marker: TweenerMarker,
 }
 
-impl SpanTweenPlayerBundle {
-    /// Create new [`SpanTweenPlayerBundle`] with `duration`
+impl SpanTweenerBundle {
+    /// Create new [`SpanTweenerBundle`] with `duration`
     pub fn new(duration: Duration) -> Self {
-        let mut t = SpanTweenPlayerBundle::default();
-        t.span_player.timer.set_duration(duration);
+        let mut t = SpanTweenerBundle::default();
+        t.span_tweener.timer.set_duration(duration);
         t
     }
 
-    /// [`SpanTweenPlayerBundle`] with the specified `paused` for the inner
+    /// [`SpanTweenerBundle`] with the specified `paused` for the inner
     /// [`TweenTimer`]
     pub fn with_paused(mut self, paused: bool) -> Self {
-        self.span_player.timer.set_paused(paused);
+        self.span_tweener.timer.set_paused(paused);
         self
     }
 
-    // pub fn with_elasped(mut self, elasped: Duration) -> Self {
-    //     self.tween_player.set_elasped(elasped);
-    //     self
-    // }
-    /// [`SpanTweenPlayerBundle`] with the specified `direction` for the inner
+    /// [`SpanTweenerBundle`] with the specified `direction` for the inner
     /// [`TweenTimer`]
     pub fn with_direction(mut self, direction: AnimationDirection) -> Self {
-        self.span_player.timer.set_direction(direction);
+        self.span_tweener.timer.set_direction(direction);
         self
     }
 
-    /// [`SpanTweenPlayerBundle`] with the specified `repeat`
+    /// [`SpanTweenerBundle`] with the specified `repeat`
     /// setting the inner [`TweenTimer`]'s repeat to Some
     pub fn with_repeat(mut self, repeat: tween_timer::Repeat) -> Self {
-        self.span_player.timer.set_repeat(Some(repeat));
+        self.span_tweener.timer.set_repeat(Some(repeat));
         self
     }
 
-    /// [`SpanTweenPlayerBundle`] with the specified `repeat_style`
+    /// [`SpanTweenerBundle`] with the specified `repeat_style`
     /// setting the inner [`TweenTimer`]'s repeat_style to Some
     pub fn with_repeat_style(
         mut self,
         repeat_style: tween_timer::RepeatStyle,
     ) -> Self {
-        self.span_player.timer.set_repeat_style(Some(repeat_style));
+        self.span_tweener.timer.set_repeat_style(Some(repeat_style));
         self
     }
 
-    /// [`SpanTweenPlayerBundle`] with without repeat,
+    /// [`SpanTweenerBundle`] with without repeat,
     /// setting the inner [`TweenTimer`]'s repeat to None.
     pub fn without_repeat(mut self) -> Self {
-        self.span_player.timer.set_repeat(None);
+        self.span_tweener.timer.set_repeat(None);
         self
     }
 
-    /// [`SpanTweenPlayerBundle`] with without repeat_style
+    /// [`SpanTweenerBundle`] with without repeat_style
     /// setting the inner [`TweenTimer`]'s repeat_style to None.
     pub fn without_repeat_style(mut self) -> Self {
-        self.span_player.timer.set_repeat_style(None);
+        self.span_tweener.timer.set_repeat_style(None);
         self
     }
 }
 
-impl From<TweenTimer> for SpanTweenPlayerBundle {
+impl From<TweenTimer> for SpanTweenerBundle {
     fn from(value: TweenTimer) -> Self {
-        SpanTweenPlayerBundle {
-            span_player: SpanTweenPlayer { timer: value },
-            tween_player_marker: TweenPlayerMarker,
+        SpanTweenerBundle {
+            span_tweener: SpanTweener { timer: value },
+            tweener_marker: TweenerMarker,
         }
     }
 }
@@ -401,20 +397,20 @@ impl SpanTweenBundle {
     }
 }
 
-/// Fired when a span tween player repeated or completed
+/// Fired when a span tweener repeated or completed
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Event, Reflect)]
-pub struct SpanTweenPlayerEnded {
+pub struct SpanTweenerEnded {
     /// Tween timer that just ended
-    pub tween_player: Entity,
+    pub tweener: Entity,
     /// Currently timer direction. If is [`RepeatStyle::PingPong`], the current
     /// direction will be its already changed direction.
     pub current_direction: AnimationDirection,
-    /// The repeat this tween player had.
+    /// The repeat this tweener had.
     pub with_repeat: Option<Repeat>,
 }
 
-impl SpanTweenPlayerEnded {
-    /// Returns true if the player's timer is all done.
+impl SpanTweenerEnded {
+    /// Returns true if the tweener's timer is all done.
     /// All done meaning that there will be nore more ticking and all
     /// configured repeat is exhausted.
     pub fn is_all_done(&self) -> bool {
@@ -425,17 +421,13 @@ impl SpanTweenPlayerEnded {
 }
 
 /// System for updating any span tweens to the correct [`TweenState`] as playing
-/// by its span tween player
-pub fn span_tween_player_system(
+/// by its span tweener
+pub fn span_tweener_system(
     time: Res<Time<Real>>,
-    q_other_tween_player: Query<(), With<SpanTweenPlayer>>,
-    mut q_tween_span_player: Query<(
-        Entity,
-        &mut SpanTweenPlayer,
-        Option<&Children>,
-    )>,
+    q_other_tweener: Query<(), With<SpanTweener>>,
+    mut q_span_tweener: Query<(Entity, &mut SpanTweener, Option<&Children>)>,
     mut q_tween: Query<(&mut TweenState, &TweenTimeSpan)>,
-    mut ended_writer: EventWriter<SpanTweenPlayerEnded>,
+    mut ended_writer: EventWriter<SpanTweenerEnded>,
 ) {
     use AnimationDirection::*;
     use DurationQuotient::*;
@@ -443,9 +435,9 @@ pub fn span_tween_player_system(
     use crate::tween_timer::RepeatStyle::*;
 
     let delta = time.delta();
-    q_tween_span_player.iter_mut().for_each(
-        |(player_entity, mut player, children)| {
-            let timer = &mut player.timer;
+    q_span_tweener.iter_mut().for_each(
+        |(tweener_entity, mut tweener, children)| {
+            let timer = &mut tweener.timer;
             if timer.paused {
                 return;
             }
@@ -462,8 +454,8 @@ pub fn span_tween_player_system(
 
             match tick_result {
                 TickResult::AllDone | TickResult::Repeated => {
-                    ended_writer.send(SpanTweenPlayerEnded {
-                        tween_player: player_entity,
+                    ended_writer.send(SpanTweenerEnded {
+                        tweener: tweener_entity,
                         current_direction: timer.direction,
                         with_repeat: timer.repeat,
                     });
@@ -474,8 +466,8 @@ pub fn span_tween_player_system(
             let children = children
                 .iter()
                 .flat_map(|a| a.iter())
-                .filter(|c| !q_other_tween_player.contains(**c));
-            let tweens = [&player_entity].into_iter().chain(children);
+                .filter(|c| !q_other_tweener.contains(**c));
+            let tweens = [&tweener_entity].into_iter().chain(children);
             for &tween_entity in tweens {
                 let Ok((mut tween_state, tween_span)) =
                     q_tween.get_mut(tween_entity)
@@ -500,7 +492,7 @@ pub fn span_tween_player_system(
                 // The edge cases are the time when the tween are really short
                 // or delta is really long per frame.
                 //
-                // This is likely only an issue with this player implementation.
+                // This is likely only an issue with this tweener implementation.
                 //
                 // This is not accounted for when the tween might repeat
                 // multiple time in one frame. When that tween is this ridiculously

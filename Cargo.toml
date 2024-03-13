@@ -33,7 +33,7 @@ default = [
   "bevy_sprite"
 ]
 
-# Tween player implementation by defining a tween in range of time.
+# Tweener implementation by defining a tween in range of time.
 span_tween = []
 
 # Adds tweening systems for asset

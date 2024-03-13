@@ -212,8 +212,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
     commands
         .spawn(
-            SpanTweenPlayerBundle::new(secs(12.))
-                .with_repeat(Repeat::Infinitely),
+            SpanTweenerBundle::new(secs(12.)).with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
             c.build_tweens()

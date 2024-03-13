@@ -24,11 +24,17 @@ fn main() {
         .run();
 }
 
+enum Movement {
+    Cursor,
+    TweenCompleted,
+}
+
 // Let us change the the tween ease and duration at runtime
 #[derive(Resource, Reflect)]
 struct Config {
     tween_duration: Duration,
     tween_ease: EaseFunction,
+    movement: Movement,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -66,18 +72,18 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             Jeb,
         ))
         .with_children(|c| {
-            // Spawning the marker for a tween player that will be responsible
+            // Spawning the marker for a tweener that will be responsible
             // for the follow effect
             c.spawn(JebTranslationTween);
 
-            // Spawning a tween player that's responsible for a rotating effect
+            // Spawning a tweener that's responsible for a rotating effect
             c.spawn((
-                SpanTweenPlayerBundle::new(Duration::from_secs(2))
+                SpanTweenerBundle::new(Duration::from_secs(2))
                     .with_repeat(Repeat::Infinitely)
                     .with_repeat_style(RepeatStyle::PingPong),
                 SpanTweenBundle::new(..Duration::from_secs(2)),
                 EaseFunction::CubicInOut,
-                ComponentDynTween::player_parent_dyn(interpolate::closure(
+                ComponentDynTween::tweener_parent_boxed(interpolate::closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;
@@ -87,13 +93,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 )),
             ));
 
-            // Spawning a TweenPlayer that's responsible for scaling effect
+            // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
             c.spawn((
-                SpanTweenPlayerBundle::new(Duration::from_secs(1)),
+                SpanTweenerBundle::new(Duration::from_secs(1)),
                 SpanTweenBundle::new(..Duration::from_secs(1)),
                 EaseFunction::QuinticIn,
-                ComponentTween::player_parent(interpolate::Scale {
+                ComponentTween::tweener_parent(interpolate::Scale {
                     start: Vec3::ZERO,
                     end: Vec3::ONE,
                 }),
@@ -115,21 +121,21 @@ fn jeb_follows_cursor(
         return;
     };
     if cursor_moved.read().next().is_some() {
-        // inserting a new TweenPlayer everytime the cursor moved
+        // inserting a new Tweener everytime the cursor moved
         commands.entity(jeb_tween).insert((
-            SpanTweenPlayerBundle::new(config.tween_duration),
+            SpanTweenerBundle::new(config.tween_duration),
             SpanTweenBundle::new(..config.tween_duration),
             config.tween_ease, // don't forget the ease
             // You can have multiple tween in the same Entity as long as their
             // type is differernt.
             //
             // This one for translation
-            ComponentTween::player_parent(interpolate::Translation {
+            ComponentTween::tweener_parent(interpolate::Translation {
                 start: jeb_transform.translation,
                 end: Vec3::new(coord.x, coord.y, 0.),
             }),
             // This one for color
-            ComponentTween::player_parent(interpolate::SpriteColor {
+            ComponentTween::tweener_parent(interpolate::SpriteColor {
                 start: Color::PINK,
                 end: Color::WHITE,
             }),
