@@ -617,34 +617,12 @@ pub fn span_tweener_system(
 //     impl<'a> EntitySpawnerSealed for WorldChildBuilder<'a> {}
 // }
 
-/// Helper trait for [`SpanTweensBuilder`].
-pub trait BuildSpanTweens: Sized {
-    /// Create a [`SpanTweensBuilder`].
-    fn build_tweens<'r>(&'r mut self) -> SpanTweensBuilder<'r, Self>;
+/// Convenient builder for building multiple children tweens
+pub struct ChildSpanTweenBuilder<'r, 'b> {
+    child_builder: &'r mut ChildBuilder<'b>,
 }
 
-impl<'b> BuildSpanTweens for ChildBuilder<'b> {
-    /// Create a [`SpanTweensBuilder`] using a [`ChildBuilder`] that's usually
-    /// returned by [`BuildChildren::with_children`].
-    fn build_tweens<'r>(&'r mut self) -> SpanTweensBuilder<'r, Self> {
-        SpanTweensBuilder { builder: self }
-    }
-}
-
-impl<'b> BuildSpanTweens for WorldChildBuilder<'b> {
-    /// Create a [`SpanTweensBuilder`] using a [`WorldChildBuilder`] that's usually
-    /// returned by [`BuildChildren::with_children`].
-    fn build_tweens<'r>(&'r mut self) -> SpanTweensBuilder<'r, Self> {
-        SpanTweensBuilder { builder: self }
-    }
-}
-
-/// Helper struct to build big complex tweens children with less boilerplate.
-pub struct SpanTweensBuilder<'r, B> {
-    builder: &'r mut B,
-}
-
-impl<'r, 'b> SpanTweensBuilder<'r, ChildBuilder<'b>> {
+impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween.
     pub fn tween<S, I, T>(
         &mut self,
@@ -677,7 +655,7 @@ impl<'r, 'b> SpanTweensBuilder<'r, ChildBuilder<'b>> {
         T: Bundle,
         F: FnOnce(EntityCommands<'_>),
     {
-        let commands = self.builder.spawn((
+        let commands = self.child_builder.spawn((
             SpanTweenBundle::new(span),
             interpolation,
             bundle,
@@ -707,7 +685,26 @@ impl<'r, 'b> SpanTweensBuilder<'r, ChildBuilder<'b>> {
     }
 }
 
-impl<'r, 'b> SpanTweensBuilder<'r, WorldChildBuilder<'b>> {
+/// Helper trait
+pub trait ChildSpanTweenBuilderExt<'b> {
+    /// Create the builder
+    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b>;
+}
+
+impl<'b> ChildSpanTweenBuilderExt<'b> for ChildBuilder<'b> {
+    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
+        ChildSpanTweenBuilder {
+            child_builder: self,
+        }
+    }
+}
+
+/// Convenient builder for building multiple children tweens
+pub struct WorldChildSpanTweenBuilder<'r, 'b> {
+    world_child_builder: &'r mut WorldChildBuilder<'b>,
+}
+
+impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween.
     pub fn tween<S, I, T>(
         &mut self,
@@ -740,7 +737,7 @@ impl<'r, 'b> SpanTweensBuilder<'r, WorldChildBuilder<'b>> {
         T: Bundle,
         F: FnOnce(EntityWorldMut<'_>),
     {
-        let commands = self.builder.spawn((
+        let commands = self.world_child_builder.spawn((
             SpanTweenBundle::new(span),
             interpolation,
             bundle,
@@ -767,5 +764,19 @@ impl<'r, 'b> SpanTweensBuilder<'r, WorldChildBuilder<'b>> {
         T: Bundle,
     {
         self.tween_and(at..=at, EaseFunction::Linear, bundle, |_| {})
+    }
+}
+
+/// Helper trait
+pub trait WorldChildSpanTweenBuilderExt<'b> {
+    /// Create the builder
+    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
+}
+
+impl<'b> WorldChildSpanTweenBuilderExt<'b> for WorldChildBuilder<'b> {
+    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
+        WorldChildSpanTweenBuilder {
+            world_child_builder: self,
+        }
     }
 }

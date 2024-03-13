@@ -131,7 +131,8 @@ pub mod prelude {
     pub use crate::interpolation::EaseFunction;
     #[cfg(feature = "span_tween")]
     pub use crate::span_tween::{
-        BuildSpanTweens, SpanTweenBundle, SpanTweenerBundle, SpanTweenerEnded,
+        ChildSpanTweenBuilderExt, SpanTweenBundle, SpanTweenerBundle,
+        SpanTweenerEnded, WorldChildSpanTweenBuilderExt,
     };
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
