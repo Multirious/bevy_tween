@@ -42,7 +42,7 @@
 //! ```
 //!
 //! If you've created a custom interpolator or a custom component/asset/resource,
-//! you may need to [register some systems](#crate::tween#registering-systems).
+//! you may need to [register some systems](crate::tween#registering-systems).
 
 use bevy::prelude::*;
 
