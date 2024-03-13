@@ -4,7 +4,7 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-use bevy_tween::prelude::*;
+use bevy_tween::{prelude::*, span_tween::SpanTweener};
 
 fn main() {
     App::new()
@@ -24,9 +24,11 @@ fn main() {
         .run();
 }
 
-enum Movement {
-    Cursor,
-    TweenCompleted,
+#[derive(Reflect)]
+enum UpdateKind {
+    CursorMoved,
+    CusorStopped,
+    TweenerCompleted,
 }
 
 // Let us change the the tween ease and duration at runtime
@@ -34,11 +36,12 @@ enum Movement {
 struct Config {
     tween_duration: Duration,
     tween_ease: EaseFunction,
-    movement: Movement,
+    update_kind: UpdateKind,
 }
 impl Default for Config {
     fn default() -> Self {
         Config {
+            update_kind: UpdateKind::CursorMoved,
             tween_duration: Duration::from_millis(500),
             tween_ease: EaseFunction::ExponentialOut,
         }
@@ -52,7 +55,7 @@ struct Jeb;
 /// Marker component for the tween entity we will be modifying to make the follow
 /// effect
 #[derive(Component)]
-struct JebTranslationTween;
+struct JebTranslationTweener;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
@@ -74,7 +77,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|c| {
             // Spawning the marker for a tweener that will be responsible
             // for the follow effect
-            c.spawn(JebTranslationTween);
+            c.spawn(JebTranslationTweener);
 
             // Spawning a tweener that's responsible for a rotating effect
             c.spawn((
@@ -112,17 +115,30 @@ fn jeb_follows_cursor(
     coord: Res<utils::MainCursorWorldCoord>,
     config: Res<Config>,
     q_jeb: Query<&Transform, With<Jeb>>,
-    q_jeb_translation_tween: Query<Entity, With<JebTranslationTween>>,
+    q_jeb_translation_tweener: Query<
+        (Entity, Option<&SpanTweener>),
+        With<JebTranslationTweener>,
+    >,
     mut cursor_moved: EventReader<CursorMoved>,
 ) {
     let jeb_transform = q_jeb.single();
-    let jeb_tween = q_jeb_translation_tween.single();
+    let (jeb_tweener_entity, jeb_tweener) = q_jeb_translation_tweener.single();
     let Some(coord) = coord.0 else {
         return;
     };
-    if cursor_moved.read().next().is_some() {
-        // inserting a new Tweener everytime the cursor moved
-        commands.entity(jeb_tween).insert((
+    let update = match config.update_kind {
+        UpdateKind::CursorMoved => cursor_moved.read().next().is_some(),
+        UpdateKind::CusorStopped => cursor_moved.read().next().is_none(),
+        UpdateKind::TweenerCompleted => match jeb_tweener {
+            Some(jeb_tweener) => {
+                jeb_tweener.timer.is_all_done()
+                    && coord != jeb_transform.translation.xy()
+            }
+            None => true,
+        },
+    };
+    if update {
+        commands.entity(jeb_tweener_entity).insert((
             SpanTweenerBundle::new(config.tween_duration),
             SpanTweenBundle::new(..config.tween_duration),
             config.tween_ease, // don't forget the ease
