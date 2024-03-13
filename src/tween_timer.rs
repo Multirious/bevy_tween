@@ -1,34 +1,4 @@
 //! Module containg implementation of a tween timer
-// //!
-// //! A tween player is one big part of a tween in this crate.
-// //!
-// //! [`TweenTimer`] alone do not handles any tweening behavior but instead
-// //! delegates it through components and systems like below with system order as
-// //! documented in [`TweenSystemSet`]:
-// //!  1. Update [`TweenTimer`]'s elasped time
-// //!  2. Any tween player implementation updates any [`TweenState`] that
-// //!     it responsibles for.
-// //!  3. Systems in [`interpolation`] query any [`TweenState`]s and
-// //!     output and insert the result in the same entity as [`TweenInterpolationValue`] component.
-// //!  4. Systems in [`tween`] query any [`TweenInterpolationValue`] in its entity
-// //!     then update its tweening value.
-// //! This method of communication with agreed upon components like an interface or
-// //! dependency injection I guess, is heavily utilized in this crate for maximum
-// //! decoupling and flexbility.
-// //!
-// //! With [`TweenTimer`], it consist of informations any other specific
-// //! tween player implementation may want.
-// //! The current elasped time, repeating setting, and repeating behavior is
-// //! automatically handled by [`tick_tween_timer_system`]. The average
-// //! users may not need to deal with the details of items in this module but
-// //! instead the usage in specific tween player implementation.
-// //!
-// //! [`interpolation`]: crate::interpolation
-// //! [`span_tween`]: crate::span_tween
-// //! [`tween`]: crate::tween
-// //! [`TweenState`]: crate::tween::TweenState
-// //! [`TweenInterpolationValue`]: crate::tween::TweenInterpolationValue
-// //! [`TweenSystemSet`]: crate::TweenSystemSet
 
 use std::time::Duration;
 
@@ -439,67 +409,6 @@ pub enum AnimationDirection {
     Forward,
     /// Playing backward
     Backward,
-}
-
-/// Event that emitted when a tween timer just ended. This will be emitted for
-/// the one that just repeated as well.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Event, Reflect)]
-pub struct TweenTimerEnded {
-    /// Tween timer that just ended
-    pub timer: Entity,
-    /// Currently direction. If is [`RepeatStyle::PingPong`], the current direction
-    /// will be its already changed direction.
-    pub current_direction: AnimationDirection,
-    /// The repeat this tween timer had.
-    pub with_repeat: Option<Repeat>,
-}
-
-impl TweenTimerEnded {
-    /// Returns true if the tween timer all done.
-    /// All done meaning that there will be nore more ticking and all
-    /// configured repeat is exhausted.
-    pub fn is_all_done(&self) -> bool {
-        self.with_repeat
-            .map(|repeat| repeat.exhausted())
-            .unwrap_or(true)
-    }
-}
-
-/// Updates any [`TweenTimer`] elasped time and handles the repeat if configured.
-pub fn tick_tween_timer_system(
-    time: Res<Time<Real>>,
-    mut q_timer: Query<(Entity, &mut TweenTimer)>,
-    mut ended_writer: EventWriter<TweenTimerEnded>,
-) {
-    let delta = time.delta();
-    q_timer.iter_mut().for_each(|(entity, mut timer)| {
-        if timer.paused {
-            return;
-        }
-
-        let is_prev_all_done = timer.is_all_done();
-        if is_prev_all_done {
-            return;
-        }
-
-        let delta = Duration::from_secs_f32(
-            delta.as_secs_f32() * timer.speed_scale.as_secs_f32(),
-        );
-
-        let timer_direction = timer.direction;
-        let tick_result = timer.tick(delta, timer_direction);
-
-        match tick_result {
-            TickResult::AllDone | TickResult::Repeated => {
-                ended_writer.send(TweenTimerEnded {
-                    timer: entity,
-                    current_direction: timer.direction,
-                    with_repeat: timer.repeat,
-                });
-            }
-            TickResult::Continue => {}
-        }
-    })
 }
 
 fn duration_rem(duration: Duration, max: Duration) -> Duration {

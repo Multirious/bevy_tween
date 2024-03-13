@@ -132,6 +132,7 @@ pub mod prelude {
     #[cfg(feature = "span_tween")]
     pub use crate::span_tween::{
         BuildSpanTweens, SpanTweenBundle, SpanTweenPlayerBundle,
+        SpanTweenPlayerEnded,
     };
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
@@ -141,7 +142,7 @@ pub mod prelude {
     pub use crate::tween::ComponentTween;
     pub use crate::tween::ResourceTween;
     pub use crate::tween::ResourceTweenDyn;
-    pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
+    pub use crate::tween_timer::{Repeat, RepeatStyle};
     pub use crate::BevyTweenRegisterSystems;
     pub use crate::DefaultTweenPlugins;
 }
@@ -182,19 +183,12 @@ impl Plugin for TweenCorePlugin {
         app.configure_sets(
             PostUpdate,
             (
-                TweenSystemSet::TickTweenTimer,
                 TweenSystemSet::TweenPlayer,
                 TweenSystemSet::UpdateInterpolationValue,
                 TweenSystemSet::ApplyTween,
             )
                 .chain(),
         )
-        .add_systems(
-            PostUpdate,
-            (tween_timer::tick_tween_timer_system,)
-                .in_set(TweenSystemSet::TickTweenTimer),
-        )
-        .add_event::<tween_timer::TweenTimerEnded>()
         .register_type::<tween_timer::TweenTimer>()
         .register_type::<tween_timer::AnimationDirection>()
         .register_type::<tween_timer::Repeat>()
@@ -211,19 +205,13 @@ impl Plugin for TweenCorePlugin {
 /// this schedule should be correctly applied in the next frame.
 ///
 /// The sets should be configured to run in this order:
-///  1. TickTweenTimer
-///  2. TweenPlayer
-///  3. UpdateTweenEaseValue
-///  4. ApplyTween
+///  1. TweenPlayer
+///  2. UpdateTweenEaseValue
+///  3. ApplyTween
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
-    /// This set is for systems that responsible for updating [`TweenTimer`]'s
-    /// elasped.
-    ///
-    /// [`TweenTimer`]: tween_timer::TweenTimer
-    TickTweenTimer,
-    /// This set is for systems that responsible for updating any specific
-    /// tween player implementation such as the [`span_tween::span_tween_player_system`]
+    /// This set is for systems that responsible for updating any
+    /// tween player such as the [`span_tween::span_tween_player_system`]
     /// by this crate
     TweenPlayer,
     /// This set is for systems that responsible for updating any
