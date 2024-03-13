@@ -25,7 +25,7 @@ Flexible tweening plugin for Bevy.
   The first crate I discovered and tried to do tweening with in Bevy. I like
   the idea of `Lens` of theirs. As I've been experimenting with this, I believe
   that "lens" is a bit misleading as it sounds like a subset of something. So,
-  I've renamed this to `Interpolator` to reflect its behavior.
+  I've renamed this to `Interpolator` to reflect its behavior in this crate.
 
 - Godot
 
