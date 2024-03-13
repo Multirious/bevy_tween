@@ -112,14 +112,14 @@ fn click_spawn_circle(
                         .tween(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
-                            ComponentTweenDyn::player_entity(Box::new(
+                            ComponentDynTween::player_entity(Box::new(
                                 my_interpolate::JustTranslateTo::end(end),
                             )),
                         )
                         .tween(
                             ..Duration::from_secs(1),
                             EaseFunction::BackIn,
-                            ComponentTweenDyn::player_entity(Box::new(
+                            ComponentDynTween::player_entity(Box::new(
                                 my_interpolate::JustScaleTo::end(Vec3::ZERO),
                             )),
                         );

@@ -37,102 +37,59 @@
 //! The specific entity structure is based on the specific tween player implementation.
 //! You may want to see [`span_tween`]
 //!
-//! # Your own [`Interpolator`]
+//! # Examples
 //!
-//! There are a few amount of built-in [`Interpolator`] because this crate only
-//! implemented the most common ones such as [`interpolate::Translation`] or
-//! [`interpolate::SpriteColor`] and some more.
-//! For others, you must implemented your own!
+//! ## Custom interpolator quick example
 //!
-//! Let's say you've created some custom component and you want to interpolate it:
-//! ```
+//! See ["Your own interpolator"](crate::interpolate#your-own-interpolator).
+//! See ["Registering systems"](crate::tween#registering-systems).
+//!
+//! ```no_run
 //! use bevy::prelude::*;
+//! use bevy_tween::prelude::*;
 //!
 //! #[derive(Component)]
-//! struct Foo(f32);
-//! ```
+//! struct Foo {
+//!     a: f32,
+//!     b: f32,
+//! }
 //!
-//! You'll need to create a specific interpolator for this component by:
-//! ```
-//! # use bevy::prelude::*;
-//! # #[derive(Component)]
-//! # struct Foo(f32);
-//! use bevy_tween::prelude::*;
-//! // First we define an interpolator type for `Foo`.
-//! struct InterpolateFoo {
+//! struct InterpolateFooA {
 //!     start: f32,
 //!     end: f32,
 //! }
-//! impl Interpolator for InterpolateFoo {
-//!     // We define the asscioate type `Item` as the `Foo` component
+//!
+//! impl Interpolator for InterpolateFooA {
 //!     type Item = Foo;
 //!
-//!     // Then we define how we want to interpolate `Foo`
 //!     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//!         // Usually if the type already have the `.lerp` function provided
-//!         // by the `FloatExt` trait then we can use just that
-//!         item.0 = self.start.lerp(self.end, value);
+//!         item.a = self.start.lerp(self.end, value);
 //!     }
 //! }
-//! ```
 //!
-//! And we're not done just yet.
-//! In order for `bevy` to recognize and properly tween your custom component.
-//! You have to register some necessary systems.
-//! We'll be using the [`BevyTweenRegisterSystems`] trait for convenient.
-//! Check out the docs to see what they actually do.
+//! struct InterpolateFooB {
+//!     start: f32,
+//!     end: f32,
+//! }
 //!
-//! Currently we have 2 choices for system to add.
-//! - [`component_tween_system`] to be used with [`ComponentTween`]<br/>
-//!   You have to add this system for **every individual interpolator you have**
-//!   (The same goes for resouce and asset)
-//!   because this uses no dyanamic dispatch and hold all the types data through
-//!   generic.
-//!   This is preferred if `Box<dyn Interpolator>` by the dyn systems doesn't
-//!   have all the type information you needed.
+//! impl Interpolator for InterpolateFooB {
+//!     type Item = Foo;
 //!
-//! - [`component_tween_dyn_system`] to be used with [`ComponentTweenDyn`]<br/>
-//!   You only have to add this system for **every individual component you want
-//!   to tween**. (The same goes for resouce and asset)
-//!   Information regarding interpolator will be dynamically dispatched.
-//!   This is preferred if you want to reduce the amount of system registration
-//!   and use closure.
-//!   
-//! - Add both if needed
+//!     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//!         item.b = self.start.lerp(self.end, value);
+//!     }
+//! }
 //!
-//! ```
-//! # use bevy::prelude::*;
-//! # #[derive(Component)]
-//! # struct Foo(f32);
-//! # use bevy_tween::prelude::*;
-//! # struct InterpolateFoo {
-//! #     start: f32,
-//! #     end: f32,
-//! # }
-//! # impl interpolate::Interpolator for InterpolateFoo {
-//! #     type Item = Foo;
-//! #     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//! #         item.0 = self.start.lerp(self.end, value);
-//! #     }
-//! # }
 //! fn main() {
 //!     App::new().add_tween_systems((
-//!         // Directly write in the interpolator type with this.
-//!         bevy_tween::component_tween_system::<InterpolateFoo>(),
-//!         // You may need to register more of this if you've got more
-//!         // interpolator(s)
-//!         // bevy_tween::component_tween_system::<InterpolateFoo2>(),
-//!
-//!         // Or just write the component type with this.
-//!         bevy_tween::component_tween_dyn_system::<Foo>(),
+//!         bevy_tween::component_dyn_tween_system::<Foo>(),
+//!         bevy_tween::component_tween_system::<InterpolateFooA>(),
+//!         bevy_tween::component_tween_system::<InterpolateFooB>(),
 //!     ));
 //! }
 //! ```
 //!
-//! After this, you should be good to go!
-//! Note that the same process goes for resource and asset.
-//!
-//! # Examples
+//! ## Usage
 //!
 //! Run `cargo run --example span_tween` to see this in action.
 //! ```no_run
@@ -177,11 +134,11 @@ pub mod prelude {
         BuildSpanTweens, SpanTweenBundle, SpanTweenPlayerBundle,
     };
     #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetTween;
+    pub use crate::tween::AssetDynTween;
     #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetTweenDyn;
+    pub use crate::tween::AssetTween;
+    pub use crate::tween::ComponentDynTween;
     pub use crate::tween::ComponentTween;
-    pub use crate::tween::ComponentTweenDyn;
     pub use crate::tween::ResourceTween;
     pub use crate::tween::ResourceTweenDyn;
     pub use crate::tween_timer::{Repeat, RepeatStyle, TweenTimerEnded};
@@ -190,13 +147,17 @@ pub mod prelude {
 }
 
 #[cfg(feature = "bevy_asset")]
-pub use tween::asset_tween_dyn_system;
+pub use tween::asset_dyn_tween_system;
 #[cfg(feature = "bevy_asset")]
 pub use tween::asset_tween_system;
-pub use tween::component_tween_dyn_system;
+#[cfg(feature = "bevy_asset")]
+pub use tween::asset_tween_system_full;
+pub use tween::component_dyn_tween_system;
 pub use tween::component_tween_system;
-pub use tween::resource_tween_dyn_system;
+pub use tween::component_tween_system_full;
+pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
+pub use tween::resource_tween_system_full;
 
 /// Default plugins for using crate.
 pub struct DefaultTweenPlugins;

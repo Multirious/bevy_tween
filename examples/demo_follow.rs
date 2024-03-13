@@ -77,7 +77,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     .with_repeat_style(RepeatStyle::PingPong),
                 SpanTweenBundle::new(..Duration::from_secs(2)),
                 EaseFunction::CubicInOut,
-                ComponentTweenDyn::player_parent_dyn(interpolate::closure(
+                ComponentDynTween::player_parent_dyn(interpolate::closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;

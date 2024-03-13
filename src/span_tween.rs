@@ -3,7 +3,7 @@
 //! # Entity structure
 //!
 //! If we have this entity:
-//!   ```
+//!   ```no_run
 //!   # use bevy::prelude::*;
 //!   # use bevy_tween::prelude::*;
 //!   # let world = World::new();
@@ -17,7 +17,7 @@
 //!   This is the case where you might want to make a simple animation where
 //!   there's not many parameteres. Because an entity can only have one unique
 //!   component, it limits on what animation you can achieve with this.
-//!   ```
+//!   ```no_run
 //!   # use bevy::prelude::*;
 //!   # use bevy_tween::prelude::*;
 //!   # let world = World::new();
@@ -49,7 +49,7 @@
 //!   This is the case where you want to make a more complex animation. By having
 //!   span tweens as span tween player's children, you can have any number of
 //!   span tween types you wanted .
-//!   ```
+//!   ```no_run
 //!   # use bevy::prelude::*;
 //!   # use bevy_tween::prelude::*;
 //!   # let world = World::new();

@@ -1,7 +1,7 @@
 //! Module containg implementations for tween
 //!
 //! # [`Tween`]
-//! Containg information about a target and an interpolator.
+//!
 //! Built-in supported [`TweenTarget`]s are:
 //! - [`TargetComponent`]
 //! - [`TargetResource`]
@@ -9,14 +9,236 @@
 //!
 //! See available interpolator in [`interpolate`].
 //!
+//! ## Registering systems
+//!
+//! You have to register some necessary systems for this plugin to work properly
+//! with every custom type and interpolators
+//! unless there's some system already registered by the [`DefaultTweenPlugins`].
+//!
+//! This crate already contains some systems for tweening components, assets,
+//! and resources.
+//! You will usually use aliases of these systems instead to reduce specifying
+//! redundant generic.
+//!
+//! Built-in systems:
+//! - [`component_tween_system_full()`], component tweening system
+//!   - [`component_tween_system()`], alias system for generic interpolator
+//!   - [`component_dyn_tween_system()`], alias system for `Box<dyn Interpolator>`
+//! - [`resource_tween_system_full()`], resource tweening system
+//!   - [`resource_tween_system()`], alias system for generic interpolator
+//!   - [`resource_dyn_tween_system()`], alias system for `Box<dyn Interpolator>`
+//! - [`asset_tween_system_full()`], asset tweening system
+//!   - [`asset_tween_system()`], alias system for generic interpolator
+//!   - [`asset_dyn_tween_system()`], alias system for `Box<dyn Interpolator>`
+//!
+//! Let's say you have some custom components with multiple interpolators.
+//!
+//! ```no_run
+//! # mod a { // had to put this module here for some reason. tf?
+//! use bevy::prelude::*;
+//! use bevy_tween::prelude::*;
+//!
+//! #[derive(Component)]
+//! pub struct Foo {
+//!     a: f32,
+//!     b: f32,
+//!     c: f32,
+//! }
+//!
+//! mod my_interpolate {
+//!     use bevy::prelude::*;
+//!     use bevy_tween::prelude::*;
+//!
+//!     pub struct FooA {
+//!         pub start: f32,
+//!         pub end: f32,
+//!     }
+//!
+//!     impl Interpolator for FooA {
+//!         type Item = super::Foo;
+//!
+//!         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//!             item.a = self.start.lerp(self.end, value);
+//!         }
+//!     }
+//!
+//!     pub struct FooB {
+//!         pub start: f32,
+//!         pub end: f32,
+//!     }
+//!
+//!     impl Interpolator for FooB {
+//!         type Item = super::Foo;
+//!
+//!         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//!             item.b = self.start.lerp(self.end, value);
+//!         }
+//!     }
+//!
+//!     pub struct FooC {
+//!         pub start: f32,
+//!         pub end: f32,
+//!     }
+//!
+//!     impl Interpolator for FooC {
+//!         type Item = super::Foo;
+//!
+//!         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//!             item.c = self.start.lerp(self.end, value);
+//!         }
+//!     }
+//! }
+//! # }
+//! ```
+//!
+//! There's 2 type of system you might want to register.
+//!
+//! ### Registering system for generic interpolator
+//!
+//! Generic interpolator means we're not using any dynamic dispatch.
+//! We've to register this system for **every individual interpolator**.
+//! (Unless already registered by the [`DefaultTweenPlugins`])
+//!
+//! ```no_run
+//! # mod a { // had to put this module here for some reason. tf?
+//! # use bevy::prelude::*;
+//! # use bevy_tween::prelude::*;
+//! # #[derive(Component)]
+//! # pub struct Foo {
+//! #     a: f32,
+//! #     b: f32,
+//! #     c: f32,
+//! # }
+//! # mod my_interpolate {
+//! #     use bevy::prelude::*;
+//! #     use bevy_tween::prelude::*;
+//! #     pub struct FooA {
+//! #         pub start: f32,
+//! #         pub end: f32,
+//! #     }
+//! #     impl Interpolator for FooA {
+//! #         type Item = super::Foo;
+//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//! #             item.a = self.start.lerp(self.end, value);
+//! #         }
+//! #     }
+//! #     pub struct FooB {
+//! #         pub start: f32,
+//! #         pub end: f32,
+//! #     }
+//! #     impl Interpolator for FooB {
+//! #         type Item = super::Foo;
+//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//! #             item.b = self.start.lerp(self.end, value);
+//! #         }
+//! #     }
+//! #     pub struct FooC {
+//! #         pub start: f32,
+//! #         pub end: f32,
+//! #     }
+//! #     impl Interpolator for FooC {
+//! #         type Item = super::Foo;
+//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//! #             item.c = self.start.lerp(self.end, value);
+//! #         }
+//! #     }
+//! # }
+//! fn main() {
+//!     use bevy_tween::component_tween_system;
+//!     use my_interpolate::*;
+//!
+//!     App::new().add_tween_systems((
+//!         component_tween_system::<FooA>(),
+//!         component_tween_system::<FooB>(),
+//!         component_tween_system::<FooC>(),
+//!     ));
+//! }
+//! # }
+//! ```
+//!
+//! ### Registering system for dynamic interpolator
+//!
+//! Dynamic interpolator means we're using dynamic dispatch.
+//! We don't have to register system for every interpolator, we only have to
+//! register this system just for **every individual component**.
+//! (Unless already registered by the [`DefaultTweenPlugins`])
+//!
+//! To register a dynamic interpolator for your component, you can use
+//! [`component_dyn_tween_system`].
+//!
+//! <div class="warning">
+//! <a href="fn.component_dyn_tween_system.html"><code>component_dyn_tween_system</code></a> is type of dynamic
+//! interpolator for <code>Box&lt;dyn Interpolator&gt;</code>.<br/>
+//! This crate let you create more custom dynamic interpolator type for the time
+//! when you need the <a href="../../bevy/prelude/trait.Reflect.html"><code>Reflect</code></a> trait!.
+//! </div>
+//!
+//! ```no_run
+//! # mod a { // had to put this module here for some reason. tf?
+//! # use bevy::prelude::*;
+//! # use bevy_tween::prelude::*;
+//! # #[derive(Component)]
+//! # pub struct Foo {
+//! #     a: f32,
+//! #     b: f32,
+//! #     c: f32,
+//! # }
+//! # mod my_interpolate {
+//! #     use bevy::prelude::*;
+//! #     use bevy_tween::prelude::*;
+//! #     pub struct FooA {
+//! #         pub start: f32,
+//! #         pub end: f32,
+//! #     }
+//! #     impl Interpolator for FooA {
+//! #         type Item = super::Foo;
+//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//! #             item.a = self.start.lerp(self.end, value);
+//! #         }
+//! #     }
+//! #     pub struct FooB {
+//! #         pub start: f32,
+//! #         pub end: f32,
+//! #     }
+//! #     impl Interpolator for FooB {
+//! #         type Item = super::Foo;
+//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//! #             item.b = self.start.lerp(self.end, value);
+//! #         }
+//! #     }
+//! #     pub struct FooC {
+//! #         pub start: f32,
+//! #         pub end: f32,
+//! #     }
+//! #     impl Interpolator for FooC {
+//! #         type Item = super::Foo;
+//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//! #             item.c = self.start.lerp(self.end, value);
+//! #         }
+//! #     }
+//! # }
+//! fn main() {
+//!     use bevy_tween::component_dyn_tween_system;
+//!     use my_interpolate::*;
+//!
+//!     // One system to rule them all
+//!     // Note that we're only using the `Foo` type, not `FooA`, `FooB`,
+//!     // and `FooC`!
+//!     App::new().add_tween_systems(component_dyn_tween_system::<Foo>());
+//! }
+//! # }
+//! ```
+//!
+//! [`BevyTweenRegisterSystems`]: crate::BevyTweenRegisterSystems
 //! [`interpolate`]: crate::interpolate
+//! [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
 
 use std::{any::type_name, marker::PhantomData, time::Duration};
 
 use bevy::ecs::schedule::SystemConfigs;
 use bevy::prelude::*;
 
-use crate::interpolate::Interpolator;
+use crate::interpolate::{Interpolator, InterpolatorReflected};
 use crate::tween_timer::AnimationDirection;
 
 /// [`TweenState`] should be automatically managed by a tween player.
@@ -93,16 +315,48 @@ where
     }
 }
 
+// impl<T, I> Tween<T, Box<I>>
+// where
+//     T: TweenTarget,
+//     I: Interpolator<Item = T::Item>,
+// {
+//     /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
+//     pub fn new_target_boxed<G, II>(target: G, interpolator: II) -> Self
+//     where
+//         II: Interpolator<Item = T::Item>,
+//         G: Into<T>,
+//     {
+//         Tween {
+//             interpolator: Box::new(Box::new(interpolator)),
+//             target: target.into(),
+//         }
+//     }
+// }
+
+// impl<T, I> Tween<T, Box<I>>
+// where
+//     T: TweenTarget + Default,
+//     I: Interpolator<Item = T::Item>,
+// {
+//     /// Create a new [`Tween`] with the default target and an interpolator that will be boxed internally.
+//     pub fn new_boxed<II>(interpolator: II) -> Self
+//     where
+//         II: Interpolator<Item = T::Item>,
+//     {
+//         Tween::new_target(T::default(), Box::new(Box::new(interpolator)))
+//     }
+// }
+
 impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
 where
     T: TweenTarget,
     T::Item: 'static,
 {
-    /// Create a new [`Tween`] with a target and a dynamic interpolator.
-    pub fn new_target_dyn<G, I>(target: G, interpolator: I) -> Self
+    /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
+    pub fn new_target_boxed<G, I>(target: G, interpolator: I) -> Self
     where
-        G: Into<T>,
         I: Interpolator<Item = T::Item>,
+        G: Into<T>,
     {
         Self::new_target(target, Box::new(interpolator))
     }
@@ -113,10 +367,39 @@ where
     T: TweenTarget + Default,
     T::Item: 'static,
 {
-    /// Create a new [`Tween`] with the default target and a dynamic interpolator.
-    pub fn new_dyn<I>(interpolator: I) -> Self
+    /// Create a new [`Tween`] with the default target and an interpolator that will be boxed internally.
+    pub fn new_boxed<I>(interpolator: I) -> Self
     where
         I: Interpolator<Item = T::Item>,
+    {
+        Self::new(Box::new(interpolator))
+    }
+}
+
+impl<T> Tween<T, Box<dyn InterpolatorReflected<Item = T::Item>>>
+where
+    T: TweenTarget,
+    T::Item: 'static,
+{
+    /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
+    pub fn new_target_boxed<G, I>(target: G, interpolator: I) -> Self
+    where
+        I: Interpolator<Item = T::Item> + Reflect,
+        G: Into<T>,
+    {
+        Self::new_target(target, Box::new(interpolator))
+    }
+}
+
+impl<T> Tween<T, Box<dyn InterpolatorReflected<Item = T::Item>>>
+where
+    T: TweenTarget + Default,
+    T::Item: 'static,
+{
+    /// Create a new [`Tween`] with the default target and an interpolator that will be boxed internally.
+    pub fn new_boxed<I>(interpolator: I) -> Self
+    where
+        I: Interpolator<Item = T::Item> + Reflect,
     {
         Self::new(Box::new(interpolator))
     }
@@ -134,8 +417,8 @@ pub trait TweenTarget {
 pub type ComponentTween<I> =
     Tween<TargetComponent<<I as Interpolator>::Item>, I>;
 
-/// Convenient alias for [`Tween`] that [`TargetComponent`] with dyanmic [`Interpolator`].
-pub type ComponentTweenDyn<C> =
+/// Convenient alias for [`Tween`] that [`TargetComponent`] with boxed dyanmic [`Interpolator`].
+pub type ComponentDynTween<C> =
     Tween<TargetComponent<C>, Box<dyn Interpolator<Item = C>>>;
 
 /// Tell the tween what component of what entity to tween.
@@ -288,7 +571,7 @@ where
     }
 }
 
-impl<C> ComponentTweenDyn<C>
+impl<C> ComponentDynTween<C>
 where
     C: Component,
 {
@@ -392,7 +675,7 @@ pub fn component_tween_system_full<C, I>(
     })
 }
 
-/// System alias for [`component_tween_system_full`] that uses generic [`Interpolator`]
+/// System alias for [`component_tween_system_full`] that uses generic [`Interpolator`].
 pub fn component_tween_system<I>() -> SystemConfigs
 where
     I: Interpolator,
@@ -401,8 +684,8 @@ where
     component_tween_system_full::<I::Item, I>.into_configs()
 }
 
-/// System alias for [`component_tween_system_full`] that uses dynamic [`Interpolator`]
-pub fn component_tween_dyn_system<C>() -> SystemConfigs
+/// System alias for [`component_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+pub fn component_dyn_tween_system<C>() -> SystemConfigs
 where
     C: Component,
 {
@@ -458,7 +741,7 @@ pub fn resource_tween_system_full<R, I>(
     })
 }
 
-/// System alias for [`resource_tween_system_full`] that uses generic [`Interpolator`]
+/// System alias for [`resource_tween_system_full`] that uses generic [`Interpolator`]..
 pub fn resource_tween_system<I>() -> SystemConfigs
 where
     I: Interpolator,
@@ -467,8 +750,8 @@ where
     resource_tween_system_full::<I::Item, I>.into_configs()
 }
 
-/// System alias for [`resource_tween_system_full`] that uses dynamic [`Interpolator`]
-pub fn resource_tween_dyn_system<R>() -> SystemConfigs
+/// System alias for [`resource_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+pub fn resource_dyn_tween_system<R>() -> SystemConfigs
 where
     R: Resource,
 {
@@ -482,7 +765,7 @@ pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with dyanmic [`Interpolator`].
 #[cfg(feature = "bevy_asset")]
-pub type AssetTweenDyn<A> =
+pub type AssetDynTween<A> =
     Tween<TargetAsset<A>, Box<dyn Interpolator<Item = A>>>;
 
 /// Tell the tween what asset of what type to tween.
@@ -611,7 +894,7 @@ pub fn asset_tween_system_full<A, I>(
         })
 }
 
-/// System alias for [`asset_tween_system_full`] that uses generic [`Interpolator`]
+/// System alias for [`asset_tween_system_full`] that uses generic [`Interpolator`].
 #[cfg(feature = "bevy_asset")]
 pub fn asset_tween_system<I>() -> SystemConfigs
 where
@@ -621,9 +904,9 @@ where
     asset_tween_system_full::<I::Item, I>.into_configs()
 }
 
-/// System alias for [`asset_tween_system_full`] that uses dynamic [`Interpolator`]
+/// System alias for [`asset_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
 #[cfg(feature = "bevy_asset")]
-pub fn asset_tween_dyn_system<A>() -> SystemConfigs
+pub fn asset_dyn_tween_system<A>() -> SystemConfigs
 where
     A: Asset,
 {

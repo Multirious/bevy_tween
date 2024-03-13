@@ -1,4 +1,48 @@
 //! Module containg the [`Interpolator`] trait and some basic built-in interpolator
+//!
+//! # Your own [`Interpolator`]
+//!
+//! There are a few amount of built-in [`Interpolator`] because this crate only
+//! implemented the most common ones such as [`Translation`] or
+//! [`SpriteColor`] and some more.
+//! For others, you must implemented your own!
+//!
+//! Let's say you've created some custom component and you want to interpolate it:
+//! ```no_run
+//! use bevy::prelude::*;
+//!
+//! #[derive(Component)]
+//! struct Foo(f32);
+//! ```
+//!
+//! You'll need to create a specific interpolator for this component by:
+//! ```no_run
+//! # use bevy::prelude::*;
+//! # #[derive(Component)]
+//! # struct Foo(f32);
+//! use bevy_tween::prelude::*;
+//!
+//! // First we define an interpolator type for `Foo`.
+//! struct InterpolateFoo {
+//!     start: f32,
+//!     end: f32,
+//! }
+//!
+//! impl Interpolator for InterpolateFoo {
+//!     // We define the asscioate type `Item` as the `Foo` component
+//!     type Item = Foo;
+//!
+//!     // Then we define how we want to interpolate `Foo`
+//!     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//!         // Usually if the type already have the `.lerp` function provided
+//!         // by the `FloatExt` trait then we can use just that
+//!         item.0 = self.start.lerp(self.end, value);
+//!     }
+//! }
+//! ```
+//!
+//! If you've created a custom interpolator or a custom component/asset/resource,
+//! you may need to [register some systems](#crate::tween#registering-systems).
 
 use bevy::prelude::*;
 
@@ -11,8 +55,8 @@ use crate::{tween, BevyTweenRegisterSystems};
 ///
 /// # Examples
 ///
-/// Interpolator for components.
-/// ```
+/// Interpolator for components. (The same goes for assets and resources!)
+/// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_tween::prelude::*;
 ///
@@ -27,55 +71,15 @@ use crate::{tween, BevyTweenRegisterSystems};
 /// impl Interpolator for InterpolateMyComponent {
 ///     type Item = MyComponent;
 ///
-///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-///         item.0 = self.start.lerp(self.end, value);
-///     }
-/// }
-/// ```
-///
-/// Interpolator for asset.
-/// ```
-/// use bevy::prelude::*;
-/// use bevy_tween::prelude::*;
-///
-/// #[derive(TypePath, Asset)]
-/// struct MyAsset(f32);
-///
-/// struct InterpolateMyAsset {
-///     start: f32,
-///     end: f32,
-/// }
-///
-/// impl Interpolator for InterpolateMyAsset {
-///     type Item = MyAsset;
+///     // Your components/asset/resource here;
 ///
 ///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
 ///         item.0 = self.start.lerp(self.end, value);
 ///     }
 /// }
 /// ```
-///
-/// Interpolator for resource.
-/// ```
-/// use bevy::prelude::*;
-/// use bevy_tween::prelude::*;
-///
-/// #[derive(Resource)]
-/// struct MyResource(f32);
-///
-/// struct InterpolateMyResource {
-///     start: f32,
-///     end: f32,
-/// }
-///
-/// impl Interpolator for InterpolateMyResource {
-///     type Item = MyResource;
-///
-///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-///         item.0 = self.start.lerp(self.end, value);
-///     }
-/// }
-/// ```
+/// Then you'll need to register the system to actually make bevy recognizes
+/// your interpolator.
 pub trait Interpolator: Send + Sync + 'static {
     /// Type to be interpolated.
     type Item;
@@ -96,8 +100,32 @@ impl<I: 'static> Interpolator
     }
 }
 
-impl<I: 'static> Interpolator for Box<dyn Interpolator<Item = I>> {
+impl<I: 'static> Interpolator
+    for &'static (dyn Fn(&mut I, f32) + Send + Sync + 'static)
+{
     type Item = I;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        self(item, value)
+    }
+}
+
+impl<Inner> Interpolator for Box<Inner>
+where
+    Inner: Interpolator + ?Sized,
+{
+    type Item = Inner::Item;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        (**self).interpolate(item, value)
+    }
+}
+
+impl<Inner> Interpolator for &'static Inner
+where
+    Inner: Interpolator + ?Sized,
+{
+    type Item = Inner::Item;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         (**self).interpolate(item, value)
@@ -105,18 +133,9 @@ impl<I: 'static> Interpolator for Box<dyn Interpolator<Item = I>> {
 }
 
 /// Trait for [`Interpolator`] wtih [`Reflect`].
-/// Requried for dynamic dispatch.
 pub trait InterpolatorReflected: Interpolator + Reflect {}
 
 impl<T> InterpolatorReflected for T where T: Interpolator + Reflect {}
-
-impl<I: 'static> Interpolator for Box<dyn InterpolatorReflected<Item = I>> {
-    type Item = I;
-
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        (**self).interpolate(item, value);
-    }
-}
 
 /// Create boxed closure in order to be used with dynamic [`Interpolator`]
 pub fn closure<I, F>(f: F) -> Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>
@@ -154,13 +173,13 @@ impl Plugin for DefaultInterpolatorsPlugin {
 pub struct DefaultDynInterpolatorsPlugin;
 impl Plugin for DefaultDynInterpolatorsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_tween_systems(tween::component_tween_dyn_system::<Transform>());
+        app.add_tween_systems(tween::component_dyn_tween_system::<Transform>());
 
         #[cfg(feature = "bevy_sprite")]
-        app.add_tween_systems(tween::component_tween_dyn_system::<Sprite>());
+        app.add_tween_systems(tween::component_dyn_tween_system::<Sprite>());
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
-        app.add_tween_systems(tween::asset_tween_dyn_system::<
+        app.add_tween_systems(tween::asset_dyn_tween_system::<
             bevy::sprite::ColorMaterial,
         >());
     }
