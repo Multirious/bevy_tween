@@ -238,7 +238,7 @@ use std::{any::type_name, marker::PhantomData, time::Duration};
 use bevy::ecs::schedule::SystemConfigs;
 use bevy::prelude::*;
 
-use crate::interpolate::{Interpolator, InterpolatorReflected};
+use crate::interpolate::Interpolator;
 use crate::tween_timer::AnimationDirection;
 
 /// [`TweenState`] should be automatically managed by a tween player.
@@ -315,38 +315,6 @@ where
     }
 }
 
-// impl<T, I> Tween<T, Box<I>>
-// where
-//     T: TweenTarget,
-//     I: Interpolator<Item = T::Item>,
-// {
-//     /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
-//     pub fn new_target_boxed<G, II>(target: G, interpolator: II) -> Self
-//     where
-//         II: Interpolator<Item = T::Item>,
-//         G: Into<T>,
-//     {
-//         Tween {
-//             interpolator: Box::new(Box::new(interpolator)),
-//             target: target.into(),
-//         }
-//     }
-// }
-
-// impl<T, I> Tween<T, Box<I>>
-// where
-//     T: TweenTarget + Default,
-//     I: Interpolator<Item = T::Item>,
-// {
-//     /// Create a new [`Tween`] with the default target and an interpolator that will be boxed internally.
-//     pub fn new_boxed<II>(interpolator: II) -> Self
-//     where
-//         II: Interpolator<Item = T::Item>,
-//     {
-//         Tween::new_target(T::default(), Box::new(Box::new(interpolator)))
-//     }
-// }
-
 impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
 where
     T: TweenTarget,
@@ -371,35 +339,6 @@ where
     pub fn new_boxed<I>(interpolator: I) -> Self
     where
         I: Interpolator<Item = T::Item>,
-    {
-        Self::new(Box::new(interpolator))
-    }
-}
-
-impl<T> Tween<T, Box<dyn InterpolatorReflected<Item = T::Item>>>
-where
-    T: TweenTarget,
-    T::Item: 'static,
-{
-    /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
-    pub fn new_target_boxed<G, I>(target: G, interpolator: I) -> Self
-    where
-        I: Interpolator<Item = T::Item> + Reflect,
-        G: Into<T>,
-    {
-        Self::new_target(target, Box::new(interpolator))
-    }
-}
-
-impl<T> Tween<T, Box<dyn InterpolatorReflected<Item = T::Item>>>
-where
-    T: TweenTarget + Default,
-    T::Item: 'static,
-{
-    /// Create a new [`Tween`] with the default target and an interpolator that will be boxed internally.
-    pub fn new_boxed<I>(interpolator: I) -> Self
-    where
-        I: Interpolator<Item = T::Item> + Reflect,
     {
         Self::new(Box::new(interpolator))
     }

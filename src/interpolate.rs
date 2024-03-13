@@ -132,11 +132,6 @@ where
     }
 }
 
-/// Trait for [`Interpolator`] wtih [`Reflect`].
-pub trait InterpolatorReflected: Interpolator + Reflect {}
-
-impl<T> InterpolatorReflected for T where T: Interpolator + Reflect {}
-
 /// Create boxed closure in order to be used with dynamic [`Interpolator`]
 pub fn closure<I, F>(f: F) -> Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>
 where
