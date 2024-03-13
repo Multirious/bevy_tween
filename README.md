@@ -27,7 +27,7 @@ Flexible tweening plugin for Bevy.
   that "lens" is a bit misleading as it sounds like a subset of something. So,
   I've renamed this to `Interpolator` to reflect its behavior in this crate.
 
-- Godot
+- [`godot`](https://github.com/godotengine/godot)
 
   Godot's tween make it simple to animate something which what I kept thinking
   about trying to do any animation. What's the big part is the Godot's node
