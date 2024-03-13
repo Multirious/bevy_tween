@@ -582,28 +582,69 @@ pub fn span_tweener_system(
     );
 }
 
+// #[doc(hidden)]
+// pub trait EntitySpawner: sealed::EntitySpawnerSealed {
+//     type CommandOutput<'c>
+//     where
+//         Self: 'c;
+//     fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_>;
+// }
+
+// impl<'a> EntitySpawner for ChildBuilder<'a> {
+//     type CommandOutput<'c> = bevy::ecs::system::EntityCommands<'c>
+//     where Self: 'c;
+
+//     fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
+//         self.spawn(bundle)
+//     }
+// }
+
+// impl<'a> EntitySpawner for WorldChildBuilder<'a> {
+//     type CommandOutput<'c> = EntityWorldMut<'c>
+//     where Self: 'c;
+
+//     fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
+//         self.spawn(bundle)
+//     }
+// }
+
+// mod sealed {
+//     use bevy::prelude::*;
+
+//     pub trait EntitySpawnerSealed {}
+
+//     impl<'a> EntitySpawnerSealed for ChildBuilder<'a> {}
+//     impl<'a> EntitySpawnerSealed for WorldChildBuilder<'a> {}
+// }
+
 /// Helper trait for [`SpanTweensBuilder`].
-pub trait BuildSpanTweens<'a> {
+pub trait BuildSpanTweens: Sized {
     /// Create a [`SpanTweensBuilder`].
-    fn build_tweens(&mut self) -> SpanTweensBuilder<'a, '_>;
+    fn build_tweens<'r>(&'r mut self) -> SpanTweensBuilder<'r, Self>;
 }
 
-impl<'a> BuildSpanTweens<'a> for ChildBuilder<'a> {
+impl<'b> BuildSpanTweens for ChildBuilder<'b> {
     /// Create a [`SpanTweensBuilder`] using a [`ChildBuilder`] that's usually
     /// returned by [`BuildChildren::with_children`].
-    fn build_tweens(&mut self) -> SpanTweensBuilder<'a, '_> {
-        SpanTweensBuilder {
-            child_builder: self,
-        }
+    fn build_tweens<'r>(&'r mut self) -> SpanTweensBuilder<'r, Self> {
+        SpanTweensBuilder { builder: self }
+    }
+}
+
+impl<'b> BuildSpanTweens for WorldChildBuilder<'b> {
+    /// Create a [`SpanTweensBuilder`] using a [`WorldChildBuilder`] that's usually
+    /// returned by [`BuildChildren::with_children`].
+    fn build_tweens<'r>(&'r mut self) -> SpanTweensBuilder<'r, Self> {
+        SpanTweensBuilder { builder: self }
     }
 }
 
 /// Helper struct to build big complex tweens children with less boilerplate.
-pub struct SpanTweensBuilder<'a, 'b> {
-    child_builder: &'b mut ChildBuilder<'a>,
+pub struct SpanTweensBuilder<'r, B> {
+    builder: &'r mut B,
 }
 
-impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
+impl<'r, 'b> SpanTweensBuilder<'r, ChildBuilder<'b>> {
     /// Create a new span tween.
     pub fn tween<S, I, T>(
         &mut self,
@@ -634,9 +675,9 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
         S::Error: std::fmt::Debug,
         I: Component + Interpolation,
         T: Bundle,
-        F: FnOnce(EntityCommands),
+        F: FnOnce(EntityCommands<'_>),
     {
-        let commands = self.child_builder.spawn((
+        let commands = self.builder.spawn((
             SpanTweenBundle::new(span),
             interpolation,
             bundle,
@@ -651,7 +692,70 @@ impl<'a, 'b> SpanTweensBuilder<'a, 'b> {
     pub fn jump_and<T, F>(&mut self, at: Duration, bundle: T, f: F) -> &mut Self
     where
         T: Bundle,
-        F: FnOnce(EntityCommands),
+        F: FnOnce(EntityCommands<'_>),
+    {
+        self.tween_and(at..=at, EaseFunction::Linear, bundle, f)
+    }
+
+    /// Create a new span tween that's 0 seconds in duration which basically
+    /// not tween anything but change the value instantly at some input time.
+    pub fn jump<T>(&mut self, at: Duration, bundle: T) -> &mut Self
+    where
+        T: Bundle,
+    {
+        self.tween_and(at..=at, EaseFunction::Linear, bundle, |_| {})
+    }
+}
+
+impl<'r, 'b> SpanTweensBuilder<'r, WorldChildBuilder<'b>> {
+    /// Create a new span tween.
+    pub fn tween<S, I, T>(
+        &mut self,
+        span: S,
+        interpolation: I,
+        tween: T,
+    ) -> &mut Self
+    where
+        S: TryInto<TweenTimeSpan>,
+        S::Error: std::fmt::Debug,
+        I: Component + Interpolation,
+        T: Bundle,
+    {
+        self.tween_and(span, interpolation, tween, |_| {})
+    }
+
+    /// Create a new span tween then call a closure with the tween's
+    /// [`EntityWorldMut`].
+    pub fn tween_and<S, I, T, F>(
+        &mut self,
+        span: S,
+        interpolation: I,
+        bundle: T,
+        f: F,
+    ) -> &mut Self
+    where
+        S: TryInto<TweenTimeSpan>,
+        S::Error: std::fmt::Debug,
+        I: Component + Interpolation,
+        T: Bundle,
+        F: FnOnce(EntityWorldMut<'_>),
+    {
+        let commands = self.builder.spawn((
+            SpanTweenBundle::new(span),
+            interpolation,
+            bundle,
+        ));
+        f(commands);
+        self
+    }
+
+    /// Create a new span tween that's 0 seconds in duration which basically
+    /// not tween anything but change the value instantly at some input time
+    /// then call a closure with the tween's [`EntityWorldMut`].
+    pub fn jump_and<T, F>(&mut self, at: Duration, bundle: T, f: F) -> &mut Self
+    where
+        T: Bundle,
+        F: FnOnce(EntityWorldMut<'_>),
     {
         self.tween_and(at..=at, EaseFunction::Linear, bundle, f)
     }
