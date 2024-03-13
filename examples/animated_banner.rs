@@ -215,7 +215,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             SpanTweenerBundle::new(secs(12.)).with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
-            c.build_tweens()
+            c.child_tweens()
                 // [ bevy_tween_text ] ========================================
                 .jump(
                     secs(0.),

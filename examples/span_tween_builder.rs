@@ -29,7 +29,7 @@ fn setup(mut commands: Commands) {
             SpanTweenerBundle::new(Duration::from_secs(5)),
         ))
         .with_children(|c| {
-            c.build_tweens().tween(
+            c.child_tweens().tween(
                 ..Duration::from_secs(5),
                 EaseFunction::QuadraticInOut,
                 ComponentTween::new(interpolate::Translation { start, end }),
