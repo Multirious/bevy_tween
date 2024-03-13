@@ -76,13 +76,13 @@ required-features = [
 ]
 
 [[example]]
-name = "simple_tween"
+name = "span_tween"
 required-features = [
   "span_tween",
 ]
 
 [[example]]
-name = "simple_tween_builder"
+name = "span_tween_builder"
 required-features = [
   "span_tween",
 ]

@@ -134,9 +134,9 @@
 //!
 //! # Examples
 //!
-//! Run `cargo run --example simple_tween` to see this in action.
+//! Run `cargo run --example span_tween` to see this in action.
 //! ```no_run
-#![doc = include_str!("../examples/simple_tween.rs")]
+#![doc = include_str!("../examples/span_tween.rs")]
 //! ```
 //! 
 //! [`Tween`]: tween::Tween
