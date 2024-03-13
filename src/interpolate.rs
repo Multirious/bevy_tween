@@ -104,8 +104,9 @@ impl<I: 'static> Interpolator for Box<dyn Interpolator<Item = I>> {
     }
 }
 
-#[allow(unused)]
-trait InterpolatorReflected: Interpolator + Reflect {}
+/// Trait for [`Interpolator`] wtih [`Reflect`].
+/// Requried for dynamic dispatch.
+pub trait InterpolatorReflected: Interpolator + Reflect {}
 
 impl<T> InterpolatorReflected for T where T: Interpolator + Reflect {}
 
