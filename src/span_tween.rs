@@ -82,7 +82,7 @@
 use std::{ops, time::Duration};
 
 use bevy::{ecs::system::EntityCommands, prelude::*};
-use tween_timer::Repeat;
+use tween_timer::{Repeat, RepeatStyle};
 
 use crate::{
     interpolation::Interpolation,
@@ -343,10 +343,7 @@ impl SpanTweenerBundle {
 
     /// [`SpanTweenerBundle`] with the specified `repeat_style`
     /// setting the inner [`TweenTimer`]'s repeat_style to Some
-    pub fn with_repeat_style(
-        mut self,
-        repeat_style: tween_timer::RepeatStyle,
-    ) -> Self {
+    pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
         self.span_tweener.timer.set_repeat_style(Some(repeat_style));
         self
     }

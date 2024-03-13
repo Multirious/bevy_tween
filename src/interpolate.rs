@@ -132,8 +132,10 @@ where
     }
 }
 
+type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>;
+
 /// Create boxed closure in order to be used with dynamic [`Interpolator`]
-pub fn closure<I, F>(f: F) -> Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>
+pub fn closure<I, F>(f: F) -> InterpolatorClosure<I>
 where
     I: 'static,
     F: Fn(&mut I, f32) + Send + Sync + 'static,

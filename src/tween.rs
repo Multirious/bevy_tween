@@ -539,6 +539,7 @@ where
 
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
+#[allow(clippy::type_complexity)]
 pub fn component_tween_system_full<C, I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
     q_tween: Query<(
