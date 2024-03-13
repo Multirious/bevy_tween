@@ -102,7 +102,8 @@ impl Plugin for SpanTweenPlugin {
         )
         .register_type::<SpanTweener>()
         .register_type::<TimeBound>()
-        .register_type::<TweenTimeSpan>();
+        .register_type::<TweenTimeSpan>()
+        .add_event::<SpanTweenerEnded>();
     }
 }
 
