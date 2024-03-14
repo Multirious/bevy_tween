@@ -77,12 +77,22 @@ required-features = [
 
 [[example]]
 name = "span_tween"
+path = "examples/span_tween/span_tween.rs"
 required-features = [
   "span_tween",
 ]
 
 [[example]]
 name = "span_tween_builder"
+path = "examples/span_tween/span_tween_builder.rs"
+required-features = [
+  "span_tween",
+]
+
+
+[[example]]
+name = "quick_span_tween"
+path = "examples/span_tween/quick_span_tween.rs"
 required-features = [
   "span_tween",
 ]

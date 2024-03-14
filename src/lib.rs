@@ -93,7 +93,7 @@
 //!
 //! Run `cargo run --example span_tween` to see this in action.
 //! ```no_run
-#![doc = include_str!("../examples/span_tween.rs")]
+#![doc = include_str!("../examples/span_tween/span_tween.rs")]
 //! ```
 //! 
 //! [`Tween`]: tween::Tween
@@ -131,8 +131,8 @@ pub mod prelude {
     pub use crate::interpolation::EaseFunction;
     #[cfg(feature = "span_tween")]
     pub use crate::span_tween::{
-        ChildSpanTweenBuilderExt, SpanTweenBundle, SpanTweenerBundle,
-        SpanTweenerEnded, WorldChildSpanTweenBuilderExt,
+        span_tween, ChildSpanTweenBuilderExt, SpanTweenBundle,
+        SpanTweenerBundle, SpanTweenerEnded, WorldChildSpanTweenBuilderExt,
     };
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;

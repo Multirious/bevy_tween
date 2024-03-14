@@ -316,7 +316,7 @@ impl SpanTweenerBundle {
     /// Create new [`SpanTweenerBundle`] with `duration`
     pub fn new(duration: Duration) -> Self {
         let mut t = SpanTweenerBundle::default();
-        t.span_tweener.timer.set_duration(duration);
+        t.span_tweener.timer.set_length(duration);
         t
     }
 
@@ -393,6 +393,84 @@ impl SpanTweenBundle {
             state: Default::default(),
         }
     }
+}
+
+/// Let you quickly create a span tweener and tween in the same entity with
+/// least amount of boiler-plate possible.
+/// Returns from [`span_tween`]
+#[derive(Default, Bundle)]
+pub struct QuickSpanTweenBundle {
+    span_tweener: SpanTweenerBundle,
+    span_tween: SpanTweenBundle,
+}
+
+impl QuickSpanTweenBundle {
+    /// Create new [`QuickSpanTweenBundle`]
+    fn new(duration: Duration) -> Self {
+        let mut q = QuickSpanTweenBundle::default();
+        q.span_tweener.span_tweener.timer.set_length(duration);
+        q.span_tween.span = (..duration).try_into().unwrap();
+        q
+    }
+
+    /// Span tweener with this repeat
+    pub fn with_repeat(mut self, repeat: Repeat) -> Self {
+        self.span_tweener
+            .span_tweener
+            .timer
+            .set_repeat(Some(repeat));
+        self
+    }
+
+    /// Span tweener with this repeat style
+    pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
+        self.span_tweener
+            .span_tweener
+            .timer
+            .set_repeat_style(Some(repeat_style));
+        self
+    }
+
+    /// Delays the starting point of a tween for this amount of duration
+    /// Note that this delay will be repeated too.
+    pub fn with_delay(mut self, delay: Duration) -> Self {
+        let min = self.span_tween.span.min();
+        let max = self.span_tween.span.max();
+        let length = max.duration() - min.duration();
+        self.span_tween.span = (delay..(delay + length)).try_into().unwrap();
+        self.span_tweener
+            .span_tweener
+            .timer
+            .set_length(delay + length);
+        self
+    }
+}
+
+/// Convenient function to quickly create a span tweener with tween for
+/// simple tweening
+///
+/// # Examples
+///
+/// ```no_run
+/// # use bevy::prelude::*;
+/// # use bevy_tween::prelude::*;
+/// # let world = World::default();
+/// # let mut queue = bevy::ecs::system::CommandQueue::default();
+/// # let mut commands = Commands::new(&mut queue, &world);
+/// # let start = Vec3::ZERO;
+/// # let end = Vec3::ZERO;
+/// commands.spawn((
+///     SpriteBundle::default(),
+///     span_tween(Duration::from_secs(5))
+///         .with_repeat(Repeat::infinitely())
+///         .with_repeat_style(RepeatStyle::PingPong)
+///         .with_delay(Duration::from_secs(2)),
+///     EaseFunction::QuadraticInOut,
+///     ComponentTween::tweener_entity(interpolate::Translation { start, end }),
+/// ));
+/// ```
+pub fn span_tween(duration: Duration) -> QuickSpanTweenBundle {
+    QuickSpanTweenBundle::new(duration)
 }
 
 /// Fired when a span tweener repeated or completed
