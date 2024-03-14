@@ -20,7 +20,8 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 - Complex animation, such as sequential or parallel animation, are designed to
   work in child-parent hierarchy which solve the issue presents in the previous crates
   of modifying animation at runtime. Because everything exists in the ECS world
-  with no hidden structure, everything can be freely accessed.
+  with no hidden structure, everything can be freely accessed. This implementation
+  also allows for a very extendable system, thanks Bevy's ECS!
 - User of this crate are free to decide if they want to only use generic,
   or trait object, or both for their tweening! Both came with pros and cons which
   will be explained in the documentation.
