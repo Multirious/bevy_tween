@@ -1,7 +1,8 @@
 <img src="https://github.com/Multirious/bevy_tween/assets/77918086/38ab44e1-67a4-4c2d-b17c-3a35128e6930" width="100%"/>
 
-![Crates.io Version](https://img.shields.io/crates/v/bevy_tween?style=for-the-badge)
-![Crates.io License](https://img.shields.io/crates/l/bevy_tween?style=for-the-badge)
+[![Crates.io Version](https://img.shields.io/crates/v/bevy_tween?style=for-the-badge)](https://crates.io/crates/bevy_tween)
+[![Crates.io License](https://img.shields.io/crates/l/bevy_tween?style=for-the-badge)](https://github.com/Multirious/bevy_tween/blob/main/README.md#license)
+[![Docs.rs](https://img.shields.io/docsrs/bevy_tween?style=for-the-badge)](https://docs.rs/bevy_tween)
 
 # `bevy_tween`
 
