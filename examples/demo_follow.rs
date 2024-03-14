@@ -131,7 +131,7 @@ fn jeb_follows_cursor(
         UpdateKind::CusorStopped => cursor_moved.read().next().is_none(),
         UpdateKind::TweenerCompleted => match jeb_tweener {
             Some(jeb_tweener) => {
-                jeb_tweener.timer.is_all_done()
+                jeb_tweener.timer.is_completed()
                     && coord != jeb_transform.translation.xy()
             }
             None => true,

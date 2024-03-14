@@ -408,10 +408,10 @@ pub struct SpanTweenerEnded {
 }
 
 impl SpanTweenerEnded {
-    /// Returns true if the tweener's timer is all done.
-    /// All done meaning that there will be nore more ticking and all
+    /// Returns true if the tweener's timer is completed.
+    /// Completed meaning that there will be nore more ticking and all
     /// configured repeat is exhausted.
-    pub fn is_all_done(&self) -> bool {
+    pub fn is_completed(&self) -> bool {
         self.with_repeat
             .map(|repeat| repeat.exhausted())
             .unwrap_or(true)
@@ -440,7 +440,7 @@ pub fn span_tweener_system(
                 return;
             }
 
-            if timer.is_all_done() {
+            if timer.is_completed() {
                 return;
             }
 
@@ -451,7 +451,7 @@ pub fn span_tweener_system(
             let tick_result = timer.tick(delta, timer.direction);
 
             match tick_result {
-                TickResult::AllDone | TickResult::Repeated => {
+                TickResult::Completed | TickResult::Repeated => {
                     ended_writer.send(SpanTweenerEnded {
                         tweener: tweener_entity,
                         current_direction: timer.direction,

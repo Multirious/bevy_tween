@@ -32,8 +32,8 @@ pub enum TickResult {
     Continue,
     /// Result from ticking is timer has repeated.
     Repeated,
-    /// Result from ticking is all done.
-    AllDone,
+    /// Result from ticking is completed.
+    Completed,
 }
 
 /// Tween timer
@@ -112,10 +112,10 @@ impl TweenTimer {
         self.elasped
     }
 
-    /// Returns true if the tween timer all done.
-    /// All done meaning that there will be nore more ticking and all
+    /// Returns true if the tween timer completed.
+    /// Completed meaning that there will be nore more ticking and all
     /// configured repeat is exhausted.
-    pub fn is_all_done(&self) -> bool {
+    pub fn is_completed(&self) -> bool {
         let is_edge = match self.direction {
             AnimationDirection::Forward => {
                 self.elasped.now >= self.duration_limit
@@ -152,7 +152,7 @@ impl TweenTimer {
                         previous: self.elasped.now,
                         repeat_style: None,
                     };
-                    return TickResult::AllDone;
+                    return TickResult::Completed;
                 }
                 let new_now =
                     (self.elasped.now + duration).min(self.duration_limit);
@@ -170,7 +170,7 @@ impl TweenTimer {
                         previous: self.elasped.now,
                         repeat_style: None,
                     };
-                    return TickResult::AllDone;
+                    return TickResult::Completed;
                 }
                 let new_now = self.elasped.now.saturating_sub(duration);
                 self.elasped = Elasped {
@@ -189,7 +189,7 @@ impl TweenTimer {
                         previous: self.elasped.now,
                         repeat_style: None,
                     };
-                    return TickResult::AllDone;
+                    return TickResult::Completed;
                 }
                 let new_now = duration_rem(new_now, self.duration_limit);
                 self.elasped = Elasped {
@@ -215,7 +215,7 @@ impl TweenTimer {
                         previous: self.elasped.now,
                         repeat_style: None,
                     };
-                    return TickResult::AllDone;
+                    return TickResult::Completed;
                 }
                 let new_now = if will_wrap {
                     neg_duration_rem(
@@ -250,7 +250,7 @@ impl TweenTimer {
                             previous: self.elasped.previous,
                             repeat_style: None,
                         };
-                        return TickResult::AllDone;
+                        return TickResult::Completed;
                     }
                     let new_now =
                         neg_duration_rem(new_now, self.duration_limit);
@@ -279,7 +279,7 @@ impl TweenTimer {
                             previous: self.elasped.previous,
                             repeat_style: None,
                         };
-                        return TickResult::AllDone;
+                        return TickResult::Completed;
                     }
                     let new_now = duration_rem(
                         duration - self.elasped.now,
