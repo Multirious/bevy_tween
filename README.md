@@ -17,20 +17,26 @@ Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 - Tweening is not tied to a certain entity. You can create an entity specifically
   for tweening any where in the world.
-- Complex animation, such as sequential or parallel animation, are designed to
-  work in child-parent hierarchy which solve the issue presents in the previous crates
-  of modifying animation at runtime. Because everything exists in the ECS world
-  with no hidden structure, everything can be freely accessed. This implementation
-  also allows for a very extendable system, thanks Bevy's ECS!
+- Complex animation, such as sequential or parallel tweening, are solved using
+  child-parent hierarchy:
+  - Solved the issue of modifying animation at runtime presents in the previous
+    crates.
+  - Everything exists in the ECS world with no hidden structure, everything can
+    be freely accessed.
+  - Makes a very extendable system, thanks Bevy's ECS!
 - User of this crate are free to decide if they want to only use generic,
-  or trait object, or both for their tweening! Both came with pros and cons which
-  will be explained in the documentation.
+  only trait object, or even both for tweening! They both came with their pros
+  and cons which will be explained in the documentation.
 
 ## Feature gates
-- `"span_tween"`, tweener implementation by defining a tween in range of time. Enabled by default.
-- `"bevy_asset"`, enable `"bevy/bevy_asset"`, add tweening systems for asset. Enabled by default.
-- `"bevy_render"`, enable `"bevy/bevy_render"`, add nothing just yet but required by the `"bevy_sprite"` feature. Enabled by default.
-- `"bevy_sprite"`, enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite. Enabled by default.
+- `"span_tween"`, enabled by default.<br/>
+  Tween for a range of time. 
+- `"bevy_asset"`, enabled by default.<br/>
+  enable `"bevy/bevy_asset"`, add tweening systems for asset.
+- `"bevy_render"`, enabled by default.<br/>
+  enable `"bevy/bevy_render"`, add nothing but required by the `"bevy_sprite"` feature.
+- `"bevy_sprite"`, enabled by default.<br/>
+  enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite.
 
 ## Bevy Version Support
 
@@ -46,10 +52,9 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 
 - [`godot`](https://github.com/godotengine/godot)
 
-  Godot's tween make it simple to animate something which what I kept thinking
-  about trying to do any animation. What's the big part is the Godot's node
-  hierarchy system which utilize hierarchy of child-parent node to define
-  behavior. It's an important puzzle piece of how this crate works.
+  Godot's tween make it simple to animate something which is part of the idea
+  for this crate. The Godot's node child-parent hierarchy system and that the
+  engine utilizes this to define behavior, powerful stuff!
 
 ## License
 
