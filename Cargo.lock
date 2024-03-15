@@ -612,7 +612,6 @@ dependencies = [
  "bevy_transform",
  "bevy_utils",
  "bevy_window",
- "bevy_winit",
 ]
 
 [[package]]

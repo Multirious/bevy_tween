@@ -22,7 +22,7 @@ bevy = { version = "0.13.0", default-features = false }
 
 [dev-dependencies]
 bevy-inspector-egui = "0.23"
-bevy = { version = "0.13.0", default-features = false, features = [ "bevy_winit", "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
+bevy = { version = "0.13.0", default-features = false, features = [ "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
 rand = "0.8.5"
 
 [features]
@@ -57,6 +57,7 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
+  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -65,6 +66,7 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
+  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -73,6 +75,7 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
+  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -80,6 +83,7 @@ name = "span_tween"
 path = "examples/span_tween/span_tween.rs"
 required-features = [
   "span_tween",
+  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -87,6 +91,7 @@ name = "span_tween_builder"
 path = "examples/span_tween/span_tween_builder.rs"
 required-features = [
   "span_tween",
+  "bevy/bevy_winit",
 ]
 
 
@@ -95,4 +100,5 @@ name = "quick_span_tween"
 path = "examples/span_tween/quick_span_tween.rs"
 required-features = [
   "span_tween",
+  "bevy/bevy_winit",
 ]
