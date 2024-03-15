@@ -13,16 +13,28 @@ jobs:
   build:
     strategy:
       matrix:
-        toolchain: [stable, nightly]
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.toml') }}
       
-    - name: Install Bevy dependencies
+    - name: Install stable toolchain
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: Install dependencies
       if: runner.os == 'linux'
-      run: sudo apt-get update; sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0
+      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       
     - name: Install cargo commands
       run: cargo install cargo-all-features
