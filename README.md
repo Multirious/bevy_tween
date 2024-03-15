@@ -38,6 +38,11 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 - `"bevy_sprite"`, enabled by default.<br/>
   enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite.
 
+## Demos
+`cargo run --example demo_follow -F bevy/bevy_winit`
+`cargo run --example demo_click -F bevy/bevy_winit`
+`cargo run --example demo_hold -F bevy/bevy_winit`
+
 ## Bevy Version Support
 
 |`bevy`|`bevy_tween`|
