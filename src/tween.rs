@@ -315,22 +315,20 @@ where
     }
 }
 
-// impl<T, DI> Tween<T, Box<DI>>
-// where
-//     DI: Interpolator<Item = T::Item> + ?Sized,
-//     T: TweenTarget,
-//     T::Item: 'static,
-// {
-//     /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
-//     pub fn new_target_boxed<G, I>(target: G, interpolator: I) -> Self
-//     where
-//         I: Interpolator<Item = T::Item>,
-//         G: Into<T>,
-//     {
-//         let b: Box<dyn Interpolator<Item = T::Item>> = Box::new(interpolator);
-//         Self::new_target(target, b)
-//     }
-// }
+impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
+where
+    T: TweenTarget,
+    T::Item: 'static,
+{
+    /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
+    pub fn new_target_boxed<G, I>(target: G, interpolator: I) -> Self
+    where
+        G: Into<T>,
+        I: Interpolator<Item = T::Item>,
+    {
+        Self::new_target(target, Box::new(interpolator))
+    }
+}
 
 impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
 where
