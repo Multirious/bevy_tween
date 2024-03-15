@@ -31,14 +31,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 
     // colors by https://color-hex.org/color-palettes/189
-    let colors = vec![
+    let colors = [
         Color::rgb_u8(0, 128, 191),
         Color::rgb_u8(0, 172, 223),
         Color::rgb_u8(85, 208, 255),
         Color::rgb_u8(124, 232, 255),
         Color::rgb_u8(204, 249, 255),
     ];
-    let squares = colors
+    let triangles = colors
         .iter()
         .enumerate()
         .map(|(i, color)| {
@@ -54,11 +54,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
-            snap_rotate(c, squares[4], secs, 5, 4., ease);
-            snap_rotate(c, squares[3], secs, 5, 5., ease);
-            snap_rotate(c, squares[2], secs, 5, 6., ease);
-            snap_rotate(c, squares[1], secs, 5, 7., ease);
-            snap_rotate(c, squares[0], secs, 5, 8., ease);
+            snap_rotate(c, triangles[4], secs, 5, 4., ease);
+            snap_rotate(c, triangles[3], secs, 5, 5., ease);
+            snap_rotate(c, triangles[2], secs, 5, 6., ease);
+            snap_rotate(c, triangles[1], secs, 5, 7., ease);
+            snap_rotate(c, triangles[0], secs, 5, 8., ease);
         });
 }
 
