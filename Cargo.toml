@@ -56,6 +56,14 @@ required-features = [
 ]
 
 [[example]]
+name = "animated_logo"
+required-features = [
+  "bevy_sprite",
+  "span_tween",
+  "bevy/bevy_winit",
+]
+
+[[example]]
 name = "demo_follow"
 required-features = [
   "bevy_sprite",
