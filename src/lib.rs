@@ -105,10 +105,10 @@
 //! [`TargetAsset`]: tween::TargetAsset
 //! [`TargetResource`]: tween::TargetResource
 //! [`TweenTimeSpan`]: span_tween::TweenTimeSpan
-//! [`TweenTarget`]: tween::TweenTarget
 //! [`ComponentTween`]: tween::ComponentTween
 //! [`ComponentTweenDyn`]: tween::ComponentTweenDyn
 
+#![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
 #![warn(missing_docs)]
 
 use bevy::{app::PluginGroupBuilder, prelude::*};

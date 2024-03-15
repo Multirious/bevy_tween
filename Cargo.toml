@@ -44,12 +44,7 @@ bevy_render = [ "bevy/bevy_render"]
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
 
 [package.metadata.docs.rs]
-features = [
-  "span_tween",
-  "bevy_asset",
-  "bevy_render",
-  "bevy_sprite"
-]
+all-features = true
 
 [[example]]
 name = "animated_banner"
