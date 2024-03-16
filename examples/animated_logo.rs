@@ -46,7 +46,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .collect::<Vec<_>>();
 
-    let secs = 20.;
+    let secs = 12.;
 
     commands
         .spawn(
