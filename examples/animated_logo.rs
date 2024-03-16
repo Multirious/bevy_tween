@@ -26,7 +26,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn(SpriteBundle {
         texture: tween_text,
-        transform: Transform::from_xyz(350., 0., 0.),
+        transform: Transform::from_xyz(340., 10., 0.),
         ..Default::default()
     });
 
@@ -46,7 +46,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .collect::<Vec<_>>();
 
-    let secs = 8.;
+    let secs = 20.;
 
     commands
         .spawn(
@@ -54,11 +54,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
-            snap_rotate(c, triangles[4], secs, 5, 4., ease);
-            snap_rotate(c, triangles[3], secs, 5, 5., ease);
-            snap_rotate(c, triangles[2], secs, 5, 6., ease);
-            snap_rotate(c, triangles[1], secs, 5, 7., ease);
-            snap_rotate(c, triangles[0], secs, 5, 8., ease);
+            snap_rotate(c, triangles[4], secs, 7, 4., ease);
+            snap_rotate(c, triangles[3], secs, 7, 6., ease);
+            snap_rotate(c, triangles[2], secs, 7, 8., ease);
+            snap_rotate(c, triangles[1], secs, 7, 10., ease);
+            snap_rotate(c, triangles[0], secs, 7, 12., ease);
         });
 }
 
