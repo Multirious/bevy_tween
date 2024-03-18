@@ -24,9 +24,11 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   - Everything exists in the ECS world with no hidden structure, everything can
     be freely accessed.
   - Makes a very extendable system, thanks Bevy's ECS!
-- User of this crate are free to decide if they want to only use generic,
+- Users of this crate are free to decide if they want to only use generic,
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
+- Flexibility at a cost of verbosity. APIs can be more verbose than the mentioned
+  crates.
 
 ## Feature gates
 - `"span_tween"`, enabled by default.<br/>
