@@ -7,11 +7,14 @@
 # `bevy_tween`
 
 Flexible tweening plugin for Bevy.
+This crate solves for tweening animation with the approach of integrating everything
+into Bevy's ECS, allowing you to exploits the already flexible ECS systems to tune
+the animation process to your needs.
 
 ## Differences
-The main motivation or goal for this tweening crate is that the previous
-existing tweening crates is not flexible enough. The differences will be
-explained below.
+The main motivation for this tweening crate is that the previous
+existing tweening crates is not flexible enough and so to goal is to solve it.
+The differences will be explained below.
 
 Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 or [`bevy_easings`](https://github.com/vleue/bevy_easings):
@@ -28,7 +31,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
 - Flexibility at a cost of verbosity. APIs can be more verbose than the mentioned
-  crates.
+  crates without extra helpers.
 
 ## Feature gates
 - `"span_tween"`, enabled by default.<br/>
