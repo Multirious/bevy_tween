@@ -30,7 +30,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 - Users of this crate are free to decide if they want to only use generic,
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
-- Flexibility at a cost of verbosity. APIs can be more verbose than the mentioned
+- Flexibility at the cost of verbosity. APIs can be more verbose than the mentioned
   crates without extra helpers.
 
 ## Feature gates
