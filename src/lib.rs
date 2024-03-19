@@ -130,6 +130,7 @@ pub mod prelude {
     pub use crate::interpolate::{self, Interpolator};
     pub use crate::interpolation::EaseFunction;
     #[cfg(feature = "span_tween")]
+    #[allow(deprecated)]
     pub use crate::span_tween::{
         span_tween, ChildSpanTweenBuilderExt, SpanTweenBundle,
         SpanTweenerBundle, SpanTweenerEnded, WorldChildSpanTweenBuilderExt,

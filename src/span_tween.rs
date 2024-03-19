@@ -361,6 +361,38 @@ impl SpanTweenerBundle {
         self.span_tweener.timer.set_repeat_style(None);
         self
     }
+
+    /// [`SpanTweenerBundle`] with [`SpanTweenBundle`] that spans the whole
+    /// length of the tweener.
+    /// Quick creation of tween when you want to tween in the same entity
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use bevy::prelude::*;
+    /// # use bevy_tween::prelude::*;
+    /// # let world = World::default();
+    /// # let mut queue = bevy::ecs::system::CommandQueue::default();
+    /// # let mut commands = Commands::new(&mut queue, &world);
+    /// # let start = Vec3::ZERO;
+    /// # let end = Vec3::ZERO;
+    /// commands.spawn((
+    ///     SpriteBundle::default(),
+    ///     SpanTweenerBundle::new(Duration::from_secs(5))
+    ///         .with_repeat(Repeat::infinitely())
+    ///         .with_repeat_style(RepeatStyle::PingPong)
+    ///         .tween_here(),
+    ///     EaseFunction::QuadraticInOut,
+    ///     ComponentTween::tweener_entity(interpolate::Translation { start, end }),
+    /// ));
+    /// ```
+    pub fn tween_here(self) -> SpanTweenHereBundle {
+        let dur = self.span_tweener.timer.length;
+        SpanTweenHereBundle {
+            span_tweener_bundle: self,
+            span_tween_bundle: SpanTweenBundle::new(..dur),
+        }
+    }
 }
 
 impl From<TweenTimer> for SpanTweenerBundle {
@@ -370,6 +402,15 @@ impl From<TweenTimer> for SpanTweenerBundle {
             tweener_marker: TweenerMarker,
         }
     }
+}
+
+/// Returns from [`SpanTweenerBundle::tween_here`].
+/// This combine [`SpanTweenerBundle`] with [`SpanTweenBundle`] that spans the
+/// whole length of the tweener.
+#[derive(Bundle)]
+pub struct SpanTweenHereBundle {
+    span_tweener_bundle: SpanTweenerBundle,
+    span_tween_bundle: SpanTweenBundle,
 }
 
 /// Bundle for a span tween
@@ -395,17 +436,34 @@ impl SpanTweenBundle {
     }
 }
 
-/// Let you quickly create a span tweener and tween in the same entity with
-/// least amount of boiler-plate possible.
-/// Returns from [`span_tween`]
-#[derive(Default, Bundle)]
-pub struct QuickSpanTweenBundle {
-    span_tweener: SpanTweenerBundle,
-    span_tween: SpanTweenBundle,
-}
+// had to do this to silence deprecated warning
+#[allow(deprecated)]
+mod lol {
+    use super::*;
 
+    /// Let you quickly create a span tweener and tween in the same entity with
+    /// least amount of boiler-plate possible.
+    /// Returns from [`span_tween`]
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+    )]
+    #[derive(Default, Bundle)]
+    pub struct QuickSpanTweenBundle {
+        pub(super) span_tweener: SpanTweenerBundle,
+        pub(super) span_tween: SpanTweenBundle,
+    }
+}
+#[allow(deprecated)]
+pub use lol::QuickSpanTweenBundle;
+
+#[allow(deprecated)]
 impl QuickSpanTweenBundle {
     /// Create new [`QuickSpanTweenBundle`]
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+    )]
     fn new(duration: Duration) -> Self {
         let mut q = QuickSpanTweenBundle::default();
         q.span_tweener.span_tweener.timer.set_length(duration);
@@ -414,6 +472,10 @@ impl QuickSpanTweenBundle {
     }
 
     /// Span tweener with this repeat
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+    )]
     pub fn with_repeat(mut self, repeat: Repeat) -> Self {
         self.span_tweener
             .span_tweener
@@ -423,6 +485,10 @@ impl QuickSpanTweenBundle {
     }
 
     /// Span tweener with this repeat style
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+    )]
     pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
         self.span_tweener
             .span_tweener
@@ -433,6 +499,10 @@ impl QuickSpanTweenBundle {
 
     /// Delays the starting point of a tween for this amount of duration
     /// Note that this delay will be repeated too.
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+    )]
     pub fn with_delay(mut self, delay: Duration) -> Self {
         let min = self.span_tween.span.min();
         let max = self.span_tween.span.max();
@@ -469,6 +539,11 @@ impl QuickSpanTweenBundle {
 ///     ComponentTween::tweener_entity(interpolate::Translation { start, end }),
 /// ));
 /// ```
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+)]
+#[allow(deprecated)]
 pub fn span_tween(duration: Duration) -> QuickSpanTweenBundle {
     QuickSpanTweenBundle::new(duration)
 }
