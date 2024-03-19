@@ -88,11 +88,3 @@ required-features = [
   "span_tween",
   "bevy/bevy_winit",
 ]
-
-[[example]]
-name = "span_tween_builder"
-path = "examples/span_tween/span_tween_builder.rs"
-required-features = [
-  "span_tween",
-  "bevy/bevy_winit",
-]
