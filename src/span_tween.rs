@@ -445,7 +445,7 @@ mod lol {
     /// least amount of boiler-plate possible.
     /// Returns from [`span_tween`]
     #[deprecated(
-        since = "0.2.0",
+        since = "0.3.0",
         note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
     )]
     #[derive(Default, Bundle)]
@@ -461,7 +461,7 @@ pub use lol::QuickSpanTweenBundle;
 impl QuickSpanTweenBundle {
     /// Create new [`QuickSpanTweenBundle`]
     #[deprecated(
-        since = "0.2.0",
+        since = "0.3.0",
         note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
     )]
     fn new(duration: Duration) -> Self {
@@ -473,7 +473,7 @@ impl QuickSpanTweenBundle {
 
     /// Span tweener with this repeat
     #[deprecated(
-        since = "0.2.0",
+        since = "0.3.0",
         note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
     )]
     pub fn with_repeat(mut self, repeat: Repeat) -> Self {
@@ -486,7 +486,7 @@ impl QuickSpanTweenBundle {
 
     /// Span tweener with this repeat style
     #[deprecated(
-        since = "0.2.0",
+        since = "0.3.0",
         note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
     )]
     pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
@@ -500,7 +500,7 @@ impl QuickSpanTweenBundle {
     /// Delays the starting point of a tween for this amount of duration
     /// Note that this delay will be repeated too.
     #[deprecated(
-        since = "0.2.0",
+        since = "0.3.0",
         note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
     )]
     pub fn with_delay(mut self, delay: Duration) -> Self {
@@ -540,7 +540,7 @@ impl QuickSpanTweenBundle {
 /// ));
 /// ```
 #[deprecated(
-    since = "0.2.0",
+    since = "0.3.0",
     note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
 )]
 #[allow(deprecated)]
@@ -839,7 +839,7 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 pub trait ChildSpanTweenBuilderExt<'b> {
     /// Create the builder
     #[deprecated(
-        since = "0.2.0",
+        since = "0.3.0",
         note = "Renamed to `span_tweens` to reduce ambiguity"
     )]
     fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
@@ -929,7 +929,7 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 pub trait WorldChildSpanTweenBuilderExt<'b> {
     /// Create the builder
     #[deprecated(
-        since = "0.2.0",
+        since = "0.3.0",
         note = "Renamed to `span_tweens` to reduce ambiguity"
     )]
     fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
