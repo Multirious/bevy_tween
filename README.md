@@ -9,7 +9,7 @@
 Flexible tweening plugin for Bevy.
 This crate solves for tweening animation with the approach of integrating everything
 into Bevy's ECS, allowing you to exploits the already flexible ECS systems to tune
-the animation process to your needs.
+and extends the animation process to your needs.
 
 ## Differences
 The main motivation for this tweening crate is that the previous
