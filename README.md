@@ -31,7 +31,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
 - Flexibility at the cost of verbosity. APIs can be more verbose than the mentioned
-  crates without extra helpers.
+  crates without extra shortcut and helpers.
 
 ## Feature gates
 - `"span_tween"`, enabled by default.<br/>
