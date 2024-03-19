@@ -836,6 +836,8 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
+///
+/// This trait is sealed and not meant to be implemented outside of the current crate.
 pub trait ChildSpanTweenBuilderExt<'b>: sealed::Sealed {
     /// Create the builder
     #[deprecated(
@@ -926,6 +928,8 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
+///
+/// This trait is sealed and not meant to be implemented outside of the current crate.
 pub trait WorldChildSpanTweenBuilderExt<'b>: sealed::Sealed {
     /// Create the builder
     #[deprecated(
@@ -935,7 +939,7 @@ pub trait WorldChildSpanTweenBuilderExt<'b>: sealed::Sealed {
     fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
         self.span_tweens()
     }
-    /// Create a child builder for span tween.
+    /// Create a world child builder for span tween.
     fn span_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
 }
 
