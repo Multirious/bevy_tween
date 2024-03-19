@@ -836,7 +836,7 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
-pub trait ChildSpanTweenBuilderExt<'b> {
+pub trait ChildSpanTweenBuilderExt<'b>: sealed::Sealed {
     /// Create the builder
     #[deprecated(
         since = "0.3.0",
@@ -926,7 +926,7 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
-pub trait WorldChildSpanTweenBuilderExt<'b> {
+pub trait WorldChildSpanTweenBuilderExt<'b>: sealed::Sealed {
     /// Create the builder
     #[deprecated(
         since = "0.3.0",
@@ -945,4 +945,13 @@ impl<'b> WorldChildSpanTweenBuilderExt<'b> for WorldChildBuilder<'b> {
             world_child_builder: self,
         }
     }
+}
+
+mod sealed {
+    use super::*;
+
+    pub trait Sealed {}
+
+    impl<'a> Sealed for WorldChildBuilder<'a> {}
+    impl<'a> Sealed for ChildBuilder<'a> {}
 }
