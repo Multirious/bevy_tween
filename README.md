@@ -13,7 +13,7 @@ and extends the animation process to your needs.
 
 ## Differences
 The main motivation for this tweening crate is that the previous
-existing tweening crates is not flexible enough and so to goal is to solve it.
+existing tweening crates is not flexible enough and so the goal is to solve it.
 The differences will be explained below.
 
 Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
