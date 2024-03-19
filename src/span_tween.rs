@@ -838,11 +838,19 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 /// Helper trait
 pub trait ChildSpanTweenBuilderExt<'b> {
     /// Create the builder
-    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b>;
+    #[deprecated(
+        since = "0.2.0",
+        note = "Renamed to `span_tweens` to reduce ambiguity"
+    )]
+    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
+        self.span_tweens()
+    }
+    /// Create a child builder for span tween.
+    fn span_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b>;
 }
 
 impl<'b> ChildSpanTweenBuilderExt<'b> for ChildBuilder<'b> {
-    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
+    fn span_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
         ChildSpanTweenBuilder {
             child_builder: self,
         }
@@ -920,11 +928,19 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 /// Helper trait
 pub trait WorldChildSpanTweenBuilderExt<'b> {
     /// Create the builder
-    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
+    #[deprecated(
+        since = "0.2.0",
+        note = "Renamed to `span_tweens` to reduce ambiguity"
+    )]
+    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
+        self.span_tweens()
+    }
+    /// Create a child builder for span tween.
+    fn span_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
 }
 
 impl<'b> WorldChildSpanTweenBuilderExt<'b> for WorldChildBuilder<'b> {
-    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
+    fn span_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
         WorldChildSpanTweenBuilder {
             world_child_builder: self,
         }
