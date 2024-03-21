@@ -96,7 +96,11 @@ use crate::{
 pub struct SpanTweenPlugin;
 impl Plugin for SpanTweenPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
+        app
+            .add_systems(
+                PreUpdate, tick_span_tweener_system.in_set(crate::TweenSystemSet::Tweener),
+            )
+            .add_systems(
             PostUpdate,
             span_tweener_system.in_set(crate::TweenSystemSet::Tweener),
         )
@@ -571,47 +575,63 @@ impl SpanTweenerEnded {
     }
 }
 
-/// System for updating any span tweens to the correct [`TweenState`] as playing
-/// by its span tweener
-pub fn span_tweener_system(
+/// Tick span tweeners then send [`SpanTweenerEnded`] event if qualified for.
+pub fn tick_span_tweener_system(
     time: Res<Time<Real>>,
+    mut q_span_tweener: Query<(Entity, &mut SpanTweener)>,
+    mut ended_writer: EventWriter<SpanTweenerEnded>,
+) {
+    let delta = time.delta();
+    q_span_tweener.iter_mut().for_each(|(entity, mut tweener)| {
+        let timer = &mut tweener.timer;
+        if timer.paused {
+            return;
+        }
+
+        if timer.is_completed() {
+            return;
+        }
+
+        let delta = Duration::from_secs_f32(
+            delta.as_secs_f32() * timer.speed_scale.as_secs_f32(),
+        );
+
+        let tick_result = timer.tick(delta, timer.direction);
+
+        match tick_result {
+            TickResult::Completed | TickResult::Repeated => {
+                ended_writer.send(SpanTweenerEnded {
+                    tweener: entity,
+                    current_direction: timer.direction,
+                    with_repeat: timer.repeat,
+                });
+            }
+            TickResult::Continue => {}
+        }
+    });
+}
+
+/// System for updating any span tweens to the correct [`TweenState`] as playing
+/// by its span tweener then will call `collaspe_elasped` on the timer.
+pub fn span_tweener_system(
     q_other_tweener: Query<(), With<SpanTweener>>,
     mut q_span_tweener: Query<(Entity, &mut SpanTweener, Option<&Children>)>,
     mut q_tween: Query<(&mut TweenState, &TweenTimeSpan)>,
-    mut ended_writer: EventWriter<SpanTweenerEnded>,
 ) {
     use AnimationDirection::*;
     use DurationQuotient::*;
 
     use crate::tween_timer::RepeatStyle::*;
 
-    let delta = time.delta();
     q_span_tweener.iter_mut().for_each(
         |(tweener_entity, mut tweener, children)| {
-            let timer = &mut tweener.timer;
+            let timer = &tweener.timer;
             if timer.paused {
                 return;
             }
 
             if timer.is_completed() {
                 return;
-            }
-
-            let delta = Duration::from_secs_f32(
-                delta.as_secs_f32() * timer.speed_scale.as_secs_f32(),
-            );
-
-            let tick_result = timer.tick(delta, timer.direction);
-
-            match tick_result {
-                TickResult::Completed | TickResult::Repeated => {
-                    ended_writer.send(SpanTweenerEnded {
-                        tweener: tweener_entity,
-                        current_direction: timer.direction,
-                        with_repeat: timer.repeat,
-                    });
-                }
-                TickResult::Continue => {}
             }
 
             let children = children
