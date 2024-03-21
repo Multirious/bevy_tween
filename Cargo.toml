@@ -56,7 +56,7 @@ required-features = [
 ]
 
 [[example]]
-name = "animated_logo"
+name = "animated_thumbnail"
 required-features = [
   "bevy_sprite",
   "span_tween",
