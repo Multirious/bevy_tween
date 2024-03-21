@@ -5,7 +5,7 @@ use bevy_tween::{
     component_tween_system,
     prelude::*,
     resource_tween_system,
-    tween_timer::{AnimationDirection, TweenTimer},
+    tween_timer::{AnimationDirection, TweenTimer}, span_tween::SpanTweener,
 };
 use rand::prelude::*;
 
@@ -113,20 +113,21 @@ fn setup(
 }
 
 fn mouse_hold(
-    mut q_effect_tween_timer: Query<&mut TweenTimer, With<EffectTweener>>,
+    mut q_effect_tween_timer: Query<&mut SpanTweener, With<EffectTweener>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
-    q_effect_tween_timer.single_mut().direction = if mouse_down {
+    q_effect_tween_timer.single_mut().timer.direction = if mouse_down {
         AnimationDirection::Forward
     } else {
         AnimationDirection::Backward
     };
 }
+
 fn big_x_do_effect(
     effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
-    mut q_rotate_tweener: Query<&mut TweenTimer, With<RotateTweener>>,
+    mut q_rotate_tweener: Query<&mut SpanTweener, With<RotateTweener>>,
 ) {
     let mut rng = rand::thread_rng();
     let dx: f32 = rng.gen();
@@ -134,6 +135,6 @@ fn big_x_do_effect(
     q_big_x.single_mut().translation =
         Vec3::new(dx - 0.5, dy - 0.5, 0.) * 100. * effect_intensity.0;
 
-    q_rotate_tweener.single_mut().speed_scale =
+    q_rotate_tweener.single_mut().timer.speed_scale =
         Duration::from_secs_f32(effect_intensity.0);
 }
