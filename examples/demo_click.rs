@@ -108,7 +108,7 @@ fn click_spawn_circle(
                     SpanTweenerBundle::new(Duration::from_secs(2)),
                 ))
                 .with_children(|c| {
-                    c.child_tweens()
+                    c.span_tweens()
                         .tween(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
