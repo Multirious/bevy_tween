@@ -8,7 +8,7 @@
 
 Flexible tweening plugin for Bevy.
 This crate solves for tweening animation with the approach of integrating everything
-into Bevy's ECS, allowing you to exploits the already flexible ECS systems to tune
+into Bevy's ECS and uses dependency injection, allowing you to exploits the already flexible ECS systems to tune
 and extends the animation process to your needs.
 
 ## Differences
@@ -27,7 +27,8 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   - Everything exists in the ECS world with no hidden structure, everything can
     be freely accessed.
   - Makes a very extendable system, thanks Bevy's ECS!
-- Much more powerful timer.
+- Dependency injection. Components communicate through various specific components,
+  allowing you to extends the behavior to your needs.
 - Users of this crate are free to decide if they want to only use generic,
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
