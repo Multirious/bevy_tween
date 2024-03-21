@@ -141,7 +141,7 @@ impl TweenTimer {
         }
     }
 
-    /// Update the timer by ticking for `duration` in a `direction`.
+    /// Update the `now` in [`Elasped`] for `duration` in a `direction`.
     pub fn tick(
         &mut self,
         duration: Duration,
@@ -158,7 +158,7 @@ impl TweenTimer {
                 if self.elasped.now >= self.length {
                     self.elasped = Elasped {
                         now: self.length,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: None,
                     };
                     return TickResult::Completed;
@@ -166,7 +166,7 @@ impl TweenTimer {
                 let new_now = (self.elasped.now + duration).min(self.length);
                 self.elasped = Elasped {
                     now: new_now,
-                    previous: self.elasped.now,
+                    previous: self.elasped.previous,
                     repeat_style: None,
                 };
                 TickResult::Continue
@@ -175,7 +175,7 @@ impl TweenTimer {
                 if self.elasped.now == Duration::ZERO {
                     self.elasped = Elasped {
                         now: Duration::ZERO,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: None,
                     };
                     return TickResult::Completed;
@@ -183,7 +183,7 @@ impl TweenTimer {
                 let new_now = self.elasped.now.saturating_sub(duration);
                 self.elasped = Elasped {
                     now: new_now,
-                    previous: self.elasped.now,
+                    previous: self.elasped.previous,
                     repeat_style: None,
                 };
                 TickResult::Continue
@@ -194,7 +194,7 @@ impl TweenTimer {
                 if will_wrap && !r.try_advance_counter() {
                     self.elasped = Elasped {
                         now: self.length,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: None,
                     };
                     return TickResult::Completed;
@@ -202,7 +202,7 @@ impl TweenTimer {
                 let new_now = duration_rem(new_now, self.length);
                 self.elasped = Elasped {
                     now: new_now,
-                    previous: self.elasped.now,
+                    previous: self.elasped.previous,
                     repeat_style: if will_wrap {
                         Some(WrapAround)
                     } else {
@@ -220,7 +220,7 @@ impl TweenTimer {
                 if will_wrap && !r.try_advance_counter() {
                     self.elasped = Elasped {
                         now: Duration::ZERO,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: None,
                     };
                     return TickResult::Completed;
@@ -232,7 +232,7 @@ impl TweenTimer {
                 };
                 self.elasped = Elasped {
                     now: new_now,
-                    previous: self.elasped.now,
+                    previous: self.elasped.previous,
                     repeat_style: if will_wrap {
                         Some(WrapAround)
                     } else {
@@ -261,14 +261,14 @@ impl TweenTimer {
                     self.direction = Backward;
                     self.elasped = Elasped {
                         now: new_now,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: Some(PingPong),
                     };
                     TickResult::Repeated
                 } else {
                     self.elasped = Elasped {
                         now: new_now,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: None,
                     };
                     TickResult::Continue
@@ -290,20 +290,34 @@ impl TweenTimer {
                     self.direction = Forward;
                     self.elasped = Elasped {
                         now: new_now,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: Some(PingPong),
                     };
                     TickResult::Repeated
                 } else {
                     self.elasped = Elasped {
                         now: self.elasped.now - duration,
-                        previous: self.elasped.now,
+                        previous: self.elasped.previous,
                         repeat_style: None,
                     };
                     TickResult::Continue
                 }
             }
         }
+    }
+
+    /// Set currently elasped now to `duration`.
+    pub fn set_tick(&mut self, duration: Duration) {
+        self.elasped.now = duration;
+        self.elasped.repeat_style = None;
+    }
+
+    /// Update the `previous` in [`Elasped`] to `now` and set `repeat_style` to
+    /// None. Which to mean that the currently elasped has been correctly apply
+    /// and doesn't need to be accounted for anymore.
+    pub fn collaspe_elasped(&mut self) {
+        self.elasped.previous = self.elasped.now;
+        self.repeat_style = None;
     }
 }
 
