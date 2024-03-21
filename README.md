@@ -32,6 +32,10 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 - Dependency injection. Systems communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components
   with least changes possible.
+  - Custom tweens
+  - Custom targets and interpolators
+  - Custom interpolations
+  - Custom tweeners
 - Users of this crate are free to decide if they want to only use generic,
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
