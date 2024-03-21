@@ -313,11 +313,11 @@ impl TweenTimer {
     }
 
     /// Update the `previous` in [`Elasped`] to `now` and set `repeat_style` to
-    /// None. Which to mean that the currently elasped has been correctly apply
+    /// None. Only call if the currently elasped has been correctly apply
     /// and doesn't need to be accounted for anymore.
     pub fn collaspe_elasped(&mut self) {
         self.elasped.previous = self.elasped.now;
-        self.repeat_style = None;
+        self.elasped.repeat_style = None;
     }
 }
 
