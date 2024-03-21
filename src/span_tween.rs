@@ -633,7 +633,7 @@ pub fn span_tweener_system(
                 let tween_min = Duration::ZERO;
                 let tween_max =
                     tween_span.max().duration() - tween_span.min().duration();
-                let tween_elasped = timer
+                let timer_elasped = timer
                     .elasped()
                     .now
                     .saturating_sub(tween_span.min().duration())
@@ -655,18 +655,18 @@ pub fn span_tweener_system(
                     elasped_quotient,
                     timer.elasped().repeat_style,
                 ) {
-                    (_, Inside, Inside, None) => Some(tween_elasped),
+                    (_, Inside, Inside, None) => Some(timer_elasped),
                     // -------------------------------------------------------
                     | (Forward, Before, Inside, None)
                     | (Forward, Inside, After, None)
                     | (Forward, Before, After, None)
-                        => Some(tween_elasped),
+                        => Some(timer_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, After, Inside, None)
                     | (Backward, Inside, Before, None)
                     | (Backward, After, Before, None)
-                        => Some(tween_elasped),
+                        => Some(timer_elasped),
 
                     // --------------------------------------------------------
                     // don't remove these comments, may use for debugging in the future
@@ -680,7 +680,7 @@ pub fn span_tweener_system(
                     | (Forward, After, Inside, Some(WrapAround)) // 1 now 
                     | (Forward, After, After, Some(WrapAround)) // 1&2 now, max
                     // | (Forward, After, Before, Some(WrapAround)) // 1
-                        => Some(tween_elasped),
+                        => Some(timer_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, After, After, Some(WrapAround)) // 1&2 min
@@ -693,7 +693,7 @@ pub fn span_tweener_system(
                     | (Backward, After, Before, Some(WrapAround)) // 2 now, min
                     | (Backward, After, Inside, Some(WrapAround)) // 2 now
                     // | (Backward, Before, After, Some(WrapAround)) // 1
-                        => Some(tween_elasped),
+                        => Some(timer_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, Before, Before, Some(PingPong)) // 1&2 now, min
@@ -705,7 +705,7 @@ pub fn span_tweener_system(
                     | (Backward, After, Before, Some(PingPong)) // 2 now, min
                     | (Backward, After, Inside, Some(PingPong)) // 2 now
                     // | (Backward, After, After, Some(PingPong)) // 1&2
-                        => Some(tween_elasped),
+                        => Some(timer_elasped),
 
                     // -------------------------------------------------------
                     // | (Forward, Before, Before, Some(PingPong)) // 1&2
@@ -717,7 +717,7 @@ pub fn span_tweener_system(
                     | (Forward, After, Before, Some(PingPong)) // 1 now, min
                     | (Forward, After, Inside, Some(PingPong)) // 1 now
                     | (Forward, After, After, Some(PingPong)) // 1&2 now, max
-                        => Some(tween_elasped),
+                        => Some(timer_elasped),
                     _ => None,
                 };
                 let new_tween_state = TweenState {
