@@ -649,14 +649,14 @@ pub fn span_tweener_system(
                 let previous_quotient =
                     tween_span.quotient(timer.elasped().previous);
 
-                let tween_min = Duration::ZERO;
-                let tween_max =
+                let tween_local_min = Duration::ZERO;
+                let tween_local_max =
                     tween_span.max().duration() - tween_span.min().duration();
                 let timer_elasped = timer
                     .elasped()
                     .now
                     .saturating_sub(tween_span.min().duration())
-                    .min(tween_max);
+                    .min(tween_local_max);
                 // Look at this behemoth of edge case handling.
                 //
                 // The edge cases are the time when the tween are really short
@@ -691,7 +691,7 @@ pub fn span_tweener_system(
                     // don't remove these comments, may use for debugging in the future
                     | (Forward, Before, Before, Some(WrapAround)) // 1&2 max
                     | (Forward, Inside, Before, Some(WrapAround)) // 1 max
-                        => Some(tween_max),
+                        => Some(tween_local_max),
                     | (Forward, Before, Inside, Some(WrapAround)) // 2 now
                     | (Forward, Before, After, Some(WrapAround)) // 2 now, max
                     | (Forward, Inside, Inside, Some(WrapAround)) // 1&2 now
@@ -704,7 +704,7 @@ pub fn span_tweener_system(
                     // -------------------------------------------------------
                     | (Backward, After, After, Some(WrapAround)) // 1&2 min
                     | (Backward, Inside, After, Some(WrapAround)) // 1 min
-                        => Some(tween_min),
+                        => Some(tween_local_min),
                     | (Backward, Before, Before, Some(WrapAround)) // 1&2 now, min
                     | (Backward, Before, Inside, Some(WrapAround)) // 1 now 
                     | (Backward, Inside, Before, Some(WrapAround)) // 2 now, min
@@ -742,7 +742,7 @@ pub fn span_tweener_system(
                 let new_tween_state = TweenState {
                     local_elasped: new_tween_elasped,
                     local_previous_elasped: tween_state.local_elasped,
-                    local_end: tween_max,
+                    local_end: tween_local_max,
                     direction: timer.direction,
                 };
                 *tween_state = new_tween_state;
