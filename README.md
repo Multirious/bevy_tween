@@ -27,7 +27,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   - Everything exists in the ECS world with no hidden structure, everything can
     be freely accessed.
   - Makes a very extendable system, thanks Bevy's ECS!
-- Advanced timer. This crate had custom timer implementation geared toward featureful
+- Advanced timer. This crate had custom timer implementation tailored for featureful
   and reliable tweening.
 - Dependency injection. Components communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components.
