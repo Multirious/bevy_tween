@@ -84,3 +84,5 @@ Licensed under either of
  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
+
+<img src="https://github.com/Multirious/bevy_tween/blob/main/examples/animation/banner_triangle.gif" width="100%"/>
