@@ -59,14 +59,16 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 ## Credits
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 
-  The first crate I discovered and tried to do tweening with in Bevy. I like
-  the idea of `Lens` of theirs. I've renamed this to `Interpolator` in this crate.
+  The first crate I discovered and tried to do tweening with in Bevy.
+  Their method of `Lens` is great andso it's present in this crate.
+  Now called `Interpolator`.
 
 - [`godot`](https://github.com/godotengine/godot)
 
-  Godot's tween make it simple to animate something which is part of the idea
-  for this crate. The Godot's node child-parent hierarchy system and that the
-  engine utilizes this to define behavior, powerful stuff!
+  Godot's tween make it simple to animate something which is the main
+  inspiration for this crate. The Godot's node child-parent hierarchy
+  system and that most of the engine APIs utilizes this to define behavior,
+  yoinked.
 
 ## License
 
