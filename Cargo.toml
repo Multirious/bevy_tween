@@ -48,7 +48,17 @@ all-features = true
 
 [[example]]
 name = "banner_bounce"
-path = "animation/banner_bounce.rs"
+path = "examples/animation/banner_bounce.rs"
+required-features = [
+  "bevy_sprite",
+  "bevy_asset",
+  "span_tween",
+  "bevy/bevy_winit",
+]
+
+[[example]]
+name = "banner_triangle"
+path = "examples/animation/banner_triangle.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
@@ -58,7 +68,7 @@ required-features = [
 
 [[example]]
 name = "thumbnail_triangle"
-path = "animation/thumbnail_triangle.rs"
+path = "examples/animation/thumbnail_triangle.rs"
 required-features = [
   "bevy_sprite",
   "span_tween",
@@ -67,7 +77,7 @@ required-features = [
 
 [[example]]
 name = "follow"
-path = "demo/follow.rs"
+path = "examples/demo/follow.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
@@ -77,7 +87,7 @@ required-features = [
 
 [[example]]
 name = "click"
-path = "demo/click.rs"
+path = "examples/demo/click.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
