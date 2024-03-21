@@ -1,4 +1,12 @@
 //! Module containg implementation of a tween timer
+//!
+//! # [`TweenTimer`]
+//! [`TweenTimer`] is a more advanced version of [`Timer`]
+//!
+//! Features:
+//! - Backward and forward ticking direction handling.
+//! - Customize repeat behavior with [`Repeat`] and [`RepeatStyle`].
+//! - Customizable ticking speed.
 
 use std::time::Duration;
 
