@@ -626,7 +626,7 @@ pub fn span_tweener_system(
                     continue;
                 };
 
-                let elasped_quotient = tween_span.quotient(timer.elasped().now);
+                let now_quotient = tween_span.quotient(timer.elasped().now);
                 let previous_quotient =
                     tween_span.quotient(timer.elasped().previous);
 
@@ -652,7 +652,7 @@ pub fn span_tweener_system(
                 let new_tween_elasped = match (
                     timer.direction,
                     previous_quotient,
-                    elasped_quotient,
+                    now_quotient,
                     timer.elasped().repeat_style,
                 ) {
                     (_, Inside, Inside, None) => Some(timer_elasped),
@@ -728,6 +728,7 @@ pub fn span_tweener_system(
                 };
                 *tween_state = new_tween_state;
             }
+            tweener.timer.collaspe_elasped();
         },
     );
 }
