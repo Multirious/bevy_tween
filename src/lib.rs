@@ -177,15 +177,20 @@ impl PluginGroup for DefaultTweenPlugins {
 }
 
 /// Configure [`TweenSystemSet`] and register types.
+///
+/// [`TweenSystemSet`] configuration:
+/// - In [`PostUpdate`]:
+///   1. [`TickTweener`],
+///   2. [`Tweener`],
+///   3. [`UpdateTweenEaseValue`],
+///   4. [`ApplyTween`],
 pub struct TweenCorePlugin;
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
-            PreUpdate, TweenSystemSet::TickTweener,
-        )
-        .configure_sets(
             PostUpdate,
             (
+                TweenSystemSet::TickTweener,
                 TweenSystemSet::Tweener,
                 TweenSystemSet::UpdateInterpolationValue,
                 TweenSystemSet::ApplyTween,
@@ -203,11 +208,7 @@ impl Plugin for TweenCorePlugin {
 }
 
 /// Enum of SystemSet in this crate
-/// [`TweenCorePlugin`] configuration for this set:
-/// 1. [`TickTweener`], [`PreUpdate`]
-/// 2. [`Tweener`], [`PostUpdate`]
-/// 3. [`UpdateTweenEaseValue`], [`PostUpdate`]
-/// 4. [`ApplyTween`], [`PostUpdate`]
+/// See [`TweenCorePlugin`] for default system configuration.
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
     /// This set is for systems that responsible for ticking any

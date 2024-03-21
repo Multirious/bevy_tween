@@ -96,13 +96,12 @@ use crate::{
 pub struct SpanTweenPlugin;
 impl Plugin for SpanTweenPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(
-                PreUpdate, tick_span_tweener_system.in_set(crate::TweenSystemSet::Tweener),
-            )
-            .add_systems(
+        app .add_systems(
             PostUpdate,
-            span_tweener_system.in_set(crate::TweenSystemSet::Tweener),
+            (
+                tick_span_tweener_system.in_set(crate::TweenSystemSet::TickTweener),
+                span_tweener_system.in_set(crate::TweenSystemSet::Tweener)
+            ),
         )
         .register_type::<SpanTweener>()
         .register_type::<TimeBound>()
