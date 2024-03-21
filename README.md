@@ -29,8 +29,9 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   - Makes a very extendable system, thanks Bevy's ECS!
 - Advanced timer. This crate had custom timer implementation tailored for featureful
   and reliable tweening.
-- Dependency injection. Components communicate through various specific components,
-  allowing you to extends the behavior to your needs by supplying those components.
+- Dependency injection. Systems communicate through various specific components,
+  allowing you to extends the behavior to your needs by supplying those components
+  with least changes possible.
 - Users of this crate are free to decide if they want to only use generic,
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
