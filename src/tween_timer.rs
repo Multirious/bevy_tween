@@ -12,7 +12,8 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-/// Contains the current elasped time and other useful information
+/// Contains the current elasped time and other useful information.
+/// This is better for handling with edge cases and retain timing accuracy.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 pub struct Elasped {
     /// The current elasped time
@@ -121,7 +122,7 @@ impl TweenTimer {
     }
 
     /// Returns true if the tween timer completed.
-    /// Completed meaning that there will be nore more ticking and all
+    /// Completed meaning that there will be no more ticking and all
     /// configured repeat is exhausted.
     pub fn is_completed(&self) -> bool {
         let is_edge = match self.direction {
@@ -325,15 +326,17 @@ impl Default for TweenTimer {
 pub enum Repeat {
     /// Repeat infinitely
     Infinitely,
-    /// Repeat infinitely and count the times this tween has repeated
+    /// Repeat infinitely and count the times this timer has repeated
     InfinitelyCounted {
-        #[allow(missing_docs)]
+        /// The times this timer has repeated
         times_repeated: usize,
     },
     /// Repeat for this amount of times
     Times {
+        /// Times to repeat for
         #[allow(missing_docs)]
         times: usize,
+        /// Times this timer has repeated.
         #[allow(missing_docs)]
         times_repeated: usize,
     },
@@ -345,7 +348,7 @@ impl Repeat {
         Repeat::Infinitely
     }
 
-    /// Repeat infinitely and count the times this tween has repeated
+    /// Repeat infinitely and count the times this timer has repeated
     pub fn infinitely_counted() -> Repeat {
         Repeat::InfinitelyCounted { times_repeated: 0 }
     }
