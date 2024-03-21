@@ -176,12 +176,14 @@ impl PluginGroup for DefaultTweenPlugins {
     }
 }
 
-/// Core, necessary types, and configurations you need to get started with
-/// this plugin
+/// Configure [`TweenSystemSet`] and register types.
 pub struct TweenCorePlugin;
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
+            PreUpdate, TweenSystemSet::TickTweener,
+        )
+        .configure_sets(
             PostUpdate,
             (
                 TweenSystemSet::Tweener,
@@ -201,16 +203,17 @@ impl Plugin for TweenCorePlugin {
 }
 
 /// Enum of SystemSet in this crate
-/// After adding the plugin [`TweenCorePlugin`], these set will be configured
-/// to run in the [`PostUpdate`] schedule so any modification you've done before
-/// this schedule should be correctly applied in the next frame.
-///
-/// The sets should be configured to run in this order:
-///  1. Tweener
-///  2. UpdateTweenEaseValue
-///  3. ApplyTween
+/// [`TweenCorePlugin`] configuration for this set:
+/// 1. [`TickTweener`], [`PreUpdate`]
+/// 2. [`Tweener`], [`PostUpdate`]
+/// 3. [`UpdateTweenEaseValue`], [`PostUpdate`]
+/// 4. [`ApplyTween`], [`PostUpdate`]
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
+    /// This set is for systems that responsible for ticking any
+    /// tweener such as the [`span_tween::tick_span_tweener_system`]
+    /// by this crate
+    TickTweener,
     /// This set is for systems that responsible for updating any
     /// tweener such as the [`span_tween::span_tweener_system`]
     /// by this crate
