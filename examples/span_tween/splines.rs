@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_tween::prelude::*;
 
-use bevy_tween::splines::{Spline, Key, Interpolation};
+use bevy_tween::{interpolate::W, splines::{Spline, Key, Interpolation}};
 
 fn main() {
     App::new()
@@ -44,4 +44,27 @@ fn setup(mut commands: Commands) {
                 ComponentTween::new(interpolate::Translation { start, end }),
             ));
         });
+
+    commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    custom_size: Some(Vec2::new(100., 100.)),
+                    color: Color::YELLOW,
+                    ..Default::default()
+                },
+                transform: Transform::from_translation(start),
+                ..Default::default()
+            },
+            SpanTweenerBundle::new(Duration::from_secs(5)),
+    )).with_children(|c| {
+        c.spawn((
+            SpanTweenBundle::new(..Duration::from_secs(5)),
+            EaseFunction::QuadraticOut,
+            ComponentDynTween::new_boxed(interpolate::TranslationSpline(Spline::from_vec(vec![
+                Key::new(0., W(start), Interpolation::Bezier(W(Vec3::new(-1000., 100., 0.)))),
+                Key::new(0.5, W(Vec3::new(0., 200., 0.)), Interpolation::Linear),
+                Key::new(1., W(end), Interpolation::Linear),
+            ]))),
+        ));
+    });
 }

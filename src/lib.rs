@@ -179,6 +179,8 @@ impl PluginGroup for DefaultTweenPlugins {
         let p = p.add(span_tween::SpanTweenPlugin);
         #[cfg(feature = "splines")]
         let p = p.add(interpolation::EaseSplinePlugin);
+        #[cfg(feature = "splines")]
+        let p = p.add(interpolate::SplinesInterpolatorsPlugin);
         p
     }
 }

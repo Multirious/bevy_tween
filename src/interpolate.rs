@@ -50,6 +50,12 @@ use bevy::prelude::*;
 use crate::utils::color_lerp;
 use crate::{tween, BevyTweenRegisterSystems};
 
+#[cfg(feature = "splines")]
+mod splines_impl;
+
+#[cfg(feature = "splines")]
+pub use splines_impl::{SplinesInterpolatorsPlugin, TranslationSpline, W};
+
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
 ///
