@@ -19,6 +19,7 @@ resolver = "2"
 
 [dependencies]
 bevy = { version = "0.13.0", default-features = false }
+splines = { version = "4.3.1", features = ["glam"], optional = true }
 
 [dev-dependencies]
 bevy-inspector-egui = "0.23"
@@ -30,7 +31,8 @@ default = [
   "span_tween",
   "bevy_asset",
   "bevy_render",
-  "bevy_sprite"
+  "bevy_sprite",
+  "splines", # remove when finish implementing features
 ]
 
 # Tweener implementation by defining a tween in range of time.
@@ -42,6 +44,8 @@ bevy_asset = [ "bevy/bevy_asset" ]
 bevy_render = [ "bevy/bevy_render"]
 # Add some built-in interpolator related to sprite
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
+
+splines = [ "dep:splines" ]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -101,4 +105,13 @@ path = "examples/span_tween/span_tween.rs"
 required-features = [
   "span_tween",
   "bevy/bevy_winit",
+]
+
+[[example]]
+name = "span_tween_splines"
+path = "examples/span_tween/splines.rs"
+required-features = [
+  "span_tween",
+  "bevy/bevy_winit",
+  "splines",
 ]

@@ -13,6 +13,12 @@ use crate::{
 };
 
 mod ease_functions;
+#[cfg(feature = "splines")]
+mod splines_impl;
+
+#[cfg(feature = "splines")]
+pub use splines_impl::{EaseSplinePlugin, EaseSpline};
+pub use ::splines;
 
 /// A trait for implementing interpolation algorithms.
 /// Use with [`sample_interpolations_system`]

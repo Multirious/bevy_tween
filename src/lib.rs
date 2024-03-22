@@ -123,12 +123,17 @@ pub mod tween_timer;
 #[cfg(feature = "span_tween")]
 pub mod span_tween;
 
+#[cfg(feature = "splines")]
+pub use splines;
+
 /// Commonly used items
 pub mod prelude {
     pub use std::time::Duration;
 
     pub use crate::interpolate::{self, Interpolator};
     pub use crate::interpolation::EaseFunction;
+    #[cfg(feature = "splines")]
+    pub use crate::interpolation::EaseSpline;
     #[cfg(feature = "span_tween")]
     #[allow(deprecated)]
     pub use crate::span_tween::{
@@ -172,6 +177,8 @@ impl PluginGroup for DefaultTweenPlugins {
             .add(interpolation::EaseFunctionPlugin);
         #[cfg(feature = "span_tween")]
         let p = p.add(span_tween::SpanTweenPlugin);
+        #[cfg(feature = "splines")]
+        let p = p.add(interpolation::EaseSplinePlugin);
         p
     }
 }
