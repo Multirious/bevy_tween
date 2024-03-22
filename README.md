@@ -31,7 +31,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   and reliable tweening.
 - Dependency injection. Systems communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components
-  with least changes possible.
+  to reduce duplication.
   - Custom tweens, targets, and interpolators
   - Custom interpolations
   - Custom tweeners
