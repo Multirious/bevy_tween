@@ -151,10 +151,12 @@ impl Plugin for DefaultInterpolatorsPlugin {
             tween::component_tween_system::<Translation>(),
             tween::component_tween_system::<Rotation>(),
             tween::component_tween_system::<Scale>(),
+            tween::component_tween_system::<AngleZ>(),
         ))
         .register_type::<tween::ComponentTween<Translation>>()
         .register_type::<tween::ComponentTween<Rotation>>()
-        .register_type::<tween::ComponentTween<Scale>>();
+        .register_type::<tween::ComponentTween<Scale>>()
+        .register_type::<tween::ComponentTween<AngleZ>>();
 
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems(tween::component_tween_system::<SpriteColor>())
