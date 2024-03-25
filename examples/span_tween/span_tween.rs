@@ -2,9 +2,8 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_tween::prelude::*;
-
 // Prefer the shortcuts
-use bevy_tween::tween::{TargetComponent, Tween};
+use bevy_tween::tween::TargetComponent;
 
 fn main() {
     App::new()
@@ -37,14 +36,14 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 
     let angle_start = 0.;
-    let angle_end = std::f32::consts::PI*2.;
+    let angle_end = std::f32::consts::PI * 2.;
 
     let start_x = -300.;
     let end_x = 300.;
 
     let spacing_y = 100.;
     let offset_y = -(spacing_y * 3.) / 2.;
-    
+
     // Case 1:
     let y = 0. * spacing_y + offset_y;
     commands.spawn((
@@ -53,15 +52,18 @@ fn setup(mut commands: Commands) {
         SpanTweenBundle::new(..Duration::from_secs(5)),
         EaseFunction::QuadraticInOut,
         ComponentTween::new_target(
-            bevy_tween::tween::TargetComponent::tweener_entity(),
+            TargetComponent::tweener_entity(),
             interpolate::Translation {
                 start: Vec3::new(start_x, y, 0.),
-                end: Vec3::new(end_x, y, 0.)
-            }
+                end: Vec3::new(end_x, y, 0.),
+            },
         ),
         ComponentTween::new_target(
-            bevy_tween::tween::TargetComponent::tweener_entity(),
-            interpolate::AngleZ { start: angle_start, end: angle_end }
+            TargetComponent::tweener_entity(),
+            interpolate::AngleZ {
+                start: angle_start,
+                end: angle_end,
+            },
         ),
         // ----- or -----
         // ComponentTween::tweener_entity( ... ),
@@ -81,15 +83,18 @@ fn setup(mut commands: Commands) {
                 SpanTweenBundle::new(..Duration::from_secs(5)),
                 EaseFunction::QuadraticInOut,
                 ComponentTween::new_target(
-                    bevy_tween::tween::TargetComponent::tweener_entity(),
+                    TargetComponent::tweener_entity(),
                     interpolate::Translation {
                         start: Vec3::new(start_x, y, 0.),
-                        end: Vec3::new(end_x, y, 0.)
-                    }
+                        end: Vec3::new(end_x, y, 0.),
+                    },
                 ),
                 ComponentTween::new_target(
-                    bevy_tween::tween::TargetComponent::tweener_entity(),
-                    interpolate::AngleZ { start: angle_start, end: angle_end }
+                    TargetComponent::tweener_entity(),
+                    interpolate::AngleZ {
+                        start: angle_start,
+                        end: angle_end,
+                    },
                 ),
                 // ----- or -----
                 // ComponentTween::tweener_entity( ... ),
@@ -100,52 +105,55 @@ fn setup(mut commands: Commands) {
 
     // Case 3:
     let y = 2. * spacing_y + offset_y;
-    commands
-        .spawn(sprite(start_x, y))
-        .with_children(|c| {
-            c.spawn((
-                SpanTweenerBundle::new(Duration::from_secs(5)),
-                SpanTweenBundle::new(..Duration::from_secs(5)),
-                EaseFunction::QuadraticInOut,
-                ComponentTween::new_target(
-                    bevy_tween::tween::TargetComponent::tweener_parent(),
-                    interpolate::Translation {
-                        start: Vec3::new(start_x, y, 0.),
-                        end: Vec3::new(end_x, y, 0.)
-                    }
-                ),
-                ComponentTween::new_target(
-                    bevy_tween::tween::TargetComponent::tweener_parent(),
-                    interpolate::AngleZ { start: angle_start, end: angle_end }
-                ),
-                // ----- or -----
-                // ComponentTween::tweener_parent( ... ),
-            ));
-        });
+    commands.spawn(sprite(start_x, y)).with_children(|c| {
+        c.spawn((
+            SpanTweenerBundle::new(Duration::from_secs(5)),
+            SpanTweenBundle::new(..Duration::from_secs(5)),
+            EaseFunction::QuadraticInOut,
+            ComponentTween::new_target(
+                TargetComponent::tweener_parent(),
+                interpolate::Translation {
+                    start: Vec3::new(start_x, y, 0.),
+                    end: Vec3::new(end_x, y, 0.),
+                },
+            ),
+            ComponentTween::new_target(
+                TargetComponent::tweener_parent(),
+                interpolate::AngleZ {
+                    start: angle_start,
+                    end: angle_end,
+                },
+            ),
+            // ----- or -----
+            // ComponentTween::tweener_parent( ... ),
+        ));
+    });
 
     // Case 4:
     let y = 3. * spacing_y + offset_y;
-    commands
-        .spawn(sprite(start_x, y))
-        .with_children(|c| {
-            c.spawn(SpanTweenerBundle::new(Duration::from_secs(5)))
+    commands.spawn(sprite(start_x, y)).with_children(|c| {
+        c.spawn(SpanTweenerBundle::new(Duration::from_secs(5)))
             .with_children(|c| {
-                c.spawn((SpanTweenBundle::new(..Duration::from_secs(5)),
+                c.spawn((
+                    SpanTweenBundle::new(..Duration::from_secs(5)),
                     EaseFunction::QuadraticInOut,
                     ComponentTween::new_target(
-                        bevy_tween::tween::TargetComponent::tweener_parent(),
+                        TargetComponent::tweener_parent(),
                         interpolate::Translation {
                             start: Vec3::new(start_x, y, 0.),
-                            end: Vec3::new(end_x, y, 0.)
-                        }
+                            end: Vec3::new(end_x, y, 0.),
+                        },
                     ),
                     ComponentTween::new_target(
-                        bevy_tween::tween::TargetComponent::tweener_parent(),
-                        interpolate::AngleZ { start: angle_start, end: angle_end }
+                        TargetComponent::tweener_parent(),
+                        interpolate::AngleZ {
+                            start: angle_start,
+                            end: angle_end,
+                        },
                     ),
                     // ----- or -----
                     // ComponentTween::tweener_parent( ... ),
                 ));
             });
-        });
+    });
 }
