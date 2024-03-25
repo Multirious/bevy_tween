@@ -22,7 +22,8 @@ existing tweening crates is not flexible enough and so the main goal is to solve
 
 Goals:
 1. [x] Flexible 🎉
-2. [ ] Built-in Keyframe animation support via `splines`
+2. [ ] Built-in Keyframe animation support via `splines`. After this,
+       the crate wouldn't be an average tweening plugin, no more!
 3. [ ] `bevy_animation` integration (?)
 4. [ ] Editor
 
