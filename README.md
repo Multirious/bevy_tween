@@ -14,6 +14,8 @@ and extends the animation process to your needs.
 This is a young plugin and APIs are to be fleshed out.
 Breaking changes are to be expected!
 
+See changelog [here](CHANGELOG.md).
+
 ## Differences
 The main motivation for this tweening crate is that the previous
 existing tweening crates is not flexible enough and so the goal is to solve it.
