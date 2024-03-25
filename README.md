@@ -18,8 +18,13 @@ See changelog [here](CHANGELOG.md).
 
 ## Differences
 The main motivation for this tweening crate is that the previous
-existing tweening crates is not flexible enough and so the goal is to solve it.
-The differences will be explained below.
+existing tweening crates is not flexible enough and so the main goal is to solve it.
+
+Goals:
+1. [x] Flexible 🎉
+2. [_] Built-in Keyframe animation support via `splines`
+3. [_] bevy_animation integration (?)
+4. [_] Editor
 
 Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 or [`bevy_easings`](https://github.com/vleue/bevy_easings):
