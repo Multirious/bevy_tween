@@ -11,6 +11,9 @@ This crate solves for tweening animation with the approach of integrating everyt
 into Bevy's ECS and uses dependency injection, allowing you to exploits the already flexible ECS systems to tune
 and extends the animation process to your needs.
 
+This is a young plugin and APIs are to be fleshed out.
+Breaking changes are to be expected!
+
 ## Differences
 The main motivation for this tweening crate is that the previous
 existing tweening crates is not flexible enough and so the goal is to solve it.
