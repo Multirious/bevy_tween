@@ -165,7 +165,6 @@
 //!
 //! To register a dynamic interpolator for your component, you can use
 //! [`component_dyn_tween_system`].
-//!
 // ///! <div class="warning">
 // ///! <a href="fn.component_dyn_tween_system.html"><code>component_dyn_tween_system</code></a> is type of dynamic
 // ///! interpolator for <code>Box&lt;dyn Interpolator&gt;</code>.
@@ -538,6 +537,10 @@ where
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
 #[allow(clippy::type_complexity)]
+#[deprecated(
+    since = "0.3.0",
+    note = "Use `component_tween_system` instead with less required generic"
+)]
 pub fn component_tween_system_full<C, I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
     q_tween: Query<(
@@ -545,10 +548,28 @@ pub fn component_tween_system_full<C, I>(
         &Tween<TargetComponent<C>, I>,
         &TweenInterpolationValue,
     )>,
-    mut q_component: Query<&mut I::Item>,
+    q_component: Query<&mut I::Item>,
 ) where
     C: Component,
     I: Interpolator<Item = C> + Send + Sync + 'static,
+{
+    component_tween_system(q_tweener, q_tween, q_component);
+}
+
+/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
+/// value provided by [`TweenInterpolationValue`] component.
+#[allow(clippy::type_complexity)]
+pub fn component_tween_system<I>(
+    q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
+    q_tween: Query<(
+        Entity,
+        &Tween<TargetComponent<I::Item>, I>,
+        &TweenInterpolationValue,
+    )>,
+    mut q_component: Query<&mut I::Item>,
+) where
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Component,
 {
     q_tween.iter().for_each(|(entity, tween, ease_value)| {
         let target = match &tween.target {
@@ -609,22 +630,16 @@ pub fn component_tween_system_full<C, I>(
     })
 }
 
-/// System alias for [`component_tween_system_full`] that uses generic [`Interpolator`].
-pub fn component_tween_system<I>() -> SystemConfigs
-where
-    I: Interpolator,
-    I::Item: Component,
-{
-    component_tween_system_full::<I::Item, I>.into_configs()
-}
-
-/// System alias for [`component_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+/// System alias for [`component_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+#[deprecated(
+    since = "0.3.0",
+    note = "Use `component_tween_system::<BoxedInterpolator<...>>` for consistency"
+)]
 pub fn component_dyn_tween_system<C>() -> SystemConfigs
 where
     C: Component,
 {
-    component_tween_system_full::<C, Box<dyn Interpolator<Item = C>>>
-        .into_configs()
+    component_tween_system::<Box<dyn Interpolator<Item = C>>>.into_configs()
 }
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with generic [`Interpolator`].
@@ -659,12 +674,31 @@ where
 
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
 /// value provided by [`TweenInterpolationValue`] component.
+#[deprecated(
+    since = "0.3.0",
+    note = "Use `resource_tween_system` instead with less required generic"
+)]
 pub fn resource_tween_system_full<R, I>(
     q_tween: Query<(&Tween<TargetResource<R>, I>, &TweenInterpolationValue)>,
     resource: Option<ResMut<I::Item>>,
 ) where
     R: Resource,
     I: Interpolator<Item = R> + Send + Sync + 'static,
+{
+    resource_tween_system(q_tween, resource);
+}
+
+/// System alias for [`resource_tween_system_full`] that uses generic [`Interpolator`]..
+#[allow(clippy::type_complexity)]
+pub fn resource_tween_system<I>(
+    q_tween: Query<(
+        &Tween<TargetResource<I::Item>, I>,
+        &TweenInterpolationValue,
+    )>,
+    resource: Option<ResMut<I::Item>>,
+) where
+    I: Interpolator,
+    I::Item: Resource,
 {
     let Some(mut resource) = resource else {
         warn!("Resource does not exists for a resource tween.");
@@ -675,22 +709,16 @@ pub fn resource_tween_system_full<R, I>(
     })
 }
 
-/// System alias for [`resource_tween_system_full`] that uses generic [`Interpolator`]..
-pub fn resource_tween_system<I>() -> SystemConfigs
-where
-    I: Interpolator,
-    I::Item: Resource,
-{
-    resource_tween_system_full::<I::Item, I>.into_configs()
-}
-
 /// System alias for [`resource_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+#[deprecated(
+    since = "0.3.0",
+    note = "Use `resource_tween_system::<BoxedInterpolator<...>>` for consistency"
+)]
 pub fn resource_dyn_tween_system<R>() -> SystemConfigs
 where
     R: Resource,
 {
-    resource_tween_system_full::<R, Box<dyn Interpolator<Item = R>>>
-        .into_configs()
+    resource_tween_system::<Box<dyn Interpolator<Item = R>>>.into_configs()
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with generic [`Interpolator`].
@@ -795,12 +823,29 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
 /// value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "bevy_asset")]
+#[deprecated(
+    since = "0.3.0",
+    note = "Use `asset_tween_system` instead with less required generic"
+)]
 pub fn asset_tween_system_full<A, I>(
     q_tween: Query<(&Tween<TargetAsset<A>, I>, &TweenInterpolationValue)>,
     asset: Option<ResMut<Assets<I::Item>>>,
 ) where
     A: Asset,
     I: Interpolator<Item = A> + Send + Sync + 'static,
+{
+    asset_tween_system(q_tween, asset);
+}
+
+/// System alias for [`asset_tween_system_full`] that uses generic [`Interpolator`].
+#[cfg(feature = "bevy_asset")]
+#[allow(clippy::type_complexity)]
+pub fn asset_tween_system<I>(
+    q_tween: Query<(&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue)>,
+    asset: Option<ResMut<Assets<I::Item>>>,
+) where
+    I: Interpolator,
+    I::Item: Asset,
 {
     let Some(mut asset) = asset else {
         warn!("Asset resource does not exists for an asset tween.");
@@ -828,21 +873,15 @@ pub fn asset_tween_system_full<A, I>(
         })
 }
 
-/// System alias for [`asset_tween_system_full`] that uses generic [`Interpolator`].
-#[cfg(feature = "bevy_asset")]
-pub fn asset_tween_system<I>() -> SystemConfigs
-where
-    I: Interpolator,
-    I::Item: Asset,
-{
-    asset_tween_system_full::<I::Item, I>.into_configs()
-}
-
 /// System alias for [`asset_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
 #[cfg(feature = "bevy_asset")]
+#[deprecated(
+    since = "0.3.0",
+    note = "Use `asset_tween_system::<BoxedInterpolator<...>>` for consistency"
+)]
 pub fn asset_dyn_tween_system<A>() -> SystemConfigs
 where
     A: Asset,
 {
-    asset_tween_system_full::<A, Box<dyn Interpolator<Item = A>>>.into_configs()
+    asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
 }

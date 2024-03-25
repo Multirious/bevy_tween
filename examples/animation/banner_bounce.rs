@@ -5,26 +5,9 @@ use bevy::{
     prelude::*,
     window,
 };
-use bevy_tween::{component_tween_system, prelude::*};
+use bevy_tween::prelude::*;
 
 const SCALE: f32 = 2.0;
-
-mod my_interpolate {
-    use bevy::prelude::*;
-    use bevy_tween::prelude::*;
-    pub struct Angle {
-        pub start: f32,
-        pub end: f32,
-    }
-    impl Interpolator for Angle {
-        type Item = Transform;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let angle = (self.end - self.start).mul_add(value, self.start);
-            item.rotation = Quat::from_rotation_z(angle);
-        }
-    }
-}
 
 fn main() {
     App::new()
@@ -48,7 +31,6 @@ fn main() {
             DefaultTweenPlugins,
         ))
         .add_systems(Startup, (animation, setup_camera))
-        .add_tween_systems(component_tween_system::<my_interpolate::Angle>())
         .run();
 }
 
@@ -232,7 +214,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuinticOut,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        my_interpolate::Angle {
+                        interpolate::AngleZ {
                             start: PI,
                             end: PI * 4.,
                         },
@@ -287,7 +269,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::QuinticIn,
                     ComponentTween::new_target(
                         bevy_tween_text,
-                        my_interpolate::Angle {
+                        interpolate::AngleZ {
                             start: PI * 4.,
                             end: PI * 7.,
                         },
@@ -336,7 +318,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
                         square,
-                        my_interpolate::Angle {
+                        interpolate::AngleZ {
                             start: 0.,
                             end: PI * 10.,
                         },
@@ -347,7 +329,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
                         triangle,
-                        my_interpolate::Angle {
+                        interpolate::AngleZ {
                             start: 0.,
                             end: -PI * 10.,
                         },
