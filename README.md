@@ -70,7 +70,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 
   The first crate I discovered and tried to do tweening with in Bevy.
   Their method of `Lens` is great and so it's present in this crate.
-  Now called `Interpolator` with some API improvements.
+  Now called `Interpolator` with some API improvements/differences.
 
 - [`godot`](https://github.com/godotengine/godot)
 
