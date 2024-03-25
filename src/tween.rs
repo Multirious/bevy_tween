@@ -166,12 +166,10 @@
 //! To register a dynamic interpolator for your component, you can use
 //! [`component_dyn_tween_system`].
 //!
-//! <div class="warning">
-//! <a href="fn.component_dyn_tween_system.html"><code>component_dyn_tween_system</code></a> is type of dynamic
-//! interpolator for <code>Box&lt;dyn Interpolator&gt;</code>.<br/>
-//! This crate let you create more custom dynamic interpolator type such as for the time
-//! when you need the <a href="../../bevy/prelude/trait.Reflect.html"><code>Reflect</code></a> trait!.
-//! </div>
+// ///! <div class="warning">
+// ///! <a href="fn.component_dyn_tween_system.html"><code>component_dyn_tween_system</code></a> is type of dynamic
+// ///! interpolator for <code>Box&lt;dyn Interpolator&gt;</code>.
+// ///! </div>
 //!
 //! ```no_run
 //! # mod a { // had to put this module here for some reason. tf?
