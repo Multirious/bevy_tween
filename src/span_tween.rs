@@ -100,7 +100,7 @@ use tween_timer::{Repeat, RepeatStyle};
 use crate::{
     interpolation::Interpolation,
     prelude::EaseFunction,
-    tween::{TweenProgressed, TweenerMarker},
+    tween::{SkipTweener, TweenProgressed, TweenerMarker},
     tween_timer::{self, AnimationDirection, TickResult, TweenTimer},
 };
 
@@ -625,8 +625,11 @@ pub fn tick_span_tweener_system(
 /// by its span tweener then will call `collaspe_elasped` on the timer.
 pub fn span_tweener_system(
     mut commands: Commands,
-    q_other_tweener: Query<(), With<SpanTweener>>,
-    mut q_span_tweener: Query<(Entity, &mut SpanTweener, Option<&Children>)>,
+    q_other_tweener: Query<(), With<TweenerMarker>>,
+    mut q_span_tweener: Query<
+        (Entity, &mut SpanTweener, Option<&Children>),
+        Without<SkipTweener>,
+    >,
     mut q_tween: Query<(Option<&mut TweenProgressed>, &TweenTimeSpan)>,
 ) {
     use AnimationDirection::*;
@@ -637,9 +640,6 @@ pub fn span_tweener_system(
     q_span_tweener.iter_mut().for_each(
         |(tweener_entity, mut tweener, children)| {
             let timer = &tweener.timer;
-            if timer.paused {
-                return;
-            }
 
             if timer.is_completed() {
                 return;

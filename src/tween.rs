@@ -244,6 +244,14 @@ pub use systems::{
     resource_tween_system_full,
 };
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
+#[reflect(Component)]
+pub struct SkipTween;
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
+#[reflect(Component)]
+pub struct SkipTweener;
+
 /// [`TweenProgressed`] should be automatically managed by a tweener.
 /// User just have to add this component to a tween entity and an assigned
 /// tweener will take care of it.

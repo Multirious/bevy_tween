@@ -11,11 +11,14 @@ use bevy::ecs::schedule::SystemConfigs;
 )]
 pub fn component_tween_system_full<C, I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
-    q_tween: Query<(
-        Entity,
-        &Tween<TargetComponent<C>, I>,
-        &TweenInterpolationValue,
-    )>,
+    q_tween: Query<
+        (
+            Entity,
+            &Tween<TargetComponent<C>, I>,
+            &TweenInterpolationValue,
+        ),
+        Without<SkipTween>,
+    >,
     q_component: Query<&mut I::Item>,
 ) where
     C: Component,
@@ -29,11 +32,14 @@ pub fn component_tween_system_full<C, I>(
 #[allow(clippy::type_complexity)]
 pub fn component_tween_system<I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
-    q_tween: Query<(
-        Entity,
-        &Tween<TargetComponent<I::Item>, I>,
-        &TweenInterpolationValue,
-    )>,
+    q_tween: Query<
+        (
+            Entity,
+            &Tween<TargetComponent<I::Item>, I>,
+            &TweenInterpolationValue,
+        ),
+        Without<SkipTween>,
+    >,
     mut q_component: Query<&mut I::Item>,
 ) where
     I: Interpolator + Send + Sync + 'static,
@@ -116,8 +122,12 @@ where
     since = "0.3.0",
     note = "Use `resource_tween_system` instead with less required generic"
 )]
+#[allow(clippy::type_complexity)]
 pub fn resource_tween_system_full<R, I>(
-    q_tween: Query<(&Tween<TargetResource<R>, I>, &TweenInterpolationValue)>,
+    q_tween: Query<
+        (&Tween<TargetResource<R>, I>, &TweenInterpolationValue),
+        Without<SkipTween>,
+    >,
     resource: Option<ResMut<I::Item>>,
 ) where
     R: Resource,
@@ -129,10 +139,10 @@ pub fn resource_tween_system_full<R, I>(
 /// System alias for [`resource_tween_system_full`] that uses generic [`Interpolator`]..
 #[allow(clippy::type_complexity)]
 pub fn resource_tween_system<I>(
-    q_tween: Query<(
-        &Tween<TargetResource<I::Item>, I>,
-        &TweenInterpolationValue,
-    )>,
+    q_tween: Query<
+        (&Tween<TargetResource<I::Item>, I>, &TweenInterpolationValue),
+        Without<SkipTween>,
+    >,
     resource: Option<ResMut<I::Item>>,
 ) where
     I: Interpolator,
@@ -166,8 +176,12 @@ where
     since = "0.3.0",
     note = "Use `asset_tween_system` instead with less required generic"
 )]
+#[allow(clippy::type_complexity)]
 pub fn asset_tween_system_full<A, I>(
-    q_tween: Query<(&Tween<TargetAsset<A>, I>, &TweenInterpolationValue)>,
+    q_tween: Query<
+        (&Tween<TargetAsset<A>, I>, &TweenInterpolationValue),
+        Without<SkipTween>,
+    >,
     asset: Option<ResMut<Assets<I::Item>>>,
 ) where
     A: Asset,
@@ -180,7 +194,10 @@ pub fn asset_tween_system_full<A, I>(
 #[cfg(feature = "bevy_asset")]
 #[allow(clippy::type_complexity)]
 pub fn asset_tween_system<I>(
-    q_tween: Query<(&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue)>,
+    q_tween: Query<
+        (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue),
+        Without<SkipTween>,
+    >,
     asset: Option<ResMut<Assets<I::Item>>>,
 ) where
     I: Interpolator,
