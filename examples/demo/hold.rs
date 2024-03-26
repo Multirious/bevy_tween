@@ -21,19 +21,6 @@ mod my_interpolate {
             item.0 = self.start.lerp(self.end, value)
         }
     }
-    pub struct Angle {
-        pub start: f32,
-        pub end: f32,
-    }
-
-    impl Interpolator for Angle {
-        type Item = Transform;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let angle = (self.end - self.start).mul_add(value, self.start);
-            item.rotation = Quat::from_rotation_z(angle);
-        }
-    }
 }
 
 fn main() {
@@ -41,10 +28,9 @@ fn main() {
         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
         .add_systems(Update, (big_x_do_effect, mouse_hold))
-        .add_tween_systems((
-            resource_tween_system::<my_interpolate::EffectIntensity>(),
-            component_tween_system::<my_interpolate::Angle>(),
-        ))
+        .add_tween_systems(
+            resource_tween_system::<my_interpolate::EffectIntensity>,
+        )
         .init_resource::<EffectIntensitiy>()
         .run();
 }
@@ -102,7 +88,7 @@ fn setup(
         EaseFunction::Linear,
         ComponentTween::new_target(
             big_x,
-            my_interpolate::Angle {
+            interpolate::AngleZ {
                 start: 0.,
                 end: PI * 0.5,
             },

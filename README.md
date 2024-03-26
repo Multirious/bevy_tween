@@ -11,10 +11,21 @@ This crate solves for tweening animation with the approach of integrating everyt
 into Bevy's ECS and uses dependency injection, allowing you to exploits the already flexible ECS systems to tune
 and extends the animation process to your needs.
 
+This is a young plugin and APIs are to be fleshed out.
+Breaking changes are to be expected!
+
+See changelog [here](CHANGELOG.md).
+
 ## Differences
 The main motivation for this tweening crate is that the previous
-existing tweening crates is not flexible enough and so the goal is to solve it.
-The differences will be explained below.
+existing tweening crates is not flexible enough and so the main goal is to solve it.
+
+Goals:
+1. [x] Flexible 🎉
+2. [ ] Built-in Keyframe animation support via `splines`. After this,
+       the crate wouldn't be an average tweening plugin, no more!
+3. [ ] `bevy_animation` integration (?)
+4. [ ] Editor. This plugin is powerful enough to deserves one!
 
 Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 or [`bevy_easings`](https://github.com/vleue/bevy_easings):
@@ -67,7 +78,8 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 
   The first crate I discovered and tried to do tweening with in Bevy.
   Their method of `Lens` is great and so it's present in this crate.
-  Now called `Interpolator`.
+  Now called `Interpolator`. Usages may be similar but is
+  implemented differently.
 
 - [`godot`](https://github.com/godotengine/godot)
 

@@ -56,6 +56,9 @@ mod splines_impl;
 #[cfg(feature = "splines")]
 pub use splines_impl::{SplinesInterpolatorsPlugin, TranslationSpline, W};
 
+/// Alias for an `Interpolator` trait object.
+pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
+
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
 ///
@@ -154,20 +157,22 @@ pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
     fn build(&self, app: &mut App) {
         app.add_tween_systems((
-            tween::component_tween_system::<Translation>(),
-            tween::component_tween_system::<Rotation>(),
-            tween::component_tween_system::<Scale>(),
+            tween::component_tween_system::<Translation>,
+            tween::component_tween_system::<Rotation>,
+            tween::component_tween_system::<Scale>,
+            tween::component_tween_system::<AngleZ>,
         ))
         .register_type::<tween::ComponentTween<Translation>>()
         .register_type::<tween::ComponentTween<Rotation>>()
-        .register_type::<tween::ComponentTween<Scale>>();
+        .register_type::<tween::ComponentTween<Scale>>()
+        .register_type::<tween::ComponentTween<AngleZ>>();
 
         #[cfg(feature = "bevy_sprite")]
-        app.add_tween_systems(tween::component_tween_system::<SpriteColor>())
+        app.add_tween_systems(tween::component_tween_system::<SpriteColor>)
             .register_type::<tween::ComponentTween<SpriteColor>>();
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
-        app.add_tween_systems(tween::asset_tween_system::<ColorMaterial>())
+        app.add_tween_systems(tween::asset_tween_system::<ColorMaterial>)
             .register_type::<tween::AssetTween<ColorMaterial>>();
     }
 }
@@ -176,15 +181,21 @@ impl Plugin for DefaultInterpolatorsPlugin {
 pub struct DefaultDynInterpolatorsPlugin;
 impl Plugin for DefaultDynInterpolatorsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_tween_systems(tween::component_dyn_tween_system::<Transform>());
+        app.add_tween_systems(
+            tween::component_tween_system::<BoxedInterpolator<Transform>>,
+        );
 
         #[cfg(feature = "bevy_sprite")]
-        app.add_tween_systems(tween::component_dyn_tween_system::<Sprite>());
+        app.add_tween_systems(
+            tween::component_tween_system::<BoxedInterpolator<Sprite>>,
+        );
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
-        app.add_tween_systems(tween::asset_dyn_tween_system::<
-            bevy::sprite::ColorMaterial,
-        >());
+        app.add_tween_systems(
+            tween::asset_tween_system::<
+                BoxedInterpolator<bevy::sprite::ColorMaterial>,
+            >,
+        );
     }
 }
 
