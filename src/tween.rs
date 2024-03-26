@@ -17,19 +17,11 @@
 //!
 //! This crate already contains some systems for tweening components, assets,
 //! and resources.
-//! You will usually use aliases of these systems instead to reduce specifying
-//! redundant generic.
 //!
 //! Built-in systems:
-//! - [`component_tween_system_full()`], component tweening system
-//!   - [`component_tween_system()`], alias system for generic interpolator
-//!   - [`component_dyn_tween_system()`], alias system for `Box<dyn Interpolator>`
-//! - [`resource_tween_system_full()`], resource tweening system
-//!   - [`resource_tween_system()`], alias system for generic interpolator
-//!   - [`resource_dyn_tween_system()`], alias system for `Box<dyn Interpolator>`
-//! - [`asset_tween_system_full()`], asset tweening system
-//!   - [`asset_tween_system()`], alias system for generic interpolator
-//!   - [`asset_dyn_tween_system()`], alias system for `Box<dyn Interpolator>`
+//! - [`component_tween_system()`], component tweening system
+//! - [`resource_tween_system()`], resource tweening system
+//! - [`asset_tween_system()`], asset tweening system
 //!
 //! Let's say you have some custom components with multiple interpolators.
 //!
