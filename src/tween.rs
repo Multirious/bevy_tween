@@ -148,9 +148,9 @@
 //!     use my_interpolate::*;
 //!
 //!     App::new().add_tween_systems((
-//!         component_tween_system::<FooA>(),
-//!         component_tween_system::<FooB>(),
-//!         component_tween_system::<FooC>(),
+//!         component_tween_system::<FooA>,
+//!         component_tween_system::<FooB>,
+//!         component_tween_system::<FooC>,
 //!     ));
 //! }
 //! # }
@@ -158,13 +158,10 @@
 //!
 //! ### Registering system for dynamic interpolator
 //!
-//! Dynamic interpolator means we're using dynamic dispatch.
+//! Dynamic interpolator means we're using dynamic dispatch or trait object.
 //! We don't have to register system for every interpolator, we only have to
 //! register this system just for **every individual component**.
 //! (Unless already registered by the [`DefaultTweenPlugins`])
-//!
-//! To register a dynamic interpolator for your component, you can use
-//! [`component_dyn_tween_system`].
 // ///! <div class="warning">
 // ///! <a href="fn.component_dyn_tween_system.html"><code>component_dyn_tween_system</code></a> is type of dynamic
 // ///! interpolator for <code>Box&lt;dyn Interpolator&gt;</code>.
@@ -215,13 +212,16 @@
 //! #     }
 //! # }
 //! fn main() {
-//!     use bevy_tween::component_dyn_tween_system;
 //!     use my_interpolate::*;
 //!
 //!     // One system to rule them all
 //!     // Note that we're only using the `Foo` type, not `FooA`, `FooB`,
 //!     // and `FooC`!
-//!     App::new().add_tween_systems(component_dyn_tween_system::<Foo>());
+//!     App::new().add_tween_systems(
+//!         bevy_tween::component_tween_system::<BoxedInterpolator<Foo>>,
+//!     );
+//!     // BoxedInterpolator definition:
+//!     // type BoxedInterpolator<Item> = Box<dyn Interpolator<Item>>;
 //! }
 //! # }
 //! ```
