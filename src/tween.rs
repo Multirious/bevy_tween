@@ -252,10 +252,12 @@ pub use systems::{
     resource_tween_system_full,
 };
 
+/// Skip a tween from tweening.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
 pub struct SkipTween;
 
+/// Skip a tweener from functioning.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
 pub struct SkipTweener;
