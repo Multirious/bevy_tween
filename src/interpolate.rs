@@ -105,26 +105,6 @@ pub trait Interpolator: Send + Sync + 'static {
     fn interpolate(&self, item: &mut Self::Item, value: f32);
 }
 
-impl<I: 'static> Interpolator
-    for Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>
-{
-    type Item = I;
-
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        self(item, value)
-    }
-}
-
-impl<I: 'static> Interpolator
-    for &'static (dyn Fn(&mut I, f32) + Send + Sync + 'static)
-{
-    type Item = I;
-
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        self(item, value)
-    }
-}
-
 impl<I> Interpolator for Box<I>
 where
     I: Interpolator + ?Sized,
@@ -155,6 +135,14 @@ where
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         (**self).interpolate(item, value)
+    }
+}
+
+impl<I: 'static> Interpolator for dyn Fn(&mut I, f32) + Send + Sync + 'static {
+    type Item = I;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        self(item, value)
     }
 }
 
