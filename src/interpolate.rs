@@ -158,28 +158,6 @@ where
     }
 }
 
-impl<I> Interpolator for Arc<Mutex<I>>
-where
-    I: Interpolator + ?Sized,
-{
-    type Item = I::Item;
-
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        self.lock().expect("valid Mutex").interpolate(item, value)
-    }
-}
-
-impl<I> Interpolator for Arc<RwLock<I>>
-where
-    I: Interpolator,
-{
-    type Item = I::Item;
-
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        self.read().expect("valid RwLock").interpolate(item, value)
-    }
-}
-
 /// Default interpolators
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
