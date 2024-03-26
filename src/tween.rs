@@ -646,7 +646,7 @@ where
 pub type ResourceTween<I> = Tween<TargetResource<<I as Interpolator>::Item>, I>;
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with dyanmic [`Interpolator`].
-pub type ResourceTweenDyn<R> =
+pub type ResourceDynTween<R> =
     Tween<TargetResource<R>, Box<dyn Interpolator<Item = R>>>;
 
 /// Tell the tween what resource to tween.

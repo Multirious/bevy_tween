@@ -129,21 +129,27 @@ pub mod prelude {
 
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
     pub use crate::interpolation::EaseFunction;
+
+    pub use crate::tween_timer::{Repeat, RepeatStyle};
+
     #[cfg(feature = "span_tween")]
     #[allow(deprecated)]
     pub use crate::span_tween::{
         span_tween, ChildSpanTweenBuilderExt, SpanTweenBundle,
         SpanTweenerBundle, SpanTweenerEnded, WorldChildSpanTweenBuilderExt,
     };
+
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetTween;
+
     pub use crate::tween::ComponentDynTween;
     pub use crate::tween::ComponentTween;
+
+    pub use crate::tween::ResourceDynTween;
     pub use crate::tween::ResourceTween;
-    pub use crate::tween::ResourceTweenDyn;
-    pub use crate::tween_timer::{Repeat, RepeatStyle};
+
     pub use crate::BevyTweenRegisterSystems;
     pub use crate::DefaultTweenPlugins;
 }
