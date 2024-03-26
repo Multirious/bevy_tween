@@ -25,7 +25,9 @@ Goals:
 2. [ ] Built-in Keyframe animation support via `splines`. After this,
        the crate wouldn't be an average tweening plugin, no more!
 3. [ ] `bevy_animation` integration (?)
-4. [ ] Editor. This plugin is powerful enough to deserves one!
+4. [ ] Editor. While the original goal is to just be a tweening from code crate,
+       this crate absolutely has the capability to work on any complex animations.
+       The editor will aid in such jobs. 
 
 Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 or [`bevy_easings`](https://github.com/vleue/bevy_easings):
