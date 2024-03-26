@@ -43,6 +43,9 @@ jobs:
       
     - name: Check all features
       run: cargo check-all-features
+
+    - name: Check all examples
+      run: cargo check --example '*'
       
     - name: Run tests
       run: cargo test --verbose
