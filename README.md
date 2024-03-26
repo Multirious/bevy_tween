@@ -40,6 +40,8 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   - Makes a very extendable system, thanks Bevy's ECS!
 - Advanced timer. This crate has custom timer implementation tailored for featureful
   and reliable tweening.
+  - Designed with looping in mind. You can loop any tween.
+  - Edgecases are taken care of.
 - Dependency injection. Systems communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components
   and reduce duplication.
