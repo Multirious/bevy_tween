@@ -196,8 +196,13 @@ impl PluginGroup for DefaultTweenPlugins {
 /// - In [`PostUpdate`]:
 ///   1. [`TickTweener`],
 ///   2. [`Tweener`],
-///   3. [`UpdateTweenEaseValue`],
+///   3. [`UpdateInterpolationValue`],
 ///   4. [`ApplyTween`],
+///
+///   [`TickTweener`]: [`TweenSystemSet::TickTweene`]
+///   [`Tweener`]: [`TweenSystemSet::Tweener`]
+///   [`UpdateInterpolationValue`]: [`TweenSystemSet::UpdateInterpolationValue`]
+///   [`ApplyTween`]: [`TweenSystemSet::ApplyTween`]
 pub struct TweenCorePlugin;
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
@@ -240,9 +245,9 @@ pub enum TweenSystemSet {
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
     /// as these systems by this crate:
-    /// - [`tween::component_tween_system_full`]
-    /// - [`tween::resource_tween_system_full`]
-    /// - [`tween::asset_tween_system_full`]
+    /// - [`tween::component_tween_system`]
+    /// - [`tween::resource_tween_system`]
+    /// - [`tween::asset_tween_system`]
     ApplyTween,
 }
 
