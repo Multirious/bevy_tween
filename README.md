@@ -41,6 +41,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 - Advanced timer. This crate has custom timer implementation tailored for featureful
   and reliable tweening.
   - Designed with looping in mind. You can loop any tween.
+  - Tick in arbitary direction.
   - Edgecases are taken care of.
 - Dependency injection. Systems communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components
