@@ -53,7 +53,6 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
-  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -63,7 +62,6 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
-  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -72,7 +70,6 @@ path = "examples/animation/thumbnail_triangle.rs"
 required-features = [
   "bevy_sprite",
   "span_tween",
-  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -82,7 +79,6 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
-  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -92,7 +88,6 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
-  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -102,7 +97,6 @@ required-features = [
   "bevy_sprite",
   "bevy_asset",
   "span_tween",
-  "bevy/bevy_winit",
 ]
 
 [[example]]
@@ -110,5 +104,4 @@ name = "span_tween"
 path = "examples/span_tween/span_tween.rs"
 required-features = [
   "span_tween",
-  "bevy/bevy_winit",
 ]
