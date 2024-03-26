@@ -2,8 +2,8 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
-    component_tween_system, prelude::*, resource_tween_system,
-    span_tween::SpanTweener, tween_timer::AnimationDirection,
+    prelude::*, resource_tween_system, span_tween::SpanTweener,
+    tween_timer::AnimationDirection,
 };
 use rand::prelude::*;
 
