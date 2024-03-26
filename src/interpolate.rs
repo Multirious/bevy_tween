@@ -44,7 +44,7 @@
 //! If you've created a custom interpolator or a custom component/asset/resource,
 //! you may need to [register some systems](crate::tween#registering-systems).
 
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::Arc;
 
 use bevy::prelude::*;
 
