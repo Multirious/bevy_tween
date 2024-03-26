@@ -53,6 +53,15 @@ use crate::{tween, BevyTweenRegisterSystems};
 /// Alias for an `Interpolator` trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 
+/// Create boxed closure in order to be used with dynamic [`Interpolator`]
+pub fn closure<I, F>(f: F) -> InterpolatorClosure<I>
+where
+    I: 'static,
+    F: Fn(&mut I, f32) + Send + Sync + 'static,
+{
+    Box::new(f)
+}
+
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
 ///
@@ -72,17 +81,16 @@ pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 /// }
 ///
 /// impl Interpolator for InterpolateMyComponent {
+///     // Your components/asset/resource here.
 ///     type Item = MyComponent;
-///
-///     // Your components/asset/resource here;
 ///
 ///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
 ///         item.0 = self.start.lerp(self.end, value);
 ///     }
 /// }
 /// ```
-/// Then you'll need to register the system to actually make bevy recognizes
-/// your interpolator.
+/// Then you'll need to [register some systems](crate::tween#registering-systems)
+/// to actually make bevy recognizes your interpolator.
 pub trait Interpolator: Send + Sync + 'static {
     /// Type to be interpolated.
     type Item;
@@ -136,15 +144,6 @@ where
 }
 
 type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>;
-
-/// Create boxed closure in order to be used with dynamic [`Interpolator`]
-pub fn closure<I, F>(f: F) -> InterpolatorClosure<I>
-where
-    I: 'static,
-    F: Fn(&mut I, f32) + Send + Sync + 'static,
-{
-    Box::new(f)
-}
 
 /// Default interpolators
 pub struct DefaultInterpolatorsPlugin;
