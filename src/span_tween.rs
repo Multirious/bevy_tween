@@ -100,7 +100,7 @@ use tween_timer::{Repeat, RepeatStyle};
 use crate::{
     interpolation::Interpolation,
     prelude::EaseFunction,
-    tween::{TweenState, TweenerMarker},
+    tween::{TweenProgressed, TweenerMarker},
     tween_timer::{self, AnimationDirection, TickResult, TweenTimer},
 };
 
@@ -435,8 +435,6 @@ pub struct SpanTweenHereBundle {
 pub struct SpanTweenBundle {
     /// [`TweenTimeSpan`] to define the range of time this span tween will work for.
     pub span: TweenTimeSpan,
-    /// [`TweenState`] required to work as a span tween
-    pub state: TweenState,
 }
 
 impl SpanTweenBundle {
@@ -448,7 +446,6 @@ impl SpanTweenBundle {
     {
         SpanTweenBundle {
             span: span.try_into().expect("valid span"),
-            state: Default::default(),
         }
     }
 }
@@ -627,9 +624,10 @@ pub fn tick_span_tweener_system(
 /// System for updating any span tweens to the correct [`TweenState`] as playing
 /// by its span tweener then will call `collaspe_elasped` on the timer.
 pub fn span_tweener_system(
+    mut commands: Commands,
     q_other_tweener: Query<(), With<SpanTweener>>,
     mut q_span_tweener: Query<(Entity, &mut SpanTweener, Option<&Children>)>,
-    mut q_tween: Query<(&mut TweenState, &TweenTimeSpan)>,
+    mut q_tween: Query<(Option<&mut TweenProgressed>, &TweenTimeSpan)>,
 ) {
     use AnimationDirection::*;
     use DurationQuotient::*;
@@ -653,7 +651,7 @@ pub fn span_tweener_system(
                 .filter(|c| !q_other_tweener.contains(**c));
             let tweens = [&tweener_entity].into_iter().chain(children);
             for &tween_entity in tweens {
-                let Ok((mut tween_state, tween_span)) =
+                let Ok((tween_progressed, tween_span)) =
                     q_tween.get_mut(tween_entity)
                 else {
                     continue;
@@ -666,7 +664,7 @@ pub fn span_tweener_system(
                 let tween_local_min = Duration::ZERO;
                 let tween_local_max =
                     tween_span.max().duration() - tween_span.min().duration();
-                let timer_elasped = timer
+                let local_elasped = timer
                     .elasped()
                     .now
                     .saturating_sub(tween_span.min().duration())
@@ -688,18 +686,18 @@ pub fn span_tweener_system(
                     now_quotient,
                     timer.elasped().repeat_style,
                 ) {
-                    (_, Inside, Inside, None) => Some(timer_elasped),
+                    (_, Inside, Inside, None) => Some(local_elasped),
                     // -------------------------------------------------------
                     | (Forward, Before, Inside, None)
                     | (Forward, Inside, After, None)
                     | (Forward, Before, After, None)
-                        => Some(timer_elasped),
+                        => Some(local_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, After, Inside, None)
                     | (Backward, Inside, Before, None)
                     | (Backward, After, Before, None)
-                        => Some(timer_elasped),
+                        => Some(local_elasped),
 
                     // --------------------------------------------------------
                     // don't remove these comments, may use for debugging in the future
@@ -713,7 +711,7 @@ pub fn span_tweener_system(
                     | (Forward, After, Inside, Some(WrapAround)) // 1 now 
                     | (Forward, After, After, Some(WrapAround)) // 1&2 now, max
                     // | (Forward, After, Before, Some(WrapAround)) // 1
-                        => Some(timer_elasped),
+                        => Some(local_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, After, After, Some(WrapAround)) // 1&2 min
@@ -726,7 +724,7 @@ pub fn span_tweener_system(
                     | (Backward, After, Before, Some(WrapAround)) // 2 now, min
                     | (Backward, After, Inside, Some(WrapAround)) // 2 now
                     // | (Backward, Before, After, Some(WrapAround)) // 1
-                        => Some(timer_elasped),
+                        => Some(local_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, Before, Before, Some(PingPong)) // 1&2 now, min
@@ -738,7 +736,7 @@ pub fn span_tweener_system(
                     | (Backward, After, Before, Some(PingPong)) // 2 now, min
                     | (Backward, After, Inside, Some(PingPong)) // 2 now
                     // | (Backward, After, After, Some(PingPong)) // 1&2
-                        => Some(timer_elasped),
+                        => Some(local_elasped),
 
                     // -------------------------------------------------------
                     // | (Forward, Before, Before, Some(PingPong)) // 1&2
@@ -750,16 +748,41 @@ pub fn span_tweener_system(
                     | (Forward, After, Before, Some(PingPong)) // 1 now, min
                     | (Forward, After, Inside, Some(PingPong)) // 1 now
                     | (Forward, After, After, Some(PingPong)) // 1&2 now, max
-                        => Some(timer_elasped),
+                        => Some(local_elasped),
                     _ => None,
                 };
-                let new_tween_state = TweenState {
-                    local_elasped: new_tween_elasped,
-                    local_previous_elasped: tween_state.local_elasped,
-                    local_end: tween_local_max,
-                    direction: timer.direction,
-                };
-                *tween_state = new_tween_state;
+                match new_tween_elasped {
+                    Some(elasped) => {
+                        let progressed = if tween_local_max > Duration::ZERO {
+                            TweenProgressed(
+                                elasped.as_secs_f32()
+                                    / tween_local_max.as_secs_f32(),
+                            )
+                        } else {
+                            match timer.direction {
+                                Forward => TweenProgressed(1.),
+                                Backward => TweenProgressed(0.),
+                            }
+                        };
+                        match tween_progressed {
+                            Some(mut tween_progressed) => {
+                                *tween_progressed = progressed;
+                            }
+                            None => {
+                                commands
+                                    .entity(tween_entity)
+                                    .insert(progressed);
+                            }
+                        }
+                    }
+                    None => {
+                        if tween_progressed.is_some() {
+                            commands
+                                .entity(tween_entity)
+                                .remove::<TweenProgressed>();
+                        }
+                    }
+                }
             }
             tweener.timer.collaspe_elasped();
         },

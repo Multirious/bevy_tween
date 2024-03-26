@@ -223,9 +223,9 @@
 //! [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
 
 use bevy::prelude::*;
-use std::{any::type_name, marker::PhantomData, time::Duration};
+use std::{any::type_name, marker::PhantomData};
 
-use crate::{interpolate::Interpolator, tween_timer::AnimationDirection};
+use crate::interpolate::Interpolator;
 
 mod systems;
 #[allow(deprecated)]
@@ -244,24 +244,12 @@ pub use systems::{
     resource_tween_system_full,
 };
 
-/// [`TweenState`] should be automatically managed by a tweener.
+/// [`TweenProgressed`] should be automatically managed by a tweener.
 /// User just have to add this component to a tween entity and an assigned
 /// tweener will take care of it.
-#[derive(
-    Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Component, Reflect,
-)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Component, Reflect)]
 #[reflect(Component)]
-pub struct TweenState {
-    /// `local_elasped` is None meaning that the tween playing that is managing this
-    /// tween hasn't/has elasped pass this tween.
-    pub local_elasped: Option<Duration>,
-    #[allow(missing_docs)]
-    pub local_previous_elasped: Option<Duration>,
-    /// Direction of currently elasped time
-    pub direction: AnimationDirection,
-    /// Maximum duration of the this tween.
-    pub local_end: Duration,
-}
+pub struct TweenProgressed(pub f32);
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
 /// [`EaseClosure`] when a tween has the component `TweenState`.

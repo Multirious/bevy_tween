@@ -7,8 +7,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    tween::{TweenInterpolationValue, TweenState},
-    tween_timer::AnimationDirection,
+    tween::{TweenInterpolationValue, TweenProgressed},
     TweenSystemSet,
 };
 
@@ -161,40 +160,29 @@ impl Interpolation for EaseClosure {
     }
 }
 
-/// This system will automatically sample in each entities with the [`TweenState`]
-/// and specified interpolator component then insert [`TweenInterpolationValue`]
-/// If [`TweenState::local_elasped`] is some, otherwise remove [`TweenInterpolationValue`]
-/// from the entity.
+/// This system will automatically sample in each entities with a
+/// [`TweenProgressed`] component then insert [`TweenInterpolationValue`].
+/// Remove [`TweenInterpolationValue`] if [`TweenProgressed`] is removed.
 #[allow(clippy::type_complexity)]
 pub fn sample_interpolations_system<I>(
     mut commands: Commands,
     query: Query<
-        (Entity, &I, &TweenState),
-        Or<(Changed<I>, Changed<TweenState>)>,
+        (Entity, &I, &TweenProgressed),
+        Or<(Changed<I>, Changed<TweenProgressed>)>,
     >,
+    mut removed: RemovedComponents<TweenProgressed>,
 ) where
     I: Interpolation + Component,
 {
-    query.iter().for_each(|(entity, interpolator, state)| {
-        match state.local_elasped {
-            Some(elasped) => {
-                let elasped = elasped.as_secs_f32();
-                let end = state.local_end.as_secs_f32();
-                let value = if end > 0. {
-                    interpolator.sample(elasped / end)
-                } else {
-                    match state.direction {
-                        AnimationDirection::Forward => 1.,
-                        AnimationDirection::Backward => 0.,
-                    }
-                };
-                commands
-                    .entity(entity)
-                    .insert(TweenInterpolationValue(value));
-            }
-            None => {
-                commands.entity(entity).remove::<TweenInterpolationValue>();
-            }
+    query.iter().for_each(|(entity, interpolator, progressed)| {
+        let value = interpolator.sample(progressed.0);
+        commands
+            .entity(entity)
+            .insert(TweenInterpolationValue(value));
+    });
+    removed.read().for_each(|entity| {
+        if let Some(mut entity) = commands.get_entity(entity) {
+            entity.remove::<TweenInterpolationValue>();
         }
-    })
+    });
 }
