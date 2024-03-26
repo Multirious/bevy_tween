@@ -47,7 +47,7 @@ jobs:
       run: cargo check-all-features
 
     - name: Check docs
-      run: cargo +nightly doc --no-deps
+      run: cargo +nightly doc --all-features --no-deps
 
     - name: Check all examples
       run: cargo check --example '*'
