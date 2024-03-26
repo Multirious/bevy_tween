@@ -92,7 +92,7 @@
 //!   ```
 //! - Also the above 2 combined will works just fine btw.
 
-use std::{ops, time::Duration};
+use std::{cmp::Ordering, ops, time::Duration};
 
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use tween_timer::{Repeat, RepeatStyle};
@@ -669,6 +669,15 @@ pub fn span_tweener_system(
                     .now
                     .saturating_sub(tween_span.min().duration())
                     .min(tween_local_max);
+                let direction = if timer.elasped().repeat_style.is_some() {
+                    match timer.elasped().previous.cmp(&timer.elasped().now) {
+                        Ordering::Less => AnimationDirection::Forward,
+                        Ordering::Equal => timer.direction,
+                        Ordering::Greater => AnimationDirection::Backward,
+                    }
+                } else {
+                    timer.direction
+                };
                 // Look at this behemoth of edge case handling.
                 //
                 // The edge cases are the time when the tween are really short
@@ -681,7 +690,7 @@ pub fn span_tweener_system(
                 // fast or the game heavily lagged, I don't think that need to
                 // be accounted.
                 let new_tween_elasped = match (
-                    timer.direction,
+                    direction,
                     previous_quotient,
                     now_quotient,
                     timer.elasped().repeat_style,
