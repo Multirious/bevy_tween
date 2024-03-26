@@ -1,6 +1,19 @@
-//! Module containing a tweener that process tweens with time span.
+//! Module containing span tween implementation
 //!
-//! # Entity structure
+//! # Span tween
+//!
+//! **Components**:
+//! - [`SpanTweener`]
+//! - [`TweenTimeSpan`]
+//!
+//! **Bundles**:
+//! - [`SpanTweenerBundle`]
+//! - [`SpanTweenBundle`]
+//!
+//! **Events**:
+//! - [`SpanTweenerEnded`]
+//!
+//! ## Entity structure
 //!
 //! If we have this entity:
 //!   ```no_run
@@ -96,11 +109,12 @@ use crate::{
 pub struct SpanTweenPlugin;
 impl Plugin for SpanTweenPlugin {
     fn build(&self, app: &mut App) {
-        app .add_systems(
+        app.add_systems(
             PostUpdate,
             (
-                tick_span_tweener_system.in_set(crate::TweenSystemSet::TickTweener),
-                span_tweener_system.in_set(crate::TweenSystemSet::Tweener)
+                tick_span_tweener_system
+                    .in_set(crate::TweenSystemSet::TickTweener),
+                span_tweener_system.in_set(crate::TweenSystemSet::Tweener),
             ),
         )
         .register_type::<SpanTweener>()
