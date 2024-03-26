@@ -2,6 +2,14 @@
 //!
 //! # [`Tween`]
 //!
+//! **Components**:
+//! - [`Tween<T, I>`]
+//! - [`SkipTween`]
+//! - [`SkipTweener`]
+//! - [`TweenerMarker`]
+//! - [`TweenProgressed`]
+//! - [`TweenInterpolationValue`]
+//!
 //! Built-in supported [`TweenTarget`]s are:
 //! - [`TargetComponent`]
 //! - [`TargetResource`]

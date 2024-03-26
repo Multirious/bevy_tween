@@ -621,7 +621,7 @@ pub fn tick_span_tweener_system(
     });
 }
 
-/// System for updating any span tweens to the correct [`TweenState`] as playing
+/// System for updating any span tweens to the correct [`TweenProgressed`]
 /// by its span tweener then will call `collaspe_elasped` on the timer.
 pub fn span_tweener_system(
     mut commands: Commands,
