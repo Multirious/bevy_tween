@@ -53,6 +53,8 @@ use crate::{tween, BevyTweenRegisterSystems};
 /// Alias for an `Interpolator` trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 
+type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>;
+
 /// Create boxed closure in order to be used with dynamic [`Interpolator`]
 pub fn closure<I, F>(f: F) -> InterpolatorClosure<I>
 where
@@ -121,22 +123,22 @@ impl<I: 'static> Interpolator
     }
 }
 
-impl<Inner> Interpolator for Box<Inner>
+impl<I> Interpolator for Box<I>
 where
-    Inner: Interpolator + ?Sized,
+    I: Interpolator + ?Sized,
 {
-    type Item = Inner::Item;
+    type Item = I::Item;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         (**self).interpolate(item, value)
     }
 }
 
-impl<Inner> Interpolator for &'static Inner
+impl<I> Interpolator for &'static I
 where
-    Inner: Interpolator + ?Sized,
+    I: Interpolator + ?Sized,
 {
-    type Item = Inner::Item;
+    type Item = I::Item;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         (**self).interpolate(item, value)
