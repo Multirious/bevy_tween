@@ -73,9 +73,6 @@ fn main() {
         .run();
 }
 
-#[derive(Component)]
-struct CircleCountText;
-
 fn setup(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle {
@@ -136,9 +133,3 @@ fn despawn_finished_circle(
         commands.entity(t.tweener).despawn();
     }
 }
-
-// fn display_circle_count(
-//     q_circle: Query<(), With<Sprite>>,
-// ) {
-
-// }
