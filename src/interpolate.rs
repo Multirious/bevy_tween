@@ -105,6 +105,83 @@ pub trait Interpolator: Send + Sync + 'static {
     fn interpolate(&self, item: &mut Self::Item, value: f32);
 }
 
+/// Reflect [`Interpolator`] trait
+#[allow(clippy::type_complexity)]
+pub struct ReflectInterpolator<Item> {
+    get_func: fn(&dyn Reflect) -> Option<&dyn Interpolator<Item = Item>>,
+    get_mut_func:
+        fn(&mut dyn Reflect) -> Option<&mut dyn Interpolator<Item = Item>>,
+    get_boxed_func:
+        fn(
+            Box<dyn Reflect>,
+        )
+            -> Result<Box<dyn Interpolator<Item = Item>>, Box<dyn Reflect>>,
+}
+
+impl<Item> Clone for ReflectInterpolator<Item> {
+    #[inline]
+    fn clone(&self) -> ReflectInterpolator<Item> {
+        ReflectInterpolator {
+            get_func: Clone::clone(&self.get_func),
+            get_mut_func: Clone::clone(&self.get_mut_func),
+            get_boxed_func: Clone::clone(&self.get_boxed_func),
+        }
+    }
+}
+impl<Item> ReflectInterpolator<Item> {
+    /** Downcast a `&dyn Reflect` type to `&dyn Interpolator`.
+
+    If the type cannot be downcast, `None` is returned.*/
+    pub fn get<'a>(
+        &self,
+        reflect_value: &'a dyn Reflect,
+    ) -> Option<&'a dyn Interpolator<Item = Item>> {
+        (self.get_func)(reflect_value)
+    }
+
+    /** Downcast a `&mut dyn Reflect` type to `&mut dyn Interpolator`.
+
+    If the type cannot be downcast, `None` is returned.*/
+    pub fn get_mut<'a>(
+        &self,
+        reflect_value: &'a mut dyn Reflect,
+    ) -> Option<&'a mut dyn Interpolator<Item = Item>> {
+        (self.get_mut_func)(reflect_value)
+    }
+
+    /** Downcast a `Box<dyn Reflect>` type to `Box<dyn Interpolator>`.
+
+    If the type cannot be downcast, this will return `Err(Box<dyn Reflect>)`.*/
+    pub fn get_boxed(
+        &self,
+        reflect_value: Box<dyn Reflect>,
+    ) -> Result<Box<dyn Interpolator<Item = Item>>, Box<dyn Reflect>> {
+        (self.get_boxed_func)(reflect_value)
+    }
+}
+
+impl<Item, T> bevy::reflect::FromType<T> for ReflectInterpolator<Item>
+where
+    T: Interpolator<Item = Item> + Reflect,
+{
+    fn from_type() -> Self {
+        Self {
+            get_func: |reflect_value| {
+                <dyn Reflect>::downcast_ref::<T>(reflect_value)
+                    .map(|value| value as &dyn Interpolator<Item = Item>)
+            },
+            get_mut_func: |reflect_value| {
+                <dyn Reflect>::downcast_mut::<T>(reflect_value)
+                    .map(|value| value as &mut dyn Interpolator<Item = Item>)
+            },
+            get_boxed_func: |reflect_value| {
+                <dyn Reflect>::downcast::<T>(reflect_value)
+                    .map(|value| value as Box<dyn Interpolator<Item = Item>>)
+            },
+        }
+    }
+}
+
 impl<I> Interpolator for Box<I>
 where
     I: Interpolator + ?Sized,
@@ -159,15 +236,21 @@ impl Plugin for DefaultInterpolatorsPlugin {
         .register_type::<tween::ComponentTween<Translation>>()
         .register_type::<tween::ComponentTween<Rotation>>()
         .register_type::<tween::ComponentTween<Scale>>()
-        .register_type::<tween::ComponentTween<AngleZ>>();
+        .register_type::<tween::ComponentTween<AngleZ>>()
+        .register_type_data::<Translation, ReflectInterpolator<Transform>>()
+        .register_type_data::<Rotation, ReflectInterpolator<Transform>>()
+        .register_type_data::<Scale, ReflectInterpolator<Transform>>()
+        .register_type_data::<AngleZ, ReflectInterpolator<Transform>>();
 
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems(tween::component_tween_system::<SpriteColor>)
-            .register_type::<tween::ComponentTween<SpriteColor>>();
+            .register_type::<tween::ComponentTween<SpriteColor>>()
+            .register_type_data::<SpriteColor, ReflectInterpolator<Sprite>>();
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
         app.add_tween_systems(tween::asset_tween_system::<ColorMaterial>)
-            .register_type::<tween::AssetTween<ColorMaterial>>();
+            .register_type::<tween::AssetTween<ColorMaterial>>()
+            .register_type_data::<ColorMaterial, ReflectInterpolator<bevy::prelude::ColorMaterial>>();
     }
 }
 
