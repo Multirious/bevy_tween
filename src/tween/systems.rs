@@ -1,5 +1,4 @@
 use super::*;
-use crate::interpolate::Interpolator;
 use bevy::ecs::schedule::SystemConfigs;
 
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
