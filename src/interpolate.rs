@@ -342,6 +342,7 @@ impl Interpolator for AngleZ {
     }
 }
 
+#[cfg(feature = "bevy_sprite")]
 type ReflectInterpolatorSprite = ReflectInterpolator<Sprite>;
 
 /// [`Interpolator`] for [`Sprite`]'s color
@@ -364,6 +365,7 @@ impl Interpolator for SpriteColor {
     }
 }
 
+#[cfg(feature = "bevy_sprite")]
 type ReflectInterpolatorColorMaterial =
     ReflectInterpolator<bevy::sprite::ColorMaterial>;
 
