@@ -109,16 +109,16 @@ fn click_spawn_circle(
                         .tween(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
-                            ComponentDynTween::tweener_entity(Box::new(
+                            ComponentTween::tweener_entity_boxed(
                                 my_interpolate::JustTranslateTo::end(end),
-                            )),
+                            ),
                         )
                         .tween(
                             ..Duration::from_secs(1),
                             EaseFunction::BackIn,
-                            ComponentDynTween::tweener_entity(Box::new(
+                            ComponentTween::tweener_entity_boxed(
                                 my_interpolate::JustScaleTo::end(Vec3::ZERO),
-                            )),
+                            ),
                         );
                 });
         }

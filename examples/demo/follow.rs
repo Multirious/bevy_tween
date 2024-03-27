@@ -86,7 +86,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     .with_repeat_style(RepeatStyle::PingPong),
                 SpanTweenBundle::new(..Duration::from_secs(2)),
                 EaseFunction::CubicInOut,
-                ComponentDynTween::tweener_parent_boxed(interpolate::closure(
+                ComponentTween::tweener_parent_boxed(interpolate::closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;

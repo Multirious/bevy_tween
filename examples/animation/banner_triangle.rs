@@ -127,7 +127,7 @@ fn snap_rotate(
             Duration::from_secs_f32(i / max * secs)
                 ..Duration::from_secs_f32((i + 1.) / max * secs),
             ease,
-            ComponentDynTween::new_target_boxed(
+            ComponentTween::new_target_boxed(
                 entity,
                 interpolate::AngleZ {
                     start: rev * TAU * (max - i) / max,
