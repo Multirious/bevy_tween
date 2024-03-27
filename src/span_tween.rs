@@ -669,7 +669,7 @@ pub fn span_tweener_system(
                     .now
                     .saturating_sub(tween_span.min().duration())
                     .min(tween_local_max);
-                let direction = if timer.elasped().repeat_style.is_some() {
+                let direction = if timer.elasped().repeat_style.is_none() {
                     match timer.elasped().previous.cmp(&timer.elasped().now) {
                         Ordering::Less => AnimationDirection::Forward,
                         Ordering::Equal => timer.direction,
@@ -762,10 +762,10 @@ pub fn span_tweener_system(
                 };
                 match new_tween_elasped {
                     Some(elasped) => {
-                        let progressed = if tween_local_max > Duration::ZERO {
+                        let tween_local_max = tween_local_max.as_secs_f32();
+                        let progressed = if tween_local_max > 0. {
                             TweenProgressed(
-                                elasped.as_secs_f32()
-                                    / tween_local_max.as_secs_f32(),
+                                elasped.as_secs_f32() / tween_local_max,
                             )
                         } else {
                             match timer.direction {
