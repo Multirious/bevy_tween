@@ -139,15 +139,15 @@ impl<Item> ReflectInterpolator<Item> {
         (self.get_func)(reflect_value)
     }
 
-    /** Downcast a `&mut dyn Reflect` type to `&mut dyn Interpolator`.
+    // /** Downcast a `&mut dyn Reflect` type to `&mut dyn Interpolator`.
 
-    If the type cannot be downcast, `None` is returned.*/
-    pub fn get_mut<'a>(
-        &self,
-        reflect_value: &'a mut dyn Reflect,
-    ) -> Option<&'a mut dyn Interpolator<Item = Item>> {
-        (self.get_mut_func)(reflect_value)
-    }
+    // If the type cannot be downcast, `None` is returned.*/
+    // pub fn get_mut<'a>(
+    //     &self,
+    //     reflect_value: &'a mut dyn Reflect,
+    // ) -> Option<&'a mut dyn Interpolator<Item = Item>> {
+    //     (self.get_mut_func)(reflect_value)
+    // }
 
     /** Downcast a `Box<dyn Reflect>` type to `Box<dyn Interpolator>`.
 
