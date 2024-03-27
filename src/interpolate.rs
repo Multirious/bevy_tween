@@ -236,21 +236,15 @@ impl Plugin for DefaultInterpolatorsPlugin {
         .register_type::<tween::ComponentTween<Translation>>()
         .register_type::<tween::ComponentTween<Rotation>>()
         .register_type::<tween::ComponentTween<Scale>>()
-        .register_type::<tween::ComponentTween<AngleZ>>()
-        .register_type_data::<Translation, ReflectInterpolator<Transform>>()
-        .register_type_data::<Rotation, ReflectInterpolator<Transform>>()
-        .register_type_data::<Scale, ReflectInterpolator<Transform>>()
-        .register_type_data::<AngleZ, ReflectInterpolator<Transform>>();
+        .register_type::<tween::ComponentTween<AngleZ>>();
 
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems(tween::component_tween_system::<SpriteColor>)
-            .register_type::<tween::ComponentTween<SpriteColor>>()
-            .register_type_data::<SpriteColor, ReflectInterpolator<Sprite>>();
+            .register_type::<tween::ComponentTween<SpriteColor>>();
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
         app.add_tween_systems(tween::asset_tween_system::<ColorMaterial>)
-            .register_type::<tween::AssetTween<ColorMaterial>>()
-            .register_type_data::<ColorMaterial, ReflectInterpolator<bevy::prelude::ColorMaterial>>();
+            .register_type::<tween::AssetTween<ColorMaterial>>();
     }
 }
 
@@ -276,8 +270,11 @@ impl Plugin for DefaultDynInterpolatorsPlugin {
     }
 }
 
+type ReflectInterpolatorTransform = ReflectInterpolator<Transform>;
+
 /// [`Interpolator`] for [`Transform`]'s translation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
+#[reflect(InterpolatorTransform)]
 pub struct Translation {
     #[allow(missing_docs)]
     pub start: Vec3,
@@ -294,6 +291,7 @@ impl Interpolator for Translation {
 
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
+#[reflect(InterpolatorTransform)]
 pub struct Rotation {
     #[allow(missing_docs)]
     pub start: Quat,
@@ -310,6 +308,7 @@ impl Interpolator for Rotation {
 
 /// [`Interpolator`] for [`Transform`]'s scale
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
+#[reflect(InterpolatorTransform)]
 pub struct Scale {
     #[allow(missing_docs)]
     pub start: Vec3,
@@ -327,6 +326,7 @@ impl Interpolator for Scale {
 /// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
 /// Usually used for 2D rotation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
+#[reflect(InterpolatorTransform)]
 pub struct AngleZ {
     #[allow(missing_docs)]
     pub start: f32,
@@ -342,9 +342,12 @@ impl Interpolator for AngleZ {
     }
 }
 
+type ReflectInterpolatorSprite = ReflectInterpolator<Sprite>;
+
 /// [`Interpolator`] for [`Sprite`]'s color
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
+#[reflect(InterpolatorSprite)]
 pub struct SpriteColor {
     #[allow(missing_docs)]
     pub start: Color,
@@ -361,9 +364,13 @@ impl Interpolator for SpriteColor {
     }
 }
 
+type ReflectInterpolatorColorMaterial =
+    ReflectInterpolator<bevy::sprite::ColorMaterial>;
+
 /// [`Interpolator`] for [`Sprite`]'s [`ColorMaterial`]
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
+#[reflect(InterpolatorColorMaterial)]
 pub struct ColorMaterial {
     #[allow(missing_docs)]
     pub start: Color,
