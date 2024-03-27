@@ -21,13 +21,16 @@ The main motivation for this tweening crate is that the previous
 existing tweening crates is not flexible enough and so the main goal is to solve it.
 
 Goals:
-1. [x] Flexible 🎉
-2. [ ] Built-in Keyframe animation support via `splines`. After this,
+- [x] Flexible 🎉
+- [ ] Built-in Keyframe animation support via `splines`. After this,
        the crate wouldn't be an average tweening plugin, no more!
-3. [ ] `bevy_animation` integration (?)
-4. [ ] Editor. While the original goal is to just be a tweening from code crate,
+- integration with other crates (?)
+  - [ ] `bevy_animation`
+- [ ] Editor. While the original goal is to just be a tweening from code crate,
        this crate absolutely has the capability to work on any complex animations.
-       The editor will aid in such jobs. 
+       The editor will aid in such jobs.
+  - Real-time display at any point in time in the animation.
+  - Editing path from point A to point B with arbitary curve using `splines`.
 
 Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 or [`bevy_easings`](https://github.com/vleue/bevy_easings):
