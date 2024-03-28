@@ -664,7 +664,7 @@ pub fn span_tweener_system(
                 let tween_local_min = Duration::ZERO;
                 let tween_local_max =
                     tween_span.max().duration() - tween_span.min().duration();
-                let local_elasped = timer
+                let tween_local_elasped = timer
                     .elasped()
                     .now
                     .saturating_sub(tween_span.min().duration())
@@ -695,18 +695,18 @@ pub fn span_tweener_system(
                     now_quotient,
                     timer.elasped().repeat_style,
                 ) {
-                    (_, Inside, Inside, None) => Some(local_elasped),
+                    (_, Inside, Inside, None) => Some(tween_local_elasped),
                     // -------------------------------------------------------
                     | (Forward, Before, Inside, None)
                     | (Forward, Inside, After, None)
                     | (Forward, Before, After, None)
-                        => Some(local_elasped),
+                        => Some(tween_local_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, After, Inside, None)
                     | (Backward, Inside, Before, None)
                     | (Backward, After, Before, None)
-                        => Some(local_elasped),
+                        => Some(tween_local_elasped),
 
                     // --------------------------------------------------------
                     // don't remove these comments, may use for debugging in the future
@@ -720,7 +720,7 @@ pub fn span_tweener_system(
                     | (Forward, After, Inside, Some(WrapAround)) // 1 now 
                     | (Forward, After, After, Some(WrapAround)) // 1&2 now, max
                     // | (Forward, After, Before, Some(WrapAround)) // 1
-                        => Some(local_elasped),
+                        => Some(tween_local_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, After, After, Some(WrapAround)) // 1&2 min
@@ -733,7 +733,7 @@ pub fn span_tweener_system(
                     | (Backward, After, Before, Some(WrapAround)) // 2 now, min
                     | (Backward, After, Inside, Some(WrapAround)) // 2 now
                     // | (Backward, Before, After, Some(WrapAround)) // 1
-                        => Some(local_elasped),
+                        => Some(tween_local_elasped),
 
                     // -------------------------------------------------------
                     | (Backward, Before, Before, Some(PingPong)) // 1&2 now, min
@@ -745,7 +745,7 @@ pub fn span_tweener_system(
                     | (Backward, After, Before, Some(PingPong)) // 2 now, min
                     | (Backward, After, Inside, Some(PingPong)) // 2 now
                     // | (Backward, After, After, Some(PingPong)) // 1&2
-                        => Some(local_elasped),
+                        => Some(tween_local_elasped),
 
                     // -------------------------------------------------------
                     // | (Forward, Before, Before, Some(PingPong)) // 1&2
@@ -757,13 +757,13 @@ pub fn span_tweener_system(
                     | (Forward, After, Before, Some(PingPong)) // 1 now, min
                     | (Forward, After, Inside, Some(PingPong)) // 1 now
                     | (Forward, After, After, Some(PingPong)) // 1&2 now, max
-                        => Some(local_elasped),
+                        => Some(tween_local_elasped),
                     _ => None,
                 };
                 match new_tween_elasped {
                     Some(elasped) => {
                         let tween_local_max = tween_local_max.as_secs_f32();
-                        let progressed = if tween_local_max > 0. {
+                        let new_progressed = if tween_local_max > 0. {
                             TweenProgressed(
                                 elasped.as_secs_f32() / tween_local_max,
                             )
@@ -775,12 +775,12 @@ pub fn span_tweener_system(
                         };
                         match tween_progressed {
                             Some(mut tween_progressed) => {
-                                *tween_progressed = progressed;
+                                *tween_progressed = new_progressed;
                             }
                             None => {
                                 commands
                                     .entity(tween_entity)
-                                    .insert(progressed);
+                                    .insert(new_progressed);
                             }
                         }
                     }

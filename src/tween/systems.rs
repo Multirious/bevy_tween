@@ -1,5 +1,6 @@
 use super::*;
 use bevy::ecs::schedule::SystemConfigs;
+use std::any::type_name;
 
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
