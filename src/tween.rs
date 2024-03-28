@@ -350,6 +350,7 @@ where
 /// Useful for the implementor to specify what this *target* will return the
 /// tweenable [`Self::Item`] which should match [`Interpolator::Item`].
 /// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`].
+#[deprecated(since = "0.3.0", note = "It's not really that useful")]
 pub trait TweenTarget {
     /// Type to be interpolated
     type Item;
