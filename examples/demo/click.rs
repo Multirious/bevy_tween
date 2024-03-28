@@ -8,6 +8,8 @@ mod my_interpolate {
     use bevy::prelude::*;
     use bevy_tween::prelude::*;
 
+    /// Automatically figure out the current position of this entity and then
+    /// tween from there.
     pub struct JustTranslateTo {
         pub start: OnceLock<Vec3>,
         pub end: Vec3,
@@ -32,6 +34,8 @@ mod my_interpolate {
         }
     }
 
+    /// Automatically figure out the current scale of this entity and then
+    /// tween from there.
     pub struct JustScaleTo {
         pub start: OnceLock<Vec3>,
         pub end: Vec3,
