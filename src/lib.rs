@@ -107,7 +107,7 @@
 //! [`TweenTimeSpan`]: span_tween::TweenTimeSpan
 //! [`ComponentTween`]: tween::ComponentTween
 //! [`ComponentTweenDyn`]: tween::ComponentTweenDyn
-
+#![allow(clippy::needless_doctest_main)]
 #![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
 #![warn(missing_docs)]
 
@@ -176,6 +176,13 @@ pub use tween::resource_tween_system;
 pub use tween::resource_tween_system_full;
 
 /// Default plugins for using crate.
+///
+/// Plugins:
+/// - [`TweenCorePlugin`]
+/// - [`interpolate::DefaultInterpolatorsPlugin`]
+/// - [`interpolate::DefaultDynInterpolatorsPlugin`]
+/// - [`interpolation::EaseFunctionPlugin`]
+/// - [`span_tween::SpanTweenPlugin`] if `"span_tween"` feature is enabled.
 pub struct DefaultTweenPlugins;
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
@@ -226,25 +233,23 @@ impl Plugin for TweenCorePlugin {
     }
 }
 
-/// Enum of SystemSet in this crate
+/// Enum of SystemSet in this crate.
 /// See [`TweenCorePlugin`] for default system configuration.
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
     /// This set is for systems that responsible for ticking any
-    /// tweener such as the [`span_tween::tick_span_tweener_system`]
-    /// by this crate
+    /// tweener such as [`span_tween::tick_span_tweener_system`].
     TickTweener,
     /// This set is for systems that responsible for updating any
-    /// tweener such as the [`span_tween::span_tweener_system`]
-    /// by this crate
+    /// tweener such as [`span_tween::span_tweener_system`].
     Tweener,
     /// This set is for systems that responsible for updating any
     /// [`tween::TweenInterpolationValue`] such as
-    /// [`interpolation::sample_interpolations_system`] by this crate.
+    /// [`interpolation::sample_interpolations_system`].
     UpdateInterpolationValue,
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
-    /// as these systems by this crate:
+    /// as these systems:
     /// - [`tween::component_tween_system`]
     /// - [`tween::resource_tween_system`]
     /// - [`tween::asset_tween_system`]

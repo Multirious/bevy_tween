@@ -23,8 +23,45 @@ pub fn component_tween_system_full<C, I>(
     component_tween_system(q_tweener, q_tween, q_component);
 }
 
-/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
+/// Apply any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
+///
+/// The system uses generic for you to quickly make your interpolators work.
+///
+/// ```no_run
+/// use bevy::prelude::*;
+/// use bevy_tween::prelude::*;
+///
+/// #[derive(Component)]
+/// struct Size(f32);
+///
+/// struct InterpolateSize {
+///     start: f32,
+///     end: f32,
+/// }
+///
+/// impl Interpolator for InterpolateSize {
+///     type Item = Size;
+///
+///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///         item.0 = self.start.lerp(self.end, value);
+///     }
+/// }
+///
+/// fn main() {
+///     let mut app = App::new();
+///
+///     // Generic interpolator:
+///     app.add_tween_systems(
+///         bevy_tween::component_tween_system::<InterpolateSize>,
+///     );
+///
+///     // Dynamic interpolator:
+///     app.add_tween_systems(
+///         bevy_tween::component_tween_system::<BoxedInterpolator<Size>>,
+///     );
+/// }
+/// ```
 #[allow(clippy::type_complexity)]
 pub fn component_tween_system<I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
@@ -128,7 +165,8 @@ pub fn resource_tween_system_full<R, I>(
     resource_tween_system(q_tween, resource);
 }
 
-/// System alias for [`resource_tween_system_full`] that uses generic [`Interpolator`]..
+/// Apply any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
+/// value provided by [`TweenInterpolationValue`] component.
 #[allow(clippy::type_complexity)]
 pub fn resource_tween_system<I>(
     q_tween: Query<
@@ -182,7 +220,8 @@ pub fn asset_tween_system_full<A, I>(
     asset_tween_system(q_tween, asset);
 }
 
-/// System alias for [`asset_tween_system_full`] that uses generic [`Interpolator`].
+/// Apply any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
+/// value provided by [`TweenInterpolationValue`] component.
 #[cfg(feature = "bevy_asset")]
 #[allow(clippy::type_complexity)]
 pub fn asset_tween_system<I>(

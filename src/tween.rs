@@ -10,23 +10,24 @@
 //! - [`TweenProgressed`]
 //! - [`TweenInterpolationValue`]
 //!
-//! Built-in supported [`TweenTarget`]s are:
+//! Built-in supported targets are:
 //! - [`TargetComponent`]
 //! - [`TargetResource`]
 //! - [`TargetAsset`]
 //!
-//! See available interpolator in [`interpolate`].
+//! See available interpolators in [`interpolate`].
 //!
 //! ## Registering systems
 //!
-//! You have to register some necessary systems for this plugin to work properly
-//! with every custom type and interpolators
-//! unless there's some system already registered by the [`DefaultTweenPlugins`].
+//! In order for your custom interpolators to work. You have to register systems
+//! to actually have something happening.
+//! The [`DefaultTweenPlugins`] will already register some systems for you already to get started.
+//! Check [`DefaultInterpolatorsPlugin`] or [`DefaultDynInterpolatorsPlugin`].
 //!
-//! This crate already contains some systems for tweening components, assets,
-//! and resources.
+//! This crate contains some systems with generic for tweening components, assets,
+//! and resources, allowing you to quickly register your custom interpolators.
 //!
-//! Built-in systems:
+//! Systems:
 //! - [`component_tween_system()`], component tweening system
 //! - [`resource_tween_system()`], resource tweening system
 //! - [`asset_tween_system()`], asset tweening system
@@ -91,13 +92,12 @@
 //! # }
 //! ```
 //!
-//! There's 2 type of system you might want to register.
+//! There's 2 kind of system you might want to register.
 //!
 //! ### Registering system for generic interpolator
 //!
 //! Generic interpolator means we're not using any dynamic dispatch.
 //! We've to register this system for **every individual interpolator**.
-//! (Unless already registered by the [`DefaultTweenPlugins`])
 //!
 //! ```no_run
 //! # mod a { // had to put this module here for some reason. tf?
@@ -160,8 +160,7 @@
 //!
 //! Dynamic interpolator means we're using dynamic dispatch or trait object.
 //! We don't have to register system for every interpolator, we only have to
-//! register this system just for **every individual component**.
-//! (Unless already registered by the [`DefaultTweenPlugins`])
+//! register this system just for **every individual component/asset/resource**.
 // ///! <div class="warning">
 // ///! <a href="fn.component_dyn_tween_system.html"><code>component_dyn_tween_system</code></a> is type of dynamic
 // ///! interpolator for <code>Box&lt;dyn Interpolator&gt;</code>.
@@ -229,9 +228,10 @@
 //! [`BevyTweenRegisterSystems`]: crate::BevyTweenRegisterSystems
 //! [`interpolate`]: crate::interpolate
 //! [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
+//! [`DefaultInterpolatorsPlugin`]: crate::interpolate::DefaultInterpolatorsPlugin
+//! [`DefaultDynInterpolatorsPlugin`]: crate::interpolate::DefaultDynInterpolatorsPlugin
 
 use bevy::prelude::*;
-use std::{any::type_name, marker::PhantomData};
 
 use crate::interpolate::Interpolator;
 
@@ -263,14 +263,13 @@ pub struct SkipTween;
 pub struct SkipTweener;
 
 /// [`TweenProgressed`] should be automatically managed by a tweener.
-/// User just have to add this component to a tween entity and an assigned
-/// tweener will take care of it.
+/// An assigned tweener will take care of it.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Component, Reflect)]
 #[reflect(Component)]
 pub struct TweenProgressed(pub f32);
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
-/// [`EaseClosure`] when a tween has the component `TweenState`.
+/// [`EaseClosure`] when a tween has the component [`TweenProgressed`].
 /// See [`sample_interpolations_system`]
 ///
 /// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
@@ -281,7 +280,7 @@ pub struct TweenProgressed(pub f32);
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
 pub struct TweenInterpolationValue(pub f32);
 
-/// Containg [`TweenTarget`] and [`Interpolator`]
+/// Containg `target` and `interpolator`
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]

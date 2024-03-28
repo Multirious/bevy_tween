@@ -224,6 +224,14 @@ impl<I: 'static> Interpolator for dyn Fn(&mut I, f32) + Send + Sync + 'static {
 }
 
 /// Default interpolators
+///
+/// Register type and systems for the following interpolators:
+/// - [`Translation`]
+/// - [`Rotation`]
+/// - [`Scale`]
+/// - [`AngleZ`]
+/// - [`SpriteColor`] if `"bevy_sprite"` feature is enabled.
+/// - [`ColorMaterial`] if `"bevy_sprite"` feature is enabled.
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
     fn build(&self, app: &mut App) {
@@ -249,6 +257,13 @@ impl Plugin for DefaultInterpolatorsPlugin {
 }
 
 /// Default dynamic interpolators
+///
+/// Register systems for the following:
+/// - [`Transform`] component.
+/// - [`Sprite`] component if `"bevy_sprite"` feature is enabled.
+/// - [`ColorMaterial`] asset if `"bevy_sprite"` feature is enabled.
+///
+/// [`ColorMaterial`]: bevy::sprite::ColorMaterial
 pub struct DefaultDynInterpolatorsPlugin;
 impl Plugin for DefaultDynInterpolatorsPlugin {
     fn build(&self, app: &mut App) {
