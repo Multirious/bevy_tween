@@ -286,11 +286,7 @@ pub struct TweenInterpolationValue(pub f32);
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]
 #[reflect(Component)]
-pub struct Tween<T, I>
-where
-    T: TweenTarget,
-    I: Interpolator<Item = T::Item>,
-{
+pub struct Tween<T, I> {
     #[allow(missing_docs)]
     pub target: T,
     #[allow(missing_docs)]
@@ -298,8 +294,7 @@ where
 }
 impl<T, I> Tween<T, I>
 where
-    T: TweenTarget,
-    I: Interpolator<Item = T::Item>,
+    I: Interpolator,
 {
     /// Create a new [`Tween`] with a target and an interpolator.
     pub fn new_target<G>(target: G, interpolator: I) -> Self
@@ -315,8 +310,8 @@ where
 
 impl<T, I> Tween<T, I>
 where
-    T: TweenTarget + Default,
-    I: Interpolator<Item = T::Item>,
+    T: Default,
+    I: Interpolator,
 {
     /// Create a new [`Tween`] with the default target and an interpolator.
     pub fn new(interpolator: I) -> Self {
@@ -324,30 +319,29 @@ where
     }
 }
 
-impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
+impl<T, Item> Tween<T, Box<dyn Interpolator<Item = Item>>>
 where
-    T: TweenTarget,
-    T::Item: 'static,
+    Item: 'static,
 {
     /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
     pub fn new_target_boxed<G, I>(target: G, interpolator: I) -> Self
     where
         G: Into<T>,
-        I: Interpolator<Item = T::Item>,
+        I: Interpolator<Item = Item>,
     {
         Self::new_target(target, Box::new(interpolator))
     }
 }
 
-impl<T> Tween<T, Box<dyn Interpolator<Item = T::Item>>>
+impl<T, Item> Tween<T, Box<dyn Interpolator<Item = Item>>>
 where
-    T: TweenTarget + Default,
-    T::Item: 'static,
+    T: Default,
+    Item: 'static,
 {
     /// Create a new [`Tween`] with the default target and an interpolator that will be boxed internally.
     pub fn new_boxed<I>(interpolator: I) -> Self
     where
-        I: Interpolator<Item = T::Item>,
+        I: Interpolator<Item = Item>,
     {
         Self::new(Box::new(interpolator))
     }
