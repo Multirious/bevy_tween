@@ -22,8 +22,7 @@ existing tweening crates is not flexible enough and so the main goal is to solve
 
 Goals:
 - [x] Flexible 🎉
-- [ ] Built-in Keyframe animation support via `splines`. After this,
-       the crate wouldn't be an average tweening plugin, no more!
+- [ ] Built-in Keyframe animation support via `splines`.
 - integration with other crates (?)
   - [ ] `bevy_animation`
 - [ ] Editor. While the original goal is to just be a tweening from code crate,
@@ -43,10 +42,11 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   - Everything exists in the ECS world with no hidden structure, everything can
     be freely accessed.
   - Makes a very extendable system, thanks Bevy's ECS!
-- Advanced timer. This crate has custom timer implementation tailored for featureful
-  and reliable tweening.
-  - Designed with looping in mind. You can loop any tween.
-  - Tick in arbitary direction.
+- Advanced timer. This crate has custom timer implementation.
+  - Looping support.
+  - 2 ways playback support.
+  - Jump to arbitary time.
+  - Ticking in arbitary direction.
 - Dependency injection. Systems communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components
   and reduce duplication.
