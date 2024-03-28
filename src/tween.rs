@@ -357,50 +357,43 @@ pub trait TweenTarget {
 }
 
 /// Convenient alias for [`Tween`] that [`TargetComponent`] with generic [`Interpolator`].
-pub type ComponentTween<I> =
-    Tween<TargetComponent<<I as Interpolator>::Item>, I>;
+pub type ComponentTween<I> = Tween<TargetComponent, I>;
 
 /// Convenient alias for [`Tween`] that [`TargetComponent`] with boxed dyanmic [`Interpolator`].
 pub type ComponentDynTween<C> =
-    Tween<TargetComponent<C>, Box<dyn Interpolator<Item = C>>>;
+    Tween<TargetComponent, Box<dyn Interpolator<Item = C>>>;
 
 /// Tell the tween what component of what entity to tween.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
-pub enum TargetComponent<C>
-where
-    C: Component,
-{
+pub enum TargetComponent {
     /// Target the entity that contains this tween's tweener.
-    TweenerEntity(#[reflect(ignore)] PhantomData<C>),
+    TweenerEntity,
     /// Target the parent of this tween's tweener.
-    TweenerParent(#[reflect(ignore)] PhantomData<C>),
+    TweenerParent,
     /// Target this entity.
-    Entity(Entity, #[reflect(ignore)] PhantomData<C>),
+    Entity(Entity),
     /// Target these entities.
-    Entities(Vec<Entity>, #[reflect(ignore)] PhantomData<C>),
+    Entities(Vec<Entity>),
 }
 
-impl<C> TargetComponent<C>
-where
-    C: Component,
-{
+impl TargetComponent {
     /// Target the entity that contains this tween's tweener.
-    pub fn tweener_entity() -> TargetComponent<C> {
-        TargetComponent::TweenerEntity(PhantomData)
+    pub fn tweener_entity() -> TargetComponent {
+        TargetComponent::TweenerEntity
     }
 
     /// Target the parent of this tween's tweener.
-    pub fn tweener_parent() -> TargetComponent<C> {
-        TargetComponent::TweenerParent(PhantomData)
+    pub fn tweener_parent() -> TargetComponent {
+        TargetComponent::TweenerParent
     }
 
     /// Target this entity.
-    pub fn entity(entity: Entity) -> TargetComponent<C> {
-        TargetComponent::Entity(entity, PhantomData)
+    pub fn entity(entity: Entity) -> TargetComponent {
+        TargetComponent::Entity(entity)
     }
 
     /// Target these entities.
-    pub fn entities<I>(entities: I) -> TargetComponent<C>
+    pub fn entities<I>(entities: I) -> TargetComponent
     where
         I: IntoIterator<Item = Entity>,
     {
@@ -408,80 +401,49 @@ where
     }
 }
 
-impl<C> TweenTarget for TargetComponent<C>
-where
-    C: Component,
-{
-    type Item = C;
-}
-
-impl<C> Default for TargetComponent<C>
-where
-    C: Component,
-{
+impl Default for TargetComponent {
     fn default() -> Self {
         TargetComponent::tweener_entity()
     }
 }
 
-impl<C> From<Entity> for TargetComponent<C>
-where
-    C: Component,
-{
+impl From<Entity> for TargetComponent {
     fn from(value: Entity) -> Self {
         TargetComponent::entity(value)
     }
 }
 
-impl<C> FromIterator<Entity> for TargetComponent<C>
-where
-    C: Component,
-{
+impl FromIterator<Entity> for TargetComponent {
     fn from_iter<T: IntoIterator<Item = Entity>>(iter: T) -> Self {
-        TargetComponent::Entities(iter.into_iter().collect(), PhantomData)
+        TargetComponent::Entities(iter.into_iter().collect())
     }
 }
 
-impl<C, const N: usize> From<[Entity; N]> for TargetComponent<C>
-where
-    C: Component,
-{
+impl<const N: usize> From<[Entity; N]> for TargetComponent {
     fn from(value: [Entity; N]) -> Self {
         TargetComponent::entities(value)
     }
 }
 
-impl<C> From<Vec<Entity>> for TargetComponent<C>
-where
-    C: Component,
-{
+impl From<Vec<Entity>> for TargetComponent {
     fn from(value: Vec<Entity>) -> Self {
         TargetComponent::entities(value)
     }
 }
 
-impl<C> From<&Vec<Entity>> for TargetComponent<C>
-where
-    C: Component,
-{
+impl From<&Vec<Entity>> for TargetComponent {
     fn from(value: &Vec<Entity>) -> Self {
         TargetComponent::entities(value.iter().copied())
     }
 }
 
-impl<C> From<&[Entity]> for TargetComponent<C>
-where
-    C: Component,
-{
+impl From<&[Entity]> for TargetComponent {
     fn from(value: &[Entity]) -> Self {
         TargetComponent::entities(value.iter().copied())
     }
 }
 
-impl<C, const N: usize> From<&[Entity; N]> for TargetComponent<C>
-where
-    C: Component,
-{
+impl<const N: usize> From<&[Entity; N]> for TargetComponent {
     fn from(value: &[Entity; N]) -> Self {
         TargetComponent::entities(value.iter().copied())
     }
@@ -542,33 +504,21 @@ where
 }
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with generic [`Interpolator`].
-pub type ResourceTween<I> = Tween<TargetResource<<I as Interpolator>::Item>, I>;
+pub type ResourceTween<I> = Tween<TargetResource, I>;
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with dyanmic [`Interpolator`].
 pub type ResourceDynTween<R> =
-    Tween<TargetResource<R>, Box<dyn Interpolator<Item = R>>>;
+    Tween<TargetResource, Box<dyn Interpolator<Item = R>>>;
 
 /// Tell the tween what resource to tween.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Reflect)]
-pub struct TargetResource<R>(#[reflect(ignore)] pub PhantomData<R>)
-where
-    R: Resource;
+pub struct TargetResource;
 
-impl<R> TargetResource<R>
-where
-    R: Resource,
-{
+impl TargetResource {
     /// New resource target
-    pub fn new() -> TargetResource<R> {
-        TargetResource(PhantomData)
+    pub fn new() -> TargetResource {
+        TargetResource
     }
-}
-
-impl<R> TweenTarget for TargetResource<R>
-where
-    R: Resource,
-{
-    type Item = R;
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with generic [`Interpolator`].
@@ -607,11 +557,6 @@ impl<A: Asset> TargetAsset<A> {
     {
         TargetAsset::from_iter(assets)
     }
-}
-
-#[cfg(feature = "bevy_asset")]
-impl<A: Asset> TweenTarget for TargetAsset<A> {
-    type Item = A;
 }
 
 #[cfg(feature = "bevy_asset")]

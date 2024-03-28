@@ -12,11 +12,7 @@ use std::any::type_name;
 pub fn component_tween_system_full<C, I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
     q_tween: Query<
-        (
-            Entity,
-            &Tween<TargetComponent<C>, I>,
-            &TweenInterpolationValue,
-        ),
+        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
         Without<SkipTween>,
     >,
     q_component: Query<&mut I::Item>,
@@ -33,11 +29,7 @@ pub fn component_tween_system_full<C, I>(
 pub fn component_tween_system<I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
     q_tween: Query<
-        (
-            Entity,
-            &Tween<TargetComponent<I::Item>, I>,
-            &TweenInterpolationValue,
-        ),
+        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
         Without<SkipTween>,
     >,
     mut q_component: Query<&mut I::Item>,
@@ -47,7 +39,7 @@ pub fn component_tween_system<I>(
 {
     q_tween.iter().for_each(|(entity, tween, ease_value)| {
         let target = match &tween.target {
-            TargetComponent::TweenerEntity(_) => match q_tweener.get(entity) {
+            TargetComponent::TweenerEntity => match q_tweener.get(entity) {
                 Ok((_, true)) => entity,
                 Ok((Some(this_parent), false)) => {
                     match q_tweener.get(this_parent.get()) {
@@ -57,7 +49,7 @@ pub fn component_tween_system<I>(
                 }
                 _ => return,
             },
-            TargetComponent::TweenerParent(_) => match q_tweener.get(entity) {
+            TargetComponent::TweenerParent => match q_tweener.get(entity) {
                 Ok((Some(this_parent), true)) => this_parent.get(),
                 Ok((Some(this_parent), false)) => {
                     match q_tweener.get(this_parent.get()) {
@@ -69,8 +61,8 @@ pub fn component_tween_system<I>(
                 }
                 _ => return,
             },
-            TargetComponent::Entity(e, _) => *e,
-            TargetComponent::Entities(e, _) => {
+            TargetComponent::Entity(e) => *e,
+            TargetComponent::Entities(e) => {
                 for &target in e {
                     let mut target_component = match q_component.get_mut(target)
                     {
@@ -125,7 +117,7 @@ where
 #[allow(clippy::type_complexity)]
 pub fn resource_tween_system_full<R, I>(
     q_tween: Query<
-        (&Tween<TargetResource<R>, I>, &TweenInterpolationValue),
+        (&Tween<TargetResource, I>, &TweenInterpolationValue),
         Without<SkipTween>,
     >,
     resource: Option<ResMut<I::Item>>,
@@ -140,7 +132,7 @@ pub fn resource_tween_system_full<R, I>(
 #[allow(clippy::type_complexity)]
 pub fn resource_tween_system<I>(
     q_tween: Query<
-        (&Tween<TargetResource<I::Item>, I>, &TweenInterpolationValue),
+        (&Tween<TargetResource, I>, &TweenInterpolationValue),
         Without<SkipTween>,
     >,
     resource: Option<ResMut<I::Item>>,
