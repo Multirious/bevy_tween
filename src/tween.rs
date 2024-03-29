@@ -234,6 +234,7 @@
 use bevy::prelude::*;
 
 use crate::interpolate::Interpolator;
+use crate::tween_timer::AnimationDirection;
 
 mod systems;
 #[allow(deprecated)]
@@ -266,7 +267,7 @@ pub struct SkipTweener;
 /// An assigned tweener will take care of it.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Component, Reflect)]
 #[reflect(Component)]
-pub struct TweenProgressed(pub f32);
+pub struct TweenProgressed(pub f32, pub AnimationDirection);
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
 /// [`EaseClosure`] when a tween has the component [`TweenProgressed`].

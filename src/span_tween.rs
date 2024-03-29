@@ -774,11 +774,12 @@ pub fn span_tweener_system(
                         let new_progressed = if tween_local_max > 0. {
                             TweenProgressed(
                                 elasped.as_secs_f32() / tween_local_max,
+                                direction,
                             )
                         } else {
                             match timer.direction {
-                                Forward => TweenProgressed(1.),
-                                Backward => TweenProgressed(0.),
+                                Forward => TweenProgressed(1., direction),
+                                Backward => TweenProgressed(0., direction),
                             }
                         };
                         match tween_progressed {
