@@ -1,4 +1,4 @@
-//! Module containg implementations for tween
+//! Module containing implementations for tween
 //!
 //! # [`Tween`]
 //!
@@ -280,7 +280,7 @@ pub struct TweenProgressed(pub f32);
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
 pub struct TweenInterpolationValue(pub f32);
 
-/// Containg `target` and `interpolator`
+/// Containing `target` and `interpolator`
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]

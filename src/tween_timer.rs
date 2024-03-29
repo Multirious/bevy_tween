@@ -1,4 +1,4 @@
-//! Module containg implementation of a tween timer
+//! Module containing implementation of a tween timer
 //!
 //! # [`TweenTimer`]
 //! [`TweenTimer`] is a more advanced version of [`Timer`]

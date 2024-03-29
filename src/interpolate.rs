@@ -1,4 +1,4 @@
-//! Module containg the [`Interpolator`] trait and some basic built-in interpolator
+//! Module containing the [`Interpolator`] trait and some basic built-in interpolator
 //!
 //! # Your own [`Interpolator`]
 //!
