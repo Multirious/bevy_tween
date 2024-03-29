@@ -111,6 +111,7 @@
 #![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
 #![warn(missing_docs)]
 
+use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
 mod utils;
@@ -185,10 +186,11 @@ pub use tween::resource_tween_system_full;
 /// - [`interpolation::EaseFunctionPlugin`]
 /// - [`span_tween::SpanTweenPlugin`] if `"span_tween"` feature is enabled.
 pub struct DefaultTweenPlugins;
+
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         let p = PluginGroupBuilder::start::<DefaultTweenPlugins>()
-            .add(TweenCorePlugin)
+            .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin);
@@ -198,10 +200,26 @@ impl PluginGroup for DefaultTweenPlugins {
     }
 }
 
+/// This resource will be used while initializing tween plugin and systems.
+/// [`BevyTweenRegisterSystems`] for example.
+#[derive(Resource, Clone)]
+pub struct TweenAppResource {
+    /// Configured schedule for tween systems.
+    pub schedule: InternedScheduleLabel,
+}
+
+impl Default for TweenAppResource {
+    fn default() -> Self {
+        TweenAppResource {
+            schedule: PostUpdate.intern(),
+        }
+    }
+}
+
 /// Configure [`TweenSystemSet`] and register types.
 ///
 /// [`TweenSystemSet`] configuration:
-/// - In [`PostUpdate`]:
+/// - In schedule configured by [`TweenAppResource`]:
 ///   1. [`TickTweener`],
 ///   2. [`Tweener`],
 ///   3. [`UpdateInterpolationValue`],
@@ -211,11 +229,16 @@ impl PluginGroup for DefaultTweenPlugins {
 ///   [`Tweener`]: [`TweenSystemSet::Tweener`]
 ///   [`UpdateInterpolationValue`]: [`TweenSystemSet::UpdateInterpolationValue`]
 ///   [`ApplyTween`]: [`TweenSystemSet::ApplyTween`]
-pub struct TweenCorePlugin;
+#[derive(Default)]
+pub struct TweenCorePlugin {
+    /// See [`TweenAppResource`]
+    pub app_resource: TweenAppResource,
+}
+
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(
-            PostUpdate,
+            self.app_resource.schedule,
             (
                 TweenSystemSet::TickTweener,
                 TweenSystemSet::Tweener,
@@ -224,6 +247,7 @@ impl Plugin for TweenCorePlugin {
             )
                 .chain(),
         )
+        .insert_resource(self.app_resource.clone())
         .register_type::<tween_timer::TweenTimer>()
         .register_type::<tween_timer::AnimationDirection>()
         .register_type::<tween_timer::Repeat>()
@@ -260,8 +284,7 @@ pub enum TweenSystemSet {
 /// Helper trait to add systems by this crate to your app and avoid mistake
 /// from forgetting to use the intended schedule and set.
 pub trait BevyTweenRegisterSystems {
-    /// Register tween systems in schedule [`PostUpdate`] with set
-    /// [`TweenSystemSet::ApplyTween`]
+    /// Register tween systems
     fn add_tween_systems<M>(
         &mut self,
         tween_systems: impl IntoSystemConfigs<M>,
@@ -269,12 +292,22 @@ pub trait BevyTweenRegisterSystems {
 }
 
 impl BevyTweenRegisterSystems for App {
+    /// Register tween systems in schedule configured in [`TweenAppResource`]
+    /// in set [`TweenSystemSet::ApplyTween`]
+    ///
+    /// # Panics
+    ///
+    /// Panics if [`TweenAppResource`] does not exist in world.
     fn add_tween_systems<M>(
         &mut self,
         tween_systems: impl IntoSystemConfigs<M>,
     ) -> &mut Self {
+        let app_resource = self
+            .world
+            .get_resource::<TweenAppResource>()
+            .expect("`TweenAppResource` to be is inserted to world");
         self.add_systems(
-            PostUpdate,
+            app_resource.schedule,
             tween_systems.in_set(TweenSystemSet::ApplyTween),
         )
     }

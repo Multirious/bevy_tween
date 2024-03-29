@@ -107,10 +107,18 @@ use crate::{
 /// Plugin for using span tween
 #[derive(Debug)]
 pub struct SpanTweenPlugin;
+
 impl Plugin for SpanTweenPlugin {
+    /// # Panics
+    ///
+    /// Panics if [`TweenAppResource`] does not exist in world.
     fn build(&self, app: &mut App) {
+        let app_resource = app
+            .world
+            .get_resource::<crate::TweenAppResource>()
+            .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
-            PostUpdate,
+            app_resource.schedule,
             (
                 tick_span_tweener_system
                     .in_set(crate::TweenSystemSet::TickTweener),

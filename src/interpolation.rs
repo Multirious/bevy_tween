@@ -25,10 +25,18 @@ pub trait Interpolation {
 
 /// Plugin for [`EaseFunction`]
 pub struct EaseFunctionPlugin;
+
 impl Plugin for EaseFunctionPlugin {
+    /// # Panics
+    ///
+    /// Panics if [`TweenAppResource`] does not exist in world.
     fn build(&self, app: &mut App) {
+        let app_resource = app
+            .world
+            .get_resource::<crate::TweenAppResource>()
+            .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
-            PostUpdate,
+            app_resource.schedule,
             sample_interpolations_system::<EaseFunction>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
@@ -128,8 +136,12 @@ impl Interpolation for EaseFunction {
 pub struct EaseClosurePlugin;
 impl Plugin for EaseClosurePlugin {
     fn build(&self, app: &mut App) {
+        let app_resource = app
+            .world
+            .get_resource::<crate::TweenAppResource>()
+            .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
-            PostUpdate,
+            app_resource.schedule,
             sample_interpolations_system::<EaseClosure>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );

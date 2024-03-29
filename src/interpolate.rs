@@ -234,6 +234,9 @@ impl<I: 'static> Interpolator for dyn Fn(&mut I, f32) + Send + Sync + 'static {
 /// - [`ColorMaterial`] if `"bevy_sprite"` feature is enabled.
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
+    /// # Panics
+    ///
+    /// Panics if [`TweenAppResource`] does not exist in world.
     fn build(&self, app: &mut App) {
         app.add_tween_systems((
             tween::component_tween_system::<Translation>,
@@ -266,6 +269,9 @@ impl Plugin for DefaultInterpolatorsPlugin {
 /// [`ColorMaterial`]: bevy::sprite::ColorMaterial
 pub struct DefaultDynInterpolatorsPlugin;
 impl Plugin for DefaultDynInterpolatorsPlugin {
+    /// # Panics
+    ///
+    /// Panics if [`TweenAppResource`] does not exist in world.
     fn build(&self, app: &mut App) {
         app.add_tween_systems(
             tween::component_tween_system::<BoxedInterpolator<Transform>>,
