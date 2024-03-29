@@ -112,6 +112,8 @@ impl Plugin for SpanTweenPlugin {
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
+    ///
+    /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         let app_resource = app
             .world

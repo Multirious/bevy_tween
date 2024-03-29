@@ -237,6 +237,8 @@ impl Plugin for DefaultInterpolatorsPlugin {
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
+    ///
+    /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         app.add_tween_systems((
             tween::component_tween_system::<Translation>,
@@ -272,6 +274,8 @@ impl Plugin for DefaultDynInterpolatorsPlugin {
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
+    ///
+    /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         app.add_tween_systems(
             tween::component_tween_system::<BoxedInterpolator<Transform>>,

@@ -30,6 +30,8 @@ impl Plugin for EaseFunctionPlugin {
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
+    ///
+    /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         let app_resource = app
             .world
@@ -135,6 +137,11 @@ impl Interpolation for EaseFunction {
 /// [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
 pub struct EaseClosurePlugin;
 impl Plugin for EaseClosurePlugin {
+    /// # Panics
+    ///
+    /// Panics if [`TweenAppResource`] does not exist in world.
+    ///
+    /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         let app_resource = app
             .world
