@@ -902,23 +902,13 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
-///
-/// This trait is sealed and not meant to be implemented outside of the current crate.
-pub trait ChildSpanTweenBuilderExt<'b>: sealed::Sealed {
+pub trait ChildSpanTweenBuilderExt<'b> {
     /// Create the builder
-    #[deprecated(
-        since = "0.3.0",
-        note = "Renamed to `span_tweens` to reduce ambiguity"
-    )]
-    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
-        self.span_tweens()
-    }
-    /// Create a child builder for span tween.
-    fn span_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b>;
+    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b>;
 }
 
 impl<'b> ChildSpanTweenBuilderExt<'b> for ChildBuilder<'b> {
-    fn span_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
+    fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
         ChildSpanTweenBuilder {
             child_builder: self,
         }
@@ -994,23 +984,13 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
-///
-/// This trait is sealed and not meant to be implemented outside of the current crate.
-pub trait WorldChildSpanTweenBuilderExt<'b>: sealed::Sealed {
+pub trait WorldChildSpanTweenBuilderExt<'b> {
     /// Create the builder
-    #[deprecated(
-        since = "0.3.0",
-        note = "Renamed to `span_tweens` to reduce ambiguity"
-    )]
-    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
-        self.span_tweens()
-    }
-    /// Create a world child builder for span tween.
-    fn span_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
+    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
 }
 
 impl<'b> WorldChildSpanTweenBuilderExt<'b> for WorldChildBuilder<'b> {
-    fn span_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
+    fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
         WorldChildSpanTweenBuilder {
             world_child_builder: self,
         }
