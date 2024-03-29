@@ -235,6 +235,7 @@ use bevy::prelude::*;
 
 use crate::interpolate::Interpolator;
 use crate::tween_timer::AnimationDirection;
+use crate::BevyTweenRegisterSystems;
 
 mod systems;
 #[allow(deprecated)]
@@ -252,6 +253,7 @@ pub use systems::{
     resource_dyn_tween_system, resource_tween_system,
     resource_tween_system_full,
 };
+pub use systems::{tween_event_system, tween_event_taking_system};
 
 /// Skip a tween from tweening.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
@@ -613,4 +615,49 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
     fn from(value: &[Handle<A>; N]) -> Self {
         TargetAsset::assets(value.iter().cloned())
     }
+}
+
+/// Currently only just registers `tween_event_system::<()>`
+pub struct TweenEventPlugin;
+
+impl Plugin for TweenEventPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_tween_systems(systems::tween_event_system::<()>);
+    }
+}
+
+/// Fires [`TweenEvent`] whenever [`TweenProgressed`] and [`TweenEventData`] exist in the same entity.
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct TweenEventData<Data = ()>(pub Option<Data>)
+where
+    Data: Send + Sync + 'static;
+
+impl<Data: Send + Sync + 'static> TweenEventData<Data> {
+    /// Create new [`TweenEventData`] with custom user data.
+    pub fn new(data: Data) -> Self {
+        TweenEventData(Some(data))
+    }
+}
+
+impl TweenEventData<()> {
+    /// Create new [`TweenEventData`] with no custom user data.
+    pub fn no_data() -> Self {
+        TweenEventData(Some(()))
+    }
+}
+
+/// Fires whenever [`TweenProgressed`] and [`TweenEventData`] exist in the same entity.
+#[derive(Debug, Clone, PartialEq, Event, Reflect)]
+pub struct TweenEvent<Data = ()> {
+    /// Custom user data
+    pub data: Data,
+    /// Progress percentage of the tween
+    pub progressed: f32,
+    /// Sampled value of an interpolation.
+    pub interpolation_value: Option<f32>,
+    /// Direction
+    pub direction: AnimationDirection,
+    /// The entity
+    pub entity: Entity,
 }

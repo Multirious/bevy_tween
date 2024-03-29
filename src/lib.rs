@@ -177,6 +177,9 @@ pub use tween::resource_tween_system;
 #[allow(deprecated)]
 pub use tween::resource_tween_system_full;
 
+pub use tween::tween_event_system;
+pub use tween::tween_event_taking_system;
+
 /// Default plugins for using crate.
 ///
 /// Plugins:
@@ -193,7 +196,8 @@ impl PluginGroup for DefaultTweenPlugins {
             .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
-            .add(interpolation::EaseFunctionPlugin);
+            .add(interpolation::EaseFunctionPlugin)
+            .add(tween::TweenEventPlugin);
         #[cfg(feature = "span_tween")]
         let p = p.add(span_tween::SpanTweenPlugin);
         p
