@@ -199,8 +199,9 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|c| {
             c.span_tweens()
                 // [ bevy_tween_text ] ========================================
-                .jump(
-                    secs(0.),
+                .tween_exact(
+                    secs(0.)..=secs(0.),
+                    EaseFunction::Linear,
                     ComponentTween::new_target(
                         bevy_tween_text,
                         SpriteColor {
@@ -209,7 +210,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(5.),
                     EaseFunction::QuinticOut,
                     ComponentTween::new_target(
@@ -220,7 +221,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(9.),
                     EaseFunction::CircularOut,
                     ComponentTween::new_target(
@@ -231,7 +232,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(11.)..secs(11.5),
                     EaseFunction::SineOut,
                     ComponentTween::new_target(
@@ -242,7 +243,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(11.5)..secs(12.),
                     EaseFunction::SineIn,
                     ComponentTween::new_target(
@@ -253,7 +254,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(10.)..secs(12.),
                     EaseFunction::QuinticIn,
                     ComponentTween::new_target(
@@ -264,7 +265,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(11.)..secs(12.),
                     EaseFunction::QuinticIn,
                     ComponentTween::new_target(
@@ -276,8 +277,9 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ),
                 )
                 // [ square and triangle ] ====================================
-                .jump(
-                    secs(0.),
+                .tween_exact(
+                    secs(0.)..=secs(0.),
+                    EaseFunction::Linear,
                     ComponentTween::new_target_boxed(
                         [square, triangle],
                         interpolate::closure(
@@ -288,7 +290,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ),
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(9.),
                     EaseFunction::CircularOut,
                     ComponentTween::new_target(
@@ -299,7 +301,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(4.)..secs(12.),
                     EaseFunction::ExponentialInOut,
                     ComponentTween::new_target_boxed(
@@ -313,7 +315,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ),
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(12.),
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
@@ -324,7 +326,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(12.),
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
@@ -335,7 +337,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(4.),
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
@@ -346,7 +348,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(4.),
                     EaseFunction::ExponentialOut,
                     ComponentTween::new_target(
@@ -358,7 +360,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ),
                 )
                 // [ cornering ] ===============================================
-                .tween(
+                .tween_exact(
                     secs(6.)..secs(6.2),
                     EaseFunction::Linear,
                     ComponentTween::new_target(
@@ -369,7 +371,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(6.)..secs(6.2),
                     EaseFunction::Linear,
                     ComponentTween::new_target(
@@ -380,7 +382,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(9.8)..secs(10.),
                     EaseFunction::Linear,
                     ComponentTween::new_target(
@@ -391,7 +393,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(9.8)..secs(10.),
                     EaseFunction::Linear,
                     ComponentTween::new_target(
@@ -403,7 +405,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ),
                 )
                 // [ dot_grid ] ===============================================
-                .tween(
+                .tween_exact(
                     secs(0.)..secs(5.),
                     EaseFunction::QuinticOut,
                     ComponentTween::new_target(
@@ -414,7 +416,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                 )
-                .tween(
+                .tween_exact(
                     secs(11.5)..secs(12.),
                     EaseFunction::QuadraticInOut,
                     ComponentTween::new_target(

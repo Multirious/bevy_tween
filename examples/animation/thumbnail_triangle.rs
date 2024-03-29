@@ -73,7 +73,7 @@ fn snap_rotate(
     for i in 0..max {
         let max = max as f32;
         let i = i as f32;
-        c.span_tweens().tween(
+        c.span_tweens().tween_exact(
             Duration::from_secs_f32(i / max * secs)
                 ..Duration::from_secs_f32((i + 1.) / max * secs),
             ease,

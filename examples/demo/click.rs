@@ -110,14 +110,14 @@ fn click_spawn_circle(
                 ))
                 .with_children(|c| {
                     c.span_tweens()
-                        .tween(
+                        .tween_exact(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
                             ComponentTween::tweener_entity_boxed(
                                 my_interpolate::JustTranslateTo::end(end),
                             ),
                         )
-                        .tween(
+                        .tween_exact(
                             ..Duration::from_secs(1),
                             EaseFunction::BackIn,
                             ComponentTween::tweener_entity_boxed(
