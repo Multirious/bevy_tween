@@ -798,48 +798,19 @@ pub fn span_tweener_system(
     );
 }
 
-// #[doc(hidden)]
-// pub trait EntitySpawner: sealed::EntitySpawnerSealed {
-//     type CommandOutput<'c>
-//     where
-//         Self: 'c;
-//     fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_>;
-// }
-
-// impl<'a> EntitySpawner for ChildBuilder<'a> {
-//     type CommandOutput<'c> = bevy::ecs::system::EntityCommands<'c>
-//     where Self: 'c;
-
-//     fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
-//         self.spawn(bundle)
-//     }
-// }
-
-// impl<'a> EntitySpawner for WorldChildBuilder<'a> {
-//     type CommandOutput<'c> = EntityWorldMut<'c>
-//     where Self: 'c;
-
-//     fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
-//         self.spawn(bundle)
-//     }
-// }
-
-// mod sealed {
-//     use bevy::prelude::*;
-
-//     pub trait EntitySpawnerSealed {}
-
-//     impl<'a> EntitySpawnerSealed for ChildBuilder<'a> {}
-//     impl<'a> EntitySpawnerSealed for WorldChildBuilder<'a> {}
-// }
-
 /// Convenient builder for building multiple children tweens
+#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilder` instead")]
 pub struct ChildSpanTweenBuilder<'r, 'b> {
     child_builder: &'r mut ChildBuilder<'b>,
 }
 
+#[allow(deprecated)]
 impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween.
+    #[deprecated(
+        since = "0.3.0",
+        note = "Use `SpanTweensBuilder::tween_exact` instead"
+    )]
     pub fn tween<S, I, T>(
         &mut self,
         span: S,
@@ -857,6 +828,10 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 
     /// Create a new span tween then call a closure with the tween's
     /// [`EntityCommands`].
+    #[deprecated(
+        since = "0.3.0",
+        note = "Use `SpanTweensBuilder::tween_exact_and` instead"
+    )]
     pub fn tween_and<S, I, T, F>(
         &mut self,
         span: S,
@@ -883,6 +858,7 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween that's 0 seconds in duration which basically
     /// not tween anything but change the value instantly at some input time
     /// then call a closure with the tween's [`EntityCommands`].
+    #[deprecated(since = "0.3.0")]
     pub fn jump_and<T, F>(&mut self, at: Duration, bundle: T, f: F) -> &mut Self
     where
         T: Bundle,
@@ -893,6 +869,7 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 
     /// Create a new span tween that's 0 seconds in duration which basically
     /// not tween anything but change the value instantly at some input time.
+    #[deprecated(since = "0.3.0")]
     pub fn jump<T>(&mut self, at: Duration, bundle: T) -> &mut Self
     where
         T: Bundle,
@@ -902,11 +879,18 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
+#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilderExt` instead")]
+#[allow(deprecated)]
 pub trait ChildSpanTweenBuilderExt<'b> {
     /// Create the builder
+    #[deprecated(
+        since = "0.3.0",
+        note = "Use `SpanTweensBuilderExt::span_tweens` instead"
+    )]
     fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b>;
 }
 
+#[allow(deprecated)]
 impl<'b> ChildSpanTweenBuilderExt<'b> for ChildBuilder<'b> {
     fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b> {
         ChildSpanTweenBuilder {
@@ -916,12 +900,18 @@ impl<'b> ChildSpanTweenBuilderExt<'b> for ChildBuilder<'b> {
 }
 
 /// Convenient builder for building multiple children tweens
+#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilder` instead")]
 pub struct WorldChildSpanTweenBuilder<'r, 'b> {
     world_child_builder: &'r mut WorldChildBuilder<'b>,
 }
 
+#[allow(deprecated)]
 impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween.
+    #[deprecated(
+        since = "0.3.0",
+        note = "Use `SpanTweensBuilder::tween_exact` instead"
+    )]
     pub fn tween<S, I, T>(
         &mut self,
         span: S,
@@ -939,6 +929,10 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 
     /// Create a new span tween then call a closure with the tween's
     /// [`EntityWorldMut`].
+    #[deprecated(
+        since = "0.3.0",
+        note = "Use `SpanTweensBuilder::tween_exact_and` instead"
+    )]
     pub fn tween_and<S, I, T, F>(
         &mut self,
         span: S,
@@ -965,6 +959,7 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween that's 0 seconds in duration which basically
     /// not tween anything but change the value instantly at some input time
     /// then call a closure with the tween's [`EntityWorldMut`].
+    #[deprecated(since = "0.3.0")]
     pub fn jump_and<T, F>(&mut self, at: Duration, bundle: T, f: F) -> &mut Self
     where
         T: Bundle,
@@ -975,6 +970,7 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 
     /// Create a new span tween that's 0 seconds in duration which basically
     /// not tween anything but change the value instantly at some input time.
+    #[deprecated(since = "0.3.0")]
     pub fn jump<T>(&mut self, at: Duration, bundle: T) -> &mut Self
     where
         T: Bundle,
@@ -984,11 +980,18 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
+#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilderExt` instead")]
+#[allow(deprecated)]
 pub trait WorldChildSpanTweenBuilderExt<'b> {
     /// Create the builder
+    #[deprecated(
+        since = "0.3.0",
+        note = "Use `SpanTweensBuilderExt::span_tweens` instead"
+    )]
     fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
 }
 
+#[allow(deprecated)]
 impl<'b> WorldChildSpanTweenBuilderExt<'b> for WorldChildBuilder<'b> {
     fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b> {
         WorldChildSpanTweenBuilder {
@@ -1004,4 +1007,192 @@ mod sealed {
 
     impl<'a> Sealed for WorldChildBuilder<'a> {}
     impl<'a> Sealed for ChildBuilder<'a> {}
+
+    /// Type that can spawn an entity from a bundle
+    ///
+    /// This trait is sealed and not meant to be implemented outside of the current crate.
+    pub trait EntitySpawnerSealed: sealed::Sealed {
+        type CommandOutput<'c>
+        where
+            Self: 'c;
+        fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_>;
+    }
+
+    impl<'a> EntitySpawnerSealed for ChildBuilder<'a> {
+        type CommandOutput<'c> = bevy::ecs::system::EntityCommands<'c>
+        where Self: 'c;
+
+        fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
+            self.spawn(bundle)
+        }
+    }
+
+    impl<'a> EntitySpawnerSealed for WorldChildBuilder<'a> {
+        type CommandOutput<'c> = EntityWorldMut<'c>
+        where Self: 'c;
+
+        fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
+            self.spawn(bundle)
+        }
+    }
+}
+
+/// Type that can spawn an entity from a bundle
+///
+/// This trait is sealed and not meant to be implemented outside of the current crate.
+pub trait EntitySpawner: sealed::EntitySpawnerSealed {}
+impl<T> EntitySpawner for T where T: sealed::EntitySpawnerSealed {}
+
+/// Convenient builder for building multiple children span tweens
+pub struct SpanTweensBuilder<'r, E>
+where
+    E: EntitySpawner,
+{
+    entity_spawner: &'r mut E,
+    offset: Duration,
+}
+
+impl<'r, E> SpanTweensBuilder<'r, E>
+where
+    E: EntitySpawner,
+{
+    fn new(entity_spawner: &'r mut E) -> Self {
+        SpanTweensBuilder {
+            entity_spawner,
+            offset: Duration::ZERO,
+        }
+    }
+}
+
+impl<'r, E> SpanTweensBuilder<'r, E>
+where
+    E: EntitySpawner,
+{
+    /// Create a new span tween with the supplied span.
+    pub fn tween_exact(
+        &mut self,
+        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
+        interpolation: impl Bundle,
+        tween: impl Bundle,
+    ) -> &mut Self {
+        self.tween_exact_and(span, interpolation, tween, |_| {})
+    }
+
+    /// Create a new span tween with the supplied span then call a closure on it.
+    pub fn tween_exact_and(
+        &mut self,
+        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
+        interpolation: impl Bundle,
+        tween: impl Bundle,
+        f: impl FnOnce(E::CommandOutput<'_>),
+    ) -> &mut Self {
+        let commands = self.entity_spawner.spawn((
+            SpanTweenBundle::new(span),
+            interpolation,
+            tween,
+        ));
+        f(commands);
+        self
+    }
+
+    /// Create a new span tween with the supplied duration starting from
+    /// previous tween then call a closure on it.
+    ///
+    /// <div class="warning">
+    ///
+    /// The duration only starts from previous [`tween()`] or [`tween_and()`] calls,
+    /// not [`tween_exact()`] or [`tween_exact_and()`].
+    ///
+    /// </div>
+    ///
+    /// [`tween()`]: Self::tween
+    /// [`tween_and()`]: Self::tween_and
+    /// [`tween_exact()`]: Self::tween_exact
+    /// [`tween_exact_and()`]: Self::tween_exact_and
+    pub fn tween_and(
+        &mut self,
+        duration: Duration,
+        interpolation: impl Bundle,
+        tween: impl Bundle,
+        f: impl FnOnce(E::CommandOutput<'_>),
+    ) -> &mut Self {
+        let start = self.offset;
+        let end = self.offset + duration;
+        self.offset = end;
+        self.tween_exact_and(start..end, interpolation, tween, f)
+    }
+
+    /// Create a new span tween with the supplied duration starting from
+    /// previous tween.
+    ///
+    /// <div class="warning">
+    ///
+    /// The duration only starts from previous [`tween()`] or [`tween_and()`] calls,
+    /// not [`tween_exact()`] or [`tween_exact_and()`].
+    ///
+    /// </div>
+    ///
+    /// [`tween()`]: Self::tween
+    /// [`tween_and()`]: Self::tween_and
+    /// [`tween_exact()`]: Self::tween_exact
+    /// [`tween_exact_and()`]: Self::tween_exact_and
+    pub fn tween(
+        &mut self,
+        duration: Duration,
+        interpolation: impl Bundle,
+        tween: impl Bundle,
+    ) -> &mut Self {
+        let start = self.offset;
+        let end = self.offset + duration;
+        self.offset = end;
+        self.tween_exact_and(start..end, interpolation, tween, |_| {})
+    }
+
+    /// Get the internal offset used to create sequential tween.
+    pub fn offset(&self) -> Duration {
+        self.offset
+    }
+
+    #[allow(dead_code)] // TODO: probably get consistent name
+    fn go(&mut self, duration: Duration) -> &mut Self {
+        self.offset = duration;
+        self
+    }
+
+    #[allow(dead_code)] // TODO: probably get consistent name
+    fn delay(&mut self, duration: Duration) -> &mut Self {
+        self.offset += duration;
+        self
+    }
+
+    #[allow(dead_code)] // TODO: probably get consistent name
+    fn back(&mut self, duration: Duration) -> &mut Self {
+        self.offset = self.offset.saturating_sub(duration);
+        self
+    }
+}
+
+/// Extension trait that allows you to quickly construct [`SpanTweensBuilder`]
+///
+/// This trait is sealed and not meant to be implemented outside of the current crate.
+pub trait SpanTweensBuilderExt: sealed::Sealed {
+    /// Output from [`Self::span_tweens()`]
+    type Output<'a>
+    where
+        Self: 'a;
+    /// Create a [`SpanTweensBuilder`] from this thing
+    fn span_tweens(&mut self) -> Self::Output<'_>;
+}
+
+impl<E> SpanTweensBuilderExt for E
+where
+    E: EntitySpawner,
+{
+    type Output<'a> = SpanTweensBuilder<'a, Self>
+    where
+        Self: 'a;
+
+    fn span_tweens(&mut self) -> Self::Output<'_> {
+        SpanTweensBuilder::new(self)
+    }
 }

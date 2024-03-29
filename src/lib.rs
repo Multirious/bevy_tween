@@ -136,7 +136,8 @@ pub mod prelude {
     #[allow(deprecated)]
     pub use crate::span_tween::{
         span_tween, ChildSpanTweenBuilderExt, SpanTweenBundle,
-        SpanTweenerBundle, SpanTweenerEnded, WorldChildSpanTweenBuilderExt,
+        SpanTweenerBundle, SpanTweenerEnded, SpanTweensBuilderExt,
+        WorldChildSpanTweenBuilderExt,
     };
 
     #[cfg(feature = "bevy_asset")]
