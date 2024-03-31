@@ -14,8 +14,8 @@ use crate::{
 mod ease_functions;
 
 /// A trait for implementing interpolation algorithms.
-/// Use with [`sample_interpolations_system`]
-#[reflect_trait]
+///
+/// Currently only used for registering [`sample_interpolations_system`].
 pub trait Interpolation {
     /// Sample a value from this algorithm.
     /// Input should be between 0 to 1 and returns value that should be
@@ -48,7 +48,7 @@ impl Plugin for EaseFunctionPlugin {
 /// Easing functions put into an enum.
 #[allow(missing_docs)]
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
-#[reflect(Component, Interpolation)]
+#[reflect(Component)]
 pub enum EaseFunction {
     #[default]
     Linear,

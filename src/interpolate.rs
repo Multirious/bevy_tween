@@ -105,82 +105,82 @@ pub trait Interpolator: Send + Sync + 'static {
     fn interpolate(&self, item: &mut Self::Item, value: f32);
 }
 
-/// Reflect [`Interpolator`] trait
-#[allow(clippy::type_complexity)]
-pub struct ReflectInterpolator<Item> {
-    get_func: fn(&dyn Reflect) -> Option<&dyn Interpolator<Item = Item>>,
-    get_mut_func:
-        fn(&mut dyn Reflect) -> Option<&mut dyn Interpolator<Item = Item>>,
-    get_boxed_func:
-        fn(
-            Box<dyn Reflect>,
-        )
-            -> Result<Box<dyn Interpolator<Item = Item>>, Box<dyn Reflect>>,
-}
+// /// Reflect [`Interpolator`] trait
+// #[allow(clippy::type_complexity)]
+// pub struct ReflectInterpolator<Item> {
+//     get_func: fn(&dyn Reflect) -> Option<&dyn Interpolator<Item = Item>>,
+//     get_mut_func:
+//         fn(&mut dyn Reflect) -> Option<&mut dyn Interpolator<Item = Item>>,
+//     get_boxed_func:
+//         fn(
+//             Box<dyn Reflect>,
+//         )
+//             -> Result<Box<dyn Interpolator<Item = Item>>, Box<dyn Reflect>>,
+// }
 
-impl<Item> Clone for ReflectInterpolator<Item> {
-    #[inline]
-    fn clone(&self) -> ReflectInterpolator<Item> {
-        ReflectInterpolator {
-            get_func: Clone::clone(&self.get_func),
-            get_mut_func: Clone::clone(&self.get_mut_func),
-            get_boxed_func: Clone::clone(&self.get_boxed_func),
-        }
-    }
-}
-impl<Item> ReflectInterpolator<Item> {
-    /** Downcast a `&dyn Reflect` type to `&dyn Interpolator`.
+// impl<Item> Clone for ReflectInterpolator<Item> {
+//     #[inline]
+//     fn clone(&self) -> ReflectInterpolator<Item> {
+//         ReflectInterpolator {
+//             get_func: Clone::clone(&self.get_func),
+//             get_mut_func: Clone::clone(&self.get_mut_func),
+//             get_boxed_func: Clone::clone(&self.get_boxed_func),
+//         }
+//     }
+// }
+// impl<Item> ReflectInterpolator<Item> {
+//     /** Downcast a `&dyn Reflect` type to `&dyn Interpolator`.
 
-    If the type cannot be downcast, `None` is returned.*/
-    pub fn get<'a>(
-        &self,
-        reflect_value: &'a dyn Reflect,
-    ) -> Option<&'a dyn Interpolator<Item = Item>> {
-        (self.get_func)(reflect_value)
-    }
+//     If the type cannot be downcast, `None` is returned.*/
+//     pub fn get<'a>(
+//         &self,
+//         reflect_value: &'a dyn Reflect,
+//     ) -> Option<&'a dyn Interpolator<Item = Item>> {
+//         (self.get_func)(reflect_value)
+//     }
 
-    // /** Downcast a `&mut dyn Reflect` type to `&mut dyn Interpolator`.
+//     // /** Downcast a `&mut dyn Reflect` type to `&mut dyn Interpolator`.
 
-    // If the type cannot be downcast, `None` is returned.*/
-    // pub fn get_mut<'a>(
-    //     &self,
-    //     reflect_value: &'a mut dyn Reflect,
-    // ) -> Option<&'a mut dyn Interpolator<Item = Item>> {
-    //     (self.get_mut_func)(reflect_value)
-    // }
+//     // If the type cannot be downcast, `None` is returned.*/
+//     // pub fn get_mut<'a>(
+//     //     &self,
+//     //     reflect_value: &'a mut dyn Reflect,
+//     // ) -> Option<&'a mut dyn Interpolator<Item = Item>> {
+//     //     (self.get_mut_func)(reflect_value)
+//     // }
 
-    /** Downcast a `Box<dyn Reflect>` type to `Box<dyn Interpolator>`.
+//     /** Downcast a `Box<dyn Reflect>` type to `Box<dyn Interpolator>`.
 
-    If the type cannot be downcast, this will return `Err(Box<dyn Reflect>)`.*/
-    pub fn get_boxed(
-        &self,
-        reflect_value: Box<dyn Reflect>,
-    ) -> Result<Box<dyn Interpolator<Item = Item>>, Box<dyn Reflect>> {
-        (self.get_boxed_func)(reflect_value)
-    }
-}
+//     If the type cannot be downcast, this will return `Err(Box<dyn Reflect>)`.*/
+//     pub fn get_boxed(
+//         &self,
+//         reflect_value: Box<dyn Reflect>,
+//     ) -> Result<Box<dyn Interpolator<Item = Item>>, Box<dyn Reflect>> {
+//         (self.get_boxed_func)(reflect_value)
+//     }
+// }
 
-impl<Item, T> bevy::reflect::FromType<T> for ReflectInterpolator<Item>
-where
-    T: Interpolator<Item = Item> + Reflect,
-{
-    fn from_type() -> Self {
-        Self {
-            get_func: |reflect_value| {
-                <dyn Reflect>::downcast_ref::<T>(reflect_value)
-                    .map(|value| value as &dyn Interpolator<Item = Item>)
-            },
-            get_mut_func: |reflect_value| {
-                <dyn Reflect>::downcast_mut::<T>(reflect_value)
-                    .map(|value| value as &mut dyn Interpolator<Item = Item>)
-            },
-            get_boxed_func: |reflect_value| {
-                <dyn Reflect>::downcast::<T>(reflect_value)
-                    .map(|value| value as Box<dyn Interpolator<Item = Item>>)
-            },
-        }
-    }
-}
+// impl<Item, T> bevy::reflect::FromType<T> for ReflectInterpolator<Item>
+// where
+//     T: Interpolator<Item = Item> + Reflect,
+// {
+//     fn from_type() -> Self {
+//         Self {
+//             get_func: |reflect_value| {
+//                 <dyn Reflect>::downcast_ref::<T>(reflect_value)
+//                     .map(|value| value as &dyn Interpolator<Item = Item>)
+//             },
+//             get_mut_func: |reflect_value| {
+//                 <dyn Reflect>::downcast_mut::<T>(reflect_value)
+//                     .map(|value| value as &mut dyn Interpolator<Item = Item>)
+//             },
+//             get_boxed_func: |reflect_value| {
+//                 <dyn Reflect>::downcast::<T>(reflect_value)
+//                     .map(|value| value as Box<dyn Interpolator<Item = Item>>)
+//             },
+//         }
+//     }
+// }
 
 impl<I> Interpolator for Box<I>
 where
@@ -295,11 +295,11 @@ impl Plugin for DefaultDynInterpolatorsPlugin {
     }
 }
 
-type ReflectInterpolatorTransform = ReflectInterpolator<Transform>;
+// type ReflectInterpolatorTransform = ReflectInterpolator<Transform>;
 
 /// [`Interpolator`] for [`Transform`]'s translation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-#[reflect(InterpolatorTransform)]
+// #[reflect(InterpolatorTransform)]
 pub struct Translation {
     #[allow(missing_docs)]
     pub start: Vec3,
@@ -316,7 +316,7 @@ impl Interpolator for Translation {
 
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-#[reflect(InterpolatorTransform)]
+// #[reflect(InterpolatorTransform)]
 pub struct Rotation {
     #[allow(missing_docs)]
     pub start: Quat,
@@ -333,7 +333,7 @@ impl Interpolator for Rotation {
 
 /// [`Interpolator`] for [`Transform`]'s scale
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-#[reflect(InterpolatorTransform)]
+// #[reflect(InterpolatorTransform)]
 pub struct Scale {
     #[allow(missing_docs)]
     pub start: Vec3,
@@ -351,7 +351,7 @@ impl Interpolator for Scale {
 /// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
 /// Usually used for 2D rotation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-#[reflect(InterpolatorTransform)]
+// #[reflect(InterpolatorTransform)]
 pub struct AngleZ {
     #[allow(missing_docs)]
     pub start: f32,
@@ -367,13 +367,13 @@ impl Interpolator for AngleZ {
     }
 }
 
-#[cfg(feature = "bevy_sprite")]
-type ReflectInterpolatorSprite = ReflectInterpolator<Sprite>;
+// #[cfg(feature = "bevy_sprite")]
+// type ReflectInterpolatorSprite = ReflectInterpolator<Sprite>;
 
 /// [`Interpolator`] for [`Sprite`]'s color
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-#[reflect(InterpolatorSprite)]
+// #[reflect(InterpolatorSprite)]
 pub struct SpriteColor {
     #[allow(missing_docs)]
     pub start: Color,
@@ -390,14 +390,14 @@ impl Interpolator for SpriteColor {
     }
 }
 
-#[cfg(feature = "bevy_sprite")]
-type ReflectInterpolatorColorMaterial =
-    ReflectInterpolator<bevy::sprite::ColorMaterial>;
+// #[cfg(feature = "bevy_sprite")]
+// type ReflectInterpolatorColorMaterial =
+//     ReflectInterpolator<bevy::sprite::ColorMaterial>;
 
 /// [`Interpolator`] for [`Sprite`]'s [`ColorMaterial`]
 #[cfg(feature = "bevy_sprite")]
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
-#[reflect(InterpolatorColorMaterial)]
+// #[reflect(InterpolatorColorMaterial)]
 pub struct ColorMaterial {
     #[allow(missing_docs)]
     pub start: Color,
