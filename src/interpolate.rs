@@ -1,8 +1,8 @@
-//! Module containing the [`Interpolator`] trait and some basic built-in interpolator
+//! Module containing some basic built-in interpolator
 //!
 //! # Your own [`Interpolator`]
 //!
-//! There are a few amount of built-in [`Interpolator`] because this crate only
+//! There are a few amount of built-in interpolator because this crate only
 //! implemented the most common ones such as [`Translation`] or
 //! [`SpriteColor`] and some more.
 //! For others, you must implemented your own!
@@ -42,7 +42,20 @@
 //! ```
 //!
 //! If you've created a custom interpolator or a custom component/asset/resource,
-//! you may need to [register some systems](crate::tween#registering-systems).
+//! you may want to [register some systems](crate::tween#registering-systems).
+//!
+//! While it's recommended to use the [`Interpolator`] trait, it's not required
+//! to make your interpolators work in this crate. the [`Interpolator`] as of
+//! currently is only used for registering built-in simple interpolator systems
+//! such as [`component_tween_system`], [`resource_tween_system`], and
+//! [`asset_tween_system`]. Its next use is being object-safe for dynamic interpolator.
+//!
+//! If you need interpolators with more specific or complex system param, you
+//! have to define your own system!
+//!
+//! [`component_tween_system`]: crate::tween::component_tween_system
+//! [`resource_tween_system`]: crate::tween::resource_tween_system
+//! [`asset_tween_system`]: crate::tween::asset_tween_system
 
 use std::sync::Arc;
 
@@ -69,37 +82,15 @@ where
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
 ///
-/// # Examples
+/// Currently only used for registering systems
+/// and being object-safe for dyanmic interpolator.
 ///
-/// Interpolator for components. (The same goes for assets and resources!)
-/// ```no_run
-/// use bevy::prelude::*;
-/// use bevy_tween::prelude::*;
-///
-/// #[derive(Component)]
-/// struct MyComponent(f32);
-///
-/// struct InterpolateMyComponent {
-///     start: f32,
-///     end: f32,
-/// }
-///
-/// impl Interpolator for InterpolateMyComponent {
-///     // Your components/asset/resource here.
-///     type Item = MyComponent;
-///
-///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-///         item.0 = self.start.lerp(self.end, value);
-///     }
-/// }
-/// ```
-/// Then you'll need to [register some systems](crate::tween#registering-systems)
-/// to actually make bevy recognizes your interpolator.
+/// See [module-level documentation](self) for more info.
 pub trait Interpolator: Send + Sync + 'static {
     /// Type to be interpolated.
     type Item;
     /// Interpolate an item using `value` which is typically between 0 and 1.
-    /// The value should be already sampled from the [`Interpolation`]
+    /// The value should be already sampled from an [`Interpolation`]
     ///
     /// [`Interpolation`]: crate::interpolation::Interpolation
     fn interpolate(&self, item: &mut Self::Item, value: f32);

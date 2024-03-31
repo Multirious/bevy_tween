@@ -89,7 +89,7 @@
 //! }
 //! ```
 //!
-//! ## Usage
+//! ## Usages
 //!
 //! Run `cargo run --example span_tween` to see this in action.
 //! ```no_run

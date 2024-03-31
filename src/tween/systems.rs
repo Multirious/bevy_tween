@@ -26,7 +26,11 @@ pub fn component_tween_system_full<C, I>(
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
 ///
-/// The system uses generic for you to quickly make your interpolators work.
+/// The system uses generic with the trait [`Interpolator`] for you to quickly
+/// make your interpolators work. The trait is only necessary to be used with
+/// this built-in system.
+///
+/// # Examples
 ///
 /// ```no_run
 /// use bevy::prelude::*;
@@ -167,6 +171,47 @@ pub fn resource_tween_system_full<R, I>(
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
 /// value provided by [`TweenInterpolationValue`] component.
+///
+/// The system uses generic with the trait [`Interpolator`] for you to quickly
+/// make your interpolators work. The trait is only necessary to be used with
+/// this built-in system.
+///
+/// # Examples
+///
+/// ```no_run
+/// use bevy::prelude::*;
+/// use bevy_tween::prelude::*;
+///
+/// #[derive(Resource)]
+/// struct ScreenFade(f32);
+///
+/// struct InterpolateScreenFade {
+///     start: f32,
+///     end: f32,
+/// }
+///
+/// impl Interpolator for InterpolateScreenFade {
+///     type Item = ScreenFade;
+///
+///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///         item.0 = self.start.lerp(self.end, value);
+///     }
+/// }
+///
+/// fn main() {
+///     let mut app = App::new();
+///
+///     // Generic interpolator:
+///     app.add_tween_systems(
+///         bevy_tween::resource_tween_system::<InterpolateScreenFade>,
+///     );
+///
+///     // Dynamic interpolator:
+///     app.add_tween_systems(
+///         bevy_tween::resource_tween_system::<BoxedInterpolator<ScreenFade>>,
+///     );
+/// }
+/// ```
 #[allow(clippy::type_complexity)]
 pub fn resource_tween_system<I>(
     q_tween: Query<
@@ -222,6 +267,47 @@ pub fn asset_tween_system_full<A, I>(
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
 /// value provided by [`TweenInterpolationValue`] component.
+///
+/// The system uses generic with the trait [`Interpolator`] for you to quickly
+/// make your interpolators work. The trait is only necessary to be used with
+/// this built-in system.
+///
+/// # Examples
+///
+/// ```no_run
+/// use bevy::prelude::*;
+/// use bevy_tween::prelude::*;
+///
+/// #[derive(Asset, TypePath)]
+/// struct Rainbow(f32);
+///
+/// struct InterpolateRainbow {
+///     start: f32,
+///     end: f32,
+/// }
+///
+/// impl Interpolator for InterpolateRainbow {
+///     type Item = Rainbow;
+///
+///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///         item.0 = self.start.lerp(self.end, value);
+///     }
+/// }
+///
+/// fn main() {
+///     let mut app = App::new();
+///
+///     // Generic interpolator:
+///     app.add_tween_systems(
+///         bevy_tween::asset_tween_system::<InterpolateRainbow>,
+///     );
+///
+///     // Dynamic interpolator:
+///     app.add_tween_systems(
+///         bevy_tween::asset_tween_system::<BoxedInterpolator<Rainbow>>,
+///     );
+/// }
+/// ```
 #[cfg(feature = "bevy_asset")]
 #[allow(clippy::type_complexity)]
 pub fn asset_tween_system<I>(

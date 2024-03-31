@@ -9,6 +9,17 @@
 //! - [`TweenerMarker`]
 //! - [`TweenProgressed`]
 //! - [`TweenInterpolationValue`]
+//! - [`TweenEventData`]
+//!
+//! **Events**:
+//! - [`TweenEvent`]
+//!
+//! **Systems**
+//! - [`component_tween_system`]
+//! - [`resource_tween_system`]
+//! - [`asset_tween_system`]
+//! - [`tween_event_system`]
+//! - [`tween_event_taking_system`]
 //!
 //! Built-in supported targets are:
 //! - [`TargetComponent`]
@@ -647,7 +658,8 @@ impl TweenEventData<()> {
     }
 }
 
-/// Fires whenever [`TweenProgressed`] and [`TweenEventData`] exist in the same entity.
+/// Fires whenever [`TweenProgressed`] and [`TweenEventData`] exist in the same entity
+/// by [`tween_event_system`] or [`tween_event_taking_system`].
 #[derive(Debug, Clone, PartialEq, Event, Reflect)]
 pub struct TweenEvent<Data = ()> {
     /// Custom user data
