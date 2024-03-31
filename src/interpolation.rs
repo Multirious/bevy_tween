@@ -18,8 +18,8 @@ mod ease_functions;
 /// Currently only used for registering [`sample_interpolations_system`].
 pub trait Interpolation {
     /// Sample a value from this algorithm.
-    /// Input should be between 0 to 1 and returns value that should be
-    /// between 0 to 1
+    /// Input should be between 0–1 and returns value that should be
+    /// between 0–1
     fn sample(&self, v: f32) -> f32;
 }
 

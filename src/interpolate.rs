@@ -89,7 +89,7 @@ where
 pub trait Interpolator: Send + Sync + 'static {
     /// Type to be interpolated.
     type Item;
-    /// Interpolate an item using `value` which is typically between 0 and 1.
+    /// Interpolate an item using `value` which is typically between 0–1.
     /// The value should be already sampled from an [`Interpolation`]
     ///
     /// [`Interpolation`]: crate::interpolation::Interpolation
