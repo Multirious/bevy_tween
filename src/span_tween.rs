@@ -101,7 +101,7 @@ use crate::{
     interpolation::Interpolation,
     prelude::EaseFunction,
     tween::{SkipTweener, TweenProgress, TweenerMarker},
-    tween_timer::{self, AnimationDirection, TickResult, TweenTimer},
+    tween_timer::{self, AnimationDirection, TweenTimer},
 };
 
 /// Plugin for using span tween
@@ -135,7 +135,7 @@ impl Plugin for SpanTweenPlugin {
 }
 
 /// Span tweener
-#[derive(Debug, Default, Component, Clone, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, Default, Component, Clone, PartialEq, Reflect)]
 #[reflect(Component)]
 pub struct SpanTweener {
     /// The inner timer
@@ -249,14 +249,14 @@ impl TweenTimeSpan {
         Ok(Self::new_unchecked(min, max))
     }
 
-    fn quotient(&self, duration: Duration) -> DurationQuotient {
+    fn quotient(&self, secs: f32) -> DurationQuotient {
         let after_min = match self.min {
-            TimeBound::Inclusive(min) => duration >= min,
-            TimeBound::Exclusive(min) => duration > min,
+            TimeBound::Inclusive(min) => secs >= min.as_secs_f32(),
+            TimeBound::Exclusive(min) => secs > min.as_secs_f32(),
         };
         let before_max = match self.max {
-            TimeBound::Inclusive(max) => duration <= max,
-            TimeBound::Exclusive(max) => duration < max,
+            TimeBound::Inclusive(max) => secs <= max.as_secs_f32(),
+            TimeBound::Exclusive(max) => secs < max.as_secs_f32(),
         };
         match (after_min, before_max) {
             (true, true) => DurationQuotient::Inside,
@@ -364,14 +364,30 @@ impl SpanTweenerBundle {
     /// [`SpanTweenerBundle`] with the specified `repeat`
     /// setting the inner [`TweenTimer`]'s repeat to Some
     pub fn with_repeat(mut self, repeat: tween_timer::Repeat) -> Self {
-        self.span_tweener.timer.set_repeat(Some(repeat));
+        let timer = &mut self.span_tweener.timer;
+        match timer.repeat {
+            Some((_, repeat_style)) => {
+                timer.set_repeat(Some((repeat, repeat_style)));
+            }
+            None => {
+                timer.set_repeat(Some((repeat, RepeatStyle::default())));
+            }
+        }
         self
     }
 
     /// [`SpanTweenerBundle`] with the specified `repeat_style`
     /// setting the inner [`TweenTimer`]'s repeat_style to Some
     pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
-        self.span_tweener.timer.set_repeat_style(Some(repeat_style));
+        let timer = &mut self.span_tweener.timer;
+        match timer.repeat {
+            Some((repeat, _)) => {
+                timer.set_repeat(Some((repeat, repeat_style)));
+            }
+            None => {
+                timer.set_repeat(Some((Repeat::infinitely(), repeat_style)));
+            }
+        }
         self
     }
 
@@ -384,8 +400,12 @@ impl SpanTweenerBundle {
 
     /// [`SpanTweenerBundle`] with without repeat_style
     /// setting the inner [`TweenTimer`]'s repeat_style to None.
+    #[deprecated(since = "0.3.0")]
     pub fn without_repeat_style(mut self) -> Self {
-        self.span_tweener.timer.set_repeat_style(None);
+        match &mut self.span_tweener.timer.repeat {
+            Some((_, repeat_style)) => *repeat_style = RepeatStyle::WrapAround,
+            None => {}
+        }
         self
     }
 
@@ -501,10 +521,15 @@ impl QuickSpanTweenBundle {
         note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
     )]
     pub fn with_repeat(mut self, repeat: Repeat) -> Self {
-        self.span_tweener
-            .span_tweener
-            .timer
-            .set_repeat(Some(repeat));
+        let timer = &mut self.span_tweener.span_tweener.timer;
+        match timer.repeat {
+            Some((_, repeat_style)) => {
+                timer.set_repeat(Some((repeat, repeat_style)));
+            }
+            None => {
+                timer.set_repeat(Some((repeat, RepeatStyle::default())));
+            }
+        }
         self
     }
 
@@ -514,10 +539,15 @@ impl QuickSpanTweenBundle {
         note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
     )]
     pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
-        self.span_tweener
-            .span_tweener
-            .timer
-            .set_repeat_style(Some(repeat_style));
+        let timer = &mut self.span_tweener.span_tweener.timer;
+        match timer.repeat {
+            Some((repeat, _)) => {
+                timer.set_repeat(Some((repeat, repeat_style)));
+            }
+            None => {
+                timer.set_repeat(Some((Repeat::infinitely(), repeat_style)));
+            }
+        }
         self
     }
 
@@ -601,32 +631,21 @@ pub fn tick_span_tweener_system(
     mut q_span_tweener: Query<(Entity, &mut SpanTweener)>,
     mut ended_writer: EventWriter<SpanTweenerEnded>,
 ) {
-    let delta = time.delta();
+    let delta = time.delta_seconds();
     q_span_tweener.iter_mut().for_each(|(entity, mut tweener)| {
         let timer = &mut tweener.timer;
-        if timer.paused {
+        if timer.paused || timer.is_completed() {
             return;
         }
+        timer.tick(delta * timer.speed_scale.as_secs_f32());
 
-        if timer.is_completed() {
-            return;
-        }
-
-        let delta = Duration::from_secs_f32(
-            delta.as_secs_f32() * timer.speed_scale.as_secs_f32(),
-        );
-
-        let tick_result = timer.tick(delta, timer.direction);
-
-        match tick_result {
-            TickResult::Completed | TickResult::Repeated => {
-                ended_writer.send(SpanTweenerEnded {
-                    tweener: entity,
-                    current_direction: timer.direction,
-                    with_repeat: timer.repeat,
-                });
-            }
-            TickResult::Continue => {}
+        let n = timer.elasped().now_percentage;
+        if n <= 0. || 1. <= n {
+            ended_writer.send(SpanTweenerEnded {
+                tweener: entity,
+                current_direction: timer.direction,
+                with_repeat: timer.repeat.map(|r| r.0),
+            });
         }
     });
 }
@@ -671,23 +690,26 @@ pub fn span_tweener_system(
                 let previous_quotient =
                     tween_span.quotient(timer.elasped().previous);
 
-                let tween_local_min = Duration::ZERO;
-                let tween_local_max =
-                    tween_span.max().duration() - tween_span.min().duration();
-                let tween_local_elasped = timer
-                    .elasped()
-                    .now
-                    .saturating_sub(tween_span.min().duration())
-                    .min(tween_local_max);
-                let direction = if timer.elasped().repeat_style.is_none() {
-                    match timer.elasped().previous.cmp(&timer.elasped().now) {
-                        Ordering::Less => AnimationDirection::Forward,
-                        Ordering::Equal => timer.direction,
-                        Ordering::Greater => AnimationDirection::Backward,
-                    }
-                } else {
-                    timer.direction
-                };
+                let tween_span_max = tween_span.max().duration().as_secs_f32();
+                let tween_span_min = tween_span.min().duration().as_secs_f32();
+
+                let tween_local_min = 0.;
+                let tween_local_max = tween_span_max - tween_span_min;
+
+                let tween_local_elasped =
+                    (timer.elasped().now - tween_span_min).min(tween_local_max);
+
+                let direction = timer.direction;
+                // let direction = match timer
+                //     .elasped()
+                //     .previous
+                //     .total_cmp(&timer.elasped().now)
+                // {
+                //     Ordering::Less => AnimationDirection::Forward,
+                //     Ordering::Equal => timer.direction,
+                //     Ordering::Greater => AnimationDirection::Backward,
+                // };
+
                 // Look at this behemoth of edge case handling.
                 //
                 // The edge cases are the time when the tween are really short
@@ -699,11 +721,19 @@ pub fn span_tweener_system(
                 // multiple time in one frame. When that tween is this ridiculously
                 // fast or the game heavily lagged, I don't think that need to
                 // be accounted.
+                let repeated = if timer.elasped().now_percentage.floor() as i32
+                    != 0
+                    && !timer.is_completed()
+                {
+                    timer.repeat.map(|r| r.1)
+                } else {
+                    None
+                };
                 let new_tween_elasped = match (
                     direction,
                     previous_quotient,
                     now_quotient,
-                    timer.elasped().repeat_style,
+                    repeated,
                 ) {
                     (_, Inside, Inside, None) => Some(tween_local_elasped),
                     // -------------------------------------------------------
@@ -772,12 +802,8 @@ pub fn span_tweener_system(
                 };
                 match new_tween_elasped {
                     Some(elasped) => {
-                        let tween_local_max = tween_local_max.as_secs_f32();
                         let new_progressed = if tween_local_max > 0. {
-                            TweenProgress(
-                                elasped.as_secs_f32() / tween_local_max,
-                                direction,
-                            )
+                            TweenProgress(elasped / tween_local_max, direction)
                         } else {
                             match timer.direction {
                                 Forward => TweenProgress(1., direction),

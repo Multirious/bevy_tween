@@ -13,40 +13,30 @@ use std::time::Duration;
 use bevy::prelude::*;
 
 /// Contains the current elasped time and other useful information.
-/// This is better for handling with edge cases and retain timing accuracy.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
+/// This is better for handling with edge cases and retain timing accuracy per frame.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Reflect)]
 pub struct Elasped {
-    /// The current elasped time
-    pub now: Duration,
-    /// The previous elasped time
-    pub previous: Duration,
-    /// Some if the tween timer just ended and repeated in some way.
-    pub repeat_style: Option<RepeatStyle>,
+    /// The current elasped seconds
+    pub now: f32,
+    /// The current percentage of the timer length.
+    pub now_percentage: f32,
+    /// The previous elasped seconds
+    pub previous: f32,
+    /// The previous percentage of the timer length.
+    pub previous_percentage: f32,
 }
 
 impl Elasped {
-    /// Create new [`Elasped`]
-    pub fn new(elasped: Duration) -> Elasped {
-        Elasped {
-            now: elasped,
-            previous: elasped,
-            repeat_style: None,
-        }
+    fn update(&mut self, now: f32, now_percentage: f32) {
+        self.previous = self.now;
+        self.previous_percentage = self.now_percentage;
+        self.now = now;
+        self.now_percentage = now_percentage;
     }
 }
 
-/// Report the result after using the method [`TweenTimer::tick`]
-pub enum TickResult {
-    /// Result from ticking is normal.
-    Continue,
-    /// Result from ticking is timer has repeated.
-    Repeated,
-    /// Result from ticking is completed.
-    Completed,
-}
-
 /// Tween timer
-#[derive(Debug, Component, Clone, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, Component, Clone, PartialEq, Reflect)]
 #[reflect(Component)]
 pub struct TweenTimer {
     /// Stop the ticking system from updating this timer.
@@ -58,11 +48,11 @@ pub struct TweenTimer {
     /// Ticking direction of the current timer.
     pub direction: AnimationDirection,
     /// Set speed of the playback to `speed_scale` second per second.
+    /// This *is not* applied automatically by [Self::tick] but instead by specifc
+    /// tweener player implementation
     pub speed_scale: Duration,
-    /// Configure to repeat.
-    pub repeat: Option<Repeat>,
-    /// Configure to repeat with a style.
-    pub repeat_style: Option<RepeatStyle>,
+    /// Repeat configuration.
+    pub repeat: Option<(Repeat, RepeatStyle)>,
 }
 
 impl TweenTimer {
@@ -86,12 +76,6 @@ impl TweenTimer {
         self
     }
 
-    // pub fn set_elasped(&mut self, elasped: Duration) -> &mut Self {
-    //     self.elasped.now = elasped;
-    //     // self.elasped.now = elasped;
-    //     self
-    // }
-
     /// Set direction
     pub fn set_direction(
         &mut self,
@@ -102,17 +86,11 @@ impl TweenTimer {
     }
 
     /// Set repeat
-    pub fn set_repeat(&mut self, repeat: Option<Repeat>) -> &mut Self {
-        self.repeat = repeat;
-        self
-    }
-
-    /// Set repeat style
-    pub fn set_repeat_style(
+    pub fn set_repeat(
         &mut self,
-        repeat_style: Option<RepeatStyle>,
+        repeat: Option<(Repeat, RepeatStyle)>,
     ) -> &mut Self {
-        self.repeat_style = repeat_style;
+        self.repeat = repeat;
         self
     }
 
@@ -125,191 +103,93 @@ impl TweenTimer {
     /// Completed meaning that there will be no more ticking and all
     /// configured repeat is exhausted.
     pub fn is_completed(&self) -> bool {
-        let is_edge = match self.direction {
+        let at_edge = match self.direction {
             AnimationDirection::Forward => {
-                self.elasped.now >= self.length
-                    && self.elasped.now == self.elasped.previous
+                self.elasped.now_percentage >= 1.0
+                    && self.elasped.now_percentage
+                        == self.elasped.previous_percentage
             }
             AnimationDirection::Backward => {
-                self.elasped.now == Duration::ZERO
+                self.elasped.now_percentage <= 0.0
                     && self.elasped.now == self.elasped.previous
             }
         };
         match self.repeat {
-            Some(repeat) => repeat.exhausted() && is_edge,
-            None => is_edge,
+            Some((repeat, _)) => repeat.exhausted() && at_edge,
+            None => at_edge,
         }
     }
 
-    /// Update the `now` in [`Elasped`] for `duration` in a `direction`.
-    pub fn tick(
-        &mut self,
-        duration: Duration,
-        direction: AnimationDirection,
-    ) -> TickResult {
+    /// Update  [`Elasped`] for `secs`.
+    pub fn tick(&mut self, secs: f32) {
         use AnimationDirection::*;
         use RepeatStyle::*;
-        match (
-            direction,
-            self.repeat,
-            self.repeat_style.unwrap_or_default(),
-        ) {
-            (Forward, None, _) => {
-                if self.elasped.now >= self.length {
-                    self.elasped = Elasped {
-                        now: self.length,
-                        previous: self.elasped.previous,
-                        repeat_style: None,
-                    };
-                    return TickResult::Completed;
-                }
-                let new_now = (self.elasped.now + duration).min(self.length);
-                self.elasped = Elasped {
-                    now: new_now,
-                    previous: self.elasped.previous,
-                    repeat_style: None,
-                };
-                TickResult::Continue
-            }
-            (Backward, None, _) => {
-                if self.elasped.now == Duration::ZERO {
-                    self.elasped = Elasped {
-                        now: Duration::ZERO,
-                        previous: self.elasped.previous,
-                        repeat_style: None,
-                    };
-                    return TickResult::Completed;
-                }
-                let new_now = self.elasped.now.saturating_sub(duration);
-                self.elasped = Elasped {
-                    now: new_now,
-                    previous: self.elasped.previous,
-                    repeat_style: None,
-                };
-                TickResult::Continue
-            }
-            (Forward, Some(mut r), WrapAround) => {
-                let new_now = self.elasped.now + duration;
-                let will_wrap = new_now >= self.length;
-                if will_wrap && !r.try_advance_counter() {
-                    self.elasped = Elasped {
-                        now: self.length,
-                        previous: self.elasped.previous,
-                        repeat_style: None,
-                    };
-                    return TickResult::Completed;
-                }
-                let new_now = duration_rem(new_now, self.length);
-                self.elasped = Elasped {
-                    now: new_now,
-                    previous: self.elasped.previous,
-                    repeat_style: if will_wrap {
-                        Some(WrapAround)
-                    } else {
-                        None
-                    },
-                };
-                if will_wrap {
-                    TickResult::Repeated
-                } else {
-                    TickResult::Continue
-                }
-            }
-            (Backward, Some(mut r), WrapAround) => {
-                let will_wrap = duration > self.elasped.now;
-                if will_wrap && !r.try_advance_counter() {
-                    self.elasped = Elasped {
-                        now: Duration::ZERO,
-                        previous: self.elasped.previous,
-                        repeat_style: None,
-                    };
-                    return TickResult::Completed;
-                }
-                let new_now = if will_wrap {
-                    neg_duration_rem(duration - self.elasped.now, self.length)
-                } else {
-                    self.elasped.now - duration
-                };
-                self.elasped = Elasped {
-                    now: new_now,
-                    previous: self.elasped.previous,
-                    repeat_style: if will_wrap {
-                        Some(WrapAround)
-                    } else {
-                        None
-                    },
-                };
-                if will_wrap {
-                    TickResult::Repeated
-                } else {
-                    TickResult::Continue
-                }
-            }
-            (Forward, Some(mut r), PingPong) => {
-                let new_now = self.elasped.now + duration;
-                let will_pingpong = new_now > self.length;
-                if will_pingpong {
-                    if !r.try_advance_counter() {
-                        self.elasped = Elasped {
-                            now: self.length,
-                            previous: self.elasped.previous,
-                            repeat_style: None,
-                        };
-                        return TickResult::Completed;
+
+        let length = self.length.as_secs_f32();
+        let now = self.elasped.now;
+
+        assert!(!secs.is_nan(), "Tick seconds can't be Nan");
+
+        if secs == 0. {
+            self.elasped
+                .update(self.elasped.now, self.elasped.now_percentage);
+            return;
+        };
+
+        let new_elasped = match self.direction {
+            Forward => now + secs,
+            Backward => now - secs,
+        };
+
+        let p = period_percentage(new_elasped, length);
+
+        let repeat_count = p.floor() as i32;
+        let repeat_style = 'a: {
+            if let Some(r) = self.repeat.as_mut() {
+                if repeat_count != 0 {
+                    let advances = r.0.advance_counter_by(repeat_count);
+                    if advances != 0 {
+                        break 'a r.1;
                     }
-                    let new_now = neg_duration_rem(new_now, self.length);
-                    self.direction = Backward;
-                    self.elasped = Elasped {
-                        now: new_now,
-                        previous: self.elasped.previous,
-                        repeat_style: Some(PingPong),
-                    };
-                    TickResult::Repeated
-                } else {
-                    self.elasped = Elasped {
-                        now: new_now,
-                        previous: self.elasped.previous,
-                        repeat_style: None,
-                    };
-                    TickResult::Continue
                 }
             }
-            (Backward, Some(mut r), PingPong) => {
-                let will_pingpong = duration > self.elasped.now;
-                if will_pingpong {
-                    if !r.try_advance_counter() {
-                        self.elasped = Elasped {
-                            now: Duration::ZERO,
-                            previous: self.elasped.previous,
-                            repeat_style: None,
-                        };
-                        return TickResult::Completed;
-                    }
-                    let new_now =
-                        duration_rem(duration - self.elasped.now, self.length);
-                    self.direction = Forward;
-                    self.elasped = Elasped {
-                        now: new_now,
-                        previous: self.elasped.previous,
-                        repeat_style: Some(PingPong),
-                    };
-                    TickResult::Repeated
-                } else {
-                    self.elasped = Elasped {
-                        now: self.elasped.now - duration,
-                        previous: self.elasped.previous,
-                        repeat_style: None,
-                    };
-                    TickResult::Continue
-                }
+            if new_elasped > length {
+                self.elasped.update(length, 1.);
+            } else if new_elasped < 0. {
+                self.elasped.update(0., 0.);
+            } else {
+                self.elasped.update(new_elasped, p);
+            };
+            return;
+        };
+
+        let (new_elasped, new_direction) = match (self.direction, repeat_style)
+        {
+            (Forward, WrapAround) => {
+                (slope_up_saw_wave(new_elasped, length), Forward)
             }
-        }
+            (Backward, WrapAround) => {
+                (slope_down_saw_wave(new_elasped, length), Backward)
+            }
+            (Forward, PingPong) => (
+                slope_up_triangle_wave(new_elasped, length),
+                slope_up_triangle_wave_direction(repeat_count),
+            ),
+            (Backward, PingPong) => (
+                // ?? why in the hell this works
+                slope_up_triangle_wave(new_elasped, length),
+                slope_down_triangle_wave_direction(repeat_count),
+            ),
+        };
+        self.elasped.update(new_elasped, p);
+        self.direction = new_direction;
     }
 
     /// Set currently elasped now to `duration`.
-    pub fn set_tick(&mut self, duration: Duration) {
-        self.elasped.now = duration;
-        self.elasped.repeat_style = None;
+    pub fn set_tick(&mut self, secs: f32) {
+        self.elasped.now = secs;
+        self.elasped.now_percentage =
+            period_percentage(secs, self.length.as_secs_f32());
     }
 
     /// Update the `previous` in [`Elasped`] to `now` and set `repeat_style` to
@@ -317,7 +197,7 @@ impl TweenTimer {
     /// and doesn't need to be accounted for anymore.
     pub fn collaspe_elasped(&mut self) {
         self.elasped.previous = self.elasped.now;
-        self.elasped.repeat_style = None;
+        self.elasped.previous_percentage = self.elasped.now_percentage;
     }
 }
 
@@ -330,7 +210,6 @@ impl Default for TweenTimer {
             direction: Default::default(),
             speed_scale: Duration::from_secs(1),
             repeat: Default::default(),
-            repeat_style: Default::default(),
         }
     }
 }
@@ -343,16 +222,16 @@ pub enum Repeat {
     /// Repeat infinitely and count the times this timer has repeated
     InfinitelyCounted {
         /// The times this timer has repeated
-        times_repeated: usize,
+        times_repeated: i32,
     },
     /// Repeat for this amount of times
     Times {
         /// Times to repeat for
         #[allow(missing_docs)]
-        times: usize,
+        times: i32,
         /// Times this timer has repeated.
         #[allow(missing_docs)]
-        times_repeated: usize,
+        times_repeated: i32,
     },
 }
 
@@ -368,7 +247,7 @@ impl Repeat {
     }
 
     /// Repeat for this amount of times
-    pub fn times(times: usize) -> Repeat {
+    pub fn times(times: i32) -> Repeat {
         Repeat::Times {
             times,
             times_repeated: 0,
@@ -389,23 +268,36 @@ impl Repeat {
     }
 
     /// true if still can repeat, false otherwise.
+    #[deprecated(
+        since = "0.3.0",
+        note = "Use `advance_counter_by(1) == 1` instead"
+    )]
     pub fn try_advance_counter(&mut self) -> bool {
+        self.advance_counter_by(1) == 1
+    }
+
+    /// Returns actual advanced count.
+    pub fn advance_counter_by(&mut self, by: i32) -> i32 {
         match self {
-            Repeat::Infinitely => {}
+            Repeat::Infinitely => by,
             Repeat::InfinitelyCounted { times_repeated } => {
-                *times_repeated += 1;
+                *times_repeated += by;
+                by
             }
             Repeat::Times {
                 times,
                 times_repeated,
             } => {
-                if times_repeated >= times {
-                    return false;
+                let times_left = *times - *times_repeated;
+                if times_left == 0 {
+                    return 0;
                 }
-                *times_repeated += 1;
+                let times_to_advance =
+                    if times_left > by { by } else { times_left };
+                *times_repeated += times_to_advance;
+                times_to_advance
             }
         }
-        true
     }
 }
 
@@ -429,16 +321,38 @@ pub enum AnimationDirection {
     Backward,
 }
 
-fn duration_rem(duration: Duration, max: Duration) -> Duration {
-    let duration = duration.as_secs_f32();
-    let max = max.as_secs_f32();
-    let output = duration % max;
-    Duration::from_secs_f32(output)
+fn slope_up_saw_wave(x: f32, period: f32) -> f32 {
+    x.rem_euclid(period)
 }
 
-fn neg_duration_rem(neg_duration: Duration, max: Duration) -> Duration {
-    let neg_duration = -neg_duration.as_secs_f32();
-    let max = max.as_secs_f32();
-    let output = neg_duration.rem_euclid(max);
-    Duration::from_secs_f32(output)
+fn slope_down_saw_wave(x: f32, period: f32) -> f32 {
+    (-x).rem_euclid(period)
+}
+
+fn slope_up_triangle_wave(x: f32, period: f32) -> f32 {
+    ((x + period).rem_euclid(period * 2.) - period).abs()
+}
+
+// fn slope_down_triangle_wave(x: f32, period: f32) -> f32 {
+//     (x.rem_euclid(period * 2.) - period).abs()
+// }
+
+fn slope_up_triangle_wave_direction(repeats: i32) -> AnimationDirection {
+    if repeats.rem_euclid(2) == 0 {
+        AnimationDirection::Forward
+    } else {
+        AnimationDirection::Backward
+    }
+}
+
+fn slope_down_triangle_wave_direction(repeats: i32) -> AnimationDirection {
+    if repeats.rem_euclid(2) == 0 {
+        AnimationDirection::Backward
+    } else {
+        AnimationDirection::Forward
+    }
+}
+
+fn period_percentage(x: f32, period: f32) -> f32 {
+    x / period
 }
