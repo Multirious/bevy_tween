@@ -7,7 +7,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    tween::{TweenInterpolationValue, TweenProgressed},
+    tween::{TweenInterpolationValue, TweenProgress},
     TweenSystemSet,
 };
 
@@ -181,16 +181,16 @@ impl Interpolation for EaseClosure {
 }
 
 /// This system will automatically sample in each entities with a
-/// [`TweenProgressed`] component then insert [`TweenInterpolationValue`].
-/// Remove [`TweenInterpolationValue`] if [`TweenProgressed`] is removed.
+/// [`TweenProgress`] component then insert [`TweenInterpolationValue`].
+/// Remove [`TweenInterpolationValue`] if [`TweenProgress`] is removed.
 #[allow(clippy::type_complexity)]
 pub fn sample_interpolations_system<I>(
     mut commands: Commands,
     query: Query<
-        (Entity, &I, &TweenProgressed),
-        Or<(Changed<I>, Changed<TweenProgressed>)>,
+        (Entity, &I, &TweenProgress),
+        Or<(Changed<I>, Changed<TweenProgress>)>,
     >,
-    mut removed: RemovedComponents<TweenProgressed>,
+    mut removed: RemovedComponents<TweenProgress>,
 ) where
     I: Interpolation + Component,
 {

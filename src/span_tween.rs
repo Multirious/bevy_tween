@@ -100,7 +100,7 @@ use tween_timer::{Repeat, RepeatStyle};
 use crate::{
     interpolation::Interpolation,
     prelude::EaseFunction,
-    tween::{SkipTweener, TweenProgressed, TweenerMarker},
+    tween::{SkipTweener, TweenProgress, TweenerMarker},
     tween_timer::{self, AnimationDirection, TickResult, TweenTimer},
 };
 
@@ -631,7 +631,7 @@ pub fn tick_span_tweener_system(
     });
 }
 
-/// System for updating any span tweens to the correct [`TweenProgressed`]
+/// System for updating any span tweens to the correct [`TweenProgress`]
 /// by its span tweener then will call `collaspe_elasped` on the timer.
 pub fn span_tweener_system(
     mut commands: Commands,
@@ -640,7 +640,7 @@ pub fn span_tweener_system(
         (Entity, &mut SpanTweener, Option<&Children>),
         Without<SkipTweener>,
     >,
-    mut q_tween: Query<(Option<&mut TweenProgressed>, &TweenTimeSpan)>,
+    mut q_tween: Query<(Option<&mut TweenProgress>, &TweenTimeSpan)>,
 ) {
     use AnimationDirection::*;
     use DurationQuotient::*;
@@ -774,14 +774,14 @@ pub fn span_tweener_system(
                     Some(elasped) => {
                         let tween_local_max = tween_local_max.as_secs_f32();
                         let new_progressed = if tween_local_max > 0. {
-                            TweenProgressed(
+                            TweenProgress(
                                 elasped.as_secs_f32() / tween_local_max,
                                 direction,
                             )
                         } else {
                             match timer.direction {
-                                Forward => TweenProgressed(1., direction),
-                                Backward => TweenProgressed(0., direction),
+                                Forward => TweenProgress(1., direction),
+                                Backward => TweenProgress(0., direction),
                             }
                         };
                         match tween_progressed {
@@ -799,7 +799,7 @@ pub fn span_tweener_system(
                         if tween_progressed.is_some() {
                             commands
                                 .entity(tween_entity)
-                                .remove::<TweenProgressed>();
+                                .remove::<TweenProgress>();
                         }
                     }
                 }

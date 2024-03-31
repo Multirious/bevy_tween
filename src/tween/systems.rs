@@ -359,7 +359,7 @@ where
     asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
 }
 
-/// Fires [`TweenEvent`] with optional user data whenever [`TweenProgressed`]
+/// Fires [`TweenEvent`] with optional user data whenever [`TweenProgress`]
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// cloning the data.
 #[allow(clippy::type_complexity)]
@@ -368,7 +368,7 @@ pub fn tween_event_system<Data>(
         (
             Entity,
             &TweenEventData<Data>,
-            &TweenProgressed,
+            &TweenProgress,
             Option<&TweenInterpolationValue>,
         ),
         Without<SkipTween>,
@@ -392,7 +392,7 @@ pub fn tween_event_system<Data>(
     );
 }
 
-/// Fires [`TweenEvent`] with optional user data whenever [`TweenProgressed`]
+/// Fires [`TweenEvent`] with optional user data whenever [`TweenProgress`]
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// taking the data and leaves the value `None`.
 #[allow(clippy::type_complexity)]
@@ -401,7 +401,7 @@ pub fn tween_event_taking_system<Data>(
         (
             Entity,
             &mut TweenEventData<Data>,
-            &TweenProgressed,
+            &TweenProgress,
             Option<&TweenInterpolationValue>,
         ),
         Without<SkipTween>,

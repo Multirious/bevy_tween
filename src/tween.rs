@@ -7,7 +7,7 @@
 //! - [`SkipTween`]
 //! - [`SkipTweener`]
 //! - [`TweenerMarker`]
-//! - [`TweenProgressed`]
+//! - [`TweenProgress`]
 //! - [`TweenInterpolationValue`]
 //! - [`TweenEventData`]
 //!
@@ -276,14 +276,14 @@ pub struct SkipTween;
 #[reflect(Component)]
 pub struct SkipTweener;
 
-/// [`TweenProgressed`] should be automatically managed by a tweener.
+/// [`TweenProgress`] should be automatically managed by a tweener.
 /// An assigned tweener will take care of it.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Component, Reflect)]
 #[reflect(Component)]
-pub struct TweenProgressed(pub f32, pub AnimationDirection);
+pub struct TweenProgress(pub f32, pub AnimationDirection);
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
-/// [`EaseClosure`] when a tween has the component [`TweenProgressed`].
+/// [`EaseClosure`] when a tween has the component [`TweenProgress`].
 /// See [`sample_interpolations_system`]
 ///
 /// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
@@ -637,7 +637,7 @@ impl Plugin for TweenEventPlugin {
     }
 }
 
-/// Fires [`TweenEvent`] whenever [`TweenProgressed`] and [`TweenEventData`] exist in the same entity.
+/// Fires [`TweenEvent`] whenever [`TweenProgress`] and [`TweenEventData`] exist in the same entity.
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct TweenEventData<Data = ()>(pub Option<Data>)
@@ -658,7 +658,7 @@ impl TweenEventData<()> {
     }
 }
 
-/// Fires whenever [`TweenProgressed`] and [`TweenEventData`] exist in the same entity
+/// Fires whenever [`TweenProgress`] and [`TweenEventData`] exist in the same entity
 /// by [`tween_event_system`] or [`tween_event_taking_system`].
 #[derive(Debug, Clone, PartialEq, Event, Reflect)]
 pub struct TweenEvent<Data = ()> {

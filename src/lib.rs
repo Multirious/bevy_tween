@@ -256,7 +256,7 @@ impl Plugin for TweenCorePlugin {
         .register_type::<tween_timer::AnimationDirection>()
         .register_type::<tween_timer::Repeat>()
         .register_type::<tween_timer::RepeatStyle>()
-        .register_type::<tween::TweenProgressed>()
+        .register_type::<tween::TweenProgress>()
         .register_type::<tween::TweenerMarker>()
         .register_type::<tween::TweenInterpolationValue>();
     }
