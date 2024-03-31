@@ -1159,25 +1159,26 @@ where
         self.tween_exact_and(start..end, interpolation, tween, |_| {})
     }
 
-    /// Get the internal offset used to create sequential tween.
+    /// Get the internal offset used to neatly produce multiple tween in sequence.
     pub fn offset(&self) -> Duration {
         self.offset
     }
 
-    #[allow(dead_code)] // TODO: probably get consistent name
-    fn go(&mut self, duration: Duration) -> &mut Self {
+    /// Set the internal offset to the supplied duration.
+    pub fn go(&mut self, duration: Duration) -> &mut Self {
         self.offset = duration;
         self
     }
 
-    #[allow(dead_code)] // TODO: probably get consistent name
-    fn delay(&mut self, duration: Duration) -> &mut Self {
+    /// Move the internal offset forward, like a "delay".
+    #[doc(alias = "delay")]
+    pub fn forward(&mut self, duration: Duration) -> &mut Self {
         self.offset += duration;
         self
     }
 
-    #[allow(dead_code)] // TODO: probably get consistent name
-    fn back(&mut self, duration: Duration) -> &mut Self {
+    /// Move the internal offset backward.
+    pub fn backward(&mut self, duration: Duration) -> &mut Self {
         self.offset = self.offset.saturating_sub(duration);
         self
     }
