@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::prelude::*;
-// Prefer the shortcuts
+// This import isn't needed if you're using shortcuts.
 use bevy_tween::tween::TargetComponent;
 
 fn main() {
@@ -42,7 +42,7 @@ fn setup(mut commands: Commands) {
     let spacing_y = 100.;
     let offset_y = -(spacing_y * 3.) / 2.;
 
-    // Case 1:
+    // Everything in the same entity
     let y = 0. * spacing_y + offset_y;
     commands.spawn((
         sprite(start_x, y),
@@ -69,7 +69,7 @@ fn setup(mut commands: Commands) {
         // ComponentTween::new( ... ),
     ));
 
-    // Case 2:
+    // Sprite and tweener as parent, tweens as children.
     let y = 1. * spacing_y + offset_y;
     commands
         .spawn((
@@ -101,7 +101,7 @@ fn setup(mut commands: Commands) {
             ));
         });
 
-    // Case 3:
+    // Only Sprite as parent, tweener and tweens as children.
     let y = 2. * spacing_y + offset_y;
     commands.spawn(sprite(start_x, y)).with_children(|c| {
         c.spawn((
@@ -127,7 +127,7 @@ fn setup(mut commands: Commands) {
         ));
     });
 
-    // Case 4:
+    // Only Sprite as parent, tweens as children of a tweener.
     let y = 3. * spacing_y + offset_y;
     commands.spawn(sprite(start_x, y)).with_children(|c| {
         c.spawn(SpanTweenerBundle::new(Duration::from_secs(5)))
@@ -154,4 +154,32 @@ fn setup(mut commands: Commands) {
                 ));
             });
     });
+
+    // or with this completely detached
+    let y = 4. * spacing_y + offset_y;
+
+    let sprite = commands.spawn(sprite(start_x, y)).id();
+
+    commands
+        .spawn(SpanTweenerBundle::new(Duration::from_secs(5)))
+        .with_children(|c| {
+            c.spawn((
+                SpanTweenBundle::new(..Duration::from_secs(5)),
+                EaseFunction::QuadraticInOut,
+                ComponentTween::new_target(
+                    sprite,
+                    interpolate::Translation {
+                        start: Vec3::new(start_x, y, 0.),
+                        end: Vec3::new(end_x, y, 0.),
+                    },
+                ),
+                ComponentTween::new_target(
+                    sprite,
+                    interpolate::AngleZ {
+                        start: angle_start,
+                        end: angle_end,
+                    },
+                ),
+            ));
+        });
 }
