@@ -630,9 +630,9 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
 
 /// Default event and systems:
 /// - [`tween_event_system::<()>`], [`TweenEvent::<()>`]
-pub struct TweenEventPlugin;
+pub struct DefaultTweenEventPlugin;
 
-impl Plugin for TweenEventPlugin {
+impl Plugin for DefaultTweenEventPlugin {
     fn build(&self, app: &mut App) {
         app.add_tween_systems(systems::tween_event_system::<()>)
             .add_event::<TweenEvent>();
