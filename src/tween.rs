@@ -654,9 +654,19 @@ impl<Data: Send + Sync + 'static> TweenEventData<Data> {
 }
 
 impl TweenEventData<()> {
-    /// Create new [`TweenEventData`] with no custom user data.
-    pub fn no_data() -> Self {
+    /// Create new [`TweenEventData`] with no custom user data or simply `()`.
+    pub fn new_no_data() -> Self {
         TweenEventData(Some(()))
+    }
+}
+
+impl<Data> TweenEventData<Data>
+where
+    Data: Send + Sync + 'static,
+{
+    /// Create new [`TweenEventData`] with `None` value.
+    pub fn empty() -> Self {
+        TweenEventData(None)
     }
 }
 
