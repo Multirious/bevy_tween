@@ -1115,8 +1115,10 @@ where
         self.tween_exact_and(span, interpolation, tween, |_| {})
     }
 
+    // Due to current limitations in the borrow checker, `FnOnce` implies a `'static` lifetime.
+    // Privated until the limitation is lift.
     /// Create a new span tween with the supplied span then call a closure on it.
-    pub fn tween_exact_and(
+    fn tween_exact_and(
         &mut self,
         span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
         interpolation: impl Bundle,
@@ -1132,6 +1134,8 @@ where
         self
     }
 
+    // Due to current limitations in the borrow checker, `FnOnce` implies a `'static` lifetime.
+    // Privated until the limitation is lift.
     /// Create a new span tween with the supplied duration starting from
     /// previous tween then call a closure on it.
     ///
@@ -1146,7 +1150,7 @@ where
     /// [`tween_and()`]: Self::tween_and
     /// [`tween_exact()`]: Self::tween_exact
     /// [`tween_exact_and()`]: Self::tween_exact_and
-    pub fn tween_and(
+    fn tween_and(
         &mut self,
         duration: Duration,
         interpolation: impl Bundle,
@@ -1179,10 +1183,7 @@ where
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
-        let start = self.offset;
-        let end = self.offset + duration;
-        self.offset = end;
-        self.tween_exact_and(start..end, interpolation, tween, |_| {})
+        self.tween_and(duration, interpolation, tween, |_| {})
     }
 
     /// Get the internal offset used to neatly produce multiple tween in sequence.
