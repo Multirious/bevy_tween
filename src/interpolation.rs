@@ -1,8 +1,13 @@
 //! Module containing ease functions and related systems.
 //!
 //! # [`Interpolation`]
+//!
+//! **Built-in interpolations**:
 //! - [`EaseFunction`]
 //! - [`EaseClosure`]
+//!
+//! **Systems**:
+//! - [`sample_interpolations_system`]
 
 use bevy::prelude::*;
 

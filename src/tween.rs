@@ -2,6 +2,9 @@
 //!
 //! # [`Tween`]
 //!
+//! **Plugins**:
+//! - [`DefaultTweenEventPlugin`]
+//!
 //! **Components**:
 //! - [`Tween<T, I>`]
 //! - [`SkipTween`]
@@ -21,7 +24,7 @@
 //! - [`tween_event_system`]
 //! - [`tween_event_taking_system`]
 //!
-//! Built-in supported targets are:
+//! Built-in targets:
 //! - [`TargetComponent`]
 //! - [`TargetResource`]
 //! - [`TargetAsset`]

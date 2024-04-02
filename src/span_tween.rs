@@ -2,6 +2,9 @@
 //!
 //! # Span tween
 //!
+//! **Plugins**:
+//! - [`SpanTweenPlugin`]
+//!
 //! **Components**:
 //! - [`SpanTweener`]
 //! - [`TweenTimeSpan`]
@@ -12,6 +15,10 @@
 //!
 //! **Events**:
 //! - [`SpanTweenerEnded`]
+//!
+//! **Systems**:
+//! - [`span_tweener_system`]
+//! - [`tick_span_tweener_system`]
 //!
 //! ## Entity structure
 //!
@@ -25,7 +32,7 @@
 //!   let my_entity = commands.spawn(SpriteBundle::default()).id();
 //!   ```
 //!  
-//!   We can create a span tweener with span tween in 2 ways:
+//! We can create a span tweener by:
 //! - Span tween in the same entity as a span tweener.<br/>
 //!   This is the case where you might want to make a simple animation where
 //!   there's not many parameteres. Because an entity can only have one unique
@@ -88,6 +95,19 @@
 //!       ));
 //!      // spawn some more span tween if needed.
 //!      // c.spawn( ... );
+//!
+//!      // we can also uses the builder
+//!      c.span_tweens().tween(
+//!          Duration::from_secs(1),
+//!          EaseFunction::QuadraticOut,
+//!          ComponentTween::new_target(
+//!              my_entity,
+//!              interpolate::Translation {
+//!                  start: Vec3::new(0., 0., 0.),
+//!                  end: Vec3::new(0., 100., 0.),
+//!              }
+//!          )
+//!      );
 //!   });
 //!   ```
 //! - Also the above 2 combined will works just fine btw.
@@ -664,11 +684,7 @@ pub fn span_tweener_system(
         (Entity, &mut SpanTweener, Option<&Children>),
         Without<SkipTweener>,
     >,
-    mut q_tween: Query<(
-        Entity,
-        Option<&mut TweenProgress>,
-        &TweenTimeSpan,
-    )>,
+    mut q_tween: Query<(Entity, Option<&mut TweenProgress>, &TweenTimeSpan)>,
 ) {
     use AnimationDirection::*;
     use DurationQuotient::*;
@@ -750,7 +766,6 @@ pub fn span_tweener_system(
                         //     Forward => println!("forward"),
                         //     Backward => println!("backward"),
                         // }
-                        
                         Some(UseTime::Current)
                     },
                     // -------------------------------------------------------
@@ -1186,11 +1201,114 @@ where
     }
 }
 
+macro_rules! doc_entity_eq_fn {
+    () => {
+        "\
+        # fn entity_eq(world: &World, a: Entity, b: Entity) -> bool {
+        #     use bevy::utils::HashSet;
+        #     let a = world.entity(a);
+        #     let b = world.entity(b);
+        #
+        #     let a_components = a.archetype().components().collect::<HashSet<_>>();
+        #     let b_components = b.archetype().components().collect::<HashSet<_>>();
+        #
+        #     if a_components != b_components {
+        #         return false;
+        #     }
+        #
+        #     let registry = world.resource::<AppTypeRegistry>();
+        #     let registry = registry.read();
+        #
+        #     for component_id in a_components {
+        #         let components = world.components();
+        #         let type_id = components
+        #             .get_info(component_id)
+        #             .unwrap()
+        #             .type_id()
+        #             .unwrap();
+        #         let Some(reflect_component) =
+        #             registry.get_type_data::<ReflectComponent>(type_id)
+        #         else {
+        #             continue;
+        #         };
+        #
+        #         let a_component_reflected = reflect_component.reflect(a).unwrap();
+        #         let b_component_reflected = reflect_component.reflect(b).unwrap();
+        #
+        #         if !(a_component_reflected
+        #             .reflect_partial_eq(b_component_reflected)
+        #             .unwrap_or(false))
+        #         {
+        #             return false;
+        #         }
+        #     }
+        #     true
+        # }\
+        "
+    };
+}
+
+macro_rules! doc_builder_boilerplate {
+    () => {
+        "\
+        # use bevy_tween::prelude::*;
+        # use bevy::ecs::system::CommandQueue;
+        # use bevy::prelude::*;
+        #
+        # let mut app = App::new();
+        # app.add_plugins((MinimalPlugins, DefaultTweenPlugins));
+        #
+        # let mut queue = CommandQueue::default();
+        # let mut commands = Commands::new(&mut queue, &app.world);\
+        "
+    };
+}
+
 impl<'r, E> SpanTweensBuilder<'r, E>
 where
     E: EntitySpawner,
 {
     /// Create a new span tween with the supplied span.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    #[doc = doc_entity_eq_fn!()]
+    #[doc = doc_builder_boilerplate!()]
+    /// # let sprite =
+    /// commands
+    ///     .spawn((
+    ///         SpriteBundle::default(),
+    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///     ))
+    ///     .with_children(|c| {
+    ///         c.span_tweens().tween_exact(
+    ///             ..Duration::from_secs(1),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         );
+    ///
+    ///         // is exactly the same as
+    ///
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         ));
+    ///     })
+    /// #    .id();
+    /// #
+    /// # queue.apply(&mut app.world);
+    /// #
+    /// # let children = app.world.entity(sprite).get::<Children>().unwrap();
+    /// # assert!(entity_eq(&app.world, children[0], children[1]));
+    /// ```
     pub fn tween_exact(
         &mut self,
         span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
@@ -1253,15 +1371,73 @@ where
     ///
     /// <div class="warning">
     ///
-    /// The duration only starts from previous [`tween()`] or [`tween_and()`] calls,
-    /// not [`tween_exact()`] or [`tween_exact_and()`].
+    /// The duration only starts from previous [`tween()`] calls,
+    /// not [`tween_exact()`].
     ///
     /// </div>
     ///
+    /// # Examples
+    ///
+    /// ```rust
+    #[doc = doc_entity_eq_fn!()]
+    #[doc = doc_builder_boilerplate!()]
+    /// # let sprite =
+    /// commands
+    ///     .spawn((
+    ///         SpriteBundle::default(),
+    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///     ))
+    ///     .with_children(|c| {
+    ///         c.span_tweens()
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Translation {
+    ///                     start: Vec3::ZERO,
+    ///                     end: Vec3::ONE,
+    ///                 }),
+    ///             )
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Translation {
+    ///                     start: Vec3::ONE,
+    ///                     end: Vec3::ONE * 2.,
+    ///                 }),
+    ///             );
+    ///
+    ///         // is exactly the same as
+    ///
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         ));
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(
+    ///                 Duration::from_secs(1)..Duration::from_secs(2)
+    ///             ),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ONE,
+    ///                 end: Vec3::ONE * 2.,
+    ///             }),
+    ///         ));
+    ///     })
+    /// #    .id();
+    /// #
+    /// # queue.apply(&mut app.world);
+    /// #
+    /// # let children = app.world.entity(sprite).get::<Children>().unwrap();
+    /// # assert!(entity_eq(&app.world, children[0], children[2]));
+    /// # assert!(entity_eq(&app.world, children[1], children[3]));
+    /// ```
+    /// 
     /// [`tween()`]: Self::tween
-    /// [`tween_and()`]: Self::tween_and
     /// [`tween_exact()`]: Self::tween_exact
-    /// [`tween_exact_and()`]: Self::tween_exact_and
     pub fn tween(
         &mut self,
         duration: Duration,
@@ -1283,6 +1459,67 @@ where
     }
 
     /// Move the internal offset forward, like a "delay".
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    #[doc = doc_entity_eq_fn!()]
+    #[doc = doc_builder_boilerplate!()]
+    /// # let sprite =
+    /// commands
+    ///     .spawn((
+    ///         SpriteBundle::default(),
+    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///     ))
+    ///     .with_children(|c| {
+    ///         c.span_tweens()
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Translation {
+    ///                     start: Vec3::ZERO,
+    ///                     end: Vec3::ONE,
+    ///                 }),
+    ///             )
+    ///             .forward(Duration::from_secs(1))
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Translation {
+    ///                     start: Vec3::ONE,
+    ///                     end: Vec3::ONE * 2.,
+    ///                 }),
+    ///             );
+    ///
+    ///         // is exactly the same as
+    ///
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         ));
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(
+    ///                 Duration::from_secs(2)..Duration::from_secs(3)
+    ///             ),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ONE,
+    ///                 end: Vec3::ONE * 2.,
+    ///             }),
+    ///         ));
+    ///     })
+    /// #    .id();
+    /// #
+    /// # queue.apply(&mut app.world);
+    /// #
+    /// # let children = app.world.entity(sprite).get::<Children>().unwrap();
+    /// # assert!(entity_eq(&app.world, children[0], children[2]));
+    /// # assert!(entity_eq(&app.world, children[1], children[3]));
+    /// ```
     #[doc(alias = "delay")]
     pub fn forward(&mut self, duration: Duration) -> &mut Self {
         self.offset += duration;
@@ -1290,12 +1527,149 @@ where
     }
 
     /// Move the internal offset backward.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    #[doc = doc_entity_eq_fn!()]
+    #[doc = doc_builder_boilerplate!()]
+    /// # let sprite =
+    /// commands
+    ///     .spawn((
+    ///         SpriteBundle::default(),
+    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///     ))
+    ///     .with_children(|c| {
+    ///         c.span_tweens()
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Translation {
+    ///                     start: Vec3::ZERO,
+    ///                     end: Vec3::ONE,
+    ///                 }),
+    ///             )
+    ///             .backward(Duration::from_secs(1))
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Scale {
+    ///                     start: Vec3::ZERO,
+    ///                     end: Vec3::ONE,
+    ///                 }),
+    ///             );
+    ///
+    ///         // is exactly the same as
+    ///
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         ));
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Scale {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         ));
+    ///     })
+    /// #    .id();
+    /// #
+    /// # queue.apply(&mut app.world);
+    /// #
+    /// # let children = app.world.entity(sprite).get::<Children>().unwrap();
+    /// # assert!(entity_eq(&app.world, children[0], children[2]));
+    /// # assert!(entity_eq(&app.world, children[1], children[3]));
+    /// ```
     pub fn backward(&mut self, duration: Duration) -> &mut Self {
         self.offset = self.offset.saturating_sub(duration);
         self
     }
 
     /// Save the current offset to a variable.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    #[doc = doc_entity_eq_fn!()]
+    #[doc = doc_builder_boilerplate!()]
+    /// # let sprite =
+    /// commands
+    ///     .spawn((
+    ///         SpriteBundle::default(),
+    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///     ))
+    ///     .with_children(|c| {
+    ///         let mut middle = Duration::default();
+    ///         c.span_tweens()
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Translation {
+    ///                     start: Vec3::ZERO,
+    ///                     end: Vec3::ONE,
+    ///                 }),
+    ///             )
+    ///             .store_offset(&mut middle)
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Translation {
+    ///                     start: Vec3::ONE,
+    ///                     end: Vec3::ONE * 2.,
+    ///                 }),
+    ///             )
+    ///             .go(middle)
+    ///             .tween(
+    ///                 Duration::from_secs(1),
+    ///                 EaseFunction::Linear,
+    ///                 ComponentTween::tweener_entity(interpolate::Scale {
+    ///                     start: Vec3::ZERO,
+    ///                     end: Vec3::ONE,
+    ///                 }),
+    ///             );
+    ///
+    ///         // is exactly the same as
+    ///
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         ));
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(Duration::from_secs(1)..Duration::from_secs(2)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ONE,
+    ///                 end: Vec3::ONE * 2.,
+    ///             }),
+    ///         ));
+    ///         c.spawn((
+    ///             SpanTweenBundle::new(Duration::from_secs(1)..Duration::from_secs(2)),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Scale {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             }),
+    ///         ));
+    ///     })
+    /// #    .id();
+    /// #
+    /// # queue.apply(&mut app.world);
+    /// #
+    /// # let children = app.world.entity(sprite).get::<Children>().unwrap();
+    /// # assert!(entity_eq(&app.world, children[0], children[3]));
+    /// # assert!(entity_eq(&app.world, children[1], children[4]));
+    /// # assert!(entity_eq(&app.world, children[2], children[5]));
+    /// ```
     pub fn store_offset(&mut self, v: &mut Duration) -> &mut Self {
         *v = self.offset;
         self

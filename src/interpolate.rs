@@ -1,5 +1,17 @@
 //! Module containing some basic built-in interpolator
 //!
+//! **Plugins**:
+//! - [`DefaultDynInterpolatorsPlugin`]
+//! - [`DefaultInterpolatorsPlugin`]
+//!
+//! **Built-in interpolators**:
+//! - [`Translation`]
+//! - [`Rotation`]
+//! - [`Scale`]
+//! - [`AngleZ`]
+//! - [`SpriteColor`]
+//! - [`ColorMaterial`]
+//!
 //! # Your own [`Interpolator`]
 //!
 //! There are a few amount of built-in interpolator because this crate only
@@ -65,7 +77,7 @@ use bevy::prelude::*;
 use crate::utils::color_lerp;
 use crate::{tween, BevyTweenRegisterSystems};
 
-/// Alias for an `Interpolator` trait object.
+/// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 
 type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>;
