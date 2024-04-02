@@ -41,7 +41,8 @@ impl Plugin for EaseFunctionPlugin {
             app_resource.schedule,
             sample_interpolations_system::<EaseFunction>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
-        );
+        )
+        .register_type::<EaseFunction>();
     }
 }
 
