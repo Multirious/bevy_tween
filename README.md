@@ -42,10 +42,9 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   - Everything exists in the ECS world with no hidden structure, everything can
     be freely accessed.
   - Makes a very extendable system, thanks Bevy's ECS!
-  - There's no limitation on what can and can't be tween.
-    It's possible to many `Interpolator` (or `Lens` if you came from `bevy_tweening`)
-    tweening the same component because of the multi-entities architecture and
-    so is not limited by '1 component type per entitiy'.
+  - It's possible to have multiple `Interpolator` (or `Lens` if you came from `bevy_tweening`)
+    tweening the same component/asset/resource because of the multi-entities architecture and
+    so it is not limited by '1 component type per entitiy'.
 - Advanced timer. This crate has custom timer implementation.
   - Looping support.
   - 2 ways playback support.
