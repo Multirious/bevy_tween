@@ -121,20 +121,18 @@ impl TweenTimer {
     }
 
     /// Update  [`Elasped`] for `secs`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `secs` is Nan.
     pub fn tick(&mut self, secs: f32) {
         use AnimationDirection::*;
         use RepeatStyle::*;
 
-        let length = self.length.as_secs_f32();
-        let now = self.elasped.now;
-
         assert!(!secs.is_nan(), "Tick seconds can't be Nan");
 
-        if secs == 0. {
-            self.elasped
-                .update(self.elasped.now, self.elasped.now_percentage);
-            return;
-        };
+        let length = self.length.as_secs_f32();
+        let now = self.elasped.now;
 
         let new_elasped = match self.direction {
             Forward => now + secs,
@@ -147,6 +145,12 @@ impl TweenTimer {
         let repeat_style = 'a: {
             if let Some(r) = self.repeat.as_mut() {
                 if repeat_count != 0 {
+                    let repeat_count =
+                        if self.direction == AnimationDirection::Forward {
+                            repeat_count
+                        } else {
+                            -repeat_count
+                        };
                     let advances = r.0.advance_counter_by(repeat_count);
                     if advances != 0 {
                         break 'a r.1;
@@ -163,26 +167,19 @@ impl TweenTimer {
             return;
         };
 
-        let (new_elasped, new_direction) = match (self.direction, repeat_style)
-        {
-            (Forward, WrapAround) => {
-                (slope_up_saw_wave(new_elasped, length), Forward)
-            }
-            (Backward, WrapAround) => {
-                (slope_down_saw_wave(new_elasped, length), Backward)
-            }
-            (Forward, PingPong) => (
-                slope_up_triangle_wave(new_elasped, length),
-                slope_up_triangle_wave_direction(repeat_count),
-            ),
-            (Backward, PingPong) => (
-                // ?? why in the hell this works
-                slope_up_triangle_wave(new_elasped, length),
-                slope_down_triangle_wave_direction(repeat_count),
-            ),
+        let new_elasped = match repeat_style {
+            WrapAround => saw_wave(new_elasped, length),
+            PingPong => triangle_wave(new_elasped, length),
         };
         self.elasped.update(new_elasped, p);
-        self.direction = new_direction;
+
+        if repeat_style == RepeatStyle::PingPong {
+            let new_direction = match self.direction {
+                Forward => triangle_wave_direction(repeat_count),
+                Backward => backward_triangle_wave_direction(repeat_count),
+            };
+            self.direction = new_direction;
+        }
     }
 
     /// Set currently elasped now to `duration`.
@@ -321,23 +318,15 @@ pub enum AnimationDirection {
     Backward,
 }
 
-fn slope_up_saw_wave(x: f32, period: f32) -> f32 {
+fn saw_wave(x: f32, period: f32) -> f32 {
     x.rem_euclid(period)
 }
 
-fn slope_down_saw_wave(x: f32, period: f32) -> f32 {
-    (-x).rem_euclid(period)
-}
-
-fn slope_up_triangle_wave(x: f32, period: f32) -> f32 {
+fn triangle_wave(x: f32, period: f32) -> f32 {
     ((x + period).rem_euclid(period * 2.) - period).abs()
 }
 
-// fn slope_down_triangle_wave(x: f32, period: f32) -> f32 {
-//     (x.rem_euclid(period * 2.) - period).abs()
-// }
-
-fn slope_up_triangle_wave_direction(repeats: i32) -> AnimationDirection {
+fn triangle_wave_direction(repeats: i32) -> AnimationDirection {
     if repeats.rem_euclid(2) == 0 {
         AnimationDirection::Forward
     } else {
@@ -345,7 +334,7 @@ fn slope_up_triangle_wave_direction(repeats: i32) -> AnimationDirection {
     }
 }
 
-fn slope_down_triangle_wave_direction(repeats: i32) -> AnimationDirection {
+fn backward_triangle_wave_direction(repeats: i32) -> AnimationDirection {
     if repeats.rem_euclid(2) == 0 {
         AnimationDirection::Backward
     } else {
@@ -355,4 +344,268 @@ fn slope_down_triangle_wave_direction(repeats: i32) -> AnimationDirection {
 
 fn period_percentage(x: f32, period: f32) -> f32 {
     x / period
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn secs(secs: f32) -> Duration {
+        Duration::from_secs_f32(secs)
+    }
+
+    // fn eq(lhs: f32, rhs: f32) -> bool {
+    //     (lhs - rhs).abs() <= f32::EPSILON
+    // }
+
+    #[test]
+    fn timer() {
+        let mut timer = TweenTimer::new(secs(5.));
+
+        timer.tick(2.5);
+        assert_eq!(timer.elasped.now, 2.5);
+        assert_eq!(timer.elasped.now_percentage, 0.5);
+
+        timer.tick(2.5);
+        assert_eq!(timer.elasped.now, 5.);
+        assert_eq!(timer.elasped.now_percentage, 1.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 5.);
+        assert_eq!(timer.elasped.now_percentage, 1.);
+
+        timer.set_tick(0.);
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 3.);
+        assert_eq!(timer.elasped.now_percentage, 3. / 5.);
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 5.);
+        assert_eq!(timer.elasped.now_percentage, 1.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 5.);
+        assert_eq!(timer.elasped.now_percentage, 1.);
+    }
+
+    #[test]
+    fn timer_backward() {
+        let mut timer = TweenTimer::new(secs(5.));
+        timer.set_direction(AnimationDirection::Backward);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 0.);
+        assert_eq!(timer.elasped.now_percentage, 0.);
+
+        timer.set_tick(5.);
+
+        timer.tick(2.5);
+        assert_eq!(timer.elasped.now, 2.5);
+        assert_eq!(timer.elasped.now_percentage, 0.5);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 1.5);
+        assert_eq!(timer.elasped.now_percentage, 1.5 / 5.);
+
+        timer.tick(2.);
+        assert_eq!(timer.elasped.now, 0.);
+        assert_eq!(timer.elasped.now_percentage, 0.);
+    }
+
+    #[test]
+    fn timer_wrap_around() {
+        let mut timer = TweenTimer::new(secs(5.));
+        timer.set_repeat(Some((Repeat::Infinitely, RepeatStyle::WrapAround)));
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 1.);
+        assert_eq!(timer.elasped.now_percentage, 1. / 5.);
+
+        timer.tick(2.5);
+        assert_eq!(timer.elasped.now, 3.5);
+        assert_eq!(timer.elasped.now_percentage, 3.5 / 5.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 4.5);
+        assert_eq!(timer.elasped.now_percentage, 4.5 / 5.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 0.5);
+        assert_eq!(timer.elasped.now_percentage, 5.5 / 5.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 1.5);
+        assert_eq!(timer.elasped.now_percentage, 1.5 / 5.);
+
+        timer.tick(3.5);
+        assert_eq!(timer.elasped.now, 0.);
+        assert_eq!(timer.elasped.now_percentage, 5. / 5.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 1.);
+        assert_eq!(timer.elasped.now_percentage, 1. / 5.);
+    }
+
+    #[test]
+    fn timer_backward_wrap_around() {
+        let mut timer = TweenTimer::new(secs(5.));
+        timer
+            .set_repeat(Some((Repeat::Infinitely, RepeatStyle::WrapAround)))
+            .set_direction(AnimationDirection::Backward);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 4.);
+        assert_eq!(timer.elasped.now_percentage, -1. / 5.);
+
+        timer.tick(2.5);
+        assert_eq!(timer.elasped.now, 1.5);
+        assert_eq!(timer.elasped.now_percentage, 1.5 / 5.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 0.5);
+        assert_eq!(timer.elasped.now_percentage, 0.5 / 5.);
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 4.5);
+        assert_eq!(timer.elasped.now_percentage, -0.5 / 5.);
+    }
+
+    #[test]
+    fn timer_wrap_around_times() {
+        let mut timer = TweenTimer::new(secs(5.));
+        timer.set_repeat(Some((Repeat::times(2), RepeatStyle::WrapAround)));
+
+        timer.tick(4.);
+        assert_eq!(timer.elasped.now, 4.);
+        assert_eq!(timer.elasped.now_percentage, 4. / 5.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 0
+            },
+        );
+
+        timer.tick(4.);
+        assert_eq!(timer.elasped.now, 3.);
+        assert_eq!(timer.elasped.now_percentage, 8. / 5.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 1
+            },
+        );
+
+        timer.tick(4.);
+        assert_eq!(timer.elasped.now, 2.);
+        assert_eq!(timer.elasped.now_percentage, 7. / 5.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 2
+            },
+        );
+
+        timer.tick(4.);
+        assert_eq!(timer.elasped.now, 5.);
+        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 2
+            },
+        );
+
+        timer.tick(1.);
+        assert_eq!(timer.elasped.now, 5.);
+        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 2
+            },
+        );
+    }
+
+    #[test]
+    fn timer_backward_wrap_around_times() {
+        let mut timer = TweenTimer::new(secs(5.));
+        timer
+            .set_repeat(Some((Repeat::times(2), RepeatStyle::WrapAround)))
+            .set_direction(AnimationDirection::Backward);
+
+        timer.tick(4.);
+        assert_eq!(timer.elasped.now, 1.);
+        assert_eq!(timer.elasped.now_percentage, -4. / 5.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 1
+            },
+        );
+
+        timer.tick(4.);
+        assert_eq!(timer.elasped.now, 2.);
+        assert_eq!(timer.elasped.now_percentage, -3. / 5.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 2
+            },
+        );
+
+        timer.tick(4.);
+        assert_eq!(timer.elasped.now, 0.);
+        assert_eq!(timer.elasped.now_percentage, 0. / 5.);
+        assert_eq!(
+            timer.repeat.unwrap().0,
+            Repeat::Times {
+                times: 2,
+                times_repeated: 2
+            },
+        );
+    }
+
+    #[test]
+    fn timer_ping_pong() {
+        let mut timer = TweenTimer::new(secs(5.));
+        timer.set_repeat(Some((Repeat::Infinitely, RepeatStyle::PingPong)));
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 3.);
+        assert_eq!(timer.elasped.now_percentage, 3. / 5.);
+        assert_eq!(timer.direction, AnimationDirection::Forward);
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 4.);
+        assert_eq!(timer.elasped.now_percentage, 6. / 5.);
+        assert_eq!(timer.direction, AnimationDirection::Backward);
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 1.);
+        assert_eq!(timer.elasped.now_percentage, 1. / 5.);
+        assert_eq!(timer.direction, AnimationDirection::Backward);
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 2.);
+        assert_eq!(timer.elasped.now_percentage, -2. / 5.);
+        assert_eq!(timer.direction, AnimationDirection::Forward);
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 5.);
+        assert_eq!(timer.elasped.now_percentage, 5. / 5.);
+        assert_eq!(timer.direction, AnimationDirection::Backward);
+
+        timer.tick(3.);
+        assert_eq!(timer.elasped.now, 2.);
+        assert_eq!(timer.elasped.now_percentage, 2. / 5.);
+        assert_eq!(timer.direction, AnimationDirection::Backward);
+    }
 }
