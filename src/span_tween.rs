@@ -1294,6 +1294,12 @@ where
         self.offset = self.offset.saturating_sub(duration);
         self
     }
+
+    /// Save the current offset to a variable.
+    pub fn store_offset(&mut self, v: &mut Duration) -> &mut Self {
+        *v = self.offset;
+        self
+    }
 }
 
 /// Extension trait that allows you to quickly construct [`SpanTweensBuilder`]
