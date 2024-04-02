@@ -378,13 +378,12 @@ pub fn tween_event_system<Data>(
     Data: Clone + Send + Sync + 'static,
 {
     q_tween_event_data.iter().for_each(
-        |(entity, event_data, progressed, interpolation_value)| {
+        |(entity, event_data, progress, interpolation_value)| {
             if let Some(data) = event_data.0.as_ref() {
                 event_writer.send(TweenEvent {
                     data: data.clone(),
-                    progressed: progressed.0,
+                    progress: *progress,
                     interpolation_value: interpolation_value.map(|v| v.0),
-                    direction: progressed.1,
                     entity,
                 });
             }
@@ -411,13 +410,12 @@ pub fn tween_event_taking_system<Data>(
     Data: Send + Sync + 'static,
 {
     q_tween_event_data.iter_mut().for_each(
-        |(entity, mut event_data, progressed, interpolation_value)| {
+        |(entity, mut event_data, progress, interpolation_value)| {
             if let Some(data) = event_data.0.take() {
                 event_writer.send(TweenEvent {
                     data,
-                    progressed: progressed.0,
+                    progress: *progress,
                     interpolation_value: interpolation_value.map(|v| v.0),
-                    direction: progressed.1,
                     entity,
                 });
             }
