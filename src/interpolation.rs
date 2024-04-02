@@ -194,8 +194,12 @@ pub fn sample_interpolations_system<I>(
 ) where
     I: Interpolation + Component,
 {
-    query.iter().for_each(|(entity, interpolator, progressed)| {
-        let value = interpolator.sample(progressed.0);
+    query.iter().for_each(|(entity, interpolator, progress)| {
+        if progress.now_percentage.is_nan() {
+            return;
+        }
+        let value = interpolator.sample(progress.now_percentage.clamp(0., 1.));
+
         commands
             .entity(entity)
             .insert(TweenInterpolationValue(value));
