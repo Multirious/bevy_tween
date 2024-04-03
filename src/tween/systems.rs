@@ -92,63 +92,81 @@ pub fn apply_component_tween_system<I>(
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component,
 {
-    q_tween.iter().for_each(|(entity, tween, ease_value)| {
-        let target = match &tween.target {
+    fn get_singular_target(
+        entity: Entity,
+        target: &TargetComponent,
+        q_tweener: &Query<(Option<&Parent>, Has<TweenerMarker>)>,
+    ) -> Option<Entity> {
+        match target {
             TargetComponent::TweenerEntity => match q_tweener.get(entity) {
-                Ok((_, true)) => entity,
+                Ok((_, true)) => Some(entity),
                 Ok((Some(this_parent), false)) => {
                     match q_tweener.get(this_parent.get()) {
-                        Ok((_, true)) => this_parent.get(),
-                        _ => return,
+                        Ok((_, true)) => Some(this_parent.get()),
+                        _ => None,
                     }
                 }
-                _ => return,
+                _ => None,
             },
             TargetComponent::TweenerParent => match q_tweener.get(entity) {
-                Ok((Some(this_parent), true)) => this_parent.get(),
+                Ok((Some(this_parent), true)) => Some(this_parent.get()),
                 Ok((Some(this_parent), false)) => {
                     match q_tweener.get(this_parent.get()) {
                         Ok((Some(tweener_parent), true)) => {
-                            tweener_parent.get()
+                            Some(tweener_parent.get())
                         }
-                        _ => return,
+                        _ => None,
                     }
                 }
-                _ => return,
+                _ => None,
             },
-            TargetComponent::Entity(e) => *e,
+            TargetComponent::Entity(e) => Some(*e),
+            TargetComponent::Entities(_) => panic!("Should not reach this"),
+        }
+    }
+    q_tween
+        .iter()
+        .for_each(|(entity, tween, ease_value)| match &tween.target {
             TargetComponent::Entities(e) => {
-                for &target in e {
-                    let mut target_component = match q_component.get_mut(target)
-                    {
-                        Ok(target_component) => target_component,
-                        Err(e) => {
-                            warn!(
-                                "{} query error: {e}",
-                                type_name::<ComponentTween<I>>()
-                            );
-                            continue;
-                        }
-                    };
+                e.iter().for_each(|target| {
+                    let mut target_component =
+                        match q_component.get_mut(*target) {
+                            Ok(target_component) => target_component,
+                            Err(e) => {
+                                warn!(
+                                    "{} query error: {e}",
+                                    type_name::<ComponentTween<I>>()
+                                );
+                                return;
+                            }
+                        };
                     tween
                         .interpolator
                         .interpolate(&mut target_component, ease_value.0);
-                }
-                return;
+                });
             }
-        };
+            _ => {
+                let Some(target) =
+                    get_singular_target(entity, &tween.target, &q_tweener)
+                else {
+                    return;
+                };
 
-        let mut target_component = match q_component.get_mut(target) {
-            Ok(target_component) => target_component,
-            Err(e) => {
-                warn!("{} query error: {e}", type_name::<ComponentTween<I>>());
-                return;
+                let mut target_component = match q_component.get_mut(target) {
+                    Ok(target_component) => target_component,
+                    Err(e) => {
+                        warn!(
+                            "{} query error: {e}",
+                            type_name::<ComponentTween<I>>()
+                        );
+                        return;
+                    }
+                };
+                tween
+                    .interpolator
+                    .interpolate(&mut target_component, ease_value.0);
             }
-        };
-        tween
-            .interpolator
-            .interpolate(&mut target_component, ease_value.0);
-    })
+        })
 }
 
 /// System alias for [`component_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
