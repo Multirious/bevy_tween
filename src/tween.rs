@@ -727,7 +727,7 @@ where
     Data: Send + Sync + 'static,
 {
     /// Create new [`TweenEventData`] with `None` value.
-    pub fn empty() -> Self {
+    pub fn none() -> Self {
         TweenEventData(None)
     }
 }
