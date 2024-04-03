@@ -100,6 +100,15 @@ required-features = [
 ]
 
 [[example]]
+name = "event"
+path = "examples/demo/event.rs"
+required-features = [
+  "bevy_sprite",
+  "bevy_asset",
+  "span_tween",
+]
+
+[[example]]
 name = "span_tween"
 path = "examples/span_tween/span_tween.rs"
 required-features = [
