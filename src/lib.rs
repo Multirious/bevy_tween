@@ -141,6 +141,8 @@ pub mod prelude {
         WorldChildSpanTweenBuilderExt,
     };
 
+    pub use crate::tween::{TweenEvent, TweenEventData};
+
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
     #[cfg(feature = "bevy_asset")]
