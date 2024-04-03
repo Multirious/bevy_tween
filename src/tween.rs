@@ -257,17 +257,18 @@ mod systems;
 #[allow(deprecated)]
 #[cfg(feature = "bevy_asset")]
 pub use systems::{
-    asset_dyn_tween_system, asset_tween_system, asset_tween_system_full,
+    apply_asset_tween_system, asset_dyn_tween_system, asset_tween_system,
+    asset_tween_system_full,
 };
 #[allow(deprecated)]
 pub use systems::{
-    component_dyn_tween_system, component_tween_system,
-    component_tween_system_full,
+    apply_component_tween_system, component_dyn_tween_system,
+    component_tween_system, component_tween_system_full,
 };
 #[allow(deprecated)]
 pub use systems::{
-    resource_dyn_tween_system, resource_tween_system,
-    resource_tween_system_full,
+    apply_resource_tween_system, resource_dyn_tween_system,
+    resource_tween_system, resource_tween_system_full,
 };
 pub use systems::{tween_event_system, tween_event_taking_system};
 

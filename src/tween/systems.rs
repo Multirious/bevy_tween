@@ -20,7 +20,17 @@ pub fn component_tween_system_full<C, I>(
     C: Component,
     I: Interpolator<Item = C> + Send + Sync + 'static,
 {
-    component_tween_system(q_tweener, q_tween, q_component);
+    apply_component_tween_system(q_tweener, q_tween, q_component);
+}
+
+/// Alias for [`apply_component_tween_system`] and may contains more systems
+/// in the future.
+pub fn component_tween_system<I>() -> SystemConfigs
+where
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Component,
+{
+    apply_component_tween_system::<I>.into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
@@ -67,7 +77,7 @@ pub fn component_tween_system_full<C, I>(
 /// }
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn component_tween_system<I>(
+pub fn apply_component_tween_system<I>(
     q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
     q_tween: Query<
         (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
@@ -146,7 +156,8 @@ pub fn component_dyn_tween_system<C>() -> SystemConfigs
 where
     C: Component,
 {
-    component_tween_system::<Box<dyn Interpolator<Item = C>>>.into_configs()
+    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>>
+        .into_configs()
 }
 
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
@@ -166,7 +177,17 @@ pub fn resource_tween_system_full<R, I>(
     R: Resource,
     I: Interpolator<Item = R> + Send + Sync + 'static,
 {
-    resource_tween_system(q_tween, resource);
+    apply_resource_tween_system(q_tween, resource);
+}
+
+/// Alias for [`apply_resource_tween_system`] and may contains more systems
+/// in the future.
+pub fn resource_tween_system<I>() -> SystemConfigs
+where
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Resource,
+{
+    apply_resource_tween_system::<I>.into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
@@ -213,7 +234,7 @@ pub fn resource_tween_system_full<R, I>(
 /// }
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn resource_tween_system<I>(
+pub fn apply_resource_tween_system<I>(
     q_tween: Query<
         (&Tween<TargetResource, I>, &TweenInterpolationValue),
         Without<SkipTween>,
@@ -241,7 +262,8 @@ pub fn resource_dyn_tween_system<R>() -> SystemConfigs
 where
     R: Resource,
 {
-    resource_tween_system::<Box<dyn Interpolator<Item = R>>>.into_configs()
+    apply_resource_tween_system::<Box<dyn Interpolator<Item = R>>>
+        .into_configs()
 }
 
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
@@ -262,7 +284,17 @@ pub fn asset_tween_system_full<A, I>(
     A: Asset,
     I: Interpolator<Item = A> + Send + Sync + 'static,
 {
-    asset_tween_system(q_tween, asset);
+    apply_asset_tween_system(q_tween, asset);
+}
+
+/// Alias for [`apply_asset_tween_system`] and may contains more systems
+/// in the future.
+pub fn asset_tween_system<I>() -> SystemConfigs
+where
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Asset,
+{
+    apply_asset_tween_system::<I>.into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
@@ -310,7 +342,7 @@ pub fn asset_tween_system_full<A, I>(
 /// ```
 #[cfg(feature = "bevy_asset")]
 #[allow(clippy::type_complexity)]
-pub fn asset_tween_system<I>(
+pub fn apply_asset_tween_system<I>(
     q_tween: Query<
         (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue),
         Without<SkipTween>,
@@ -356,7 +388,7 @@ pub fn asset_dyn_tween_system<A>() -> SystemConfigs
 where
     A: Asset,
 {
-    asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
+    apply_asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
 }
 
 /// Fires [`TweenEvent`] with optional user data whenever [`TweenProgress`]

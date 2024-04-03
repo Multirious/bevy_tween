@@ -28,9 +28,9 @@ fn main() {
         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
         .add_systems(Update, (big_x_do_effect, mouse_hold))
-        .add_tween_systems(
-            resource_tween_system::<my_interpolate::EffectIntensity>,
-        )
+        .add_tween_systems(resource_tween_system::<
+            my_interpolate::EffectIntensity,
+        >())
         .init_resource::<EffectIntensitiy>()
         .run();
 }
