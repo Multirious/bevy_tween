@@ -710,7 +710,7 @@ where
 
 impl<Data: Send + Sync + 'static> TweenEventData<Data> {
     /// Create new [`TweenEventData`] with custom user data.
-    pub fn new(data: Data) -> Self {
+    pub fn with_data(data: Data) -> Self {
         TweenEventData(Some(data))
     }
 }
