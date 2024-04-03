@@ -19,8 +19,8 @@
 //!
 //! # Tween and Tweener
 //!
-//! Tweener handles the current actual playback timing of any tweens that
-//! it's responsible for.
+//! Tweener is a made up word to describe an entity that handles the current
+//! actual playback timing for any tweens that it's responsible for.
 //!
 //! Tween is your animation parameters that declares:
 //! - "**What**" to interpolate, such as [`TargetComponent`], [`TargetAsset`], and
@@ -29,13 +29,13 @@
 //!   [`interpolate::SpriteColor`]. And they're used with something like [`EaseFunction`]
 //! - "**When**" to interpolate such as [`TweenTimeSpan`].
 //!
-//! # Child-Parent Hierarchy
+//! # Multi-entities architecture
 //!
-//! This crate let you create paramters for your animation by using child-parent
-//! hierarchy. This has the benefit of exposing the whole entity structure and
-//! let users modify anything they wanted while also being flexible.
-//! The specific entity structure is based on the specific tweener implementation.
-//! You may want to see [`span_tween`]
+//! This crate will uses multiple entities to provide most of the flexiblity.
+//! Generally implemented by using child-parent hierarchy. The exact
+//! details is specific to a tweener/tween implementation.
+//!
+//! See [`span_tween`].
 //!
 //! # Examples
 //!
