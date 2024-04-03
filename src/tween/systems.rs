@@ -170,10 +170,9 @@ pub fn apply_component_tween_system<I>(
 }
 
 /// System alias for [`component_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
-#[deprecated(
-    since = "0.3.0",
-    note = "Use `component_tween_system::<BoxedInterpolator<...>>` for consistency"
-)]
+///
+/// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
+/// You might want to use `component_tween_system::<BoxedInterpolator<...>>()` for consistency
 pub fn component_dyn_tween_system<C>() -> SystemConfigs
 where
     C: Component,
@@ -282,10 +281,9 @@ pub fn apply_resource_tween_system<I>(
 }
 
 /// System alias for [`resource_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
-#[deprecated(
-    since = "0.3.0",
-    note = "Use `resource_tween_system::<BoxedInterpolator<...>>` for consistency"
-)]
+///
+/// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
+/// You might want to use `resource_tween_system::<BoxedInterpolator<...>>()` for consistency
 pub fn resource_dyn_tween_system<R>() -> SystemConfigs
 where
     R: Resource,
@@ -412,11 +410,10 @@ pub fn apply_asset_tween_system<I>(
 }
 
 /// System alias for [`asset_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+///
+/// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
+/// You might want to use `asset_tween_system::<BoxedInterpolator<...>>()` for consistency
 #[cfg(feature = "bevy_asset")]
-#[deprecated(
-    since = "0.3.0",
-    note = "Use `asset_tween_system::<BoxedInterpolator<...>>` for consistency"
-)]
 pub fn asset_dyn_tween_system<A>() -> SystemConfigs
 where
     A: Asset,

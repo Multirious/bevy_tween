@@ -158,7 +158,6 @@ pub mod prelude {
     pub use crate::DefaultTweenPlugins;
 }
 
-#[allow(deprecated)]
 #[cfg(feature = "bevy_asset")]
 pub use tween::asset_dyn_tween_system;
 #[cfg(feature = "bevy_asset")]
@@ -167,13 +166,11 @@ pub use tween::asset_tween_system;
 #[allow(deprecated)]
 pub use tween::asset_tween_system_full;
 
-#[allow(deprecated)]
 pub use tween::component_dyn_tween_system;
 pub use tween::component_tween_system;
 #[allow(deprecated)]
 pub use tween::component_tween_system_full;
 
-#[allow(deprecated)]
 pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
 #[allow(deprecated)]
