@@ -664,7 +664,7 @@ pub fn tick_span_tweener_system(
         //     timer.elasped().now_percentage
         // );
 
-        let n = timer.elasped().now_percentage;
+        let n = timer.elasped().now_period;
         if n <= 0. || 1. <= n {
             ended_writer.send(SpanTweenerEnded {
                 tweener: entity,
@@ -699,7 +699,7 @@ pub fn span_tweener_system(
                 return;
             }
 
-            let repeated = if timer.elasped().now_percentage.floor() as i32 != 0
+            let repeated = if timer.elasped().now_period.floor() as i32 != 0
                 && !timer.is_completed()
             {
                 timer.repeat.map(|r| r.1)

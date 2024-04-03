@@ -12,26 +12,30 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-/// Contains the current elasped time and other useful information.
-/// This is better for handling with edge cases and retain timing accuracy per frame.
+/// Contains the current elasped time per tick.
+/// Have more informations useful for handling edge cases and retain timing accuracy.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Reflect)]
 pub struct Elasped {
-    /// The current elasped seconds
+    /// The current elasped seconds. Always within timer's length.
     pub now: f32,
-    /// The current percentage of the timer length.
-    pub now_percentage: f32,
-    /// The previous elasped seconds
+    /// Value between 0–1 as percentage of the timer period.
+    /// Value may goes over or under 0–1 to indicate looping or repeating in
+    /// arbitary times.
+    pub now_period: f32,
+    /// The previous elasped seconds. Always within timer's length.
     pub previous: f32,
-    /// The previous percentage of the timer length.
-    pub previous_percentage: f32,
+    /// Previous value between 0–1 as percentage of the timer period.
+    /// Value may goes over or under 0–1 to indicate looping or repeating in
+    /// arbitary times.
+    pub previous_period: f32,
 }
 
 impl Elasped {
-    fn update(&mut self, now: f32, now_percentage: f32) {
+    fn update(&mut self, now: f32, now_period: f32) {
         self.previous = self.now;
-        self.previous_percentage = self.now_percentage;
+        self.previous_period = self.now_period;
         self.now = now;
-        self.now_percentage = now_percentage;
+        self.now_period = now_period;
     }
 }
 
@@ -105,12 +109,11 @@ impl TweenTimer {
     pub fn is_completed(&self) -> bool {
         let at_edge = match self.direction {
             AnimationDirection::Forward => {
-                self.elasped.now_percentage >= 1.0
-                    && self.elasped.now_percentage
-                        == self.elasped.previous_percentage
+                self.elasped.now_period >= 1.0
+                    && self.elasped.now_period == self.elasped.previous_period
             }
             AnimationDirection::Backward => {
-                self.elasped.now_percentage <= 0.0
+                self.elasped.now_period <= 0.0
                     && self.elasped.now == self.elasped.previous
             }
         };
@@ -185,16 +188,15 @@ impl TweenTimer {
     /// Set currently elasped now to `duration`.
     pub fn set_tick(&mut self, secs: f32) {
         self.elasped.now = secs;
-        self.elasped.now_percentage =
+        self.elasped.now_period =
             period_percentage(secs, self.length.as_secs_f32());
     }
 
     /// Update the `previous` in [`Elasped`] to `now` and set `repeat_style` to
-    /// None. Only call if the currently elasped has been correctly apply
-    /// and doesn't need to be accounted for anymore.
+    /// None. Only call if the current range of elasped has been handled.
     pub fn collaspe_elasped(&mut self) {
         self.elasped.previous = self.elasped.now;
-        self.elasped.previous_percentage = self.elasped.now_percentage;
+        self.elasped.previous_period = self.elasped.now_period;
     }
 }
 
@@ -364,29 +366,29 @@ mod test {
 
         timer.tick(2.5);
         assert_eq!(timer.elasped.now, 2.5);
-        assert_eq!(timer.elasped.now_percentage, 0.5);
+        assert_eq!(timer.elasped.now_period, 0.5);
 
         timer.tick(2.5);
         assert_eq!(timer.elasped.now, 5.);
-        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(timer.elasped.now_period, 1.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 5.);
-        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(timer.elasped.now_period, 1.);
 
         timer.set_tick(0.);
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 3.);
-        assert_eq!(timer.elasped.now_percentage, 3. / 5.);
+        assert_eq!(timer.elasped.now_period, 3. / 5.);
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 5.);
-        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(timer.elasped.now_period, 1.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 5.);
-        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(timer.elasped.now_period, 1.);
     }
 
     #[test]
@@ -396,21 +398,21 @@ mod test {
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 0.);
-        assert_eq!(timer.elasped.now_percentage, 0.);
+        assert_eq!(timer.elasped.now_period, 0.);
 
         timer.set_tick(5.);
 
         timer.tick(2.5);
         assert_eq!(timer.elasped.now, 2.5);
-        assert_eq!(timer.elasped.now_percentage, 0.5);
+        assert_eq!(timer.elasped.now_period, 0.5);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 1.5);
-        assert_eq!(timer.elasped.now_percentage, 1.5 / 5.);
+        assert_eq!(timer.elasped.now_period, 1.5 / 5.);
 
         timer.tick(2.);
         assert_eq!(timer.elasped.now, 0.);
-        assert_eq!(timer.elasped.now_percentage, 0.);
+        assert_eq!(timer.elasped.now_period, 0.);
     }
 
     #[test]
@@ -420,31 +422,31 @@ mod test {
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 1.);
-        assert_eq!(timer.elasped.now_percentage, 1. / 5.);
+        assert_eq!(timer.elasped.now_period, 1. / 5.);
 
         timer.tick(2.5);
         assert_eq!(timer.elasped.now, 3.5);
-        assert_eq!(timer.elasped.now_percentage, 3.5 / 5.);
+        assert_eq!(timer.elasped.now_period, 3.5 / 5.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 4.5);
-        assert_eq!(timer.elasped.now_percentage, 4.5 / 5.);
+        assert_eq!(timer.elasped.now_period, 4.5 / 5.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 0.5);
-        assert_eq!(timer.elasped.now_percentage, 5.5 / 5.);
+        assert_eq!(timer.elasped.now_period, 5.5 / 5.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 1.5);
-        assert_eq!(timer.elasped.now_percentage, 1.5 / 5.);
+        assert_eq!(timer.elasped.now_period, 1.5 / 5.);
 
         timer.tick(3.5);
         assert_eq!(timer.elasped.now, 0.);
-        assert_eq!(timer.elasped.now_percentage, 5. / 5.);
+        assert_eq!(timer.elasped.now_period, 5. / 5.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 1.);
-        assert_eq!(timer.elasped.now_percentage, 1. / 5.);
+        assert_eq!(timer.elasped.now_period, 1. / 5.);
     }
 
     #[test]
@@ -456,19 +458,19 @@ mod test {
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 4.);
-        assert_eq!(timer.elasped.now_percentage, -1. / 5.);
+        assert_eq!(timer.elasped.now_period, -1. / 5.);
 
         timer.tick(2.5);
         assert_eq!(timer.elasped.now, 1.5);
-        assert_eq!(timer.elasped.now_percentage, 1.5 / 5.);
+        assert_eq!(timer.elasped.now_period, 1.5 / 5.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 0.5);
-        assert_eq!(timer.elasped.now_percentage, 0.5 / 5.);
+        assert_eq!(timer.elasped.now_period, 0.5 / 5.);
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 4.5);
-        assert_eq!(timer.elasped.now_percentage, -0.5 / 5.);
+        assert_eq!(timer.elasped.now_period, -0.5 / 5.);
     }
 
     #[test]
@@ -478,7 +480,7 @@ mod test {
 
         timer.tick(4.);
         assert_eq!(timer.elasped.now, 4.);
-        assert_eq!(timer.elasped.now_percentage, 4. / 5.);
+        assert_eq!(timer.elasped.now_period, 4. / 5.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -489,7 +491,7 @@ mod test {
 
         timer.tick(4.);
         assert_eq!(timer.elasped.now, 3.);
-        assert_eq!(timer.elasped.now_percentage, 8. / 5.);
+        assert_eq!(timer.elasped.now_period, 8. / 5.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -500,7 +502,7 @@ mod test {
 
         timer.tick(4.);
         assert_eq!(timer.elasped.now, 2.);
-        assert_eq!(timer.elasped.now_percentage, 7. / 5.);
+        assert_eq!(timer.elasped.now_period, 7. / 5.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -511,7 +513,7 @@ mod test {
 
         timer.tick(4.);
         assert_eq!(timer.elasped.now, 5.);
-        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(timer.elasped.now_period, 1.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -522,7 +524,7 @@ mod test {
 
         timer.tick(1.);
         assert_eq!(timer.elasped.now, 5.);
-        assert_eq!(timer.elasped.now_percentage, 1.);
+        assert_eq!(timer.elasped.now_period, 1.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -541,7 +543,7 @@ mod test {
 
         timer.tick(4.);
         assert_eq!(timer.elasped.now, 1.);
-        assert_eq!(timer.elasped.now_percentage, -4. / 5.);
+        assert_eq!(timer.elasped.now_period, -4. / 5.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -552,7 +554,7 @@ mod test {
 
         timer.tick(4.);
         assert_eq!(timer.elasped.now, 2.);
-        assert_eq!(timer.elasped.now_percentage, -3. / 5.);
+        assert_eq!(timer.elasped.now_period, -3. / 5.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -563,7 +565,7 @@ mod test {
 
         timer.tick(4.);
         assert_eq!(timer.elasped.now, 0.);
-        assert_eq!(timer.elasped.now_percentage, 0. / 5.);
+        assert_eq!(timer.elasped.now_period, 0. / 5.);
         assert_eq!(
             timer.repeat.unwrap().0,
             Repeat::Times {
@@ -580,32 +582,32 @@ mod test {
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 3.);
-        assert_eq!(timer.elasped.now_percentage, 3. / 5.);
+        assert_eq!(timer.elasped.now_period, 3. / 5.);
         assert_eq!(timer.direction, AnimationDirection::Forward);
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 4.);
-        assert_eq!(timer.elasped.now_percentage, 6. / 5.);
+        assert_eq!(timer.elasped.now_period, 6. / 5.);
         assert_eq!(timer.direction, AnimationDirection::Backward);
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 1.);
-        assert_eq!(timer.elasped.now_percentage, 1. / 5.);
+        assert_eq!(timer.elasped.now_period, 1. / 5.);
         assert_eq!(timer.direction, AnimationDirection::Backward);
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 2.);
-        assert_eq!(timer.elasped.now_percentage, -2. / 5.);
+        assert_eq!(timer.elasped.now_period, -2. / 5.);
         assert_eq!(timer.direction, AnimationDirection::Forward);
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 5.);
-        assert_eq!(timer.elasped.now_percentage, 5. / 5.);
+        assert_eq!(timer.elasped.now_period, 5. / 5.);
         assert_eq!(timer.direction, AnimationDirection::Backward);
 
         timer.tick(3.);
         assert_eq!(timer.elasped.now, 2.);
-        assert_eq!(timer.elasped.now_percentage, 2. / 5.);
+        assert_eq!(timer.elasped.now_period, 2. / 5.);
         assert_eq!(timer.direction, AnimationDirection::Backward);
     }
 }
