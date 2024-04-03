@@ -119,7 +119,7 @@ use tween_timer::{Repeat, RepeatStyle};
 
 use crate::{
     interpolation::Interpolation,
-    prelude::EaseFunction,
+    prelude::{EaseFunction, TweenEventData},
     tween::{SkipTweener, TweenProgress, TweenerMarker},
     tween_timer::{self, AnimationDirection, TweenTimer},
 };
@@ -1270,6 +1270,12 @@ where
 {
     /// Create a new span tween with the supplied span.
     ///
+    /// <div class="warning">
+    ///
+    /// The internal offset do not change after this call!
+    ///
+    /// </div>
+    ///
     /// # Examples
     ///
     /// ```rust
@@ -1342,13 +1348,6 @@ where
     /// Create a new span tween with the supplied duration starting from
     /// previous tween then call a closure on it.
     ///
-    /// <div class="warning">
-    ///
-    /// The duration only starts from previous [`tween()`] or [`tween_and()`] calls,
-    /// not [`tween_exact()`] or [`tween_exact_and()`].
-    ///
-    /// </div>
-    ///
     /// [`tween()`]: Self::tween
     /// [`tween_and()`]: Self::tween_and
     /// [`tween_exact()`]: Self::tween_exact
@@ -1368,13 +1367,7 @@ where
 
     /// Create a new span tween with the supplied duration starting from
     /// previous tween.
-    ///
-    /// <div class="warning">
-    ///
-    /// The duration only starts from previous [`tween()`] calls,
-    /// not [`tween_exact()`].
-    ///
-    /// </div>
+    /// Changing the internal offset by the supplied duration.
     ///
     /// # Examples
     ///
@@ -1672,6 +1665,45 @@ where
     /// ```
     pub fn store_offset(&mut self, v: &mut Duration) -> &mut Self {
         *v = self.offset;
+        self
+    }
+
+    /// Create a tween event at the supplied span
+    ///
+    /// <div class="warning">
+    ///
+    /// The internal offset do not change after this call!
+    ///
+    /// </div>
+    pub fn tween_event_exact<Data: Send + Sync + 'static>(
+        &mut self,
+        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
+        data: TweenEventData<Data>,
+    ) -> &mut Self {
+        self.entity_spawner
+            .spawn((SpanTweenBundle::new(span), data));
+        self
+    }
+
+    /// Create a tween event at the current offset
+    pub fn tween_event<Data: Send + Sync + 'static>(
+        &mut self,
+        data: TweenEventData<Data>,
+    ) -> &mut Self {
+        self.tween_event_for(Duration::ZERO, data)
+    }
+
+    /// Create a tween event for the supplied duration at the current offset.
+    /// Changing the internal offset by the supplied duration.
+    pub fn tween_event_for<Data: Send + Sync + 'static>(
+        &mut self,
+        duration: Duration,
+        data: TweenEventData<Data>,
+    ) -> &mut Self {
+        let start = self.offset;
+        let end = self.offset + duration;
+        self.tween_event_exact(start..end, data);
+        self.offset = end;
         self
     }
 }
