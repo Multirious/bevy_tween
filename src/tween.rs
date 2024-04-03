@@ -702,6 +702,100 @@ impl Plugin for DefaultTweenEventsPlugin {
 }
 
 /// Fires [`TweenEvent`] whenever [`TweenProgress`] and [`TweenEventData`] exist in the same entity.
+///
+/// # Examples
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::prelude::*;
+/// # use bevy::ecs::system::CommandQueue;
+/// #
+/// # let world = World::default();
+/// # let mut queue = CommandQueue::default();
+/// # let mut commands = Commands::new(&mut queue, &world);
+/// #
+/// commands
+///     .spawn((SpanTweenerBundle::new(Duration::from_secs(5))))
+///     .with_children(|c| {
+///         // The event will be fired repetitively every frame
+///         // between the second 2 and 3.
+///         c.spawn((
+///             SpanTweenBundle::new(
+///                 Duration::from_secs(2)..Duration::from_secs(3),
+///             ),
+///             TweenEventData::new(),
+///         ));
+///
+///         // The event will be fired once at the second 1.
+///         c.spawn((
+///             SpanTweenBundle::new(
+///                 Duration::from_secs(1)..=Duration::from_secs(1),
+///             ),
+///             TweenEventData::new(),
+///         ));
+///     });
+/// ```
+///
+/// ## Using custom data
+///
+/// You have to regsiter [`tween_event_system`] or [`tween_event_taking_system`]
+/// before using custom data with [`TweenEvent<Data>`]. And add your custom event.
+/// Check [`DefaultTweenEventsPlugin`] for built-in events.
+///
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_tween::prelude::*;
+///
+/// #[derive(Clone)]
+/// enum MyTweenData {
+///     Idle,
+///     Fly,
+/// }
+///
+/// fn main() {
+///     App::new()
+///         .add_plugins(DefaultTweenPlugins)
+///         .add_tween_systems(bevy_tween::tween_event_system::<MyTweenData>)
+///         .add_event::<TweenEvent<MyTweenData>>();
+/// }
+/// ```
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::prelude::*;
+/// # use bevy::ecs::system::CommandQueue;
+/// #
+/// # let world = World::default();
+/// # let mut queue = CommandQueue::default();
+/// # let mut commands = Commands::new(&mut queue, &world);
+/// #
+/// # #[derive(Clone)]
+/// # enum MyTweenData {
+/// #     Idle,
+/// #     Fly,
+/// # }
+/// #
+/// commands
+///     .spawn((SpanTweenerBundle::new(Duration::from_secs(5))))
+///     .with_children(|c| {
+///
+///         // The `TweenEvent<MyTweenData>` event will be fired once at the second 2.
+///         c.spawn((
+///             SpanTweenBundle::new(
+///                 Duration::from_secs(2)..=Duration::from_secs(2),
+///             ),
+///             TweenEventData::with_data(MyTweenData::Idle),
+///         ));
+///
+///         // The `TweenEvent<MyTweenData>` event will be fired once at the second 3.
+///         c.spawn((
+///             SpanTweenBundle::new(
+///                 Duration::from_secs(3)..=Duration::from_secs(3),
+///             ),
+///             TweenEventData::with_data(MyTweenData::Fly),
+///         ));
+///     });
+/// ```
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct TweenEventData<Data = ()>(pub Option<Data>)
