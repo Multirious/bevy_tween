@@ -289,6 +289,7 @@ pub fn asset_tween_system_full<A, I>(
 
 /// Alias for [`apply_asset_tween_system`] and may contains more systems
 /// in the future.
+#[cfg(feature = "bevy_asset")]
 pub fn asset_tween_system<I>() -> SystemConfigs
 where
     I: Interpolator + Send + Sync + 'static,
