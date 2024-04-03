@@ -82,9 +82,9 @@
 //!
 //! fn main() {
 //!     App::new().add_tween_systems((
-//!         bevy_tween::component_tween_system::<BoxedInterpolator<Foo>>,
-//!         bevy_tween::component_tween_system::<InterpolateFooA>,
-//!         bevy_tween::component_tween_system::<InterpolateFooB>,
+//!         bevy_tween::component_tween_system::<BoxedInterpolator<Foo>>(),
+//!         bevy_tween::component_tween_system::<InterpolateFooA>(),
+//!         bevy_tween::component_tween_system::<InterpolateFooB>(),
 //!     ));
 //! }
 //! ```

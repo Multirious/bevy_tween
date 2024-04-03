@@ -65,14 +65,18 @@ where
 /// fn main() {
 ///     let mut app = App::new();
 ///
+///     // You might want to use `bevy_tween::component_tween_system` instead.
+///
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
-///         bevy_tween::component_tween_system::<InterpolateSize>,
+///         bevy_tween::tween::apply_component_tween_system::<InterpolateSize>,
 ///     );
 ///
 ///     // Dynamic interpolator:
 ///     app.add_tween_systems(
-///         bevy_tween::component_tween_system::<BoxedInterpolator<Size>>,
+///         bevy_tween::tween::apply_component_tween_system::<
+///             BoxedInterpolator<Size>,
+///         >,
 ///     );
 /// }
 /// ```
@@ -222,14 +226,20 @@ where
 /// fn main() {
 ///     let mut app = App::new();
 ///
+///     // You might want to use `bevy_tween::resource_tween_system` instead.
+///
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
-///         bevy_tween::resource_tween_system::<InterpolateScreenFade>,
+///         bevy_tween::tween::apply_resource_tween_system::<
+///             InterpolateScreenFade,
+///         >,
 ///     );
 ///
 ///     // Dynamic interpolator:
 ///     app.add_tween_systems(
-///         bevy_tween::resource_tween_system::<BoxedInterpolator<ScreenFade>>,
+///         bevy_tween::tween::apply_resource_tween_system::<
+///             BoxedInterpolator<ScreenFade>,
+///         >,
 ///     );
 /// }
 /// ```
@@ -330,14 +340,18 @@ where
 /// fn main() {
 ///     let mut app = App::new();
 ///
+///     // You might want to use `bevy_tween::resource_tween_system` instead.
+///
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
-///         bevy_tween::asset_tween_system::<InterpolateRainbow>,
+///         bevy_tween::tween::apply_asset_tween_system::<InterpolateRainbow>,
 ///     );
 ///
 ///     // Dynamic interpolator:
 ///     app.add_tween_systems(
-///         bevy_tween::asset_tween_system::<BoxedInterpolator<Rainbow>>,
+///         bevy_tween::tween::apply_asset_tween_system::<
+///             BoxedInterpolator<Rainbow>,
+///         >,
 ///     );
 /// }
 /// ```

@@ -3,7 +3,7 @@
 //! # [`Tween`]
 //!
 //! **Plugins**:
-//! - [`DefaultTweenEventPlugin`]
+//! - [`DefaultTweenEventsPlugin`]
 //!
 //! **Components**:
 //! - [`Tween<T, I>`]
@@ -162,9 +162,9 @@
 //!     use my_interpolate::*;
 //!
 //!     App::new().add_tween_systems((
-//!         component_tween_system::<FooA>,
-//!         component_tween_system::<FooB>,
-//!         component_tween_system::<FooC>,
+//!         component_tween_system::<FooA>(),
+//!         component_tween_system::<FooB>(),
+//!         component_tween_system::<FooC>(),
 //!     ));
 //! }
 //! # }
@@ -230,9 +230,9 @@
 //!     // One system to rule them all
 //!     // Note that we're only using the `Foo` type, not `FooA`, `FooB`,
 //!     // and `FooC`!
-//!     App::new().add_tween_systems(
-//!         bevy_tween::component_tween_system::<BoxedInterpolator<Foo>>,
-//!     );
+//!     App::new().add_tween_systems(bevy_tween::component_tween_system::<
+//!         BoxedInterpolator<Foo>,
+//!     >());
 //!     // BoxedInterpolator definition:
 //!     // type BoxedInterpolator<Item> = Box<dyn Interpolator<Item>>;
 //! }
