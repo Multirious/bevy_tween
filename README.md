@@ -106,7 +106,7 @@ https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7
 
 |`bevy`|`bevy_tween`|
 |------|------------|
-|0.13  |0.2         |
+|0.13  |0.2–0.3     |
 
 ## Credits
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
@@ -121,7 +121,7 @@ https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7
   Godot's tween make it simple to animate something which is the
   inspiration for this crate. The multi-entity architecture is mainly inspired by
   Godot's node child-parent hierarchy system and that most of the engine APIs
-  utilizes this to define behavior,.
+  utilizes this to define behavior.
 
 ## License
 
@@ -132,4 +132,4 @@ Licensed under either of
 
 at your option.
 
-<img src="https://github.com/Multirious/bevy_tween/blob/main/examples/animation/banner_triangle.gif" width="100%"/>
+<img src="https://github.com/Multirious/bevy_tween/assets/77918086/dbebd0c3-f4b0-432b-8778-70413a6dfa50" width="100%"/>
