@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.3.1 - 2024-04-04
+- Fix README.md
+
 ## v0.3.0 - 2024-04-03
 
 ### Breaking Changes
