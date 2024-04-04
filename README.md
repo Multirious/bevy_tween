@@ -73,9 +73,34 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite.
 
 ## Demos
-`cargo run --example follow -F bevy/bevy_winit`<br/>
-`cargo run --example click -F bevy/bevy_winit`<br/>
-`cargo run --example hold -F bevy/bevy_winit`<br/>
+
+This is an interactive demo. The square will follow your circle with configurable animation.<br>
+`cargo run --example follow -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/d582c2de-0f54-4b22-be03-e3bff3348deb
+
+---
+
+This is an interactive demo. Click left to spawn a circle. Hold right click to repetitively spawn a circle every frame.<br>
+`cargo run --example click -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/369abdec-32d0-482f-8f2d-b9bb8829ceca
+
+---
+
+This is an interactive demo. Hold left click to increase the effect intensitiy.<br>
+`cargo run --example hold -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/33a297a6-19f2-4146-a906-1a88ff037ab3
+
+---
+
+This is a non interactive demo, showcasing the tween event feature.<br>
+`cargo run --example event -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7-29671f971e6e
+
+
 
 ## Bevy Version Support
 
@@ -93,10 +118,10 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 
 - [`godot`](https://github.com/godotengine/godot)
 
-  Godot's tween make it simple to animate something which is the main
-  inspiration for this crate. The Godot's node child-parent hierarchy
-  system and that most of the engine APIs utilizes this to define behavior,
-  yoinked.
+  Godot's tween make it simple to animate something which is the
+  inspiration for this crate. The multi-entity architecture is mainly inspired by
+  Godot's node child-parent hierarchy system and that most of the engine APIs
+  utilizes this to define behavior,.
 
 ## License
 
