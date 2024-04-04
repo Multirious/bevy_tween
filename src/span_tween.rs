@@ -1367,7 +1367,7 @@ where
 
     /// Create a new span tween with the supplied duration starting from
     /// previous tween.
-    /// Changing the internal offset by the supplied duration.
+    /// Shifting the internal offset forward by the supplied duration.
     ///
     /// # Examples
     ///
@@ -1440,7 +1440,7 @@ where
         self.tween_and(duration, interpolation, tween, |_| {})
     }
 
-    /// Get the internal offset used to neatly produce multiple tween in sequence.
+    /// Get the internal offset.
     pub fn offset(&self) -> Duration {
         self.offset
     }
@@ -1451,7 +1451,7 @@ where
         self
     }
 
-    /// Move the internal offset forward, like a "delay".
+    /// Shifts the internal offset foward by the supplied duration.
     ///
     /// # Examples
     ///
@@ -1519,7 +1519,7 @@ where
         self
     }
 
-    /// Move the internal offset backward.
+    /// Shifts the internal offset backward by the supplied duration.
     ///
     /// # Examples
     ///
@@ -1694,7 +1694,7 @@ where
     }
 
     /// Create a tween event for the supplied duration at the current offset.
-    /// Changing the internal offset by the supplied duration.
+    /// Shifting the internal offset forward by the supplied duration.
     pub fn tween_event_for<Data: Send + Sync + 'static>(
         &mut self,
         duration: Duration,
