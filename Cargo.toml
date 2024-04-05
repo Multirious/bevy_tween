@@ -23,6 +23,7 @@ bevy = { version = "0.13.0", default-features = false }
 [dev-dependencies]
 bevy-inspector-egui = "0.23"
 bevy = { version = "0.13.0", default-features = false, features = [ "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
+bevy_svg = { git = "https://github.com/arnfaldur/bevy_svg", branch = "main" }
 rand = "0.8.5"
 
 [features]
@@ -67,6 +68,14 @@ required-features = [
 [[example]]
 name = "thumbnail_triangle"
 path = "examples/animation/thumbnail_triangle.rs"
+required-features = [
+  "bevy_sprite",
+  "span_tween",
+]
+
+[[example]]
+name = "bevy_logo"
+path = "examples/animation/bevy_logo.rs"
 required-features = [
   "bevy_sprite",
   "span_tween",
