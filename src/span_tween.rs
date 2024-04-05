@@ -1663,6 +1663,122 @@ where
         self.offset = end;
         self
     }
+
+    /// Apply a closure with a parameter to this builder.
+    /// This method adds an interesting abstraction design that allow you to
+    /// reuse a group of tween animation by simply accepting a closure.
+    ///
+    /// ```
+    #[doc = utils::doc_entity_eq_fn!()]
+    #[doc = utils::doc_app_test_boilerplate!()]
+    /// use bevy_tween::span_tween::{SpanTweensBuilder, EntitySpawner};
+    /// use bevy_tween::tween::TargetComponent::{self, TweenerEntity};
+    ///
+    /// fn up_down<E: EntitySpawner>(
+    ///     target: impl Into<TargetComponent>,
+    ///     part_a: Duration,
+    ///     part_b: Duration,
+    /// ) -> impl FnOnce(&mut SpanTweensBuilder<E>) {
+    ///     let target = target.into();
+    ///     move |b| {
+    ///         b.tween(
+    ///             part_a,
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::new_target(target.clone(), interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             })
+    ///         ).tween(
+    ///             part_b,
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::new_target(target, interpolate::Translation {
+    ///                 start: Vec3::ONE,
+    ///                 end: Vec3::ZERO,
+    ///             })
+    ///         );
+    ///     }
+    /// }
+    ///
+    /// fn secs(secs: f32) -> Duration {
+    ///     Duration::from_secs_f32(secs)
+    /// }
+    ///
+    /// # let sprite =
+    /// commands.spawn((
+    ///     SpriteBundle::default(),
+    ///     SpanTweenerBundle::new(Duration::from_secs(9))
+    /// )).with_children(|c| {
+    ///     c.span_tweens()
+    ///         .add(up_down(TweenerEntity, secs(1.), secs(2.)))
+    ///         .add(up_down(TweenerEntity, secs(2.), secs(1.)))
+    ///         .add(up_down(TweenerEntity, secs(1.), secs(2.)));
+    ///
+    ///     // is exactly the same as
+    ///     // (Look how much code we just saved ourselves from!)
+    ///
+    ///     c.span_tweens()
+    ///         .tween(
+    ///             secs(1.),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             })
+    ///         ).tween(
+    ///             secs(2.),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ONE,
+    ///                 end: Vec3::ZERO,
+    ///             })
+    ///         )
+    ///         .tween(
+    ///             secs(2.),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             })
+    ///         ).tween(
+    ///             secs(1.),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ONE,
+    ///                 end: Vec3::ZERO,
+    ///             })
+    ///         )
+    ///         .tween(
+    ///             secs(1.),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ZERO,
+    ///                 end: Vec3::ONE,
+    ///             })
+    ///         ).tween(
+    ///             secs(2.),
+    ///             EaseFunction::Linear,
+    ///             ComponentTween::tweener_entity(interpolate::Translation {
+    ///                 start: Vec3::ONE,
+    ///                 end: Vec3::ZERO,
+    ///             })
+    ///         );
+    /// })
+    /// # .id();
+    /// #
+    /// # queue.apply(&mut app.world);
+    /// #
+    /// # let children = app.world.entity(sprite).get::<Children>().unwrap();
+    /// # assert!(entity_eq(&app.world, children[0], children[6]));
+    /// # assert!(entity_eq(&app.world, children[1], children[7]));
+    /// # assert!(entity_eq(&app.world, children[2], children[8]));
+    /// # assert!(entity_eq(&app.world, children[3], children[9]));
+    /// # assert!(entity_eq(&app.world, children[4], children[10]));
+    /// # assert!(entity_eq(&app.world, children[5], children[11]));
+    /// ```
+    pub fn add(&mut self, f: impl FnOnce(&mut Self)) -> &mut Self {
+        f(self);
+        self
+    }
 }
 
 /// Extension trait that allows you to quickly construct [`SpanTweensBuilder`]
