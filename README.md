@@ -123,6 +123,10 @@ https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7
   Godot's node child-parent hierarchy system and that most of the engine APIs
   utilizes this to define behavior.
 
+## Contributions
+
+Contributions are welcome!
+
 ## License
 
 Licensed under either of
@@ -131,5 +135,10 @@ Licensed under either of
  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
+
+### Your contributions
+Unless you explicitly state otherwise, any contribution intentionally submitted for
+inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual
+licensed as above, without any additional terms or conditions.
 
 <img src="https://github.com/Multirious/bevy_tween/assets/77918086/dbebd0c3-f4b0-432b-8778-70413a6dfa50" width="100%"/>
