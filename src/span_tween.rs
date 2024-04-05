@@ -114,6 +114,7 @@
 
 use std::{cmp::Ordering, ops, time::Duration};
 
+use crate::utils;
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use tween_timer::{Repeat, RepeatStyle};
 
@@ -431,18 +432,17 @@ impl SpanTweenerBundle {
 
     /// [`SpanTweenerBundle`] with [`SpanTweenBundle`] that spans the whole
     /// length of the tweener.
-    /// Quick creation of tween when you want to tween in the same entity
+    /// A convenient shortcut to simply include [`SpanTweenBundle`] and [`SpanTweenerBundle`]
+    /// together to quickly create a tween in-place. Can be used to create a very
+    /// simple tween entity that doesn't need to use multiple entities.
     ///
     /// # Examples
     ///
-    /// ```no_run
-    /// # use bevy::prelude::*;
-    /// # use bevy_tween::prelude::*;
-    /// # let world = World::default();
-    /// # let mut queue = bevy::ecs::system::CommandQueue::default();
-    /// # let mut commands = Commands::new(&mut queue, &world);
-    /// # let start = Vec3::ZERO;
-    /// # let end = Vec3::ZERO;
+    /// ```
+    #[doc = utils::doc_entity_eq_fn!()]
+    #[doc = utils::doc_app_test_boilerplate!()]
+    /// # const interpolation: interpolate::Translation = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
+    /// # let shortcut =
     /// commands.spawn((
     ///     SpriteBundle::default(),
     ///     SpanTweenerBundle::new(Duration::from_secs(5))
@@ -450,8 +450,27 @@ impl SpanTweenerBundle {
     ///         .with_repeat_style(RepeatStyle::PingPong)
     ///         .tween_here(),
     ///     EaseFunction::QuadraticInOut,
-    ///     ComponentTween::tweener_entity(interpolate::Translation { start, end }),
-    /// ));
+    ///     ComponentTween::tweener_entity(interpolation),
+    /// ))
+    /// # .id();
+    ///
+    /// // is exactly the same as
+    ///
+    /// # let manual =
+    /// commands.spawn((
+    ///     SpriteBundle::default(),
+    ///     SpanTweenerBundle::new(Duration::from_secs(5))
+    ///         .with_repeat(Repeat::infinitely())
+    ///         .with_repeat_style(RepeatStyle::PingPong),
+    ///     SpanTweenBundle::new(..Duration::from_secs(5)),
+    ///     EaseFunction::QuadraticInOut,
+    ///     ComponentTween::tweener_entity(interpolation),
+    /// ))
+    /// # .id();
+    ///
+    /// # queue.apply(&mut app.world);
+    /// #
+    /// # assert!(entity_eq(&app.world, shortcut, manual));
     /// ```
     pub fn tween_here(self) -> SpanTweenHereBundle {
         let dur = self.span_tweener.timer.length;
@@ -1180,7 +1199,8 @@ mod sealed {
 pub trait EntitySpawner: sealed::EntitySpawnerSealed {}
 impl<T> EntitySpawner for T where T: sealed::EntitySpawnerSealed {}
 
-/// Convenient builder for building multiple children span tweens
+/// Convenient builder for building multiple children span tweens. This is return
+/// from [`SpanTweensBuilderExt::span_tweens`]
 pub struct SpanTweensBuilder<'r, E>
 where
     E: EntitySpawner,
@@ -1201,69 +1221,6 @@ where
     }
 }
 
-macro_rules! doc_entity_eq_fn {
-    () => {
-        "\
-        # fn entity_eq(world: &World, a: Entity, b: Entity) -> bool {
-        #     use bevy::utils::HashSet;
-        #     let a = world.entity(a);
-        #     let b = world.entity(b);
-        #
-        #     let a_components = a.archetype().components().collect::<HashSet<_>>();
-        #     let b_components = b.archetype().components().collect::<HashSet<_>>();
-        #
-        #     if a_components != b_components {
-        #         return false;
-        #     }
-        #
-        #     let registry = world.resource::<AppTypeRegistry>();
-        #     let registry = registry.read();
-        #
-        #     for component_id in a_components {
-        #         let components = world.components();
-        #         let type_id = components
-        #             .get_info(component_id)
-        #             .unwrap()
-        #             .type_id()
-        #             .unwrap();
-        #         let Some(reflect_component) =
-        #             registry.get_type_data::<ReflectComponent>(type_id)
-        #         else {
-        #             continue;
-        #         };
-        #
-        #         let a_component_reflected = reflect_component.reflect(a).unwrap();
-        #         let b_component_reflected = reflect_component.reflect(b).unwrap();
-        #
-        #         if !(a_component_reflected
-        #             .reflect_partial_eq(b_component_reflected)
-        #             .unwrap_or(false))
-        #         {
-        #             return false;
-        #         }
-        #     }
-        #     true
-        # }\
-        "
-    };
-}
-
-macro_rules! doc_builder_boilerplate {
-    () => {
-        "\
-        # use bevy_tween::prelude::*;
-        # use bevy::ecs::system::CommandQueue;
-        # use bevy::prelude::*;
-        #
-        # let mut app = App::new();
-        # app.add_plugins((MinimalPlugins, DefaultTweenPlugins));
-        #
-        # let mut queue = CommandQueue::default();
-        # let mut commands = Commands::new(&mut queue, &app.world);\
-        "
-    };
-}
-
 impl<'r, E> SpanTweensBuilder<'r, E>
 where
     E: EntitySpawner,
@@ -1279,8 +1236,8 @@ where
     /// # Examples
     ///
     /// ```rust
-    #[doc = doc_entity_eq_fn!()]
-    #[doc = doc_builder_boilerplate!()]
+    #[doc = utils::doc_entity_eq_fn!()]
+    #[doc = utils::doc_app_test_boilerplate!()]
     /// # let sprite =
     /// commands
     ///     .spawn((
@@ -1372,8 +1329,8 @@ where
     /// # Examples
     ///
     /// ```rust
-    #[doc = doc_entity_eq_fn!()]
-    #[doc = doc_builder_boilerplate!()]
+    #[doc = utils::doc_entity_eq_fn!()]
+    #[doc = utils::doc_app_test_boilerplate!()]
     /// # let sprite =
     /// commands
     ///     .spawn((
@@ -1456,8 +1413,8 @@ where
     /// # Examples
     ///
     /// ```rust
-    #[doc = doc_entity_eq_fn!()]
-    #[doc = doc_builder_boilerplate!()]
+    #[doc = utils::doc_entity_eq_fn!()]
+    #[doc = utils::doc_app_test_boilerplate!()]
     /// # let sprite =
     /// commands
     ///     .spawn((
@@ -1524,8 +1481,8 @@ where
     /// # Examples
     ///
     /// ```rust
-    #[doc = doc_entity_eq_fn!()]
-    #[doc = doc_builder_boilerplate!()]
+    #[doc = utils::doc_entity_eq_fn!()]
+    #[doc = utils::doc_app_test_boilerplate!()]
     /// # let sprite =
     /// commands
     ///     .spawn((
@@ -1589,8 +1546,8 @@ where
     /// # Examples
     ///
     /// ```rust
-    #[doc = doc_entity_eq_fn!()]
-    #[doc = doc_builder_boilerplate!()]
+    #[doc = utils::doc_entity_eq_fn!()]
+    #[doc = utils::doc_app_test_boilerplate!()]
     /// # let sprite =
     /// commands
     ///     .spawn((

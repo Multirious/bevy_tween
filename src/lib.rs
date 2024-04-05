@@ -20,7 +20,8 @@
 //! # Tween and Tweener
 //!
 //! Tweener is a made up word to describe an entity that handles the current
-//! actual playback timing for any tweens that it's responsible for.
+//! actual playback timing for any tweens that it's responsible for. It can be
+//! understand as a tween runtime or a tween player.
 //!
 //! Tween is your animation parameters that declares:
 //! - "**What**" to interpolate, such as [`TargetComponent`], [`TargetAsset`], and
@@ -35,7 +36,7 @@
 //! Generally implemented by using child-parent hierarchy. The exact
 //! details is specific to a tweener/tween implementation.
 //!
-//! See [`span_tween`].
+//! See [span tween structure](span_tween#entity-structure).
 //!
 //! # Examples
 //!

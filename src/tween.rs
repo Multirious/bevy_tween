@@ -531,7 +531,19 @@ where
     I: Interpolator,
     I::Item: Component,
 {
-    /// Convenient method for targetting tweener's entity.
+    /// Convenient shortcut for targetting tweener's entity.
+    ///
+    /// ```
+    /// # use bevy_tween::prelude::*;
+    /// # const interpolator = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
+    /// assert_eq!(
+    ///     ComponentTween::tweener_entity(interpolator),
+    ///     ComponentTween::new_target(
+    ///         TargetComponent::TweenerEntity,
+    ///         interpolator
+    ///     )
+    /// );
+    /// ```
     pub fn tweener_entity(interpolator: I) -> Self {
         ComponentTween::new_target(
             TargetComponent::tweener_entity(),
@@ -539,7 +551,21 @@ where
         )
     }
 
-    /// Convenient method for targetting tweener's parent.
+    /// Convenient shortcut for targetting tweener's parent.
+    ///
+    /// ```
+    /// # use bevy_tween::prelude::*;
+    /// # const interpolator = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
+    /// assert_eq!(
+    ///     ComponentTween::tweener_parent(
+    ///         interpolator
+    ///     ),
+    ///     ComponentTween::new_target(
+    ///         TargetComponent::TweenerParent,
+    ///         interpolator
+    ///     )
+    /// );
+    /// ```
     pub fn tweener_parent(interpolator: I) -> Self {
         ComponentTween::new_target(
             TargetComponent::tweener_parent(),
