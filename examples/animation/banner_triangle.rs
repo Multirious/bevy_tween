@@ -1,7 +1,11 @@
 use std::f32::consts::TAU;
 
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{
+    prelude::*,
+    span_tween::{EntitySpawner, SpanTweensBuilder},
+    tween::TargetComponent,
+};
 
 fn main() {
     App::new()
@@ -56,11 +60,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
-            snap_rotate(c, triangles[4], secs, 7, 4., ease);
-            snap_rotate(c, triangles[3], secs, 7, 6., ease);
-            snap_rotate(c, triangles[2], secs, 7, 8., ease);
-            snap_rotate(c, triangles[1], secs, 7, 10., ease);
-            snap_rotate(c, triangles[0], secs, 7, 12., ease);
+            c.span_tweens()
+                .add(snap_rotate(triangles[4], secs, 7, 4., ease))
+                .add(snap_rotate(triangles[3], secs, 7, 6., ease))
+                .add(snap_rotate(triangles[2], secs, 7, 8., ease))
+                .add(snap_rotate(triangles[1], secs, 7, 10., ease))
+                .add(snap_rotate(triangles[0], secs, 7, 12., ease));
         });
 
     commands
@@ -112,29 +117,31 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn snap_rotate(
-    c: &mut ChildBuilder<'_>,
-    entity: Entity,
+fn snap_rotate<E: EntitySpawner>(
+    target: impl Into<TargetComponent>,
     secs: f32,
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) {
-    for i in 0..max {
-        let max = max as f32;
-        let i = i as f32;
-        c.span_tweens().tween_exact(
-            Duration::from_secs_f32(i / max * secs)
-                ..Duration::from_secs_f32((i + 1.) / max * secs),
-            ease,
-            ComponentTween::new_target_boxed(
-                entity,
-                interpolate::AngleZ {
-                    start: rev * TAU * (max - i) / max,
-                    end: rev * TAU * (max - i - 1.) / max,
-                },
-            ),
-        );
+) -> impl FnOnce(&mut SpanTweensBuilder<E>) {
+    move |b| {
+        let target = target.into();
+        for i in 0..max {
+            let max = max as f32;
+            let i = i as f32;
+            b.tween_exact(
+                Duration::from_secs_f32(i / max * secs)
+                    ..Duration::from_secs_f32((i + 1.) / max * secs),
+                ease,
+                ComponentTween::new_target_boxed(
+                    target.clone(),
+                    interpolate::AngleZ {
+                        start: rev * TAU * (max - i) / max,
+                        end: rev * TAU * (max - i - 1.) / max,
+                    },
+                ),
+            );
+        }
     }
 }
 
