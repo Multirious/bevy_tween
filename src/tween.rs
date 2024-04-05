@@ -251,7 +251,7 @@ use bevy::prelude::*;
 
 use crate::interpolate::Interpolator;
 use crate::tween_timer::AnimationDirection;
-use crate::BevyTweenRegisterSystems;
+use crate::{utils, BevyTweenRegisterSystems};
 
 mod systems;
 #[allow(deprecated)]
@@ -534,8 +534,10 @@ where
     /// Convenient shortcut for targetting tweener's entity.
     ///
     /// ```
+    /// # use bevy::prelude::*;
     /// # use bevy_tween::prelude::*;
-    /// # const interpolator = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
+    /// # const interpolator: interpolate::Translation = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
+    /// use bevy_tween::tween::TargetComponent;
     /// assert_eq!(
     ///     ComponentTween::tweener_entity(interpolator),
     ///     ComponentTween::new_target(
@@ -554,8 +556,10 @@ where
     /// Convenient shortcut for targetting tweener's parent.
     ///
     /// ```
+    /// # use bevy::prelude::*;
     /// # use bevy_tween::prelude::*;
-    /// # const interpolator = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
+    /// # const interpolator: interpolate::Translation = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
+    /// use bevy_tween::tween::TargetComponent;
     /// assert_eq!(
     ///     ComponentTween::tweener_parent(
     ///         interpolator
@@ -732,14 +736,7 @@ impl Plugin for DefaultTweenEventsPlugin {
 /// # Examples
 ///
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::prelude::*;
-/// # use bevy::ecs::system::CommandQueue;
-/// #
-/// # let world = World::default();
-/// # let mut queue = CommandQueue::default();
-/// # let mut commands = Commands::new(&mut queue, &world);
-/// #
+#[doc = utils::doc_test_boilerplate!()]
 /// commands
 ///     .spawn((SpanTweenerBundle::new(Duration::from_secs(5))))
 ///     .with_children(|c| {
@@ -761,13 +758,12 @@ impl Plugin for DefaultTweenEventsPlugin {
 ///         ));
 ///     });
 /// ```
-///
+/// 
 /// ## Using custom data
 ///
 /// You have to regsiter [`tween_event_system`] or [`tween_event_taking_system`]
 /// before using custom data with [`TweenEvent<Data>`]. And add your custom event.
 /// Check [`DefaultTweenEventsPlugin`] for built-in events.
-///
 /// ```
 /// use bevy::prelude::*;
 /// use bevy_tween::prelude::*;
@@ -785,16 +781,8 @@ impl Plugin for DefaultTweenEventsPlugin {
 ///         .add_event::<TweenEvent<MyTweenData>>();
 /// }
 /// ```
-///
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::prelude::*;
-/// # use bevy::ecs::system::CommandQueue;
-/// #
-/// # let world = World::default();
-/// # let mut queue = CommandQueue::default();
-/// # let mut commands = Commands::new(&mut queue, &world);
-/// #
+#[doc = utils::doc_test_boilerplate!()]
 /// # #[derive(Clone)]
 /// # enum MyTweenData {
 /// #     Idle,

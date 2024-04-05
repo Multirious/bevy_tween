@@ -102,7 +102,7 @@ macro_rules! doc_test_boilerplate {
         # use bevy::ecs::system::CommandQueue;
         # use bevy::prelude::*;
         #
-        # let world = World::Default();
+        # let world = World::default();
         # let mut queue = CommandQueue::default();
         # let mut commands = Commands::new(&mut queue, &world);\
         "
