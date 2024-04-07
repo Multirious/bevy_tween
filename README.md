@@ -16,9 +16,11 @@ Breaking changes are to be expected!
 
 See changelog [here](CHANGELOG.md).
 
-## Differences
-The main motivation for this tweening crate is that the previous
-existing tweening crates is not flexible enough and so the main goal is to solve it.
+## Features
+- ECS-based animation data and systems.
+- Flexible and modular APIs. Use anything you want to use. Extends anything that's not there.
+- Tween anything, from anywhere. Colors, Sprite sheet frames, Positions, you name it!
+- Simple animation ✔ Complex animation ✔
 
 Goals:
 - [x] Flexible 🎉
@@ -30,6 +32,10 @@ Goals:
        The editor will aid in such jobs.
   - Real-time display at any point in time in the animation.
   - Editing path from point A to point B with arbitary curve using `splines`.
+
+## Differences
+The main motivation for this tweening crate is that the previous
+existing tweening crates is not flexible enough and so the main goal is to solve it.
 
 Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 or [`bevy_easings`](https://github.com/vleue/bevy_easings):
