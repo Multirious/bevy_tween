@@ -17,10 +17,11 @@ Breaking changes are to be expected!
 See changelog [here](CHANGELOG.md).
 
 ## Features
-- ECS-based animation data and systems.
-- Flexible and modular APIs. Use anything you want to use. Extends anything that's not there.
+- ECS-based animation data and system with flexible and modular APIs powered by Bevy.
+  Use anything you want to use. Remove anything you don't want. Extends anything that's not there.
 - Tween anything, from anywhere. Colors, Sprite sheet frames, Positions, you name it!
 - Simple animation ✔ Complex animation ✔
+- Events when tween ends or at arbitary time with optional custom data.
 
 Goals:
 - [x] Flexible 🎉
