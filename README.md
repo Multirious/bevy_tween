@@ -19,9 +19,24 @@ See changelog [here](CHANGELOG.md).
 ## Features
 - ECS-based animation data and system with flexible and modular APIs powered by Bevy.
   Use anything you want to use. Remove anything you don't want. Extends anything that's not there.
-- Tween anything, from anywhere. Colors, Sprite sheet frames, Positions, you name it!
-- Simple animation ✔ Complex animation ✔
-- Events when tween ends or at arbitary time with optional custom data.
+- Tween anything, from anywhere.
+  - Colors, sprite sheet frames, positions, you define it!
+  - Components, assets, Resources, you implement it!
+- Interpolate with anything
+  - Robert Penner's easing functions
+  - Closure
+  - Or implement one your self!
+- Animate at any complexity
+  - Simple animations. A singular tween perhaps.
+  - Complex animations. Maybe hundreds of parameters.
+- Events
+  - At tween ends
+  - At arbitary time (with custom data).
+- Timer
+  - Looping
+  - Fastforward or Rewind
+  - Skip backward or forward
+  - Jumping to anywhen
 
 Goals:
 - [x] Flexible 🎉
