@@ -27,11 +27,7 @@ See changelog [here](CHANGELOG.md).
   - Closure
   - Or implement one your self!
 - Animate at any complexity
-  - Simple animations. A singular tween perhaps.
-  - Complex animations. Maybe hundreds of parameters.
-- Events
-  - At tween ends
-  - At arbitary time (with custom data).
+- Events at arbitary time (with custom data).
 - Timer
   - Looping
   - Fastforward or Rewind
