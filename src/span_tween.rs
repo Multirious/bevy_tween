@@ -1664,9 +1664,15 @@ where
         self
     }
 
-    /// Add an animation preset.
-    /// This method adds an interesting abstraction design that allow you to
-    /// reuse a group of tween animation.
+    /// Accept types that implement [`SpanTweenPreset`].
+    /// This method can be understand as a method that "adds an animation preset"
+    /// though technically it can do more than that.
+    ///
+    /// This adds an interesting abstraction design that allow you to
+    /// - reuse a group of animation or so-called preset.
+    /// - organize your animations into sizable pieces.
+    ///
+    /// # Examples
     ///
     /// ```
     #[doc = utils::doc_entity_eq_fn!()]
