@@ -1664,13 +1664,14 @@ where
         self
     }
 
-    /// Apply a closure with a parameter to this builder.
+    /// Add an animation preset.
     /// This method adds an interesting abstraction design that allow you to
-    /// reuse a group of tween animation by simply accepting a closure.
+    /// reuse a group of tween animation.
     ///
     /// ```
     #[doc = utils::doc_entity_eq_fn!()]
     #[doc = utils::doc_app_test_boilerplate!()]
+    /// use bevy_tween::prelude::*;
     /// use bevy_tween::span_tween::{SpanTweensBuilder, EntitySpawner};
     /// use bevy_tween::tween::TargetComponent::{self, TweenerEntity};
     ///
@@ -1684,17 +1685,24 @@ where
     ///         b.tween(
     ///             part_a,
     ///             EaseFunction::Linear,
-    ///             ComponentTween::new_target(target.clone(), interpolate::Translation {
-    ///                 start: Vec3::ZERO,
-    ///                 end: Vec3::ONE,
-    ///             })
-    ///         ).tween(
+    ///             ComponentTween::new_target(
+    ///                 target.clone(),
+    ///                 interpolate::Translation {
+    ///                     start: Vec3::ZERO,
+    ///                     end: Vec3::ONE,
+    ///                 },
+    ///             ),
+    ///         )
+    ///         .tween(
     ///             part_b,
     ///             EaseFunction::Linear,
-    ///             ComponentTween::new_target(target, interpolate::Translation {
-    ///                 start: Vec3::ONE,
-    ///                 end: Vec3::ZERO,
-    ///             })
+    ///             ComponentTween::new_target(
+    ///                 target,
+    ///                 interpolate::Translation {
+    ///                     start: Vec3::ONE,
+    ///                     end: Vec3::ZERO,
+    ///                 },
+    ///             ),
     ///         );
     ///     }
     /// }
@@ -1775,8 +1783,8 @@ where
     /// # assert!(entity_eq(&app.world, children[4], children[10]));
     /// # assert!(entity_eq(&app.world, children[5], children[11]));
     /// ```
-    pub fn add(&mut self, f: impl FnOnce(&mut Self)) -> &mut Self {
-        f(self);
+    pub fn add(&mut self, f: impl SpanTweenPreset<E>) -> &mut Self {
+        f.build(self);
         self
     }
 }
@@ -1803,5 +1811,22 @@ where
 
     fn span_tweens(&mut self) -> Self::Output<'_> {
         SpanTweensBuilder::new(self)
+    }
+}
+
+/// Reusuable group of span tweens animation, a preset.
+/// Use with [`SpanTweensBuilder::add`].
+pub trait SpanTweenPreset<E: EntitySpawner> {
+    /// Build this preset to the supplied [`SpanTweensBuilder`]
+    fn build(self, b: &mut SpanTweensBuilder<E>);
+}
+
+impl<E, F> SpanTweenPreset<E> for F
+where
+    E: EntitySpawner,
+    F: FnOnce(&mut SpanTweensBuilder<E>),
+{
+    fn build(self, b: &mut SpanTweensBuilder<E>) {
+        self(b)
     }
 }
