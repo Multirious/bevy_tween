@@ -21,7 +21,7 @@ See changelog [here](CHANGELOG.md).
   Use anything you want to use. Remove anything you don't want. Extends anything that's not there.
 - Tween anything, from anywhere.
   - Colors, sprite sheet frames, positions, you define it!
-  - Components, assets, Resources, you implement it!
+  - Components, assets, resources, you implement it!
 - Interpolate with anything
   - Robert Penner's easing functions
   - Closure
