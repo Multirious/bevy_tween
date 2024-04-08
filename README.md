@@ -120,7 +120,7 @@ https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7
 
 |`bevy`|`bevy_tween`|
 |------|------------|
-|0.13  |0.2–0.3     |
+|0.13  |0.2–0.4     |
 
 ## Credits
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
