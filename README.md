@@ -64,10 +64,6 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
     tweening the same component/asset/resource because of the multi-entities architecture and
     so it is not limited by '1 component type per entitiy'.
 - Advanced timer. This crate has custom timer implementation.
-  - Looping support.
-  - 2 ways playback support.
-  - Jump to arbitary time.
-  - Ticking in arbitary direction.
 - Dependency injection. Systems communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components
   and reduce duplication.
