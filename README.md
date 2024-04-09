@@ -6,10 +6,8 @@
 
 # `bevy_tween`
 
-Flexible tweening plugin for Bevy.
-This crate solves for tweening animation with the approach of integrating everything
-into Bevy's ECS and uses dependency injection, allowing you to exploits the already flexible ECS systems to tune
-and extends the animation process to your needs.
+A fully ECS-based Bevy animation library.
+Focuses mainly on tweening but being decoupled and flexible and so can do much more.
 
 This is a young plugin and APIs are to be fleshed out.
 Breaking changes are to be expected!
