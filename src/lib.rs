@@ -296,7 +296,7 @@ impl BevyTweenRegisterSystems for App {
         let app_resource = self
             .world
             .get_resource::<TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` to be inserted to world");
         self.add_systems(
             app_resource.schedule,
             tween_systems.in_set(TweenSystemSet::ApplyTween),

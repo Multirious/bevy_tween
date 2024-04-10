@@ -49,7 +49,7 @@ impl Plugin for EaseFunctionPlugin {
         let app_resource = app
             .world
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` to be inserted to world");
         app.add_systems(
             app_resource.schedule,
             sample_interpolations_system::<EaseFunction>
@@ -836,7 +836,7 @@ impl Plugin for EaseClosurePlugin {
         let app_resource = app
             .world
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` to be inserted to world");
         app.add_systems(
             app_resource.schedule,
             sample_interpolations_system::<EaseClosure>
@@ -878,7 +878,7 @@ impl Plugin for LookupCurveInterpolationPlugin {
         let app_resource = app
             .world
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` to be inserted to world");
         app.add_systems(
             app_resource.schedule,
             sample_interpolations_mut_system::<LookupCurveCached>
