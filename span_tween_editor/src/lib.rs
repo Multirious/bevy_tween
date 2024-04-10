@@ -15,13 +15,15 @@ use bevy_tween::{
 };
 
 mod reflect_data;
+mod ui;
 // use reflect_data::ReflectList;
 
 pub struct SpanTweenEditorPlugin;
 
 impl Plugin for SpanTweenEditorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, editor_system)
+        app.add_systems(Update, (editor_system, reset_tracks).chain())
+            .add_event::<ResetTrack>()
             .init_resource::<EditorSetting>();
     }
 }
@@ -77,24 +79,32 @@ struct ResetTrack {
     tweener: Entity,
 }
 
-fn init_tracks(
+/// this will not included tween that's in the same entity as its tweener due
+/// to entityref problem thingies
+fn reset_tracks(
     mut reset_track: EventReader<ResetTrack>,
-    q_children: &Query<&Children>,
-    q_other_tweener: &Query<&TweenerMarker>,
-    q_tween: &Query<(&TweenTimeSpan, EntityRef)>,
+    mut q_tweener: Query<
+        (Option<&Children>, &mut EditorData),
+        With<SpanTweener>,
+    >,
+    q_other_tweener: Query<&TweenerMarker>,
+    q_tween: Query<(&TweenTimeSpan, EntityRef), Without<EditorData>>,
 ) {
     for &ResetTrack { tweener } in reset_track.read() {
-        let children = q_children.get(tweener).ok();
+        let tweener_entity = tweener;
+        let (children, mut editor_data) =
+            q_tweener.get_mut(tweener_entity).unwrap();
         let children = children
             .iter()
-            .flat_map(|a| a.iter())
+            .flat_map(|children| children.iter())
             .filter(|c| !q_other_tweener.contains(**c));
-        let tweens = q_tween.iter_many([&tweener].into_iter().chain(children));
+        let tweens = q_tween.iter_many(children);
 
         let mut track = Track::default();
         for (span, entity_ref) in tweens {
             track.tweens.insert(entity_ref.id(), *span);
         }
+        editor_data.tracks = vec![track];
     }
 }
 
@@ -103,6 +113,7 @@ fn editor_system(
     mut commands: Commands,
     mut contexts: EguiContexts,
     mut editor: ResMut<EditorSetting>,
+    mut reset_tracks: EventWriter<ResetTrack>,
     q_tweener_entity: Query<Entity, With<SpanTweener>>,
     mut q_tweener: Query<(&mut SpanTweener, Option<&mut EditorData>)>,
     q_name: Query<&Name>,
@@ -133,6 +144,9 @@ fn editor_system(
                     None => {
                         commands.entity(tweener_entity).insert(EditorData {
                             ..Default::default()
+                        });
+                        reset_tracks.send(ResetTrack {
+                            tweener: tweener_entity,
                         });
                     }
                 }
@@ -216,72 +230,86 @@ fn tweens_ui(
         )
         .show_inside(ui, |ui| {
             let mut now = tweener.timer.elasped().now;
-            TweensUi {
-                playhead: &mut now,
-                length: tweener.timer.length.as_secs_f32(),
-                editor_data,
-            }
-            .ui(ui);
+            egui::ScrollArea::both().show(ui, |ui| {
+                egui::Frame::none().show(ui, |ui| {
+                    tweens_ui_raw(
+                        &mut now,
+                        tweener.timer.length.as_secs_f32(),
+                        editor_data,
+                        ui,
+                    )
+                })
+            })
         });
 }
 
-struct TweensUi<'a> {
-    playhead: &'a mut f32,
+fn tweens_ui_raw(
+    playhead: &mut f32,
     length: f32,
-    editor_data: &'a mut EditorData,
-}
+    editor_data: &mut EditorData,
+    ui: &mut egui::Ui,
+) -> egui::Response {
+    ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
+        const SCALE: f32 = 100.;
+        const HEIGHT: f32 = 15.;
 
-impl<'a> TweensUi<'a> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let TweensUi {
-            playhead,
+        let response = ui.allocate_response(
+            egui::Vec2::new(
+                length * SCALE * editor_data.horizontal_scale,
+                HEIGHT,
+            ),
+            egui::Sense {
+                click: true,
+                drag: true,
+                focusable: false,
+            },
+        );
+
+        let rect = response.rect;
+
+        timeline(
+            rect.min,
+            HEIGHT,
             length,
-            editor_data,
-        } = self;
-        ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
-            const SCALE: f32 = 100.;
-            const HEIGHT: f32 = 15.;
+            SCALE * editor_data.horizontal_scale,
+            ui,
+        );
 
+        for track_ in &editor_data.tracks {
             let response = ui.allocate_response(
-                egui::Vec2::new(length * SCALE, HEIGHT),
+                egui::vec2(
+                    length * SCALE * editor_data.horizontal_scale,
+                    track_.height,
+                ),
                 egui::Sense {
                     click: true,
                     drag: true,
                     focusable: false,
                 },
             );
-
             let rect = response.rect;
-
-            let playhead_x = rect.left() + *playhead * SCALE;
-
-            timeline(rect.min, HEIGHT, length, SCALE, ui);
-
-            for track_ in &editor_data.tracks {
-                let response = ui.allocate_response(
-                    egui::vec2(length * SCALE, track_.height),
-                    egui::Sense {
-                        click: true,
-                        drag: true,
-                        focusable: false,
-                    },
-                );
-                let rect = response.rect;
-                track(rect.min, length, SCALE, track_, ui);
-            }
-
-            ui.painter().line_segment(
-                [
-                    egui::pos2(playhead_x, rect.top()),
-                    egui::pos2(playhead_x, rect.bottom()),
-                ],
-                (1., egui::Color32::WHITE),
+            track(
+                rect.min,
+                length,
+                SCALE * editor_data.horizontal_scale,
+                track_,
+                ui,
             );
+        }
 
-            response
-        })
-        .response
-    }
+        let playhead_x =
+            rect.left() + *playhead * SCALE * editor_data.horizontal_scale;
+        ui.painter().line_segment(
+            [
+                egui::pos2(playhead_x, rect.top()),
+                egui::pos2(playhead_x, rect.bottom()),
+            ],
+            (1., egui::Color32::WHITE),
+        );
+
+        response
+    })
+    .response
 }
 
 fn timeline(
@@ -301,17 +329,17 @@ fn timeline(
 
     for i in 0..max_tick {
         let (brightness, shortness) = match i % 8 {
-            0 => (130, height * 0.8),
-            4 => (120, height * 0.6),
-            2 | 6 => (110, height * 0.5),
-            1 | 3 | 5 | 7 => (100, height * 0.45),
+            0 => (130, height * 0.4),
+            4 => (120, height * 0.5),
+            2 | 6 => (110, height * 0.6),
+            1 | 3 | 5 | 7 => (100, height * 0.65),
             _ => unreachable!(),
         };
         let tick_x = pos.x + (i as f32 / 8.) * scale;
         ui.painter().line_segment(
             [
                 egui::pos2(tick_x, pos.y),
-                egui::pos2(tick_x, height - shortness),
+                egui::pos2(tick_x, pos.y + height - shortness),
             ],
             (1., egui::Color32::from_gray(brightness)),
         );
@@ -336,13 +364,15 @@ fn track(
     for span in track.tweens.values() {
         let min = span.min().duration().as_secs_f32();
         let max = span.max().duration().as_secs_f32();
-        ui.painter().rect_filled(
-            egui::Rect::from_min_max(
-                egui::pos2(min * scale, pos.y),
-                egui::pos2(max * scale, pos.y + track.height),
-            ),
+        let tween_rect = egui::Rect::from_min_max(
+            egui::pos2(pos.x + min * scale, pos.y),
+            egui::pos2(pos.x + max * scale, pos.y + track.height),
+        );
+        ui.painter().rect(
+            tween_rect,
             0.,
             track.color,
+            (1.0, egui::Color32::BLACK),
         );
     }
 }
