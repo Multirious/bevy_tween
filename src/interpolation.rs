@@ -26,6 +26,16 @@ pub trait Interpolation {
     fn sample(&self, v: f32) -> f32;
 }
 
+/// A trait for implementing interpolation algorithms that requires mutable access.
+///
+/// Currently only used for registering [`sample_interpolations_mut_system`].
+pub trait InterpolationMut {
+    /// Sample a value from this algorithm mutably.
+    /// Input should be between 0–1 and returns value that should be
+    /// between 0–1
+    fn sample_mut(&mut self, v: f32) -> f32;
+}
+
 /// Plugin for [`EaseFunction`]
 pub struct EaseFunctionPlugin;
 
@@ -884,6 +894,44 @@ pub fn sample_interpolations_system<I>(
             .entity(entity)
             .insert(TweenInterpolationValue(value));
     });
+    remove_removed(&mut commands, &mut removed);
+}
+
+/// This system will automatically sample mutably in each entities
+/// with a [`TweenProgress`] component then insert [`TweenInterpolationValue`].
+/// Remove [`TweenInterpolationValue`] if [`TweenProgress`] is removed.
+#[allow(clippy::type_complexity)]
+pub fn sample_interpolations_mut_system<I>(
+    mut commands: Commands,
+    mut query: Query<
+        (Entity, &mut I, &TweenProgress),
+        Or<(Changed<I>, Changed<TweenProgress>)>,
+    >,
+    mut removed: RemovedComponents<TweenProgress>,
+) where
+    I: InterpolationMut + Component,
+{
+    query
+        .iter_mut()
+        .for_each(|(entity, mut interpolator, progress)| {
+            if progress.now_percentage.is_nan() {
+                return;
+            }
+            let value =
+                interpolator.sample_mut(progress.now_percentage.clamp(0., 1.));
+
+            commands
+                .entity(entity)
+                .insert(TweenInterpolationValue(value));
+        });
+    remove_removed(&mut commands, &mut removed);
+}
+
+/// idk how to name this
+fn remove_removed(
+    commands: &mut Commands,
+    removed: &mut RemovedComponents<TweenProgress>,
+) {
     removed.read().for_each(|entity| {
         if let Some(mut entity) = commands.get_entity(entity) {
             entity.remove::<TweenInterpolationValue>();
