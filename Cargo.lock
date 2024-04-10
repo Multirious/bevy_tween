@@ -652,6 +652,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_lookup_curve"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3eddc183e23035477dca62f6ae6b2b24b04b5c91ba955f72c66702b6e21e902e"
+dependencies = [
+ "bevy_app",
+ "bevy_asset",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_log",
+ "bevy_math",
+ "bevy_reflect",
+ "bevy_utils",
+ "egui",
+ "ron",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "bevy_macro_utils"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -907,6 +927,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_eventlistener",
  "bevy_time_runner",
+ "bevy_lookup_curve",
  "rand",
 ]
 

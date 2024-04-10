@@ -21,6 +21,7 @@ resolver = "2"
 bevy = { version = "0.13.0", default-features = false }
 bevy_eventlistener = { version = "0.7.0", optional = true }
 bevy_time_runner = { git = "https://github.com/Multirious/bevy_time_runner" }
+bevy_lookup_curve = { version = "0.2.1", default-features = false, optional = true }
 
 [dev-dependencies]
 bevy-inspector-egui = "0.23"
@@ -45,8 +46,12 @@ bevy_asset = [ "bevy/bevy_asset" ]
 bevy_render = [ "bevy/bevy_render"]
 # Add some built-in interpolator related to sprite
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
+
 # Add entity-targeted events with bevy_eventlistener
 bevy_eventlistener = [ "dep:bevy_eventlistener" ]
+
+# Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
+bevy_lookup_curve = [ "dep:bevy_lookup_curve" ]
 
 [package.metadata.docs.rs]
 all-features = true

@@ -870,6 +870,69 @@ impl Interpolation for EaseClosure {
     }
 }
 
+/// Use [`bevy_lookup_curve`] for interpolation.
+pub struct LookupCurveInterpolationPlugin;
+
+impl Plugin for LookupCurveInterpolationPlugin {
+    fn build(&self, app: &mut App) {
+        let app_resource = app
+            .world
+            .get_resource::<crate::TweenAppResource>()
+            .expect("`TweenAppResource` to be is inserted to world");
+        app.add_systems(
+            app_resource.schedule,
+            sample_interpolations_mut_system::<LookupCurveCached>
+                .in_set(TweenSystemSet::UpdateInterpolationValue),
+        );
+    }
+}
+
+/// Use [`LookupCurve`](bevy_lookup_curve::LookupCurve) for interpolation with cache.
+#[derive(Default, Component)]
+pub struct LookupCurveCached {
+    /// The [`LookupCurve`](bevy_lookup_curve::LookupCurve) that will be used
+    /// for interpolation
+    pub curve: bevy_lookup_curve::LookupCurve,
+    cache: bevy_lookup_curve::LookupCache,
+}
+
+impl LookupCurveCached {
+    /// Create new [`LookupCurveCached`] with new cache inside
+    pub fn new(curve: bevy_lookup_curve::LookupCurve) -> LookupCurveCached {
+        LookupCurveCached {
+            curve,
+            cache: bevy_lookup_curve::LookupCache::new(),
+        }
+    }
+}
+
+impl InterpolationMut for LookupCurveCached {
+    fn sample_mut(&mut self, v: f32) -> f32 {
+        self.curve.lookup_cached(v, &mut self.cache)
+    }
+}
+
+/// Use [`LookupCurve`](bevy_lookup_curve::LookupCurve) for interpolation.
+#[derive(Default, Component)]
+pub struct LookupCurve {
+    /// The [`LookupCurve`](bevy_lookup_curve::LookupCurve) that will be used
+    /// for interpolation
+    pub curve: bevy_lookup_curve::LookupCurve,
+}
+
+impl LookupCurve {
+    /// Create new [`LookupCurve`]
+    pub fn new(curve: bevy_lookup_curve::LookupCurve) -> LookupCurve {
+        LookupCurve { curve }
+    }
+}
+
+impl Interpolation for LookupCurve {
+    fn sample(&self, v: f32) -> f32 {
+        self.curve.lookup(v)
+    }
+}
+
 /// This system will automatically sample in each entities with a
 /// [`TweenProgress`] component then insert [`TweenInterpolationValue`].
 /// Remove [`TweenInterpolationValue`] if [`TweenProgress`] is removed.
