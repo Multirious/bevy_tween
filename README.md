@@ -140,7 +140,7 @@ https://github.com/Multirious/bevy_tween/assets/77918086/d582c2de-0f54-4b22-be03
 `cargo run --example click -F bevy/bevy_winit`<br>
 Click left to spawn a circle. Hold right click to repetitively spawn a circle every frame.<br>
 
-https://github.com/Multirious/bevy_tween/assets/77918086/369abdec-32d0-482f-8f2d-b9bb8829ceca
+https://github.com/Multirious/bevy_tween/assets/77918086/fd0fe9d3-13a2-4261-880c-cc2609b875ba
 
 ---
 

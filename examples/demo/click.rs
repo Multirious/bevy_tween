@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_tween::prelude::*;
 mod utils;
 
-mod my_interpolate {
+mod m {
     use std::sync::OnceLock;
 
     use bevy::prelude::*;
@@ -10,21 +10,21 @@ mod my_interpolate {
 
     /// Automatically figure out the current position of this entity and then
     /// tween from there.
-    pub struct JustTranslateTo {
+    pub struct TranslateTo {
         pub start: OnceLock<Vec3>,
         pub end: Vec3,
     }
 
-    impl JustTranslateTo {
-        pub fn end(end: Vec3) -> JustTranslateTo {
-            JustTranslateTo {
+    impl TranslateTo {
+        pub fn end(end: Vec3) -> TranslateTo {
+            TranslateTo {
                 start: OnceLock::new(),
                 end,
             }
         }
     }
 
-    impl Interpolator for JustTranslateTo {
+    impl Interpolator for TranslateTo {
         type Item = Transform;
 
         fn interpolate(&self, item: &mut Self::Item, value: f32) {
@@ -36,27 +36,53 @@ mod my_interpolate {
 
     /// Automatically figure out the current scale of this entity and then
     /// tween from there.
-    pub struct JustScaleTo {
+    pub struct ScaleTo {
         pub start: OnceLock<Vec3>,
         pub end: Vec3,
     }
 
-    impl JustScaleTo {
-        pub fn end(end: Vec3) -> JustScaleTo {
-            JustScaleTo {
+    impl ScaleTo {
+        pub fn end(end: Vec3) -> ScaleTo {
+            ScaleTo {
                 start: OnceLock::new(),
                 end,
             }
         }
     }
 
-    impl Interpolator for JustScaleTo {
+    impl Interpolator for ScaleTo {
         type Item = Transform;
 
         fn interpolate(&self, item: &mut Self::Item, value: f32) {
             let start = self.start.get_or_init(|| item.scale);
             let end = self.end;
             item.scale = start.lerp(end, value);
+        }
+    }
+
+    /// Automatically figure out the current color of this entity and then
+    /// tween from there.
+    pub struct SpriteColorTo {
+        pub start: OnceLock<Color>,
+        pub end: Color,
+    }
+
+    impl SpriteColorTo {
+        pub fn end(end: Color) -> SpriteColorTo {
+            SpriteColorTo {
+                start: OnceLock::new(),
+                end,
+            }
+        }
+    }
+
+    impl Interpolator for SpriteColorTo {
+        type Item = Sprite;
+
+        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+            let start = *self.start.get_or_init(|| item.color);
+            let end = self.end;
+            interpolate::SpriteColor { start, end }.interpolate(item, value);
         }
     }
 }
@@ -97,7 +123,7 @@ fn click_spawn_circle(
         key.just_pressed(MouseButton::Left) || key.pressed(MouseButton::Right);
     if let Some(coord) = coord.0 {
         if spawn {
-            let start = Vec3::new(coord.x, coord.y, 0.);
+            let start = Vec3::new(coord.x, coord.y, 1.);
             let end = Vec3::new(0., 0., 0.);
             commands
                 .spawn((
@@ -113,16 +139,21 @@ fn click_spawn_circle(
                         .tween_exact(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
-                            ComponentTween::tweener_entity_boxed(
-                                my_interpolate::JustTranslateTo::end(end),
-                            ),
+                            ComponentTween::new_boxed(m::TranslateTo::end(end)),
                         )
                         .tween_exact(
                             ..Duration::from_secs(1),
                             EaseFunction::BackIn,
-                            ComponentTween::tweener_entity_boxed(
-                                my_interpolate::JustScaleTo::end(Vec3::ZERO),
-                            ),
+                            ComponentTween::new_boxed(m::ScaleTo::end(
+                                Vec3::ZERO,
+                            )),
+                        )
+                        .tween_exact(
+                            ..Duration::from_secs(1),
+                            EaseFunction::Linear,
+                            ComponentTween::new_boxed(m::SpriteColorTo::end(
+                                Color::PINK,
+                            )),
                         );
                 });
         }
