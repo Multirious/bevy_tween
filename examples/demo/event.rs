@@ -119,7 +119,7 @@ fn effect_system(
                 }),
                 ComponentTween::new(interpolate::SpriteColor {
                     start: Color::WHITE,
-                    end: Color::WHITE.with_a(0.),
+                    end: Color::PINK.with_a(0.),
                 }),
             ));
         }
@@ -140,8 +140,8 @@ fn effect_system(
                     end: Vec3::new(3., 3., 0.),
                 }),
                 ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE.with_a(0.2),
-                    end: Color::WHITE.with_a(0.),
+                    start: Color::WHITE.with_a(0.5),
+                    end: Color::PINK.with_a(0.),
                 }),
             ));
         }
@@ -160,8 +160,8 @@ fn effect_system(
                     end: Vec3::new(15., 15., 0.),
                 }),
                 ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE.with_a(0.5),
-                    end: Color::WHITE.with_a(0.),
+                    start: Color::WHITE.with_a(1.),
+                    end: Color::PINK.with_a(0.),
                 }),
             ));
         }
