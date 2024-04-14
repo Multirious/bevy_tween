@@ -6,7 +6,7 @@
 
 # `bevy_tween`
 
-A fully ECS-based Bevy animation library.
+A fully ECS-based [Bevy](https://github.com/bevyengine/bevy) animation library.
 Focuses mainly on tweening but being decoupled and flexible and so can do much more.
 
 This is a young plugin and APIs are to be fleshed out.
@@ -34,10 +34,11 @@ See changelog [here](CHANGELOG.md).
 
 Goals:
 - [x] Flexible 🎉
-- [ ] Built-in Keyframe animation support via `splines`.
+- [ ] Built-in Keyframe animation support.
 - integration with other crates (?)
   - [ ] `bevy_animation`
-- [ ] Editor. While the original goal is to just be a tweening from code crate,
+  - [ ] `bevy_lookup_curve`
+- [ ] Editor. While the original goal for this crate is tweening from code,
        this crate absolutely has the capability to work on any complex animations.
        The editor will aid in such jobs.
   - Real-time display at any point in time in the animation.
@@ -84,34 +85,6 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 - `"bevy_sprite"`, enabled by default.<br/>
   enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite.
 
-## Demos
-
-A square will follow your circle with configurable animation.<br>
-`cargo run --example follow -F bevy/bevy_winit`<br>
-
-https://github.com/Multirious/bevy_tween/assets/77918086/d582c2de-0f54-4b22-be03-e3bff3348deb
-
----
-
-Click left to spawn a circle. Hold right click to repetitively spawn a circle every frame.<br>
-`cargo run --example click -F bevy/bevy_winit`<br>
-
-https://github.com/Multirious/bevy_tween/assets/77918086/369abdec-32d0-482f-8f2d-b9bb8829ceca
-
----
-
-Hold left click to increase the effect intensitiy.<br>
-`cargo run --example hold -F bevy/bevy_winit`<br>
-
-https://github.com/Multirious/bevy_tween/assets/77918086/33a297a6-19f2-4146-a906-1a88ff037ab3
-
----
-
-Showcasing the tween event feature.<br>
-`cargo run --example event -F bevy/bevy_winit`<br>
-
-https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7-29671f971e6e
-
 
 
 ## Bevy Version Support
@@ -154,3 +127,31 @@ inclusion in the work by you, as defined in the Apache-2.0 license, shall be dua
 licensed as above, without any additional terms or conditions.
 
 <img src="https://github.com/Multirious/bevy_tween/assets/77918086/dbebd0c3-f4b0-432b-8778-70413a6dfa50" width="100%"/>
+
+## Demos
+
+A square will follow your circle with configurable animation.<br>
+`cargo run --example follow -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/d582c2de-0f54-4b22-be03-e3bff3348deb
+
+---
+
+Click left to spawn a circle. Hold right click to repetitively spawn a circle every frame.<br>
+`cargo run --example click -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/369abdec-32d0-482f-8f2d-b9bb8829ceca
+
+---
+
+Hold left click to increase the effect intensitiy.<br>
+`cargo run --example hold -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/33a297a6-19f2-4146-a906-1a88ff037ab3
+
+---
+
+Showcasing the tween event feature.<br>
+`cargo run --example event -F bevy/bevy_winit`<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7-29671f971e6e
