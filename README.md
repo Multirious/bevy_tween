@@ -130,28 +130,35 @@ licensed as above, without any additional terms or conditions.
 
 ## Demos
 
-A square will follow your circle with configurable animation.<br>
 `cargo run --example follow -F bevy/bevy_winit`<br>
+A square will follow your circle with configurable animation.<br>
 
 https://github.com/Multirious/bevy_tween/assets/77918086/d582c2de-0f54-4b22-be03-e3bff3348deb
 
 ---
 
-Click left to spawn a circle. Hold right click to repetitively spawn a circle every frame.<br>
 `cargo run --example click -F bevy/bevy_winit`<br>
+Click left to spawn a circle. Hold right click to repetitively spawn a circle every frame.<br>
 
 https://github.com/Multirious/bevy_tween/assets/77918086/369abdec-32d0-482f-8f2d-b9bb8829ceca
 
 ---
 
-Hold left click to increase the effect intensitiy.<br>
 `cargo run --example hold -F bevy/bevy_winit`<br>
+Hold left click to increase the effect intensitiy.<br>
 
 https://github.com/Multirious/bevy_tween/assets/77918086/33a297a6-19f2-4146-a906-1a88ff037ab3
 
 ---
 
-Showcasing the tween event feature.<br>
 `cargo run --example event -F bevy/bevy_winit`<br>
+Showcasing the tween event feature.<br>
 
 https://github.com/Multirious/bevy_tween/assets/77918086/593c9b64-6e7f-40bf-b0b7-29671f971e6e
+
+---
+
+`cargo run --example sprite_sheet -F bevy/bevy_winit`<br>
+Sprite Sheet animation.<br>
+
+https://github.com/Multirious/bevy_tween/assets/77918086/e3997b06-38e6-4add-85f5-a885b69c6687

@@ -109,6 +109,14 @@ required-features = [
 ]
 
 [[example]]
+name = "sprite_sheet"
+path = "examples/demo/sprite_sheet.rs"
+required-features = [
+  "bevy_sprite",
+  "span_tween",
+]
+
+[[example]]
 name = "span_tween"
 path = "examples/span_tween/span_tween.rs"
 required-features = [
