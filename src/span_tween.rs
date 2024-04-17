@@ -116,6 +116,7 @@ use std::{cmp::Ordering, ops, time::Duration};
 
 use crate::utils;
 use bevy::{ecs::system::EntityCommands, prelude::*};
+#[cfg(feature = "bevy_eventlistener")]
 use bevy_eventlistener::prelude::*;
 use tween_timer::{Repeat, RepeatStyle};
 
