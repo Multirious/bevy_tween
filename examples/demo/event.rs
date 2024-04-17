@@ -44,13 +44,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 texture: asset_server.load("triangle_filled.png"),
                 ..Default::default()
             },
-            SpanTweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
+            TweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
         ))
         .with_children(|c| {
             // &'static str is available as an default event data but it's
             // recommended to use dedicated custom type instead to leverage the
             // rust type system.
-            c.span_tweens()
+            c.tweens()
                 .tween_event(TweenEventData::with_data("bump"))
                 .tween(
                     secs(1.),
@@ -111,7 +111,7 @@ fn effect_system(
                     transform: Transform::from_translation(effect_pos.trail),
                     ..Default::default()
                 },
-                SpanTweenerBundle::new(secs(1.)).tween_here(),
+                TweenerBundle::new(secs(1.)).tween_here(),
                 EaseFunction::QuinticOut,
                 ComponentTween::new(interpolate::Translation {
                     start: effect_pos.trail,
@@ -133,7 +133,7 @@ fn effect_system(
                     ),
                     ..Default::default()
                 },
-                SpanTweenerBundle::new(secs(0.1)).tween_here(),
+                TweenerBundle::new(secs(0.1)).tween_here(),
                 EaseFunction::Linear,
                 ComponentTween::new(interpolate::Scale {
                     start: Vec3::new(0.5, 0.5, 0.),
@@ -153,7 +153,7 @@ fn effect_system(
                     transform: Transform::from_translation(effect_pos.boom),
                     ..Default::default()
                 },
-                SpanTweenerBundle::new(secs(0.5)).tween_here(),
+                TweenerBundle::new(secs(0.5)).tween_here(),
                 EaseFunction::QuadraticOut,
                 ComponentTween::new(interpolate::Scale {
                     start: Vec3::new(1., 1., 0.),
@@ -172,7 +172,7 @@ fn effect_system(
 fn despawn_effect_system(
     mut commands: Commands,
     q_effect: Query<(), With<Effect>>,
-    mut ended: EventReader<SpanTweenerEnded>,
+    mut ended: EventReader<TweenerEnded>,
 ) {
     ended.read().for_each(|ended| {
         if ended.is_completed() && q_effect.contains(ended.tweener) {

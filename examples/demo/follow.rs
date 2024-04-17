@@ -4,7 +4,7 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-use bevy_tween::{prelude::*, span_tween::SpanTweener};
+use bevy_tween::{prelude::*, tweener::Tweener};
 
 fn main() {
     App::new()
@@ -81,10 +81,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
             // Spawning a tweener that's responsible for a rotating effect
             c.spawn((
-                SpanTweenerBundle::new(Duration::from_secs(2))
+                TweenerBundle::new(Duration::from_secs(2))
                     .with_repeat(Repeat::Infinitely)
                     .with_repeat_style(RepeatStyle::PingPong),
-                SpanTweenBundle::new(..Duration::from_secs(2)),
+                TimeSpan::try_from(..Duration::from_secs(2)).unwrap(),
                 EaseFunction::CubicInOut,
                 ComponentTween::tweener_parent_boxed(interpolate::closure(
                     |transform: &mut Transform, value| {
@@ -99,8 +99,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
             c.spawn((
-                SpanTweenerBundle::new(Duration::from_secs(1)),
-                SpanTweenBundle::new(..Duration::from_secs(1)),
+                TweenerBundle::new(Duration::from_secs(1)),
+                TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
                 EaseFunction::QuinticIn,
                 ComponentTween::tweener_parent(interpolate::Scale {
                     start: Vec3::ZERO,
@@ -116,7 +116,7 @@ fn jeb_follows_cursor(
     config: Res<Config>,
     q_jeb: Query<&Transform, With<Jeb>>,
     q_jeb_translation_tweener: Query<
-        (Entity, Option<&SpanTweener>),
+        (Entity, Option<&Tweener>),
         With<JebTranslationTweener>,
     >,
     mut cursor_moved: EventReader<CursorMoved>,
@@ -139,8 +139,8 @@ fn jeb_follows_cursor(
     };
     if update {
         commands.entity(jeb_tweener_entity).insert((
-            SpanTweenerBundle::new(config.tween_duration),
-            SpanTweenBundle::new(..config.tween_duration),
+            TweenerBundle::new(config.tween_duration),
+            TimeSpan::try_from(..config.tween_duration).unwrap(),
             config.tween_ease, // don't forget the ease
             // You can have multiple tween in the same Entity as long as their
             // type is differernt.

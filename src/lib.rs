@@ -1,5 +1,5 @@
-//! All examples in this crate will be using the [`span_tween`] implementation
-//! which requires the feature "span_tween" and it is enabled by default.
+//! All examples in this crate will be using the default tweener implementation
+//! which requires the feature "default_tweener" and it is enabled by default.
 //!
 //! # Getting started
 //!
@@ -28,7 +28,7 @@
 //!   [`TargetResource`].
 //! - "**How**" to interpolate, such as [`interpolate::Translation`] and
 //!   [`interpolate::SpriteColor`]. And they're used with something like [`EaseFunction`]
-//! - "**When**" to interpolate such as [`TweenTimeSpan`].
+//! - "**When**" to interpolate such as [`TimeSpan`].
 //!
 //! # Multi-entities architecture
 //!
@@ -36,7 +36,7 @@
 //! Generally implemented by using child-parent hierarchy. The exact
 //! details is specific to a tweener/tween implementation.
 //!
-//! See [span tween structure](span_tween#entity-structure).
+//! See [tweener structure](tweener#entity-structure).
 //!
 //! # Examples
 //!
@@ -92,9 +92,9 @@
 //!
 //! ## Usages
 //!
-//! Run `cargo run --example span_tween` to see this in action.
+//! Run `cargo run --example entity_structure` to see this in action.
 //! ```no_run
-#![doc = include_str!("../examples/span_tween/span_tween.rs")]
+#![doc = include_str!("../examples/entity_structure.rs")]
 //! ```
 //! 
 //! [`Tween`]: tween::Tween
@@ -105,7 +105,7 @@
 //! [`TargetComponent`]: tween::TargetComponent
 //! [`TargetAsset`]: tween::TargetAsset
 //! [`TargetResource`]: tween::TargetResource
-//! [`TweenTimeSpan`]: span_tween::TweenTimeSpan
+//! [`TimeSpan`]: tweener::TimeSpan
 //! [`ComponentTween`]: tween::ComponentTween
 //! [`ComponentTweenDyn`]: tween::ComponentTweenDyn
 #![allow(clippy::needless_doctest_main)]
@@ -122,8 +122,8 @@ pub mod interpolation;
 pub mod tween;
 pub mod tween_timer;
 
-#[cfg(feature = "span_tween")]
-pub mod span_tween;
+#[cfg(feature = "default_tweener")]
+pub mod tweener;
 
 /// Commonly used items
 pub mod prelude {
@@ -134,12 +134,12 @@ pub mod prelude {
 
     pub use crate::tween_timer::{Repeat, RepeatStyle};
 
-    #[cfg(feature = "span_tween")]
+    #[cfg(feature = "default_tweener")]
     #[allow(deprecated)]
-    pub use crate::span_tween::{
+    pub use crate::tweener::{
         span_tween, ChildSpanTweenBuilderExt, SpanTweenBundle,
-        SpanTweenerBundle, SpanTweenerEnded, SpanTweensBuilderExt,
-        WorldChildSpanTweenBuilderExt,
+        SpanTweenerBundle, SpanTweenerEnded, TimeSpan, TweenerBundle,
+        TweenerEnded, TweensBuilderExt, WorldChildSpanTweenBuilderExt,
     };
 
     pub use crate::tween::{TweenEvent, TweenEventData};
@@ -187,7 +187,7 @@ pub use tween::tween_event_taking_system;
 /// - [`interpolate::DefaultInterpolatorsPlugin`]
 /// - [`interpolate::DefaultDynInterpolatorsPlugin`]
 /// - [`interpolation::EaseFunctionPlugin`]
-/// - [`span_tween::SpanTweenPlugin`] if `"span_tween"` feature is enabled.
+/// - [`tweener::TweenerPlugin`] if `"default_tweener"` feature is enabled.
 pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
@@ -198,8 +198,8 @@ impl PluginGroup for DefaultTweenPlugins {
             .add(interpolate::DefaultDynInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin)
             .add(tween::DefaultTweenEventsPlugin);
-        #[cfg(feature = "span_tween")]
-        let p = p.add(span_tween::SpanTweenPlugin);
+        #[cfg(feature = "default_tweener")]
+        let p = p.add(tweener::TweenerPlugin);
         p
     }
 }
@@ -267,10 +267,10 @@ impl Plugin for TweenCorePlugin {
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
     /// This set is for systems that responsible for ticking any
-    /// tweener such as [`span_tween::tick_span_tweener_system`].
+    /// tweener such as [`tweener::tick_tweener_system`].
     TickTweener,
     /// This set is for systems that responsible for updating any
-    /// tweener such as [`span_tween::span_tweener_system`].
+    /// tweener such as [`tweener::tweener_system`].
     Tweener,
     /// This set is for systems that responsible for updating any
     /// [`tween::TweenInterpolationValue`] such as

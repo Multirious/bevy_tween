@@ -2,8 +2,8 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
-    prelude::*, resource_tween_system, span_tween::SpanTweener,
-    tween_timer::AnimationDirection,
+    prelude::*, resource_tween_system, tween_timer::AnimationDirection,
+    tweener::Tweener,
 };
 use rand::prelude::*;
 
@@ -65,8 +65,8 @@ fn setup(
         .id();
     commands.spawn((
         EffectTweener,
-        SpanTweenerBundle::new(Duration::from_secs(1)),
-        SpanTweenBundle::new(..Duration::from_secs(1)),
+        TweenerBundle::new(Duration::from_secs(1)),
+        TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
         EaseFunction::QuarticIn,
         ResourceTween::new(my_interpolate::EffectIntensity {
             start: 0.,
@@ -82,9 +82,9 @@ fn setup(
     ));
     commands.spawn((
         RotateTweener,
-        SpanTweenerBundle::new(Duration::from_secs_f32(1.))
+        TweenerBundle::new(Duration::from_secs_f32(1.))
             .with_repeat(Repeat::Infinitely),
-        SpanTweenBundle::new(..Duration::from_secs_f32(1.)),
+        TimeSpan::try_from(..Duration::from_secs_f32(1.)).unwrap(),
         EaseFunction::Linear,
         ComponentTween::new_target(
             big_x,
@@ -97,7 +97,7 @@ fn setup(
 }
 
 fn mouse_hold(
-    mut q_effect_tween_timer: Query<&mut SpanTweener, With<EffectTweener>>,
+    mut q_effect_tween_timer: Query<&mut Tweener, With<EffectTweener>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
@@ -111,7 +111,7 @@ fn mouse_hold(
 fn big_x_do_effect(
     effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
-    mut q_rotate_tweener: Query<&mut SpanTweener, With<RotateTweener>>,
+    mut q_rotate_tweener: Query<&mut Tweener, With<RotateTweener>>,
 ) {
     let mut rng = rand::thread_rng();
     let dx: f32 = rng.gen();

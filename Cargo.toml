@@ -27,14 +27,14 @@ rand = "0.8.5"
 
 [features]
 default = [
-  "span_tween",
+  "default_tweener",
   "bevy_asset",
   "bevy_render",
   "bevy_sprite"
 ]
 
-# Tweener implementation by defining a tween in range of time.
-span_tween = []
+# Default tweener implementation by defining a tween in range of time.
+default_tweener = []
 
 # Adds tweening systems for asset
 bevy_asset = [ "bevy/bevy_asset" ]
@@ -52,7 +52,7 @@ path = "examples/animation/banner_bounce.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
@@ -61,7 +61,7 @@ path = "examples/animation/banner_triangle.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
@@ -69,7 +69,7 @@ name = "thumbnail_triangle"
 path = "examples/animation/thumbnail_triangle.rs"
 required-features = [
   "bevy_sprite",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
@@ -78,7 +78,7 @@ path = "examples/demo/follow.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
@@ -87,7 +87,7 @@ path = "examples/demo/click.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
@@ -96,7 +96,7 @@ path = "examples/demo/hold.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
@@ -105,7 +105,7 @@ path = "examples/demo/event.rs"
 required-features = [
   "bevy_sprite",
   "bevy_asset",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
@@ -113,12 +113,12 @@ name = "sprite_sheet"
 path = "examples/demo/sprite_sheet.rs"
 required-features = [
   "bevy_sprite",
-  "span_tween",
+  "default_tweener",
 ]
 
 [[example]]
-name = "span_tween"
-path = "examples/span_tween/span_tween.rs"
+name = "entity_structure"
+path = "examples/entity_structure.rs"
 required-features = [
-  "span_tween",
+  "default_tweener",
 ]

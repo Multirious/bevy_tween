@@ -193,11 +193,9 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         Duration::from_secs_f32(secs)
     }
     commands
-        .spawn(
-            SpanTweenerBundle::new(secs(12.)).with_repeat(Repeat::Infinitely),
-        )
+        .spawn(TweenerBundle::new(secs(12.)).with_repeat(Repeat::Infinitely))
         .with_children(|c| {
-            c.span_tweens()
+            c.tweens()
                 // [ bevy_tween_text ] ========================================
                 .tween_exact(
                     secs(0.)..=secs(0.),

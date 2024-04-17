@@ -1,24 +1,23 @@
-//! Module containing span tween implementation
+//! Module containing this crate's default tweener implementation
 //!
 //! # Span tween
 //!
 //! **Plugins**:
-//! - [`SpanTweenPlugin`]
+//! - [`TweenerPlugin`]
 //!
 //! **Components**:
-//! - [`SpanTweener`]
-//! - [`TweenTimeSpan`]
+//! - [`Tweener`]
+//! - [`TimeSpan`]
 //!
 //! **Bundles**:
-//! - [`SpanTweenerBundle`]
-//! - [`SpanTweenBundle`]
+//! - [`TweenerBundle`]
 //!
 //! **Events**:
-//! - [`SpanTweenerEnded`]
+//! - [`TweenerEnded`]
 //!
 //! **Systems**:
-//! - [`span_tweener_system`]
-//! - [`tick_span_tweener_system`]
+//! - [`tweener_system`]
+//! - [`tick_tweener_system`]
 //!
 //! ## Entity structure
 //!
@@ -32,8 +31,8 @@
 //!   let my_entity = commands.spawn(SpriteBundle::default()).id();
 //!   ```
 //!  
-//! We can create a span tweener by:
-//! - Span tween in the same entity as a span tweener.<br/>
+//! We can create a tweener by:
+//! - Tween in the same entity as a tweener.<br/>
 //!   This is the case where you might want to make a simple animation where
 //!   there's not many parameteres. Because an entity can only have one unique
 //!   component, it limits on what animation you can achieve with this.
@@ -44,13 +43,13 @@
 //!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
 //!   # let mut commands = Commands::new(&mut commands_queue, &world);
 //!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
-//!   // Spawning some span tweener
+//!   // Spawning some tweener
 //!   commands.spawn((
-//!       // The span tweener:
-//!       SpanTweenerBundle::new(Duration::from_secs(1)),
+//!       // The tweener:
+//!       TweenerBundle::new(Duration::from_secs(1)),
 //!       // The tween:
 //!       // Tween this from the start to the second 1.
-//!       SpanTweenBundle::new(..Duration::from_secs(1)),
+//!       TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
 //!       // Tween this with ease quadratic out.
 //!       EaseFunction::QuadraticOut,
 //!       // Tween a component.
@@ -65,10 +64,10 @@
 //!       )
 //!   ));
 //!   ```
-//! - Span tween(s) as a child of a span tweener.<br/>
+//! - Tween(s) as a child of a tweener.<br/>
 //!   This is the case where you want to make a more complex animation. By having
-//!   span tweens as span tweener's children, you can have any number of
-//!   span tween types you wanted .
+//!   tweens as tweener's children, you can have any number of
+//!   tween types you wanted .
 //!   ```no_run
 //!   # use bevy::prelude::*;
 //!   # use bevy_tween::prelude::*;
@@ -76,14 +75,14 @@
 //!   # let mut commands_queue = bevy::ecs::system::CommandQueue::default();
 //!   # let mut commands = Commands::new(&mut commands_queue, &world);
 //!   # let my_entity = commands.spawn(SpriteBundle::default()).id();
-//!   // Spawning some span tweener
+//!   // Spawning some tweener
 //!   commands.spawn(
-//!       // The span tweener:
-//!       SpanTweenerBundle::new(Duration::from_secs(1)),
+//!       // The tweener:
+//!       TweenerBundle::new(Duration::from_secs(1)),
 //!   ).with_children(|c| {
-//!       // The span tween:
+//!       // The tween:
 //!       c.spawn((
-//!           SpanTweenBundle::new(..Duration::from_secs(1)),
+//!           TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
 //!           EaseFunction::QuadraticOut,
 //!           ComponentTween::new_target(
 //!               my_entity,
@@ -93,11 +92,11 @@
 //!               }
 //!           )
 //!       ));
-//!      // spawn some more span tween if needed.
+//!      // spawn some more tween if needed.
 //!      // c.spawn( ... );
 //!
 //!      // we can also uses the builder
-//!      c.span_tweens().tween(
+//!      c.tweens().tween(
 //!          Duration::from_secs(1),
 //!          EaseFunction::QuadraticOut,
 //!          ComponentTween::new_target(
@@ -127,9 +126,9 @@ use crate::{
 
 /// Plugin for using span tween
 #[derive(Debug)]
-pub struct SpanTweenPlugin;
+pub struct TweenerPlugin;
 
-impl Plugin for SpanTweenPlugin {
+impl Plugin for TweenerPlugin {
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
@@ -143,29 +142,32 @@ impl Plugin for SpanTweenPlugin {
         app.add_systems(
             app_resource.schedule,
             (
-                tick_span_tweener_system
-                    .in_set(crate::TweenSystemSet::TickTweener),
-                span_tweener_system.in_set(crate::TweenSystemSet::Tweener),
+                tick_tweener_system.in_set(crate::TweenSystemSet::TickTweener),
+                tweener_system.in_set(crate::TweenSystemSet::Tweener),
             ),
         )
-        .register_type::<SpanTweener>()
+        .register_type::<Tweener>()
         .register_type::<TimeBound>()
-        .register_type::<TweenTimeSpan>()
-        .add_event::<SpanTweenerEnded>();
+        .register_type::<TimeSpan>()
+        .add_event::<TweenerEnded>();
     }
 }
+
+#[deprecated(since = "0.5.0", note = "`SpanTweener` is renamed to `Tweener`")]
+#[allow(missing_docs)]
+pub type SpanTweener = Tweener;
 
 /// Span tweener
 #[derive(Debug, Default, Component, Clone, PartialEq, Reflect)]
 #[reflect(Component)]
-pub struct SpanTweener {
+pub struct Tweener {
     /// The inner timer
     pub timer: TweenTimer,
 }
 
-impl From<TweenTimer> for SpanTweener {
+impl From<TweenTimer> for Tweener {
     fn from(value: TweenTimer) -> Self {
-        SpanTweener { timer: value }
+        Tweener { timer: value }
     }
 }
 
@@ -201,10 +203,10 @@ enum DurationQuotient {
     After,
 }
 
-/// Error type for when creating a new [`TweenTimeSpan`].
+/// Error type for when creating a new [`TimeSpan`].
 #[derive(Debug)]
-pub enum NewTweenTimeSpanError {
-    /// The provided min, max will result in a [`TweenTimeSpan`] that does not
+pub enum NewTimeSpanError {
+    /// The provided min, max will result in a [`TimeSpan`] that does not
     /// appear on a timeline
     NotTime {
         #[allow(missing_docs)]
@@ -221,51 +223,55 @@ pub enum NewTweenTimeSpanError {
     },
 }
 
-impl std::error::Error for NewTweenTimeSpanError {}
-impl std::fmt::Display for NewTweenTimeSpanError {
+impl std::error::Error for NewTimeSpanError {}
+impl std::fmt::Display for NewTimeSpanError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            NewTweenTimeSpanError::NotTime { min, max } => {
+            NewTimeSpanError::NotTime { min, max } => {
                 write!(f, "This span does not contain any time: min {min:?} max {max:?}")
             }
-            NewTweenTimeSpanError::MinGreaterThanMax { min, max } => {
+            NewTimeSpanError::MinGreaterThanMax { min, max } => {
                 write!(f, "This span has min greater than max: min {min:?} max {max:?}")
             }
         }
     }
 }
 
+#[deprecated(
+    since = "0.5.0",
+    note = "`TweenTimeSpan ` is renamed to `TimeSpan`"
+)]
+#[allow(missing_docs)]
+pub type TweenTimeSpan = TimeSpan;
+
 /// Define the range of time for a span tween that will be interpolating for.
 #[derive(Debug, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
 #[reflect(Component)]
-pub struct TweenTimeSpan {
-    /// Minimum time for the span tween.
+pub struct TimeSpan {
+    /// Minimum time for the tween.
     min: TimeBound,
-    /// Maximum time for the span tween.
+    /// Maximum time for the tween.
     max: TimeBound,
 }
-impl TweenTimeSpan {
-    /// Create a new [`TweenTimeSpan`] unchecked for invalid min, max.
-    pub(crate) fn new_unchecked(
-        min: TimeBound,
-        max: TimeBound,
-    ) -> TweenTimeSpan {
-        TweenTimeSpan { min, max }
+impl TimeSpan {
+    /// Create a new [`TimeSpan`] unchecked for invalid min, max.
+    pub(crate) fn new_unchecked(min: TimeBound, max: TimeBound) -> TimeSpan {
+        TimeSpan { min, max }
     }
 
-    /// Create a new [`TweenTimeSpan`]
+    /// Create a new [`TimeSpan`]
     pub fn new(
         min: TimeBound,
         max: TimeBound,
-    ) -> Result<TweenTimeSpan, NewTweenTimeSpanError> {
+    ) -> Result<TimeSpan, NewTimeSpanError> {
         if matches!(
             (min, max),
             (TimeBound::Exclusive(_), TimeBound::Exclusive(_))
         ) && min.duration() == max.duration()
         {
-            return Err(NewTweenTimeSpanError::NotTime { min, max });
+            return Err(NewTimeSpanError::NotTime { min, max });
         } else if min.duration() > max.duration() {
-            return Err(NewTweenTimeSpanError::MinGreaterThanMax { min, max });
+            return Err(NewTimeSpanError::MinGreaterThanMax { min, max });
         }
         Ok(Self::new_unchecked(min, max))
     }
@@ -298,94 +304,101 @@ impl TweenTimeSpan {
     }
 }
 
-impl Default for TweenTimeSpan {
+impl Default for TimeSpan {
     fn default() -> Self {
-        TweenTimeSpan::try_from(Duration::ZERO..Duration::ZERO).unwrap()
+        TimeSpan::try_from(Duration::ZERO..Duration::ZERO).unwrap()
     }
 }
 
-impl TryFrom<ops::Range<Duration>> for TweenTimeSpan {
-    type Error = NewTweenTimeSpanError;
+impl TryFrom<ops::Range<Duration>> for TimeSpan {
+    type Error = NewTimeSpanError;
 
     fn try_from(range: ops::Range<Duration>) -> Result<Self, Self::Error> {
-        TweenTimeSpan::new(
+        TimeSpan::new(
             TimeBound::Inclusive(range.start),
             TimeBound::Exclusive(range.end),
         )
     }
 }
-impl TryFrom<ops::RangeInclusive<Duration>> for TweenTimeSpan {
-    type Error = NewTweenTimeSpanError;
+impl TryFrom<ops::RangeInclusive<Duration>> for TimeSpan {
+    type Error = NewTimeSpanError;
 
     fn try_from(
         range: ops::RangeInclusive<Duration>,
     ) -> Result<Self, Self::Error> {
-        TweenTimeSpan::new(
+        TimeSpan::new(
             TimeBound::Inclusive(*range.start()),
             TimeBound::Inclusive(*range.end()),
         )
     }
 }
 
-impl TryFrom<ops::RangeTo<Duration>> for TweenTimeSpan {
-    type Error = NewTweenTimeSpanError;
+impl TryFrom<ops::RangeTo<Duration>> for TimeSpan {
+    type Error = NewTimeSpanError;
 
     fn try_from(range: ops::RangeTo<Duration>) -> Result<Self, Self::Error> {
-        TweenTimeSpan::new(
+        TimeSpan::new(
             TimeBound::Inclusive(Duration::ZERO),
             TimeBound::Exclusive(range.end),
         )
     }
 }
 
-impl TryFrom<ops::RangeToInclusive<Duration>> for TweenTimeSpan {
-    type Error = NewTweenTimeSpanError;
+impl TryFrom<ops::RangeToInclusive<Duration>> for TimeSpan {
+    type Error = NewTimeSpanError;
 
     fn try_from(
         range: ops::RangeToInclusive<Duration>,
     ) -> Result<Self, Self::Error> {
-        TweenTimeSpan::new(
+        TimeSpan::new(
             TimeBound::Inclusive(Duration::ZERO),
             TimeBound::Inclusive(range.end),
         )
     }
 }
 
+#[deprecated(
+    since = "0.5.0",
+    note = "`SpanTweenerBundle` is renamed to `TweenerBundle`"
+)]
+#[allow(missing_docs)]
+pub type SpanTweenerBundle = TweenerBundle;
+
 /// Bundle for a span tweener
 #[derive(Default, Bundle)]
-pub struct SpanTweenerBundle {
-    /// [`SpanTweener`] span tweener intestine
-    pub span_tweener: SpanTweener,
+pub struct TweenerBundle {
+    /// [`Tweener`] span tweener intestine
+    pub tweener: Tweener,
     /// [`TweenTimer`] marker to declare a tweener
     pub tweener_marker: TweenerMarker,
 }
 
-impl SpanTweenerBundle {
-    /// Create new [`SpanTweenerBundle`] with `duration`
+impl TweenerBundle {
+    /// Create new [`TweenerBundle`] with `duration`
     pub fn new(duration: Duration) -> Self {
-        let mut t = SpanTweenerBundle::default();
-        t.span_tweener.timer.set_length(duration);
+        let mut t = TweenerBundle::default();
+        t.tweener.timer.set_length(duration);
         t
     }
 
-    /// [`SpanTweenerBundle`] with the specified `paused` for the inner
+    /// [`TweenerBundle`] with the specified `paused` for the inner
     /// [`TweenTimer`]
     pub fn with_paused(mut self, paused: bool) -> Self {
-        self.span_tweener.timer.set_paused(paused);
+        self.tweener.timer.set_paused(paused);
         self
     }
 
-    /// [`SpanTweenerBundle`] with the specified `direction` for the inner
+    /// [`TweenerBundle`] with the specified `direction` for the inner
     /// [`TweenTimer`]
     pub fn with_direction(mut self, direction: AnimationDirection) -> Self {
-        self.span_tweener.timer.set_direction(direction);
+        self.tweener.timer.set_direction(direction);
         self
     }
 
-    /// [`SpanTweenerBundle`] with the specified `repeat`
+    /// [`TweenerBundle`] with the specified `repeat`
     /// setting the inner [`TweenTimer`]'s repeat to Some
     pub fn with_repeat(mut self, repeat: tween_timer::Repeat) -> Self {
-        let timer = &mut self.span_tweener.timer;
+        let timer = &mut self.tweener.timer;
         match timer.repeat {
             Some((_, repeat_style)) => {
                 timer.set_repeat(Some((repeat, repeat_style)));
@@ -397,10 +410,10 @@ impl SpanTweenerBundle {
         self
     }
 
-    /// [`SpanTweenerBundle`] with the specified `repeat_style`
+    /// [`TweenerBundle`] with the specified `repeat_style`
     /// setting the inner [`TweenTimer`]'s repeat_style to Some
     pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
-        let timer = &mut self.span_tweener.timer;
+        let timer = &mut self.tweener.timer;
         match timer.repeat {
             Some((repeat, _)) => {
                 timer.set_repeat(Some((repeat, repeat_style)));
@@ -412,27 +425,27 @@ impl SpanTweenerBundle {
         self
     }
 
-    /// [`SpanTweenerBundle`] with without repeat,
+    /// [`TweenerBundle`] with without repeat,
     /// setting the inner [`TweenTimer`]'s repeat to None.
     pub fn without_repeat(mut self) -> Self {
-        self.span_tweener.timer.set_repeat(None);
+        self.tweener.timer.set_repeat(None);
         self
     }
 
-    /// [`SpanTweenerBundle`] with without repeat_style
+    /// [`TweenerBundle`] with without repeat_style
     /// setting the inner [`TweenTimer`]'s repeat_style to None.
     #[deprecated(since = "0.3.0")]
     pub fn without_repeat_style(mut self) -> Self {
-        match &mut self.span_tweener.timer.repeat {
+        match &mut self.tweener.timer.repeat {
             Some((_, repeat_style)) => *repeat_style = RepeatStyle::WrapAround,
             None => {}
         }
         self
     }
 
-    /// [`SpanTweenerBundle`] with [`SpanTweenBundle`] that spans the whole
+    /// [`TweenerBundle`] with [`SpanTweenBundle`] that spans the whole
     /// length of the tweener.
-    /// A convenient shortcut to simply include [`SpanTweenBundle`] and [`SpanTweenerBundle`]
+    /// A convenient shortcut to simply include [`SpanTweenBundle`] and [`TweenerBundle`]
     /// together to quickly create a tween in-place. Can be used to create a very
     /// simple tween entity that doesn't need to use multiple entities.
     ///
@@ -445,7 +458,7 @@ impl SpanTweenerBundle {
     /// # let shortcut =
     /// commands.spawn((
     ///     SpriteBundle::default(),
-    ///     SpanTweenerBundle::new(Duration::from_secs(5))
+    ///     TweenerBundle::new(Duration::from_secs(5))
     ///         .with_repeat(Repeat::infinitely())
     ///         .with_repeat_style(RepeatStyle::PingPong)
     ///         .tween_here(),
@@ -459,10 +472,10 @@ impl SpanTweenerBundle {
     /// # let manual =
     /// commands.spawn((
     ///     SpriteBundle::default(),
-    ///     SpanTweenerBundle::new(Duration::from_secs(5))
+    ///     TweenerBundle::new(Duration::from_secs(5))
     ///         .with_repeat(Repeat::infinitely())
     ///         .with_repeat_style(RepeatStyle::PingPong),
-    ///     SpanTweenBundle::new(..Duration::from_secs(5)),
+    ///     TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
     ///     EaseFunction::QuadraticInOut,
     ///     ComponentTween::tweener_entity(interpolation),
     /// ))
@@ -472,45 +485,57 @@ impl SpanTweenerBundle {
     /// #
     /// # assert!(entity_eq(&app.world, shortcut, manual));
     /// ```
-    pub fn tween_here(self) -> SpanTweenHereBundle {
-        let dur = self.span_tweener.timer.length;
-        SpanTweenHereBundle {
-            span_tweener_bundle: self,
-            span_tween_bundle: SpanTweenBundle::new(..dur),
+    pub fn tween_here(self) -> TweenHereBundle {
+        let dur = self.tweener.timer.length;
+        TweenHereBundle {
+            tweener_bundle: self,
+            time_span: TimeSpan::try_from(..dur).unwrap(),
         }
     }
 }
 
-impl From<TweenTimer> for SpanTweenerBundle {
+impl From<TweenTimer> for TweenerBundle {
     fn from(value: TweenTimer) -> Self {
-        SpanTweenerBundle {
-            span_tweener: SpanTweener { timer: value },
+        TweenerBundle {
+            tweener: Tweener { timer: value },
             tweener_marker: TweenerMarker,
         }
     }
 }
 
-/// Returns from [`SpanTweenerBundle::tween_here`].
-/// This combine [`SpanTweenerBundle`] with [`SpanTweenBundle`] that spans the
+/// Returns from [`TweenerBundle::tween_here`].
+/// This combine [`TweenerBundle`] with [`SpanTweenBundle`] that spans the
 /// whole length of the tweener.
 #[derive(Bundle)]
-pub struct SpanTweenHereBundle {
-    span_tweener_bundle: SpanTweenerBundle,
-    span_tween_bundle: SpanTweenBundle,
+pub struct TweenHereBundle {
+    tweener_bundle: TweenerBundle,
+    time_span: TimeSpan,
 }
 
-/// Bundle for a span tween
-#[derive(Default, Bundle)]
-pub struct SpanTweenBundle {
-    /// [`TweenTimeSpan`] to define the range of time this span tween will work for.
-    pub span: TweenTimeSpan,
-}
+#[allow(deprecated)]
+mod another_lol {
+    use super::*;
 
+    /// Bundle for a span tween
+    #[deprecated(
+        since = "0.5.0",
+        note = "This bundle is unnecessary. Just use `TimeSpan` directly"
+    )]
+    #[derive(Default, Bundle)]
+    pub struct SpanTweenBundle {
+        /// [`TimeSpan`] to define the range of time this span tween will work for.
+        pub span: TimeSpan,
+    }
+}
+#[allow(deprecated)]
+pub use another_lol::SpanTweenBundle;
+
+#[allow(deprecated)]
 impl SpanTweenBundle {
     /// Create a new [`SpanTweenBundle`] from this `span`
     pub fn new<S>(span: S) -> Self
     where
-        S: TryInto<TweenTimeSpan>,
+        S: TryInto<TimeSpan>,
         S::Error: std::fmt::Debug,
     {
         SpanTweenBundle {
@@ -529,11 +554,11 @@ mod lol {
     /// Returns from [`span_tween`]
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+        note = "Use `Tweener` with `Tweener::tween_here` instead"
     )]
     #[derive(Default, Bundle)]
     pub struct QuickSpanTweenBundle {
-        pub(super) span_tweener: SpanTweenerBundle,
+        pub(super) span_tweener: TweenerBundle,
         pub(super) span_tween: SpanTweenBundle,
     }
 }
@@ -545,11 +570,11 @@ impl QuickSpanTweenBundle {
     /// Create new [`QuickSpanTweenBundle`]
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+        note = "Use `Tweener` with `Tweener::tween_here` instead"
     )]
     fn new(duration: Duration) -> Self {
         let mut q = QuickSpanTweenBundle::default();
-        q.span_tweener.span_tweener.timer.set_length(duration);
+        q.span_tweener.tweener.timer.set_length(duration);
         q.span_tween.span = (..duration).try_into().unwrap();
         q
     }
@@ -557,10 +582,10 @@ impl QuickSpanTweenBundle {
     /// Span tweener with this repeat
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+        note = "Use `Tweener` with `Tweener::tween_here` instead"
     )]
     pub fn with_repeat(mut self, repeat: Repeat) -> Self {
-        let timer = &mut self.span_tweener.span_tweener.timer;
+        let timer = &mut self.span_tweener.tweener.timer;
         match timer.repeat {
             Some((_, repeat_style)) => {
                 timer.set_repeat(Some((repeat, repeat_style)));
@@ -575,10 +600,10 @@ impl QuickSpanTweenBundle {
     /// Span tweener with this repeat style
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+        note = "Use `Tweener` with `Tweener::tween_here` instead"
     )]
     pub fn with_repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
-        let timer = &mut self.span_tweener.span_tweener.timer;
+        let timer = &mut self.span_tweener.tweener.timer;
         match timer.repeat {
             Some((repeat, _)) => {
                 timer.set_repeat(Some((repeat, repeat_style)));
@@ -594,17 +619,14 @@ impl QuickSpanTweenBundle {
     /// Note that this delay will be repeated too.
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+        note = "Use `Tweener` with `Tweener::tween_here` instead"
     )]
     pub fn with_delay(mut self, delay: Duration) -> Self {
         let min = self.span_tween.span.min();
         let max = self.span_tween.span.max();
         let length = max.duration() - min.duration();
         self.span_tween.span = (delay..(delay + length)).try_into().unwrap();
-        self.span_tweener
-            .span_tweener
-            .timer
-            .set_length(delay + length);
+        self.span_tweener.tweener.timer.set_length(delay + length);
         self
     }
 }
@@ -634,16 +656,20 @@ impl QuickSpanTweenBundle {
 /// ```
 #[deprecated(
     since = "0.3.0",
-    note = "Use `SpanTweener` with `SpanTweener::tween_here` instead"
+    note = "Use `Tweener` with `Tweener::tween_here` instead"
 )]
 #[allow(deprecated)]
 pub fn span_tween(duration: Duration) -> QuickSpanTweenBundle {
     QuickSpanTweenBundle::new(duration)
 }
 
+#[deprecated(since = "0.5.0", note = "`SpanTweener` is renamed to `Tweener`")]
+#[allow(missing_docs)]
+pub type SpanTweenerEnded = TweenerEnded;
+
 /// Fired when a span tweener repeated or completed
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Event, Reflect)]
-pub struct SpanTweenerEnded {
+pub struct TweenerEnded {
     /// Tween timer that just ended
     pub tweener: Entity,
     /// Currently timer direction. If is [`RepeatStyle::PingPong`], the current
@@ -653,7 +679,7 @@ pub struct SpanTweenerEnded {
     pub with_repeat: Option<Repeat>,
 }
 
-impl SpanTweenerEnded {
+impl TweenerEnded {
     /// Returns true if the tweener's timer is completed.
     /// Completed meaning that there will be nore more ticking and all
     /// configured repeat is exhausted.
@@ -664,14 +690,14 @@ impl SpanTweenerEnded {
     }
 }
 
-/// Tick span tweeners then send [`SpanTweenerEnded`] event if qualified for.
-pub fn tick_span_tweener_system(
+/// Tick span tweeners then send [`TweenerEnded`] event if qualified for.
+pub fn tick_tweener_system(
     time: Res<Time<Real>>,
-    mut q_span_tweener: Query<(Entity, &mut SpanTweener)>,
-    mut ended_writer: EventWriter<SpanTweenerEnded>,
+    mut q_tweener: Query<(Entity, &mut Tweener)>,
+    mut ended_writer: EventWriter<TweenerEnded>,
 ) {
     let delta = time.delta_seconds();
-    q_span_tweener.iter_mut().for_each(|(entity, mut tweener)| {
+    q_tweener.iter_mut().for_each(|(entity, mut tweener)| {
         let timer = &mut tweener.timer;
         if timer.paused || timer.is_completed() {
             return;
@@ -687,7 +713,7 @@ pub fn tick_span_tweener_system(
         if (timer.direction == AnimationDirection::Backward && n <= 0.)
             || (timer.direction == AnimationDirection::Forward && n >= 1.)
         {
-            ended_writer.send(SpanTweenerEnded {
+            ended_writer.send(TweenerEnded {
                 tweener: entity,
                 current_direction: timer.direction,
                 with_repeat: timer.repeat.map(|r| r.0),
@@ -698,22 +724,23 @@ pub fn tick_span_tweener_system(
 
 /// System for updating any span tweens to the correct [`TweenProgress`]
 /// by its span tweener then will call `collaspe_elasped` on the timer.
-pub fn span_tweener_system(
+pub fn tweener_system(
     mut commands: Commands,
     q_other_tweener: Query<(), With<TweenerMarker>>,
-    mut q_span_tweener: Query<
-        (Entity, &mut SpanTweener, Option<&Children>),
+    mut q_tweener: Query<
+        (Entity, &mut Tweener, Option<&Children>),
         Without<SkipTweener>,
     >,
-    mut q_tween: Query<(Entity, Option<&mut TweenProgress>, &TweenTimeSpan)>,
+    mut q_tween: Query<(Entity, Option<&mut TweenProgress>, &TimeSpan)>,
 ) {
     use AnimationDirection::*;
     use DurationQuotient::*;
 
     use crate::tween_timer::RepeatStyle::*;
 
-    q_span_tweener.iter_mut().for_each(
-        |(tweener_entity, mut tweener, children)| {
+    q_tweener
+        .iter_mut()
+        .for_each(|(tweener_entity, mut tweener, children)| {
             let timer = &tweener.timer;
 
             if timer.is_completed() {
@@ -952,12 +979,11 @@ pub fn span_tweener_system(
                 }
             }
             tweener.timer.collaspe_elasped();
-        },
-    );
+        });
 }
 
 /// Convenient builder for building multiple children tweens
-#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilder` instead")]
+#[deprecated(since = "0.3.0", note = "Use `TweensBuilder` instead")]
 pub struct ChildSpanTweenBuilder<'r, 'b> {
     child_builder: &'r mut ChildBuilder<'b>,
 }
@@ -967,7 +993,7 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween.
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweensBuilder::tween_exact` instead"
+        note = "Use `TweensBuilder::tween_exact` instead"
     )]
     pub fn tween<S, I, T>(
         &mut self,
@@ -976,7 +1002,7 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
         tween: T,
     ) -> &mut Self
     where
-        S: TryInto<TweenTimeSpan>,
+        S: TryInto<TimeSpan>,
         S::Error: std::fmt::Debug,
         I: Component + Interpolation,
         T: Bundle,
@@ -988,7 +1014,7 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
     /// [`EntityCommands`].
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweensBuilder::tween_exact_and` instead"
+        note = "Use `TweensBuilder::tween_exact_and` instead"
     )]
     pub fn tween_and<S, I, T, F>(
         &mut self,
@@ -998,14 +1024,14 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
         f: F,
     ) -> &mut Self
     where
-        S: TryInto<TweenTimeSpan>,
+        S: TryInto<TimeSpan>,
         S::Error: std::fmt::Debug,
         I: Component + Interpolation,
         T: Bundle,
         F: FnOnce(EntityCommands<'_>),
     {
         let commands = self.child_builder.spawn((
-            SpanTweenBundle::new(span),
+            span.try_into().unwrap(),
             interpolation,
             bundle,
         ));
@@ -1037,13 +1063,13 @@ impl<'r, 'b> ChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
-#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilderExt` instead")]
+#[deprecated(since = "0.3.0", note = "Use `TweensBuilderExt` instead")]
 #[allow(deprecated)]
 pub trait ChildSpanTweenBuilderExt<'b> {
     /// Create the builder
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweensBuilderExt::span_tweens` instead"
+        note = "Use `TweensBuilderExt::span_tweens` instead"
     )]
     fn child_tweens<'r>(&'r mut self) -> ChildSpanTweenBuilder<'r, 'b>;
 }
@@ -1058,7 +1084,7 @@ impl<'b> ChildSpanTweenBuilderExt<'b> for ChildBuilder<'b> {
 }
 
 /// Convenient builder for building multiple children tweens
-#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilder` instead")]
+#[deprecated(since = "0.3.0", note = "Use `TweensBuilder` instead")]
 pub struct WorldChildSpanTweenBuilder<'r, 'b> {
     world_child_builder: &'r mut WorldChildBuilder<'b>,
 }
@@ -1068,7 +1094,7 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
     /// Create a new span tween.
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweensBuilder::tween_exact` instead"
+        note = "Use `TweensBuilder::tween_exact` instead"
     )]
     pub fn tween<S, I, T>(
         &mut self,
@@ -1077,7 +1103,7 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
         tween: T,
     ) -> &mut Self
     where
-        S: TryInto<TweenTimeSpan>,
+        S: TryInto<TimeSpan>,
         S::Error: std::fmt::Debug,
         I: Component + Interpolation,
         T: Bundle,
@@ -1089,7 +1115,7 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
     /// [`EntityWorldMut`].
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweensBuilder::tween_exact_and` instead"
+        note = "Use `TweensBuilder::tween_exact_and` instead"
     )]
     pub fn tween_and<S, I, T, F>(
         &mut self,
@@ -1099,14 +1125,14 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
         f: F,
     ) -> &mut Self
     where
-        S: TryInto<TweenTimeSpan>,
+        S: TryInto<TimeSpan>,
         S::Error: std::fmt::Debug,
         I: Component + Interpolation,
         T: Bundle,
         F: FnOnce(EntityWorldMut<'_>),
     {
         let commands = self.world_child_builder.spawn((
-            SpanTweenBundle::new(span),
+            span.try_into().unwrap(),
             interpolation,
             bundle,
         ));
@@ -1138,13 +1164,13 @@ impl<'r, 'b> WorldChildSpanTweenBuilder<'r, 'b> {
 }
 
 /// Helper trait
-#[deprecated(since = "0.3.0", note = "Use `SpanTweensBuilderExt` instead")]
+#[deprecated(since = "0.3.0", note = "Use `TweensBuilderExt` instead")]
 #[allow(deprecated)]
 pub trait WorldChildSpanTweenBuilderExt<'b> {
     /// Create the builder
     #[deprecated(
         since = "0.3.0",
-        note = "Use `SpanTweensBuilderExt::span_tweens` instead"
+        note = "Use `TweensBuilderExt::span_tweens` instead"
     )]
     fn child_tweens<'r>(&'r mut self) -> WorldChildSpanTweenBuilder<'r, 'b>;
 }
@@ -1169,14 +1195,14 @@ mod sealed {
     /// Type that can spawn an entity from a bundle
     ///
     /// This trait is sealed and not meant to be implemented outside of the current crate.
-    pub trait EntitySpawnerSealed: sealed::Sealed {
+    pub trait TweenSpanwerSealed: sealed::Sealed {
         type CommandOutput<'c>
         where
             Self: 'c;
         fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_>;
     }
 
-    impl<'a> EntitySpawnerSealed for ChildBuilder<'a> {
+    impl<'a> TweenSpanwerSealed for ChildBuilder<'a> {
         type CommandOutput<'c> = bevy::ecs::system::EntityCommands<'c>
         where Self: 'c;
 
@@ -1185,7 +1211,7 @@ mod sealed {
         }
     }
 
-    impl<'a> EntitySpawnerSealed for WorldChildBuilder<'a> {
+    impl<'a> TweenSpanwerSealed for WorldChildBuilder<'a> {
         type CommandOutput<'c> = EntityWorldMut<'c>
         where Self: 'c;
 
@@ -1198,34 +1224,38 @@ mod sealed {
 /// Type that can spawn an entity from a bundle
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
-pub trait EntitySpawner: sealed::EntitySpawnerSealed {}
-impl<T> EntitySpawner for T where T: sealed::EntitySpawnerSealed {}
+pub trait TweenSpawner: sealed::TweenSpanwerSealed {}
+impl<T> TweenSpawner for T where T: sealed::TweenSpanwerSealed {}
+
+#[deprecated(since = "0.5.0", note = "`SpanTweener` is renamed to `Tweener`")]
+#[allow(missing_docs)]
+pub type SpanTweensBuilder<'r, E> = TweensBuilder<'r, E>;
 
 /// Convenient builder for building multiple children span tweens. This is return
-/// from [`SpanTweensBuilderExt::span_tweens`]
-pub struct SpanTweensBuilder<'r, E>
+/// from [`TweensBuilderExt::tweens`]
+pub struct TweensBuilder<'r, S>
 where
-    E: EntitySpawner,
+    S: TweenSpawner,
 {
-    entity_spawner: &'r mut E,
+    entity_spawner: &'r mut S,
     offset: Duration,
 }
 
-impl<'r, E> SpanTweensBuilder<'r, E>
+impl<'r, S> TweensBuilder<'r, S>
 where
-    E: EntitySpawner,
+    S: TweenSpawner,
 {
-    fn new(entity_spawner: &'r mut E) -> Self {
-        SpanTweensBuilder {
+    fn new(entity_spawner: &'r mut S) -> Self {
+        TweensBuilder {
             entity_spawner,
             offset: Duration::ZERO,
         }
     }
 }
 
-impl<'r, E> SpanTweensBuilder<'r, E>
+impl<'r, S> TweensBuilder<'r, S>
 where
-    E: EntitySpawner,
+    S: TweenSpawner,
 {
     /// Create a new span tween with the supplied span.
     ///
@@ -1244,10 +1274,10 @@ where
     /// commands
     ///     .spawn((
     ///         SpriteBundle::default(),
-    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///         TweenerBundle::new(Duration::from_secs(1)),
     ///     ))
     ///     .with_children(|c| {
-    ///         c.span_tweens().tween_exact(
+    ///         c.tweens().tween_exact(
     ///             ..Duration::from_secs(1),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
@@ -1259,7 +1289,7 @@ where
     ///         // is exactly the same as
     ///
     ///         c.spawn((
-    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ZERO,
@@ -1276,7 +1306,7 @@ where
     /// ```
     pub fn tween_exact(
         &mut self,
-        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
+        span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
@@ -1288,13 +1318,13 @@ where
     /// Create a new span tween with the supplied span then call a closure on it.
     fn tween_exact_and(
         &mut self,
-        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
+        span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
         interpolation: impl Bundle,
         tween: impl Bundle,
-        f: impl FnOnce(E::CommandOutput<'_>),
+        f: impl FnOnce(S::CommandOutput<'_>),
     ) -> &mut Self {
         let commands = self.entity_spawner.spawn((
-            SpanTweenBundle::new(span),
+            span.try_into().unwrap(),
             interpolation,
             tween,
         ));
@@ -1316,7 +1346,7 @@ where
         duration: Duration,
         interpolation: impl Bundle,
         tween: impl Bundle,
-        f: impl FnOnce(E::CommandOutput<'_>),
+        f: impl FnOnce(S::CommandOutput<'_>),
     ) -> &mut Self {
         let start = self.offset;
         let end = self.offset + duration;
@@ -1337,10 +1367,10 @@ where
     /// commands
     ///     .spawn((
     ///         SpriteBundle::default(),
-    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///         TweenerBundle::new(Duration::from_secs(1)),
     ///     ))
     ///     .with_children(|c| {
-    ///         c.span_tweens()
+    ///         c.tweens()
     ///             .tween(
     ///                 Duration::from_secs(1),
     ///                 EaseFunction::Linear,
@@ -1361,7 +1391,7 @@ where
     ///         // is exactly the same as
     ///
     ///         c.spawn((
-    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ZERO,
@@ -1369,9 +1399,9 @@ where
     ///             }),
     ///         ));
     ///         c.spawn((
-    ///             SpanTweenBundle::new(
+    ///             TimeSpan::try_from(
     ///                 Duration::from_secs(1)..Duration::from_secs(2)
-    ///             ),
+    ///             ).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ONE,
@@ -1421,10 +1451,10 @@ where
     /// commands
     ///     .spawn((
     ///         SpriteBundle::default(),
-    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///         TweenerBundle::new(Duration::from_secs(1)),
     ///     ))
     ///     .with_children(|c| {
-    ///         c.span_tweens()
+    ///         c.tweens()
     ///             .tween(
     ///                 Duration::from_secs(1),
     ///                 EaseFunction::Linear,
@@ -1446,7 +1476,7 @@ where
     ///         // is exactly the same as
     ///
     ///         c.spawn((
-    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ZERO,
@@ -1454,9 +1484,9 @@ where
     ///             }),
     ///         ));
     ///         c.spawn((
-    ///             SpanTweenBundle::new(
+    ///             TimeSpan::try_from(
     ///                 Duration::from_secs(2)..Duration::from_secs(3)
-    ///             ),
+    ///             ).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ONE,
@@ -1489,10 +1519,10 @@ where
     /// commands
     ///     .spawn((
     ///         SpriteBundle::default(),
-    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///         TweenerBundle::new(Duration::from_secs(1)),
     ///     ))
     ///     .with_children(|c| {
-    ///         c.span_tweens()
+    ///         c.tweens()
     ///             .tween(
     ///                 Duration::from_secs(1),
     ///                 EaseFunction::Linear,
@@ -1514,7 +1544,7 @@ where
     ///         // is exactly the same as
     ///
     ///         c.spawn((
-    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ZERO,
@@ -1522,7 +1552,7 @@ where
     ///             }),
     ///         ));
     ///         c.spawn((
-    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Scale {
     ///                 start: Vec3::ZERO,
@@ -1554,11 +1584,11 @@ where
     /// commands
     ///     .spawn((
     ///         SpriteBundle::default(),
-    ///         SpanTweenerBundle::new(Duration::from_secs(1)),
+    ///         TweenerBundle::new(Duration::from_secs(1)),
     ///     ))
     ///     .with_children(|c| {
     ///         let mut middle = Duration::default();
-    ///         c.span_tweens()
+    ///         c.tweens()
     ///             .tween(
     ///                 Duration::from_secs(1),
     ///                 EaseFunction::Linear,
@@ -1589,7 +1619,7 @@ where
     ///         // is exactly the same as
     ///
     ///         c.spawn((
-    ///             SpanTweenBundle::new(..Duration::from_secs(1)),
+    ///             TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ZERO,
@@ -1597,7 +1627,7 @@ where
     ///             }),
     ///         ));
     ///         c.spawn((
-    ///             SpanTweenBundle::new(Duration::from_secs(1)..Duration::from_secs(2)),
+    ///             TimeSpan::try_from(Duration::from_secs(1)..Duration::from_secs(2)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Translation {
     ///                 start: Vec3::ONE,
@@ -1605,7 +1635,7 @@ where
     ///             }),
     ///         ));
     ///         c.spawn((
-    ///             SpanTweenBundle::new(Duration::from_secs(1)..Duration::from_secs(2)),
+    ///             TimeSpan::try_from(Duration::from_secs(1)..Duration::from_secs(2)).unwrap(),
     ///             EaseFunction::Linear,
     ///             ComponentTween::tweener_entity(interpolate::Scale {
     ///                 start: Vec3::ZERO,
@@ -1636,11 +1666,10 @@ where
     /// </div>
     pub fn tween_event_exact<Data: Send + Sync + 'static>(
         &mut self,
-        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
+        span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
         data: TweenEventData<Data>,
     ) -> &mut Self {
-        self.entity_spawner
-            .spawn((SpanTweenBundle::new(span), data));
+        self.entity_spawner.spawn((span.try_into().unwrap(), data));
         self
     }
 
@@ -1666,7 +1695,7 @@ where
         self
     }
 
-    /// Accept types that implement [`SpanTweenPreset`].
+    /// Accept types that implement [`TweenPreset`].
     /// This method can be understand as a method that "adds an animation preset"
     /// though technically it can do more than that.
     ///
@@ -1680,14 +1709,14 @@ where
     #[doc = utils::doc_entity_eq_fn!()]
     #[doc = utils::doc_app_test_boilerplate!()]
     /// use bevy_tween::prelude::*;
-    /// use bevy_tween::span_tween::{SpanTweensBuilder, EntitySpawner};
+    /// use bevy_tween::tweener::{TweensBuilder, TweenSpawner};
     /// use bevy_tween::tween::TargetComponent::{self, TweenerEntity};
     ///
-    /// fn up_down<E: EntitySpawner>(
+    /// fn up_down<S: TweenSpawner>(
     ///     target: impl Into<TargetComponent>,
     ///     part_a: Duration,
     ///     part_b: Duration,
-    /// ) -> impl FnOnce(&mut SpanTweensBuilder<E>) {
+    /// ) -> impl FnOnce(&mut TweensBuilder<S>) {
     ///     let target = target.into();
     ///     move |b| {
     ///         b.tween(
@@ -1722,9 +1751,9 @@ where
     /// # let sprite =
     /// commands.spawn((
     ///     SpriteBundle::default(),
-    ///     SpanTweenerBundle::new(Duration::from_secs(9))
+    ///     TweenerBundle::new(Duration::from_secs(9))
     /// )).with_children(|c| {
-    ///     c.span_tweens()
+    ///     c.tweens()
     ///         .add(up_down(TweenerEntity, secs(1.), secs(2.)))
     ///         .add(up_down(TweenerEntity, secs(2.), secs(1.)))
     ///         .add(up_down(TweenerEntity, secs(1.), secs(2.)));
@@ -1732,7 +1761,7 @@ where
     ///     // is exactly the same as
     ///     // (Look how much code we just saved ourselves from!)
     ///
-    ///     c.span_tweens()
+    ///     c.tweens()
     ///         .tween(
     ///             secs(1.),
     ///             EaseFunction::Linear,
@@ -1791,50 +1820,60 @@ where
     /// # assert!(entity_eq(&app.world, children[4], children[10]));
     /// # assert!(entity_eq(&app.world, children[5], children[11]));
     /// ```
-    pub fn add(&mut self, f: impl SpanTweenPreset<E>) -> &mut Self {
+    pub fn add(&mut self, f: impl TweenPreset<S>) -> &mut Self {
         f.build(self);
         self
     }
 }
 
-/// Extension trait that allows you to quickly construct [`SpanTweensBuilder`]
+/// Extension trait that allows you to quickly construct [`TweensBuilder`]
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
-pub trait SpanTweensBuilderExt: sealed::Sealed {
-    /// Output from [`Self::span_tweens()`]
+pub trait TweensBuilderExt: sealed::Sealed {
+    /// Output from [`Self::tweens()`]
     type Output<'a>
     where
         Self: 'a;
-    /// Create a [`SpanTweensBuilder`] from this thing
+    /// Create a [`TweensBuilder`] from this thing
+    #[deprecated(
+        since = "0.5.0",
+        note = "use TweensBuilderExt::tweens instead"
+    )]
     fn span_tweens(&mut self) -> Self::Output<'_>;
+    /// Create a [`TweensBuilder`] from this thing
+    fn tweens(&mut self) -> Self::Output<'_>;
 }
 
-impl<E> SpanTweensBuilderExt for E
+impl<S> TweensBuilderExt for S
 where
-    E: EntitySpawner,
+    S: TweenSpawner,
 {
-    type Output<'a> = SpanTweensBuilder<'a, Self>
+    type Output<'a> = TweensBuilder<'a, Self>
     where
         Self: 'a;
 
     fn span_tweens(&mut self) -> Self::Output<'_> {
-        SpanTweensBuilder::new(self)
+        TweensBuilder::new(self)
+    }
+
+    fn tweens(&mut self) -> Self::Output<'_> {
+        TweensBuilder::new(self)
     }
 }
 
 /// Reusuable group of span tweens animation, a preset.
-/// Use with [`SpanTweensBuilder::add`].
-pub trait SpanTweenPreset<E: EntitySpawner> {
-    /// Build this preset to the supplied [`SpanTweensBuilder`]
-    fn build(self, b: &mut SpanTweensBuilder<E>);
+/// Use with [`TweensBuilder::add`].
+pub trait TweenPreset<S: TweenSpawner> {
+    /// Build this preset to the supplied [`TweensBuilder`]
+    fn build(self, b: &mut TweensBuilder<S>);
 }
 
-impl<E, F> SpanTweenPreset<E> for F
+impl<S, F> TweenPreset<S> for F
 where
-    E: EntitySpawner,
-    F: FnOnce(&mut SpanTweensBuilder<E>),
+    S: TweenSpawner,
+    F: FnOnce(&mut TweensBuilder<S>),
 {
-    fn build(self, b: &mut SpanTweensBuilder<E>) {
+    fn build(self, b: &mut TweensBuilder<S>) {
         self(b)
     }
 }

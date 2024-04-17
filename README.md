@@ -76,7 +76,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   crates *without* extra shortcut and helpers.
 
 ## Feature gates
-- `"span_tween"`, enabled by default.<br/>
+- `"default_tweener"`, enabled by default.<br/>
   Tween for a range of time. 
 - `"bevy_asset"`, enabled by default.<br/>
   enable `"bevy/bevy_asset"`, add tweening systems for asset.

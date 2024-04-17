@@ -132,10 +132,10 @@ fn click_spawn_circle(
                         transform: Transform::from_translation(start),
                         ..Default::default()
                     },
-                    SpanTweenerBundle::new(Duration::from_secs(2)),
+                    TweenerBundle::new(Duration::from_secs(2)),
                 ))
                 .with_children(|c| {
-                    c.span_tweens()
+                    c.tweens()
                         .tween_exact(
                             ..Duration::from_secs(2),
                             EaseFunction::ExponentialOut,
@@ -162,7 +162,7 @@ fn click_spawn_circle(
 
 fn despawn_finished_circle(
     mut commands: Commands,
-    mut tweener_ended_reader: EventReader<SpanTweenerEnded>,
+    mut tweener_ended_reader: EventReader<TweenerEnded>,
 ) {
     for t in tweener_ended_reader.read() {
         commands.entity(t.tweener).despawn();

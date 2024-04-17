@@ -3,8 +3,8 @@ use std::f32::consts::TAU;
 use bevy::prelude::*;
 use bevy_tween::{
     prelude::*,
-    span_tween::{EntitySpawner, SpanTweensBuilder},
     tween::TargetComponent,
+    tweener::{TweenSpawner, TweensBuilder},
 };
 
 fn main() {
@@ -54,11 +54,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands
         .spawn(
-            SpanTweenerBundle::new(Duration::from_secs_f32(secs))
+            TweenerBundle::new(Duration::from_secs_f32(secs))
                 .with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
-            c.span_tweens()
+            c.tweens()
                 .add(snap_rotate(triangles[4], secs, 7, 4., ease))
                 .add(snap_rotate(triangles[3], secs, 7, 6., ease))
                 .add(snap_rotate(triangles[2], secs, 7, 8., ease))
@@ -67,13 +67,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn snap_rotate<E: EntitySpawner>(
+fn snap_rotate<S: TweenSpawner>(
     target: impl Into<TargetComponent>,
     secs: f32,
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) -> impl FnOnce(&mut SpanTweensBuilder<E>) {
+) -> impl FnOnce(&mut TweensBuilder<S>) {
     move |b| {
         let target = target.into();
         for i in 0..max {
