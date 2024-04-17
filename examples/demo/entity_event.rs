@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
 use bevy_eventlistener::prelude::*;
+use bevy_tween::prelude::*;
 
 fn main() {
     App::new()
@@ -11,14 +11,14 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     commands.spawn((
-        SpanTweenerBundle::new(Duration::from_secs_f32(0.5))
+        TweenerBundle::new(Duration::from_secs_f32(0.5))
             .with_repeat(Repeat::times(5)),
-        On::<SpanTweenerEnded>::run(|listener: Listener<SpanTweenerEnded>| {
+        On::<TweenerEnded>::run(|listener: Listener<TweenerEnded>| {
             if listener.is_completed() {
                 println!("done!");
             } else {
                 println!("repeating");
             }
-        })
+        }),
     ));
 }

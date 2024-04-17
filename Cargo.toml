@@ -116,7 +116,7 @@ required-features = [
 name = "entity_event"
 path = "examples/demo/entity_event.rs"
 required-features = [
-  "span_tween",
+  "default_tweener",
   "bevy_eventlistener"
 ]
 
