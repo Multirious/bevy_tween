@@ -706,11 +706,59 @@ pub fn span_tweener_system(
         Without<SkipTweener>,
     >,
     mut q_tween: Query<(Entity, Option<&mut TweenProgress>, &TweenTimeSpan)>,
+    q_added_skip: Query<
+        (Entity, &SpanTweener, Option<&Children>),
+        Added<SkipTweener>,
+    >,
+    mut tweener_just_completed: Local<Vec<Entity>>,
 ) {
     use AnimationDirection::*;
     use DurationQuotient::*;
 
     use crate::tween_timer::RepeatStyle::*;
+
+    let mut just_completed_tweeners =
+        q_span_tweener.iter_many(&tweener_just_completed);
+    while let Some((tweener_entity, tweener, children)) =
+        just_completed_tweeners.fetch_next()
+    {
+        let timer = &tweener.timer;
+
+        if !timer.is_completed() {
+            return;
+        }
+
+        let children = children
+            .iter()
+            .flat_map(|a| a.iter())
+            .filter(|c| !q_other_tweener.contains(**c));
+        let mut tweens = q_tween
+            .iter_many_mut([&tweener_entity].into_iter().chain(children));
+        while let Some((tween_entity, _, _)) = tweens.fetch_next() {
+            let Some(mut entity) = commands.get_entity(tween_entity) else {
+                continue;
+            };
+            entity.remove::<TweenProgress>();
+        }
+    }
+    tweener_just_completed.clear();
+
+    q_added_skip
+        .iter()
+        .for_each(|(tweener_entity, _, children)| {
+            let children = children
+                .iter()
+                .flat_map(|a| a.iter())
+                .filter(|c| !q_other_tweener.contains(**c));
+            let mut tweens = q_tween
+                .iter_many_mut([&tweener_entity].into_iter().chain(children));
+            while let Some((tween_entity, _, _)) = tweens.fetch_next() {
+                let Some(mut entity) = commands.get_entity(tween_entity) else {
+                    continue;
+                };
+                entity.remove::<TweenProgress>();
+            }
+        });
 
     q_span_tweener.iter_mut().for_each(
         |(tweener_entity, mut tweener, children)| {
@@ -727,9 +775,10 @@ pub fn span_tweener_system(
             } else {
                 None
             };
-            // if repeated.is_some() {
-            //     println!("the repeat tick");
-            // }
+
+            let timer_elasped_now = timer.elasped().now;
+            let timer_elasped_previous = timer.elasped().previous;
+            let timer_direction = timer.direction;
 
             let children = children
                 .iter()
@@ -740,43 +789,135 @@ pub fn span_tweener_system(
             while let Some((tween_entity, tween_progress, tween_span)) =
                 tweens.fetch_next()
             {
-                let now_quotient = tween_span.quotient(timer.elasped().now);
+                let now_quotient = tween_span.quotient(timer_elasped_now);
                 let previous_quotient =
-                    tween_span.quotient(timer.elasped().previous);
+                    tween_span.quotient(timer_elasped_previous);
 
                 let direction = if repeated.is_none() {
-                    match timer
-                        .elasped()
-                        .previous
-                        .total_cmp(&timer.elasped().now)
-                    {
+                    match timer_elasped_previous.total_cmp(&timer_elasped_now) {
                         Ordering::Less => AnimationDirection::Forward,
-                        Ordering::Equal => timer.direction,
+                        Ordering::Equal => timer_direction,
                         Ordering::Greater => AnimationDirection::Backward,
                     }
                 } else {
-                    timer.direction
+                    timer_direction
                 };
 
-                // Look at this behemoth of edge case handling.
-                //
-                // The edge cases are the time when the tween are really short
-                // or delta is really long per frame.
-                //
-                // This is likely only an issue with this tweener implementation.
-                //
-                // This is not accounted for when the tween might repeat
-                // multiple time in one frame. When that tween is this ridiculously
-                // fast or the game heavily lagged, I don't think that need to
-                // be accounted.
+                let tween_visible = tween_visible(
+                    direction,
+                    previous_quotient,
+                    now_quotient,
+                    repeated,
+                );
 
-                enum UseTime {
-                    Current,
-                    Min,
-                    Max,
+                if let Some(use_time) = tween_visible {
+                    let tween_span_max =
+                        tween_span.max().duration().as_secs_f32();
+                    let tween_span_min =
+                        tween_span.min().duration().as_secs_f32();
+
+                    let tween_length = tween_span_max - tween_span_min;
+
+                    let new_now = match use_time {
+                        UseTime::Current => timer_elasped_now - tween_span_min,
+                        UseTime::Min => 0.,
+                        UseTime::Max => tween_length,
+                    };
+                    let new_previous = timer_elasped_previous - tween_span_min;
+
+                    let tween_pos = tween_span_min;
+
+                    let new_now_percentage = if tween_length > 0. {
+                        new_now / tween_length
+                    } else {
+                        match new_now.total_cmp(&tween_pos) {
+                            Ordering::Greater => f32::INFINITY,
+                            Ordering::Equal => match timer_direction {
+                                Forward => f32::INFINITY,
+                                Backward => f32::NEG_INFINITY,
+                            },
+                            Ordering::Less => f32::NEG_INFINITY,
+                        }
+                    };
+                    let new_previous_percentage = if tween_length > 0. {
+                        new_previous / tween_length
+                    } else {
+                        match new_previous.total_cmp(&tween_pos) {
+                            Ordering::Greater => f32::INFINITY,
+                            Ordering::Equal => match timer_direction {
+                                Forward => f32::INFINITY,
+                                Backward => f32::NEG_INFINITY,
+                            },
+                            Ordering::Less => f32::NEG_INFINITY,
+                        }
+                    };
+
+                    // match name {
+                    //     Some(name) => {
+                    //         println!(
+                    //             "{}: {:.2}, {:.2}",
+                    //             name, new_now, new_now_percentage
+                    //         );
+                    //     }
+                    //     None => {
+                    //         println!(
+                    //             "-: {:.2}, {:.2}",
+                    //             new_now, new_now_percentage
+                    //         );
+                    //     }
+                    // }
+                    match tween_progress {
+                        Some(mut tween_progress) => {
+                            tween_progress.update(new_now, new_now_percentage);
+                        }
+                        None => {
+                            commands.entity(tween_entity).insert(
+                                TweenProgress {
+                                    now_percentage: new_now_percentage,
+                                    now: new_now,
+                                    previous_percentage:
+                                        new_previous_percentage,
+                                    previous: new_previous,
+                                },
+                            );
+                        }
+                    }
+                } else {
+                    commands.entity(tween_entity).remove::<TweenProgress>();
                 }
+            }
+            tweener.timer.collaspe_elasped();
+            if tweener.timer.is_completed() {
+                tweener_just_completed.push(tweener_entity);
+            }
+        },
+    );
 
-                let tween_visible = match (
+    enum UseTime {
+        Current,
+        Min,
+        Max,
+    }
+
+    fn tween_visible(
+        direction: AnimationDirection,
+        previous_quotient: DurationQuotient,
+        now_quotient: DurationQuotient,
+        repeated: Option<RepeatStyle>,
+    ) -> Option<UseTime> {
+        // Look at this behemoth of edge case handling.
+        //
+        // The edge cases are the time when the tween are really short
+        // or delta is really long per frame.
+        //
+        // This is likely only an issue with this tweener implementation.
+        //
+        // This is not accounted for when the tween might repeat
+        // multiple time in one frame. When that tween is this ridiculously
+        // fast or the game heavily lagged, I don't think that need to
+        // be accounted.
+
+        match (
                     direction,
                     previous_quotient,
                     now_quotient,
@@ -870,90 +1011,8 @@ pub fn span_tweener_system(
                     | (Forward, After, After, Some(PingPong)) // 1&2 now, max
                         => Some(UseTime::Current),
                     _ => None,
-                };
-
-                if let Some(use_time) = tween_visible {
-                    let timer_elasped_now = timer.elasped().now;
-                    let timer_elasped_previous = timer.elasped().previous;
-
-                    let tween_span_max =
-                        tween_span.max().duration().as_secs_f32();
-                    let tween_span_min =
-                        tween_span.min().duration().as_secs_f32();
-
-                    let tween_length = tween_span_max - tween_span_min;
-
-                    let new_now = match use_time {
-                        UseTime::Current => timer_elasped_now - tween_span_min,
-                        UseTime::Min => 0.,
-                        UseTime::Max => tween_length,
-                    };
-                    let new_previous = timer_elasped_previous - tween_span_min;
-
-                    let tween_pos = tween_span_min;
-
-                    let new_now_percentage = if tween_length > 0. {
-                        new_now / tween_length
-                    } else {
-                        match new_now.total_cmp(&tween_pos) {
-                            Ordering::Greater => f32::INFINITY,
-                            Ordering::Equal => match timer.direction {
-                                Forward => f32::INFINITY,
-                                Backward => f32::NEG_INFINITY,
-                            },
-                            Ordering::Less => f32::NEG_INFINITY,
-                        }
-                    };
-                    let new_previous_percentage = if tween_length > 0. {
-                        new_previous / tween_length
-                    } else {
-                        match new_previous.total_cmp(&tween_pos) {
-                            Ordering::Greater => f32::INFINITY,
-                            Ordering::Equal => match timer.direction {
-                                Forward => f32::INFINITY,
-                                Backward => f32::NEG_INFINITY,
-                            },
-                            Ordering::Less => f32::NEG_INFINITY,
-                        }
-                    };
-
-                    // match name {
-                    //     Some(name) => {
-                    //         println!(
-                    //             "{}: {:.2}, {:.2}",
-                    //             name, new_now, new_now_percentage
-                    //         );
-                    //     }
-                    //     None => {
-                    //         println!(
-                    //             "-: {:.2}, {:.2}",
-                    //             new_now, new_now_percentage
-                    //         );
-                    //     }
-                    // }
-                    match tween_progress {
-                        Some(mut tween_progress) => {
-                            tween_progress.update(new_now, new_now_percentage);
-                        }
-                        None => {
-                            commands.entity(tween_entity).insert(
-                                TweenProgress {
-                                    now_percentage: new_now_percentage,
-                                    now: new_now,
-                                    previous_percentage:
-                                        new_previous_percentage,
-                                    previous: new_previous,
-                                },
-                            );
-                        }
-                    }
-                } else {
-                    commands.entity(tween_entity).remove::<TweenProgress>();
                 }
-            }
-            tweener.timer.collaspe_elasped();
-        },
-    );
+    }
 }
 
 /// Convenient builder for building multiple children tweens
