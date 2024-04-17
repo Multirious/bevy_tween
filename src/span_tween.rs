@@ -116,6 +116,7 @@ use std::{cmp::Ordering, ops, time::Duration};
 
 use crate::utils;
 use bevy::{ecs::system::EntityCommands, prelude::*};
+use bevy_eventlistener::prelude::*;
 use tween_timer::{Repeat, RepeatStyle};
 
 use crate::{
@@ -152,6 +153,9 @@ impl Plugin for SpanTweenPlugin {
         .register_type::<TimeBound>()
         .register_type::<TweenTimeSpan>()
         .add_event::<SpanTweenerEnded>();
+
+        #[cfg(feature = "bevy_eventlistener")]
+        app.add_plugins(EventListenerPlugin::<SpanTweenerEnded>::default());
     }
 }
 
@@ -642,9 +646,12 @@ pub fn span_tween(duration: Duration) -> QuickSpanTweenBundle {
 }
 
 /// Fired when a span tweener repeated or completed
+#[cfg_attr(feature = "bevy_eventlistener", derive(EntityEvent))]
+#[cfg_attr(feature = "bevy_eventlistener", can_bubble)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Event, Reflect)]
 pub struct SpanTweenerEnded {
     /// Tween timer that just ended
+    #[cfg_attr(feature = "bevy_eventlistener", target)]
     pub tweener: Entity,
     /// Currently timer direction. If is [`RepeatStyle::PingPong`], the current
     /// direction will be its already changed direction.
