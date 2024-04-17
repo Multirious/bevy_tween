@@ -684,7 +684,9 @@ pub fn tick_span_tweener_system(
         // );
 
         let n = timer.elasped().now_period;
-        if n <= 0. || 1. <= n {
+        if (timer.direction == AnimationDirection::Backward && n <= 0.)
+            || (timer.direction == AnimationDirection::Forward && n >= 1.)
+        {
             ended_writer.send(SpanTweenerEnded {
                 tweener: entity,
                 current_direction: timer.direction,
