@@ -137,9 +137,8 @@ pub mod prelude {
     #[cfg(feature = "default_tweener")]
     #[allow(deprecated)]
     pub use crate::tweener::{
-        span_tween, ChildSpanTweenBuilderExt, SpanTweenBundle,
-        SpanTweenerBundle, SpanTweenerEnded, TimeSpan, TweenerBundle,
-        TweenerEnded, TweensBuilderExt, WorldChildSpanTweenBuilderExt,
+        span_tween, SpanTweenBundle, SpanTweenerBundle, SpanTweenerEnded,
+        TimeSpan, TweenerBundle, TweenerEnded, TweensBuilderExt,
     };
 
     pub use crate::tween::{TweenEvent, TweenEventData};
