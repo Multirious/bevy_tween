@@ -114,7 +114,7 @@
 use std::{cmp::Ordering, ops, time::Duration};
 
 use crate::utils;
-use bevy::prelude::*;
+use bevy::{ecs::system::EntityCommands, prelude::*};
 #[cfg(feature = "bevy_eventlistener")]
 use bevy_eventlistener::prelude::*;
 use tween_timer::{Repeat, RepeatStyle};
@@ -1058,34 +1058,6 @@ pub fn tweener_system(
     }
 }
 
-mod sealed {
-    use super::*;
-
-    pub trait Sealed {}
-
-    impl<'a> Sealed for WorldChildBuilder<'a> {}
-    impl<'a> Sealed for ChildBuilder<'a> {}
-
-    /// Type that can spawn an entity from a bundle
-    ///
-    /// This trait is sealed and not meant to be implemented outside of the current crate.
-    pub trait EntitySpanwerSealed: sealed::Sealed {
-        fn spawn(&mut self, bundle: impl Bundle) -> Entity;
-    }
-
-    impl<'a> EntitySpanwerSealed for ChildBuilder<'a> {
-        fn spawn(&mut self, bundle: impl Bundle) -> Entity {
-            self.spawn(bundle).id()
-        }
-    }
-
-    impl<'a> EntitySpanwerSealed for WorldChildBuilder<'a> {
-        fn spawn(&mut self, bundle: impl Bundle) -> Entity {
-            self.spawn(bundle).id()
-        }
-    }
-}
-
 /// Type that can spawn an entity from a bundle
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
@@ -1712,5 +1684,52 @@ where
 {
     fn build(self, b: &mut TweensBuilder<E>) {
         self(b)
+    }
+}
+
+mod sealed {
+    use super::*;
+
+    pub trait Sealed {}
+
+    impl<'a> Sealed for WorldChildBuilder<'a> {}
+    impl<'a> Sealed for ChildBuilder<'a> {}
+    impl<'a> Sealed for EntityCommands<'a> {}
+    impl<'w> Sealed for EntityWorldMut<'w> {}
+
+    /// Type that can spawn an entity from a bundle
+    ///
+    /// This trait is sealed and not meant to be implemented outside of the current crate.
+    pub trait EntitySpanwerSealed {
+        fn spawn_child(&mut self, bundle: impl Bundle) -> Entity;
+    }
+
+    impl<'r, 'a> EntitySpanwerSealed for &'r mut ChildBuilder<'a> {
+        fn spawn_child(&mut self, bundle: impl Bundle) -> Entity {
+            self.spawn(bundle).id()
+        }
+    }
+
+    impl<'r, 'w> EntitySpanwerSealed for &'r mut WorldChildBuilder<'w> {
+        fn spawn_child(&mut self, bundle: impl Bundle) -> Entity {
+            self.spawn(bundle).id()
+        }
+    }
+
+    impl<'r, 'a> EntitySpanwerSealed for &'r mut EntityCommands<'a> {
+        fn spawn_child(&mut self, bundle: impl Bundle) -> Entity {
+            let child = self.commands().spawn(bundle).id();
+            self.add_child(child);
+            child
+        }
+    }
+
+    impl<'r, 'w> EntitySpanwerSealed for &'r mut EntityWorldMut<'w> {
+        fn spawn_child(&mut self, bundle: impl Bundle) -> Entity {
+            let mut child = Entity::PLACEHOLDER;
+            self.world_scope(|world| child = world.spawn(bundle).id());
+            self.add_child(child);
+            child
+        }
     }
 }
