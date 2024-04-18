@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_tween::{
     prelude::*,
     tween::TargetComponent,
-    tweener::{TweenSpawner, TweensBuilder},
+    tweener::{EntitySpawner, TweensBuilder},
 };
 
 fn main() {
@@ -117,7 +117,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn snap_rotate<S: TweenSpawner>(
+fn snap_rotate<S: EntitySpawner>(
     target: impl Into<TargetComponent>,
     secs: f32,
     max: usize,

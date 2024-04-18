@@ -1301,8 +1301,8 @@ mod sealed {
 /// Type that can spawn an entity from a bundle
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
-pub trait TweenSpawner: sealed::TweenSpanwerSealed {}
-impl<T> TweenSpawner for T where T: sealed::TweenSpanwerSealed {}
+pub trait EntitySpawner: sealed::EntitySpanwerSealed {}
+impl<T> EntitySpawner for T where T: sealed::EntitySpanwerSealed {}
 
 #[deprecated(since = "0.5.0", note = "`SpanTweener` is renamed to `Tweener`")]
 #[allow(missing_docs)]
@@ -1310,19 +1310,19 @@ pub type SpanTweensBuilder<'r, E> = TweensBuilder<'r, E>;
 
 /// Convenient builder for building multiple children span tweens. This is return
 /// from [`TweensBuilderExt::tweens`]
-pub struct TweensBuilder<'r, S>
+pub struct TweensBuilder<'r, E>
 where
-    S: TweenSpawner,
+    E: EntitySpawner,
 {
-    entity_spawner: &'r mut S,
+    entity_spawner: &'r mut E,
     offset: Duration,
 }
 
-impl<'r, S> TweensBuilder<'r, S>
+impl<'r, E> TweensBuilder<'r, E>
 where
-    S: TweenSpawner,
+    E: EntitySpawner,
 {
-    fn new(entity_spawner: &'r mut S) -> Self {
+    fn new(entity_spawner: &'r mut E) -> Self {
         TweensBuilder {
             entity_spawner,
             offset: Duration::ZERO,
@@ -1330,9 +1330,9 @@ where
     }
 }
 
-impl<'r, S> TweensBuilder<'r, S>
+impl<'r, E> TweensBuilder<'r, E>
 where
-    S: TweenSpawner,
+    E: EntitySpawner,
 {
     /// Create a new span tween with the supplied span.
     ///
@@ -1786,14 +1786,14 @@ where
     #[doc = utils::doc_entity_eq_fn!()]
     #[doc = utils::doc_app_test_boilerplate!()]
     /// use bevy_tween::prelude::*;
-    /// use bevy_tween::tweener::{TweensBuilder, TweenSpawner};
+    /// use bevy_tween::tweener::{TweensBuilder, EntitySpawner};
     /// use bevy_tween::tween::TargetComponent::{self, TweenerEntity};
     ///
-    /// fn up_down<S: TweenSpawner>(
+    /// fn up_down<E: EntitySpawner>(
     ///     target: impl Into<TargetComponent>,
     ///     part_a: Duration,
     ///     part_b: Duration,
-    /// ) -> impl FnOnce(&mut TweensBuilder<S>) {
+    /// ) -> impl FnOnce(&mut TweensBuilder<E>) {
     ///     let target = target.into();
     ///     move |b| {
     ///         b.tween(
@@ -1897,7 +1897,7 @@ where
     /// # assert!(entity_eq(&app.world, children[4], children[10]));
     /// # assert!(entity_eq(&app.world, children[5], children[11]));
     /// ```
-    pub fn add(&mut self, f: impl TweenPreset<S>) -> &mut Self {
+    pub fn add(&mut self, f: impl TweenPreset<E>) -> &mut Self {
         f.build(self);
         self
     }
@@ -1921,9 +1921,9 @@ pub trait TweensBuilderExt: sealed::Sealed {
     fn tweens(&mut self) -> Self::Output<'_>;
 }
 
-impl<S> TweensBuilderExt for S
+impl<E> TweensBuilderExt for E
 where
-    S: TweenSpawner,
+    E: EntitySpawner,
 {
     type Output<'a> = TweensBuilder<'a, Self>
     where
@@ -1940,17 +1940,17 @@ where
 
 /// Reusuable group of span tweens animation, a preset.
 /// Use with [`TweensBuilder::add`].
-pub trait TweenPreset<S: TweenSpawner> {
+pub trait TweenPreset<E: EntitySpawner> {
     /// Build this preset to the supplied [`TweensBuilder`]
-    fn build(self, b: &mut TweensBuilder<S>);
+    fn build(self, b: &mut TweensBuilder<E>);
 }
 
-impl<S, F> TweenPreset<S> for F
+impl<E, F> TweenPreset<E> for F
 where
-    S: TweenSpawner,
-    F: FnOnce(&mut TweensBuilder<S>),
+    E: EntitySpawner,
+    F: FnOnce(&mut TweensBuilder<E>),
 {
-    fn build(self, b: &mut TweensBuilder<S>) {
+    fn build(self, b: &mut TweensBuilder<E>) {
         self(b)
     }
 }
