@@ -77,35 +77,37 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|c| {
             // Spawning the marker for a tweener that will be responsible
             // for the follow effect
-            c.spawn(JebTranslationTweener);
+            c.spawn((
+                JebTranslationTweener,
+                Name::new("JebTranslationTweener"),
+            ));
 
             // Spawning a tweener that's responsible for a rotating effect
             c.spawn((
+                Name::new("Rotate"),
                 TweenerBundle::new(Duration::from_secs(2))
                     .with_repeat(Repeat::Infinitely)
-                    .with_repeat_style(RepeatStyle::PingPong),
-                TimeSpan::try_from(..Duration::from_secs(2)).unwrap(),
+                    .with_repeat_style(RepeatStyle::PingPong)
+                    .tween_here(),
                 EaseFunction::CubicInOut,
-                ComponentTween::tweener_parent_boxed(interpolate::closure(
+                interpolate::component_closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;
                         let angle = (end - start).mul_add(value, start);
                         transform.rotation = Quat::from_rotation_z(angle);
                     },
-                )),
+                )
+                .for_tweener_parent(),
             ));
 
             // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
             c.spawn((
-                TweenerBundle::new(Duration::from_secs(1)),
-                TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
+                Name::new("Scale up"),
+                TweenerBundle::new(Duration::from_secs(1)).tween_here(),
                 EaseFunction::QuinticIn,
-                ComponentTween::tweener_parent(interpolate::Scale {
-                    start: Vec3::ZERO,
-                    end: Vec3::ONE,
-                }),
+                interpolate::scale(Vec3::ZERO, Vec3::ONE).for_tweener_parent(),
             ));
         });
 }
@@ -138,6 +140,7 @@ fn jeb_follows_cursor(
         },
     };
     if update {
+        println!("this ran");
         commands.entity(jeb_tweener_entity).insert((
             TweenerBundle::new(config.tween_duration),
             TimeSpan::try_from(..config.tween_duration).unwrap(),
@@ -146,15 +149,14 @@ fn jeb_follows_cursor(
             // type is differernt.
             //
             // This one for translation
-            ComponentTween::tweener_parent(interpolate::Translation {
-                start: jeb_transform.translation,
-                end: Vec3::new(coord.x, coord.y, 0.),
-            }),
+            interpolate::translation(
+                jeb_transform.translation,
+                Vec3::new(coord.x, coord.y, 0.),
+            )
+            .for_tweener_parent(),
             // This one for color
-            ComponentTween::tweener_parent(interpolate::SpriteColor {
-                start: Color::PINK,
-                end: Color::WHITE,
-            }),
+            interpolate::sprite_color(Color::PINK, Color::WHITE)
+                .for_tweener_parent(),
         ));
     }
 }

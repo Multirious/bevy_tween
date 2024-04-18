@@ -1,9 +1,21 @@
 use bevy::prelude::*;
 use bevy_tween::prelude::*;
 
-mod m {
-    use bevy::{math::FloatExt, sprite::TextureAtlas};
+mod interpolate {
+    use bevy::prelude::*;
     use bevy_tween::prelude::*;
+
+    pub use bevy_tween::interpolate::*;
+
+    pub fn custom_interpolators_plugin(app: &mut App) {
+        app.add_tween_systems(
+            bevy_tween::component_tween_system::<AtlasIndex>(),
+        );
+    }
+
+    pub fn atlas_index(start: usize, end: usize) -> ComponentTween<AtlasIndex> {
+        ComponentTween::new(AtlasIndex { start, end })
+    }
 
     pub struct AtlasIndex {
         pub start: usize,
@@ -25,10 +37,10 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            DefaultTweenPlugins
+            DefaultTweenPlugins,
+            interpolate::custom_interpolators_plugin,
         ))
         .add_systems(Startup, setup)
-        .add_tween_systems(bevy_tween::component_tween_system::<m::AtlasIndex>())
         .run();
 }
 
@@ -56,7 +68,7 @@ fn setup(
             .with_repeat(Repeat::Infinitely)
             .tween_here(),
         EaseFunction::Linear,
-        ComponentTween::new(m::AtlasIndex { start: 0, end: len }),
+        interpolate::atlas_index(0, len),
     ));
 
     commands.spawn(Camera2dBundle::default());

@@ -2,18 +2,25 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
-    prelude::*, resource_tween_system, tween_timer::AnimationDirection,
-    tweener::Tweener,
+    prelude::*, tween_timer::AnimationDirection, tweener::Tweener,
 };
 use rand::prelude::*;
 
-mod my_interpolate {
+mod interpolate {
     use bevy::prelude::*;
-    use bevy_tween::prelude::*;
+    use bevy_tween::{prelude::*, resource_tween_system};
+
+    pub use bevy_tween::interpolate::*;
+
+    pub fn custom_interpolators_plugin(app: &mut App) {
+        app.add_tween_systems(resource_tween_system::<EffectIntensity>());
+    }
+
     pub struct EffectIntensity {
         pub start: f32,
         pub end: f32,
     }
+
     impl Interpolator for EffectIntensity {
         type Item = super::EffectIntensitiy;
 
@@ -21,16 +28,28 @@ mod my_interpolate {
             item.0 = self.start.lerp(self.end, value)
         }
     }
+
+    pub fn effect_intensity(
+        start: f32,
+        end: f32,
+    ) -> ResourceTween<EffectIntensity> {
+        ResourceTween::new(EffectIntensity { start, end })
+    }
+}
+
+fn secs(secs: f32) -> Duration {
+    Duration::from_secs_f32(secs)
 }
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            DefaultTweenPlugins,
+            interpolate::custom_interpolators_plugin,
+        ))
         .add_systems(Startup, setup)
         .add_systems(Update, (big_x_do_effect, mouse_hold))
-        .add_tween_systems(resource_tween_system::<
-            my_interpolate::EffectIntensity,
-        >())
         .init_resource::<EffectIntensitiy>()
         .run();
 }
@@ -65,34 +84,18 @@ fn setup(
         .id();
     commands.spawn((
         EffectTweener,
-        TweenerBundle::new(Duration::from_secs(1)),
-        TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
+        TweenerBundle::new(secs(1.)).tween_here(),
         EaseFunction::QuarticIn,
-        ResourceTween::new(my_interpolate::EffectIntensity {
-            start: 0.,
-            end: 1.,
-        }),
-        ComponentTween::new_target(
-            big_x,
-            interpolate::SpriteColor {
-                start: Color::WHITE,
-                end: Color::PINK,
-            },
-        ),
+        interpolate::effect_intensity(0., 1.),
+        interpolate::sprite_color(Color::WHITE, Color::PINK).for_entity(big_x),
     ));
     commands.spawn((
         RotateTweener,
         TweenerBundle::new(Duration::from_secs_f32(1.))
-            .with_repeat(Repeat::Infinitely),
-        TimeSpan::try_from(..Duration::from_secs_f32(1.)).unwrap(),
+            .with_repeat(Repeat::Infinitely)
+            .tween_here(),
         EaseFunction::Linear,
-        ComponentTween::new_target(
-            big_x,
-            interpolate::AngleZ {
-                start: 0.,
-                end: PI * 0.5,
-            },
-        ),
+        interpolate::angle_z(0., PI * 0.5).for_entity(big_x),
     ));
 }
 

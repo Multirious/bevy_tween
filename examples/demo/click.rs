@@ -1,12 +1,17 @@
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{parallel, prelude::*, tweener::combinator::*};
 mod utils;
 
-mod m {
+mod interpolate {
     use std::sync::OnceLock;
 
     use bevy::prelude::*;
-    use bevy_tween::prelude::*;
+    pub use bevy_tween::interpolate::*;
+    use bevy_tween::{prelude::*, tween::ComponentTween};
+
+    pub fn translate_to(end: Vec3) -> ComponentTween<TranslateTo> {
+        ComponentTween::new(TranslateTo::end(end))
+    }
 
     /// Automatically figure out the current position of this entity and then
     /// tween from there.
@@ -32,6 +37,10 @@ mod m {
             let end = self.end;
             item.translation = start.lerp(end, value);
         }
+    }
+
+    pub fn scale_to(end: Vec3) -> ComponentTween<ScaleTo> {
+        ComponentTween::new(ScaleTo::end(end))
     }
 
     /// Automatically figure out the current scale of this entity and then
@@ -60,6 +69,10 @@ mod m {
         }
     }
 
+    pub fn sprite_color_to(end: Color) -> ComponentTween<SpriteColorTo> {
+        ComponentTween::new(SpriteColorTo::end(end))
+    }
+
     /// Automatically figure out the current color of this entity and then
     /// tween from there.
     pub struct SpriteColorTo {
@@ -85,6 +98,10 @@ mod m {
             interpolate::SpriteColor { start, end }.interpolate(item, value);
         }
     }
+}
+
+fn secs(secs: f32) -> Duration {
+    Duration::from_secs_f32(secs)
 }
 
 fn main() {
@@ -134,28 +151,27 @@ fn click_spawn_circle(
                     },
                     TweenerBundle::new(Duration::from_secs(2)),
                 ))
-                .with_children(|c| {
-                    c.tweens()
-                        .tween_exact(
-                            ..Duration::from_secs(2),
-                            EaseFunction::ExponentialOut,
-                            ComponentTween::new_boxed(m::TranslateTo::end(end)),
-                        )
-                        .tween_exact(
-                            ..Duration::from_secs(1),
-                            EaseFunction::BackIn,
-                            ComponentTween::new_boxed(m::ScaleTo::end(
-                                Vec3::ZERO,
-                            )),
-                        )
-                        .tween_exact(
-                            ..Duration::from_secs(1),
-                            EaseFunction::Linear,
-                            ComponentTween::new_boxed(m::SpriteColorTo::end(
-                                Color::PINK,
-                            )),
-                        );
-                });
+                .tweens()
+                .add(parallel!(
+                    tween(
+                        secs(2.),
+                        EaseFunction::ExponentialOut,
+                        interpolate::translate_to(end)
+                            .with_interpolator_boxed()
+                    ),
+                    tween(
+                        secs(1.),
+                        EaseFunction::BackIn,
+                        interpolate::scale_to(Vec3::ZERO)
+                            .with_interpolator_boxed()
+                    ),
+                    tween(
+                        secs(1.),
+                        EaseFunction::Linear,
+                        interpolate::sprite_color_to(Color::PINK)
+                            .with_interpolator_boxed()
+                    ),
+                ));
         }
     }
 }

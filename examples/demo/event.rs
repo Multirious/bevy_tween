@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{prelude::*, sequence, tweener::combinator::*};
 
 fn main() {
     App::new()
@@ -46,47 +46,35 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             TweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
         ))
-        .with_children(|c| {
-            // &'static str is available as an default event data but it's
-            // recommended to use dedicated custom type instead to leverage the
-            // rust type system.
-            c.tweens()
-                .tween_event(TweenEventData::with_data("bump"))
-                .tween(
-                    secs(1.),
-                    EaseFunction::ExponentialIn,
-                    (
-                        ComponentTween::new(interpolate::Translation {
-                            start: Vec3::new(start_x, 0., 0.),
-                            end: Vec3::new(end_x, 0., 0.),
-                        }),
-                        ComponentTween::new(interpolate::AngleZ {
-                            start: start_angle,
-                            end: mid_angle,
-                        }),
+        .tweens()
+        .add(sequence!(
+            tween_event(TweenEventData::with_data("bump")),
+            tween(
+                secs(1.),
+                EaseFunction::ExponentialIn,
+                (
+                    interpolate::translation(
+                        Vec3::new(start_x, 0., 0.),
+                        Vec3::new(end_x, 0., 0.)
                     ),
-                )
-                .backward(secs(0.2))
-                .tween_event_for(
-                    secs(0.2),
-                    TweenEventData::with_data("small_boom"),
-                )
-                .tween_event(TweenEventData::with_data("boom"))
-                .tween(
-                    secs(1.),
-                    EaseFunction::CircularOut,
-                    (
-                        ComponentTween::new(interpolate::Translation {
-                            start: Vec3::new(end_x, 0., 0.),
-                            end: Vec3::new(start_x, 0., 0.),
-                        }),
-                        ComponentTween::new(interpolate::AngleZ {
-                            start: mid_angle,
-                            end: end_angle,
-                        }),
+                    interpolate::angle_z(start_angle, mid_angle,)
+                ),
+            ),
+            backward(secs(0.2)),
+            tween_event_for(secs(0.2), TweenEventData::with_data("small_boom")),
+            tween_event(TweenEventData::with_data("boom")),
+            tween(
+                secs(1.),
+                EaseFunction::CircularOut,
+                (
+                    interpolate::translation(
+                        Vec3::new(end_x, 0., 0.),
+                        Vec3::new(start_x, 0., 0.)
                     ),
-                );
-        });
+                    interpolate::angle_z(mid_angle, end_angle),
+                )
+            ),
+        ));
 }
 
 #[derive(Component)]
@@ -113,14 +101,11 @@ fn effect_system(
                 },
                 TweenerBundle::new(secs(1.)).tween_here(),
                 EaseFunction::QuinticOut,
-                ComponentTween::new(interpolate::Translation {
-                    start: effect_pos.trail,
-                    end: effect_pos.trail - Vec3::new(100., 0., 0.),
-                }),
-                ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE,
-                    end: Color::PINK.with_a(0.),
-                }),
+                interpolate::translation(
+                    effect_pos.trail,
+                    effect_pos.trail - Vec3::new(100., 0., 0.),
+                ),
+                interpolate::sprite_color(Color::WHITE, Color::PINK.with_a(0.)),
             ));
         }
         "small_boom" => {
@@ -135,14 +120,14 @@ fn effect_system(
                 },
                 TweenerBundle::new(secs(0.1)).tween_here(),
                 EaseFunction::Linear,
-                ComponentTween::new(interpolate::Scale {
-                    start: Vec3::new(0.5, 0.5, 0.),
-                    end: Vec3::new(3., 3., 0.),
-                }),
-                ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE.with_a(0.5),
-                    end: Color::PINK.with_a(0.),
-                }),
+                interpolate::scale(
+                    Vec3::new(0.5, 0.5, 0.),
+                    Vec3::new(3., 3., 0.),
+                ),
+                interpolate::sprite_color(
+                    Color::WHITE.with_a(0.5),
+                    Color::PINK.with_a(0.),
+                ),
             ));
         }
         "boom" => {
@@ -155,14 +140,14 @@ fn effect_system(
                 },
                 TweenerBundle::new(secs(0.5)).tween_here(),
                 EaseFunction::QuadraticOut,
-                ComponentTween::new(interpolate::Scale {
-                    start: Vec3::new(1., 1., 0.),
-                    end: Vec3::new(15., 15., 0.),
-                }),
-                ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE.with_a(1.),
-                    end: Color::PINK.with_a(0.),
-                }),
+                interpolate::scale(
+                    Vec3::new(1., 1., 0.),
+                    Vec3::new(15., 15., 0.),
+                ),
+                interpolate::sprite_color(
+                    Color::WHITE.with_a(1.),
+                    Color::PINK.with_a(0.),
+                ),
             ));
         }
         _ => {}
