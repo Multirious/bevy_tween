@@ -564,17 +564,18 @@ impl Interpolator for ColorMaterial {
 /// Same as
 /// ```
 /// # use bevy::prelude::*;
-/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::tween::AssetTween;
 /// # use bevy_tween::interpolate::{color_material, ColorMaterial};
 /// # let start = Color::WHITE;
 /// # let end = Color::WHITE;
 /// # assert_eq!(color_material(start, end),
-/// ComponentTween::new(ColorMaterial { start, end })
+/// AssetTween::new(ColorMaterial { start, end })
 /// # );
 /// ```
+#[cfg(feature = "bevy_asset")]
 pub fn color_material(
     start: Color,
     end: Color,
-) -> tween::ComponentTween<ColorMaterial> {
-    tween::ComponentTween::new(ColorMaterial { start, end })
+) -> tween::AssetTween<ColorMaterial> {
+    tween::AssetTween::new(ColorMaterial { start, end })
 }
