@@ -315,6 +315,24 @@ impl Interpolator for Translation {
     }
 }
 
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::interpolate::{translation, Translation};
+/// # let start = Vec3::ZERO;
+/// # let end = Vec3::ZERO;
+/// # assert_eq!(translation(start, end),
+/// ComponentTween::new(Translation { start, end })
+/// # );
+/// ```
+pub fn translation(
+    start: Vec3,
+    end: Vec3,
+) -> tween::ComponentTween<Translation> {
+    tween::ComponentTween::new(Translation { start, end })
+}
+
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 // #[reflect(InterpolatorTransform)]
@@ -330,6 +348,21 @@ impl Interpolator for Rotation {
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         item.rotation = self.start.slerp(self.end, value);
     }
+}
+
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::interpolate::{rotation, Rotation};
+/// # let start = Quat::IDENTITY;
+/// # let end = Quat::IDENTITY;
+/// # assert_eq!(rotation(start, end),
+/// ComponentTween::new(Rotation { start, end })
+/// # );
+/// ```
+pub fn rotation(start: Quat, end: Quat) -> tween::ComponentTween<Rotation> {
+    tween::ComponentTween::new(Rotation { start, end })
 }
 
 /// [`Interpolator`] for [`Transform`]'s scale
@@ -349,6 +382,21 @@ impl Interpolator for Scale {
     }
 }
 
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::interpolate::{scale, Scale};
+/// # let start = Vec3::ZERO;
+/// # let end = Vec3::ZERO;
+/// # assert_eq!(scale(start, end),
+/// ComponentTween::new(Scale { start, end })
+/// # );
+/// ```
+pub fn scale(start: Vec3, end: Vec3) -> tween::ComponentTween<Scale> {
+    tween::ComponentTween::new(Scale { start, end })
+}
+
 /// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
 /// Usually used for 2D rotation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
@@ -366,6 +414,21 @@ impl Interpolator for AngleZ {
         let angle = (self.end - self.start).mul_add(value, self.start);
         item.rotation = Quat::from_rotation_z(angle);
     }
+}
+
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::interpolate::{angle_z, AngleZ};
+/// # let start = 0.;
+/// # let end = 0.;
+/// # assert_eq!(angle_z(start, end),
+/// ComponentTween::new(AngleZ { start, end })
+/// # );
+/// ```
+pub fn angle_z(start: f32, end: f32) -> tween::ComponentTween<AngleZ> {
+    tween::ComponentTween::new(AngleZ { start, end })
 }
 
 // #[cfg(feature = "bevy_sprite")]
@@ -391,6 +454,24 @@ impl Interpolator for SpriteColor {
     }
 }
 
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::interpolate::{sprite_color, SpriteColor};
+/// # let start = Color::WHITE;
+/// # let end = Color::WHITE;
+/// # assert_eq!(sprite_color(start, end),
+/// ComponentTween::new(SpriteColor { start, end })
+/// # );
+/// ```
+pub fn sprite_color(
+    start: Color,
+    end: Color,
+) -> tween::ComponentTween<SpriteColor> {
+    tween::ComponentTween::new(SpriteColor { start, end })
+}
+
 // #[cfg(feature = "bevy_sprite")]
 // type ReflectInterpolatorColorMaterial =
 //     ReflectInterpolator<bevy::sprite::ColorMaterial>;
@@ -413,4 +494,22 @@ impl Interpolator for ColorMaterial {
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         item.color = color_lerp(self.start, self.end, value);
     }
+}
+
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::interpolate::{color_material, ColorMaterial};
+/// # let start = Color::WHITE;
+/// # let end = Color::WHITE;
+/// # assert_eq!(color_material(start, end),
+/// ComponentTween::new(ColorMaterial { start, end })
+/// # );
+/// ```
+pub fn color_material(
+    start: Color,
+    end: Color,
+) -> tween::ComponentTween<ColorMaterial> {
+    tween::ComponentTween::new(ColorMaterial { start, end })
 }
