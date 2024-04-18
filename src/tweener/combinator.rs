@@ -9,7 +9,7 @@ use bevy::prelude::*;
 
 /// Tweens in sequence
 #[macro_export]
-macro_rules! seq {
+macro_rules! sequence {
     ($($c:expr,)+) => {
         {
             #[allow(clippy::redundant_closure_call)]
@@ -23,7 +23,7 @@ macro_rules! seq {
 
 /// Tweens in parrallel using the latest offset
 #[macro_export]
-macro_rules! par {
+macro_rules! parallel {
     ($($c:expr,)+) => {
         {
             #[allow(clippy::redundant_closure_call)]
