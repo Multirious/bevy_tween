@@ -1068,23 +1068,23 @@ impl<T> EntitySpawner for T where T: sealed::EntitySpanwerSealed {}
 
 #[deprecated(since = "0.5.0", note = "`SpanTweener` is renamed to `Tweener`")]
 #[allow(missing_docs)]
-pub type SpanTweensBuilder<'r, E> = TweensBuilder<'r, E>;
+pub type SpanTweensBuilder<E> = TweensBuilder<E>;
 
 /// Convenient builder for building multiple children span tweens. This is return
 /// from [`TweensBuilderExt::tweens`]
-pub struct TweensBuilder<'r, E>
+pub struct TweensBuilder<E>
 where
     E: EntitySpawner,
 {
-    entity_spawner: &'r mut E,
+    entity_spawner: E,
     offset: Duration,
 }
 
-impl<'r, E> TweensBuilder<'r, E>
+impl<E> TweensBuilder<E>
 where
     E: EntitySpawner,
 {
-    fn new(entity_spawner: &'r mut E) -> Self {
+    fn new(entity_spawner: E) -> Self {
         TweensBuilder {
             entity_spawner,
             offset: Duration::ZERO,
@@ -1092,10 +1092,14 @@ where
     }
 }
 
-impl<'r, E> TweensBuilder<'r, E>
+impl<E> TweensBuilder<E>
 where
     E: EntitySpawner,
 {
+    pub(crate) fn spawn_child<B: Bundle>(&mut self, bundle: B) -> Entity {
+        self.entity_spawner.spawn_child(bundle)
+    }
+
     /// Create a new span tween with the supplied span.
     ///
     /// <div class="warning">
@@ -1149,11 +1153,7 @@ where
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
-        self.entity_spawner.spawn((
-            span.try_into().unwrap(),
-            interpolation,
-            tween,
-        ));
+        self.spawn_child((span.try_into().unwrap(), interpolation, tween));
         self
     }
 
@@ -1232,7 +1232,7 @@ where
         let start = self.offset;
         let end = self.offset + duration;
         self.offset = end;
-        self.entity_spawner.spawn((
+        self.spawn_child((
             TimeSpan::try_from(start..end).unwrap(),
             interpolation,
             tween,
@@ -1480,7 +1480,7 @@ where
         span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
         data: TweenEventData<Data>,
     ) -> &mut Self {
-        self.entity_spawner.spawn((span.try_into().unwrap(), data));
+        self.spawn_child((span.try_into().unwrap(), data));
         self
     }
 
@@ -1642,31 +1642,62 @@ where
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 pub trait TweensBuilderExt: sealed::Sealed {
     /// Output from [`Self::tweens()`]
-    type Output<'a>
+    type Output<'r>
     where
-        Self: 'a;
-    /// Create a [`TweensBuilder`] from this thing
+        Self: 'r;
+
     #[deprecated(
         since = "0.5.0",
         note = "use TweensBuilderExt::tweens instead"
     )]
-    fn span_tweens(&mut self) -> Self::Output<'_>;
-    /// Create a [`TweensBuilder`] from this thing
+    #[allow(missing_docs)]
+    fn span_tweens(&mut self) -> Self::Output<'_> {
+        Self::tweens(self)
+    }
+
+    #[allow(missing_docs)]
     fn tweens(&mut self) -> Self::Output<'_>;
 }
 
-impl<E> TweensBuilderExt for E
-where
-    E: EntitySpawner,
-{
-    type Output<'a> = TweensBuilder<'a, Self>
+impl<'a> TweensBuilderExt for ChildBuilder<'a> {
+    type Output<'r> = TweensBuilder<&'r mut ChildBuilder<'a>>
     where
-        Self: 'a;
+        Self: 'r;
 
-    fn span_tweens(&mut self) -> Self::Output<'_> {
+    /// Create tweens using [`ChildBuilder`]
+    fn tweens(&mut self) -> Self::Output<'_> {
         TweensBuilder::new(self)
     }
+}
 
+impl<'w> TweensBuilderExt for WorldChildBuilder<'w> {
+    type Output<'r> = TweensBuilder<&'r mut WorldChildBuilder<'w>>
+    where
+        Self: 'r;
+
+    /// Create tweens using [`WorldChildBuilder`]
+    fn tweens(&mut self) -> Self::Output<'_> {
+        TweensBuilder::new(self)
+    }
+}
+
+impl<'a> TweensBuilderExt for EntityCommands<'a> {
+    type Output<'r> = TweensBuilder<&'r mut EntityCommands<'a>>
+    where
+        Self: 'r;
+
+    /// Create tweens using [`EntityCommands`]
+    fn tweens(&mut self) -> Self::Output<'_> {
+        TweensBuilder::new(self)
+    }
+}
+
+impl<'w> TweensBuilderExt for EntityWorldMut<'w> {
+    type Output<'r> = TweensBuilder<&'r mut EntityWorldMut<'w>>
+    where
+        Self: 'r;
+
+    /// Create tweens using [`EntityWorldMut`]
     fn tweens(&mut self) -> Self::Output<'_> {
         TweensBuilder::new(self)
     }
