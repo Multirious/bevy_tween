@@ -125,6 +125,8 @@ use crate::{
     tween_timer::{self, AnimationDirection, TweenTimer},
 };
 
+pub mod combinator;
+
 /// Plugin for using span tween
 #[derive(Debug)]
 pub struct TweenerPlugin;
