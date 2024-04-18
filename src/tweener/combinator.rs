@@ -7,8 +7,6 @@ use crate::prelude::TweenEventData;
 use super::{EntitySpawner, TimeSpan, TweensBuilder};
 use bevy::prelude::*;
 
-type Builder<E> = TweensBuilder<E>;
-
 /// Tweens in sequence
 #[macro_export]
 macro_rules! seq {
@@ -46,7 +44,7 @@ pub fn tween<I, T, E>(
     duration: Duration,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut Builder<E>)
+) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     I: Bundle,
     T: Bundle,
@@ -67,7 +65,7 @@ pub fn tween_exact<S, I, T, E>(
     span: S,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut Builder<E>)
+) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
@@ -82,7 +80,7 @@ where
 
 pub fn tween_event<Data, E>(
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut Builder<E>)
+) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     Data: Send + Sync + 'static,
     E: EntitySpawner,
@@ -98,7 +96,7 @@ where
 pub fn tween_event_at<Data, E>(
     at: Duration,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut Builder<E>)
+) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     Data: Send + Sync + 'static,
     E: EntitySpawner,
@@ -111,7 +109,7 @@ where
 pub fn tween_event_for<Data, E>(
     length: Duration,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut Builder<E>)
+) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     Data: Send + Sync + 'static,
     E: EntitySpawner,
@@ -126,7 +124,7 @@ where
 pub fn tween_event_exact<S, Data, E>(
     span: S,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut Builder<E>)
+) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
@@ -138,7 +136,7 @@ where
     }
 }
 
-pub fn forward<E>(duration: Duration) -> impl FnOnce(&mut Builder<E>)
+pub fn forward<E>(duration: Duration) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     E: EntitySpawner,
 {
@@ -147,7 +145,7 @@ where
     }
 }
 
-pub fn backward<E>(duration: Duration) -> impl FnOnce(&mut Builder<E>)
+pub fn backward<E>(duration: Duration) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     E: EntitySpawner,
 {
@@ -156,7 +154,7 @@ where
     }
 }
 
-pub fn go<E>(duration: Duration) -> impl FnOnce(&mut Builder<E>)
+pub fn go<E>(duration: Duration) -> impl FnOnce(&mut TweensBuilder<E>)
 where
     E: EntitySpawner,
 {
