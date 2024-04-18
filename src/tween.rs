@@ -673,6 +673,27 @@ pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
 pub type AssetDynTween<A> =
     Tween<TargetAsset<A>, Box<dyn Interpolator<Item = A>>>;
 
+impl<I> AssetTween<I>
+where
+    I: Interpolator,
+    I::Item: Asset,
+{
+    /// Set the target to the supplied asset.
+    pub fn for_asset(mut self, asset: Handle<I::Item>) -> Self {
+        self.target = TargetAsset::Asset(asset);
+        self
+    }
+
+    /// Set the target to the supplied assets.
+    pub fn for_assets<Iter>(mut self, assets: Iter) -> Self
+    where
+        Iter: IntoIterator<Item = Handle<I::Item>>,
+    {
+        self.target = TargetAsset::from_iter(assets);
+        self
+    }
+}
+
 /// Tell the tween what asset of what type to tween.
 #[cfg(feature = "bevy_asset")]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
