@@ -576,6 +576,29 @@ where
             interpolator,
         )
     }
+
+    pub fn for_tweener_entity(mut self) -> Self {
+        self.target = TargetComponent::tweener_entity();
+        self
+    }
+
+    pub fn for_tweener_parent(mut self) -> Self {
+        self.target = TargetComponent::tweener_parent();
+        self
+    }
+
+    pub fn for_entity(mut self, entity: Entity) -> Self {
+        self.target = TargetComponent::entity(entity);
+        self
+    }
+
+    pub fn for_entities<Iter>(mut self, entities: Iter) -> Self
+    where
+        Iter: IntoIterator<Item = Entity>,
+    {
+        self.target = TargetComponent::entities(entities);
+        self
+    }
 }
 
 impl<C> ComponentDynTween<C>
