@@ -770,7 +770,7 @@ pub fn tweener_system(
         let timer = &tweener.timer;
 
         if !timer.is_completed() {
-            return;
+            continue;
         }
 
         let children = children
