@@ -1,3 +1,5 @@
+//! Combinators for tweens using this crate's default tweener
+
 use std::time::Duration;
 
 use crate::prelude::TweenEventData;
