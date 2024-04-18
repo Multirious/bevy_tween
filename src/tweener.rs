@@ -1069,28 +1069,19 @@ mod sealed {
     /// Type that can spawn an entity from a bundle
     ///
     /// This trait is sealed and not meant to be implemented outside of the current crate.
-    pub trait TweenSpanwerSealed: sealed::Sealed {
-        type CommandOutput<'c>
-        where
-            Self: 'c;
-        fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_>;
+    pub trait EntitySpanwerSealed: sealed::Sealed {
+        fn spawn(&mut self, bundle: impl Bundle) -> Entity;
     }
 
-    impl<'a> TweenSpanwerSealed for ChildBuilder<'a> {
-        type CommandOutput<'c> = bevy::ecs::system::EntityCommands<'c>
-        where Self: 'c;
-
-        fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
-            self.spawn(bundle)
+    impl<'a> EntitySpanwerSealed for ChildBuilder<'a> {
+        fn spawn(&mut self, bundle: impl Bundle) -> Entity {
+            self.spawn(bundle).id()
         }
     }
 
-    impl<'a> TweenSpanwerSealed for WorldChildBuilder<'a> {
-        type CommandOutput<'c> = EntityWorldMut<'c>
-        where Self: 'c;
-
-        fn spawn(&mut self, bundle: impl Bundle) -> Self::CommandOutput<'_> {
-            self.spawn(bundle)
+    impl<'a> EntitySpanwerSealed for WorldChildBuilder<'a> {
+        fn spawn(&mut self, bundle: impl Bundle) -> Entity {
+            self.spawn(bundle).id()
         }
     }
 }
@@ -1184,48 +1175,12 @@ where
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
-        self.tween_exact_and(span, interpolation, tween, |_| {})
-    }
-
-    // Due to current limitations in the borrow checker, `FnOnce` implies a `'static` lifetime.
-    // Privated until the limitation is lift.
-    /// Create a new span tween with the supplied span then call a closure on it.
-    fn tween_exact_and(
-        &mut self,
-        span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
-        interpolation: impl Bundle,
-        tween: impl Bundle,
-        f: impl FnOnce(S::CommandOutput<'_>),
-    ) -> &mut Self {
-        let commands = self.entity_spawner.spawn((
+        self.entity_spawner.spawn((
             span.try_into().unwrap(),
             interpolation,
             tween,
         ));
-        f(commands);
         self
-    }
-
-    // Due to current limitations in the borrow checker, `FnOnce` implies a `'static` lifetime.
-    // Privated until the limitation is lift.
-    /// Create a new span tween with the supplied duration starting from
-    /// previous tween then call a closure on it.
-    ///
-    /// [`tween()`]: Self::tween
-    /// [`tween_and()`]: Self::tween_and
-    /// [`tween_exact()`]: Self::tween_exact
-    /// [`tween_exact_and()`]: Self::tween_exact_and
-    fn tween_and(
-        &mut self,
-        duration: Duration,
-        interpolation: impl Bundle,
-        tween: impl Bundle,
-        f: impl FnOnce(S::CommandOutput<'_>),
-    ) -> &mut Self {
-        let start = self.offset;
-        let end = self.offset + duration;
-        self.offset = end;
-        self.tween_exact_and(start..end, interpolation, tween, f)
     }
 
     /// Create a new span tween with the supplied duration starting from
@@ -1300,7 +1255,15 @@ where
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
-        self.tween_and(duration, interpolation, tween, |_| {})
+        let start = self.offset;
+        let end = self.offset + duration;
+        self.offset = end;
+        self.entity_spawner.spawn((
+            TimeSpan::try_from(start..end).unwrap(),
+            interpolation,
+            tween,
+        ));
+        self
     }
 
     /// Get the internal offset.
