@@ -21,7 +21,8 @@ macro_rules! sequence {
     };
 }
 
-/// Tweens in parrallel using the latest offset
+/// Tweens in parrallel using the latest offset.
+/// The last offset will be the resulting furthest.
 #[macro_export]
 macro_rules! parallel {
     ($($c:expr,)+) => {
@@ -29,10 +30,17 @@ macro_rules! parallel {
             #[allow(clippy::redundant_closure_call)]
             let c = |b: &mut $crate::tweener::TweensBuilder<_>| {
                 let offset = b.offset();
+                let mut furthest_offset = b.offset();
                 $(
                     $c(b);
+                    furthest_offset = if b.offset() > furthest_offset {
+                        b.offset()
+                    } else {
+                        furthest_offset
+                    };
                     b.go(offset);
                 )+
+                b.go(furthest_offset);
 
             };
             c
