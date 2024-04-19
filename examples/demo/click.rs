@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::{parallel, prelude::*, tweener::combinator::*};
+use bevy_tween::{prelude::*, tweener::combinator::*};
 mod utils;
 
 mod interpolate {
@@ -152,26 +152,26 @@ fn click_spawn_circle(
                     TweenerBundle::new(Duration::from_secs(2)),
                 ))
                 .tweens()
-                .add(parallel!(
+                .add(parallel((
                     tween(
                         secs(2.),
                         EaseFunction::ExponentialOut,
                         interpolate::translate_to(end)
-                            .with_interpolator_boxed()
+                            .with_interpolator_boxed(),
                     ),
                     tween(
                         secs(1.),
                         EaseFunction::BackIn,
                         interpolate::scale_to(Vec3::ZERO)
-                            .with_interpolator_boxed()
+                            .with_interpolator_boxed(),
                     ),
                     tween(
                         secs(1.),
                         EaseFunction::Linear,
                         interpolate::sprite_color_to(Color::PINK)
-                            .with_interpolator_boxed()
+                            .with_interpolator_boxed(),
                     ),
-                ));
+                )));
         }
     }
 }

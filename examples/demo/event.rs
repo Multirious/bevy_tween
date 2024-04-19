@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::{prelude::*, sequence, tweener::combinator::*};
+use bevy_tween::{prelude::*, tweener::combinator::*};
 
 fn main() {
     App::new()
@@ -47,7 +47,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             TweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
         ))
         .tweens()
-        .add(sequence!(
+        .add(sequence((
             tween_event(TweenEventData::with_data("bump")),
             tween(
                 secs(1.),
@@ -55,9 +55,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 (
                     interpolate::translation(
                         Vec3::new(start_x, 0., 0.),
-                        Vec3::new(end_x, 0., 0.)
+                        Vec3::new(end_x, 0., 0.),
                     ),
-                    interpolate::angle_z(start_angle, mid_angle,)
+                    interpolate::angle_z(start_angle, mid_angle),
                 ),
             ),
             backward(secs(0.2)),
@@ -69,12 +69,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 (
                     interpolate::translation(
                         Vec3::new(end_x, 0., 0.),
-                        Vec3::new(start_x, 0., 0.)
+                        Vec3::new(start_x, 0., 0.),
                     ),
                     interpolate::angle_z(mid_angle, end_angle),
-                )
+                ),
             ),
-        ));
+        )));
 }
 
 #[derive(Component)]

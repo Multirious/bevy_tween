@@ -7,45 +7,33 @@ use crate::prelude::TweenEventData;
 use super::{EntitySpawner, TimeSpan, TweensBuilder};
 use bevy::prelude::*;
 
-/// Tweens in sequence
-#[macro_export]
-macro_rules! sequence {
-    ($($c:expr,)+) => {
-        {
-            #[allow(clippy::redundant_closure_call)]
-            let c = |b: &mut $crate::tweener::TweensBuilder<_>| {
-                $($c(b);)+
-            };
-            c
-        }
-    };
+/// Tweens in sequence starting from the lastest offset.
+pub fn sequence<E: EntitySpawner, S: TupleFnOnce<E>>(
+    sequence: S,
+) -> impl FnOnce(&mut TweensBuilder<E>) {
+    move |b| sequence.call_each(b)
 }
 
-/// Tweens in parrallel using the latest offset.
-/// The last offset will be the resulting furthest.
-#[macro_export]
-macro_rules! parallel {
-    ($($c:expr,)+) => {
-        {
-            #[allow(clippy::redundant_closure_call)]
-            let c = |b: &mut $crate::tweener::TweensBuilder<_>| {
-                let offset = b.offset();
-                let mut furthest_offset = b.offset();
-                $(
-                    $c(b);
-                    furthest_offset = if b.offset() > furthest_offset {
-                        b.offset()
-                    } else {
-                        furthest_offset
-                    };
-                    b.go(offset);
-                )+
-                b.go(furthest_offset);
-
+/// Tweens in parrallel starting from the latest offset.
+/// Each tweens will receive the same offset.
+/// After finishing this, the last offset will be the tween the gives the furthest
+/// offset.
+pub fn parallel<E: EntitySpawner, S: TupleFnOnce<E>>(
+    sequence: S,
+) -> impl FnOnce(&mut TweensBuilder<E>) {
+    move |b| {
+        let offset = b.offset();
+        let mut furthest_offset = b.offset();
+        sequence.call_each_then(b, |b| {
+            furthest_offset = if b.offset() > furthest_offset {
+                b.offset()
+            } else {
+                furthest_offset
             };
-            c
-        }
-    };
+            b.go(offset);
+        });
+        b.go(furthest_offset);
+    }
 }
 
 pub fn tween<I, T, E>(
@@ -169,4 +157,94 @@ where
     move |b| {
         b.go(duration);
     }
+}
+
+/// Tuple of FnOnces, support up to 16 indexes but can be circumvented by nesting tuples.
+///
+/// This trait is sealed and not meant to be implemented outside of the current crate.
+#[allow(private_bounds)]
+pub trait TupleFnOnce<E: EntitySpawner>: sealed::TupleFnOnceSealed<E> {}
+
+impl<E: EntitySpawner, T> TupleFnOnce<E> for T where
+    T: sealed::TupleFnOnceSealed<E>
+{
+}
+
+mod sealed {
+    use super::*;
+
+    pub(super) trait TupleFnOnceSealed<E: EntitySpawner> {
+        fn call_each(self, b: &mut TweensBuilder<E>);
+
+        fn call_each_then<F>(self, b: &mut TweensBuilder<E>, f: F)
+        where
+            F: FnMut(&mut TweensBuilder<E>);
+    }
+
+    impl<E: EntitySpawner, T: for<'a> FnOnce(&'a mut TweensBuilder<E>)>
+        TupleFnOnceSealed<E> for T
+    {
+        fn call_each(self, b: &mut TweensBuilder<E>) {
+            self(b);
+        }
+
+        fn call_each_then<F>(self, b: &mut TweensBuilder<E>, mut f: F)
+        where
+            F: FnMut(&mut TweensBuilder<E>),
+        {
+            self(b);
+            f(b);
+        }
+    }
+
+    macro_rules! impl_TupleFnOnce {
+        ($($i:tt $t:ident)+) => {
+            impl<
+                E: EntitySpawner,
+                $($t: TupleFnOnceSealed<E>,)+
+            > TupleFnOnceSealed<E> for ($($t,)*) {
+                fn call_each(self, b: &mut TweensBuilder<E>) {
+                    $(
+                        self.$i.call_each(b);
+                    )*
+                }
+
+                fn call_each_then<F>(self, b: &mut TweensBuilder<E>, mut f: F)
+                where
+                    F: FnMut(&mut TweensBuilder<E>)
+                {
+                    $(
+                        self.$i.call_each_then(b, &mut f);
+                    )*
+                }
+            }
+        }
+    }
+
+    // It's possible to make a macro that use shorter input but i'm tryna make it simple here
+    //
+    // Built by using Helix macro:
+    //
+    // xyp<S-F>=;b;vf<S-T>eyp<A-;>i<space>jk;f=;b_<C-a>f<S-T>ev<A-;>l<C-a>
+    //
+    // starting from
+    //
+    // impl_TupleFnOnce! { 0 => T0 }
+
+    impl_TupleFnOnce! { 0 T0 }
+    impl_TupleFnOnce! { 0 T0 1 T1 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12 13 T13 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12 13 T13 14 T14 }
+    impl_TupleFnOnce! { 0 T0 1 T1 2 T2 3 T3 4 T4 5 T5 6 T6 7 T7 8 T8 9 T9 10 T10 11 T11 12 T12 13 T13 14 T14 15 T15 }
 }
