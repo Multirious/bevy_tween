@@ -398,6 +398,26 @@ pub fn translation(
     tween::ComponentTween::new(Translation { start, end })
 }
 
+pub fn translation_to(
+    state: &mut Vec3,
+    to: Vec3,
+) -> tween::ComponentTween<Translation> {
+    let start = *state;
+    let end = to;
+    *state = to;
+    translation(start, end)
+}
+
+pub fn translation_by(
+    state: &mut Vec3,
+    by: Vec3,
+) -> tween::ComponentTween<Translation> {
+    let start = *state;
+    let end = *state + by;
+    *state += by;
+    translation(start, end)
+}
+
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 // #[reflect(InterpolatorTransform)]
@@ -430,6 +450,26 @@ pub fn rotation(start: Quat, end: Quat) -> tween::ComponentTween<Rotation> {
     tween::ComponentTween::new(Rotation { start, end })
 }
 
+pub fn rotation_to(
+    state: &mut Quat,
+    to: Quat,
+) -> tween::ComponentTween<Rotation> {
+    let start = *state;
+    let end = to;
+    *state = to;
+    rotation(start, end)
+}
+
+pub fn rotation_by(
+    state: &mut Quat,
+    by: Quat,
+) -> tween::ComponentTween<Rotation> {
+    let start = *state;
+    let end = *state + by;
+    *state = state.mul_quat(by);
+    rotation(start, end)
+}
+
 /// [`Interpolator`] for [`Transform`]'s scale
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 // #[reflect(InterpolatorTransform)]
@@ -460,6 +500,20 @@ impl Interpolator for Scale {
 /// ```
 pub fn scale(start: Vec3, end: Vec3) -> tween::ComponentTween<Scale> {
     tween::ComponentTween::new(Scale { start, end })
+}
+
+pub fn scale_to(state: &mut Vec3, to: Vec3) -> tween::ComponentTween<Scale> {
+    let start = *state;
+    let end = to;
+    *state = to;
+    scale(start, end)
+}
+
+pub fn scale_by(state: &mut Vec3, by: Vec3) -> tween::ComponentTween<Scale> {
+    let start = *state;
+    let end = *state + by;
+    *state += by;
+    scale(start, end)
 }
 
 /// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
@@ -496,6 +550,20 @@ pub fn angle_z(start: f32, end: f32) -> tween::ComponentTween<AngleZ> {
     tween::ComponentTween::new(AngleZ { start, end })
 }
 
+pub fn angle_z_to(state: &mut f32, to: f32) -> tween::ComponentTween<AngleZ> {
+    let start = *state;
+    let end = to;
+    *state = to;
+    angle_z(start, end)
+}
+
+pub fn angle_z_by(state: &mut f32, by: f32) -> tween::ComponentTween<AngleZ> {
+    let start = *state;
+    let end = *state + by;
+    *state += by;
+    angle_z(start, end)
+}
+
 // #[cfg(feature = "bevy_sprite")]
 // type ReflectInterpolatorSprite = ReflectInterpolator<Sprite>;
 
@@ -530,11 +598,23 @@ impl Interpolator for SpriteColor {
 /// ComponentTween::new(SpriteColor { start, end })
 /// # );
 /// ```
+#[cfg(feature = "bevy_sprite")]
 pub fn sprite_color(
     start: Color,
     end: Color,
 ) -> tween::ComponentTween<SpriteColor> {
     tween::ComponentTween::new(SpriteColor { start, end })
+}
+
+#[cfg(feature = "bevy_sprite")]
+pub fn sprite_color_to(
+    state: &mut Color,
+    to: Color,
+) -> tween::ComponentTween<SpriteColor> {
+    let start = *state;
+    let end = to;
+    *state = to;
+    sprite_color(start, end)
 }
 
 // #[cfg(feature = "bevy_sprite")]
@@ -572,10 +652,21 @@ impl Interpolator for ColorMaterial {
 /// AssetTween::new(ColorMaterial { start, end })
 /// # );
 /// ```
-#[cfg(feature = "bevy_asset")]
+#[cfg(feature = "bevy_sprite")]
 pub fn color_material(
     start: Color,
     end: Color,
 ) -> tween::AssetTween<ColorMaterial> {
     tween::AssetTween::new(ColorMaterial { start, end })
+}
+
+#[cfg(feature = "bevy_sprite")]
+pub fn color_material_to(
+    state: &mut Color,
+    to: Color,
+) -> tween::AssetTween<ColorMaterial> {
+    let start = *state;
+    let end = to;
+    *state = to;
+    color_material(start, end)
 }
