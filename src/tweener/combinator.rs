@@ -8,23 +8,27 @@ use super::{EntitySpawner, TimeSpan, TweensBuilder};
 use bevy::prelude::*;
 
 /// Tweens in sequence starting from the lastest offset.
-pub fn sequence<E: EntitySpawner, S: TupleFnOnce<E>>(
-    sequence: S,
-) -> impl FnOnce(&mut TweensBuilder<E>) {
-    move |b| sequence.call_each(b)
+pub fn sequence<E, Tuple>(tuple: Tuple) -> impl FnOnce(&mut TweensBuilder<E>)
+where
+    E: EntitySpawner,
+    Tuple: SequenceTuple<E>,
+{
+    move |b| tuple.call_each(b)
 }
 
 /// Tweens in parrallel starting from the latest offset.
 /// Each tweens will receive the same offset.
 /// After finishing this, the last offset will be the tween the gives the furthest
 /// offset.
-pub fn parallel<E: EntitySpawner, S: TupleFnOnce<E>>(
-    sequence: S,
-) -> impl FnOnce(&mut TweensBuilder<E>) {
+pub fn parallel<E, Tuple>(tuple: Tuple) -> impl FnOnce(&mut TweensBuilder<E>)
+where
+    E: EntitySpawner,
+    Tuple: ParallelTuple<E>,
+{
     move |b| {
         let offset = b.offset();
         let mut furthest_offset = b.offset();
-        sequence.call_each_then(b, |b| {
+        tuple.call_each_then(b, |b| {
             furthest_offset = if b.offset() > furthest_offset {
                 b.offset()
             } else {
@@ -159,62 +163,109 @@ where
     }
 }
 
-/// Tuple of FnOnces, support up to 16 indexes but can be circumvented by nesting tuples.
+/// Tuple of FnOnces in [`sequence()`],
+/// support up to 16 indexes but can be circumvented by nesting tuples.
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 #[allow(private_bounds)]
-pub trait TupleFnOnce<E: EntitySpawner>: sealed::TupleFnOnceSealed<E> {}
-
-impl<E: EntitySpawner, T> TupleFnOnce<E> for T where
-    T: sealed::TupleFnOnceSealed<E>
+pub trait SequenceTuple<E: EntitySpawner>:
+    sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>
+{
+}
+impl<T, E> SequenceTuple<E> for T
+where
+    T: sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>,
+    E: EntitySpawner,
 {
 }
 
+/// Tuple of FnOnces in [`parallel()`],
+/// support up to 16 indexes but can be circumvented by nesting tuples.
+///
+/// This trait is sealed and not meant to be implemented outside of the current crate.
+#[allow(private_bounds)]
+pub trait ParallelTuple<E: EntitySpawner>:
+    sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>
+{
+}
+impl<T, E> ParallelTuple<E> for T
+where
+    T: sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>,
+    E: EntitySpawner,
+{
+}
+// pub trait ChainTuple<V, E: EntitySpawner>:
+//     sealed::TupleFnOnceSealed<V, Box<dyn FnOnce(&mut TweensBuilder<E>)>>
+// {
+// }
+// impl<T, E, V> ChainTuple<V, E> for T
+// where
+//     T: sealed::TupleFnOnceSealed<V, Box<dyn FnOnce(&mut TweensBuilder<E>)>>,
+//     E: EntitySpawner,
+// {
+// }
+
 mod sealed {
-    use super::*;
+    pub(super) trait TupleFnOnceSealed<In, Out> {
+        fn call_each(self, a: &mut In);
 
-    pub(super) trait TupleFnOnceSealed<E: EntitySpawner> {
-        fn call_each(self, b: &mut TweensBuilder<E>);
-
-        fn call_each_then<F>(self, b: &mut TweensBuilder<E>, f: F)
+        fn call_each_and<F>(self, a: &mut In, and: F)
         where
-            F: FnMut(&mut TweensBuilder<E>);
+            F: FnMut(Out);
+
+        fn call_each_then<F>(self, a: &mut In, then: F)
+        where
+            F: FnMut(&mut In);
     }
 
-    impl<E: EntitySpawner, T: for<'a> FnOnce(&'a mut TweensBuilder<E>)>
-        TupleFnOnceSealed<E> for T
-    {
-        fn call_each(self, b: &mut TweensBuilder<E>) {
-            self(b);
+    impl<In, Out, T: FnOnce(&mut In) -> Out> TupleFnOnceSealed<In, Out> for T {
+        fn call_each(self, a: &mut In) {
+            self(a);
         }
 
-        fn call_each_then<F>(self, b: &mut TweensBuilder<E>, mut f: F)
+        fn call_each_and<F>(self, a: &mut In, mut and: F)
         where
-            F: FnMut(&mut TweensBuilder<E>),
+            F: FnMut(Out),
         {
-            self(b);
-            f(b);
+            and(self(a));
+        }
+
+        fn call_each_then<F>(self, a: &mut In, mut f: F)
+        where
+            F: FnMut(&mut In),
+        {
+            self(a);
+            f(a);
         }
     }
 
     macro_rules! impl_TupleFnOnce {
         ($($i:tt $t:ident)+) => {
             impl<
-                E: EntitySpawner,
-                $($t: TupleFnOnceSealed<E>,)+
-            > TupleFnOnceSealed<E> for ($($t,)*) {
-                fn call_each(self, b: &mut TweensBuilder<E>) {
+                In, Out,
+                $($t: TupleFnOnceSealed<In, Out>,)+
+            > TupleFnOnceSealed<In, Out> for ($($t,)*) {
+                fn call_each(self, a: &mut In) {
                     $(
-                        self.$i.call_each(b);
+                        self.$i.call_each(a);
                     )*
                 }
 
-                fn call_each_then<F>(self, b: &mut TweensBuilder<E>, mut f: F)
+                fn call_each_and<F>(self, a: &mut In, mut and: F)
                 where
-                    F: FnMut(&mut TweensBuilder<E>)
+                    F: FnMut(Out),
                 {
                     $(
-                        self.$i.call_each_then(b, &mut f);
+                        self.$i.call_each_and(a, &mut and);
+                    )*
+                }
+
+                fn call_each_then<F>(self, a: &mut In, mut then: F)
+                where
+                    F: FnMut(&mut In)
+                {
+                    $(
+                        self.$i.call_each_then(a, &mut then);
                     )*
                 }
             }
