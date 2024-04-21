@@ -40,6 +40,23 @@ where
     }
 }
 
+// pub fn chain<S>(state: S) -> Chain<S> {
+//     Chain { state }
+// }
+
+// pub struct Chain<S> {
+//     state: S,
+// }
+
+// impl<S> Chain<S> {
+//     pub fn next<E: EntitySpawner, F, O>(&mut self, f: F) -> O
+//     where
+//         F: FnOnce(&mut S) -> O,
+//     {
+//         f(&mut self.state)
+//     }
+// }
+
 pub fn tween<I, T, E>(
     duration: Duration,
     interpolation: I,
