@@ -77,6 +77,142 @@ use bevy::prelude::*;
 use crate::utils::color_lerp;
 use crate::{tween, BevyTweenRegisterSystems};
 
+mod chain {
+    use self::tween::{ComponentTween, TargetComponent, Tween};
+
+    use super::*;
+
+    /// Builder for constructing many interpolator that requires a mutable state.
+    pub struct ChainTween<T, S> {
+        target: T,
+        state: S,
+    }
+
+    impl<T, S> ChainTween<T, S> {
+        /// Create new [`ChainTween`]
+        pub fn new(target: T, state: S) -> ChainTween<T, S> {
+            Self { target, state }
+        }
+
+        /// Change target in place
+        pub fn with_target(mut self, target: T) -> Self {
+            self.target = target;
+            self
+        }
+
+        /// Change state in place
+        pub fn with_state(mut self, state: S) -> Self {
+            self.state = state;
+            self
+        }
+    }
+
+    impl<T, S> ChainTween<T, S>
+    where
+        T: Default,
+    {
+        /// Create new [`ChainTween`]
+        pub fn from_state(state: S) -> ChainTween<T, S> {
+            ChainTween {
+                target: T::default(),
+                state,
+            }
+        }
+    }
+
+    impl<T, S> ChainTween<T, S>
+    where
+        T: Clone,
+    {
+        pub fn tween<F, I>(&mut self, f: F) -> Tween<T, I>
+        where
+            F: FnOnce(&mut S) -> I,
+        {
+            let interpolator = f(&mut self.state);
+            Tween {
+                target: self.target.clone(),
+                interpolator,
+            }
+        }
+    }
+
+    /// Extension trait for [`Transform`] to create [`ChainTween`] out of.
+    #[allow(private_bounds)]
+    pub trait TransformChainTweenExt:
+        sealed::TransformChainTweenExtSealed
+    {
+        #[allow(missing_docs)]
+        fn chain_tween(
+            self,
+            target: impl Into<TargetComponent>,
+        ) -> ChainTween<TargetComponent, Transform>;
+    }
+
+    impl TransformChainTweenExt for Transform {
+        /// Create [`ChainTween`] out of this [`Transform`]
+        fn chain_tween(
+            self,
+            target: impl Into<TargetComponent>,
+        ) -> ChainTween<TargetComponent, Transform> {
+            ChainTween {
+                target: target.into(),
+                state: self,
+            }
+        }
+    }
+
+    #[allow(private_bounds)]
+    pub trait TransformChainTween: sealed::TransformChainTweenSealed {
+        fn translation_to(&mut self, to: Vec3) -> ComponentTween<Translation>;
+        fn rotation_to(&mut self, to: Quat) -> ComponentTween<Rotation>;
+        fn scale_to(&mut self, to: Vec3) -> ComponentTween<Scale>;
+
+        fn translation_by(&mut self, by: Vec3) -> ComponentTween<Translation>;
+        fn rotation_by(&mut self, by: Quat) -> ComponentTween<Rotation>;
+        fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale>;
+        // i forgor how to math this
+        // fn angle_z_to(&mut self, z_to: f32) -> ComponentTween<AngleZ>;
+        // fn angle_z_by(&mut self, z_by: f32) -> ComponentTween<AngleZ>;
+    }
+
+    impl TransformChainTween for ChainTween<TargetComponent, Transform> {
+        fn translation_to(&mut self, to: Vec3) -> ComponentTween<Translation> {
+            self.tween(|v| translation_to(to)(&mut v.translation))
+        }
+
+        fn rotation_to(&mut self, to: Quat) -> ComponentTween<Rotation> {
+            self.tween(|v| rotation_to(to)(&mut v.rotation))
+        }
+
+        fn scale_to(&mut self, to: Vec3) -> ComponentTween<Scale> {
+            self.tween(|v| scale_to(to)(&mut v.scale))
+        }
+
+        fn translation_by(&mut self, by: Vec3) -> ComponentTween<Translation> {
+            self.tween(|v| translation_by(by)(&mut v.translation))
+        }
+
+        fn rotation_by(&mut self, by: Quat) -> ComponentTween<Rotation> {
+            self.tween(|v| rotation_by(by)(&mut v.rotation))
+        }
+
+        fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale> {
+            self.tween(|v| scale_by(by)(&mut v.scale))
+        }
+    }
+
+    mod sealed {
+        use super::*;
+        pub(super) trait TransformChainTweenSealed {}
+        impl TransformChainTweenSealed for ChainTween<TargetComponent, Transform> {}
+
+        pub(super) trait TransformChainTweenExtSealed {}
+        impl TransformChainTweenExtSealed for Transform {}
+    }
+}
+
+pub use chain::{ChainTween, TransformChainTween, TransformChainTweenExt};
+
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 
