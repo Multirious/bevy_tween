@@ -380,42 +380,31 @@ impl Interpolator for Translation {
     }
 }
 
-/// Same as
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::tween::ComponentTween;
-/// # use bevy_tween::interpolate::{translation, Translation};
-/// # let start = Vec3::ZERO;
-/// # let end = Vec3::ZERO;
-/// # assert_eq!(translation(start, end),
-/// ComponentTween::new(Translation { start, end })
-/// # );
-/// ```
-pub fn translation(
-    start: Vec3,
-    end: Vec3,
-) -> tween::ComponentTween<Translation> {
-    tween::ComponentTween::new(Translation { start, end })
+/// Constructor for [`Translation`]
+pub fn translation(start: Vec3, end: Vec3) -> Translation {
+    Translation { start, end }
 }
 
-pub fn translation_to(
-    state: &mut Vec3,
-    to: Vec3,
-) -> tween::ComponentTween<Translation> {
-    let start = *state;
-    let end = to;
-    *state = to;
-    translation(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn translation_to(to: Vec3) -> impl Fn(&mut Vec3) -> Translation {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        translation(start, end)
+    }
 }
 
-pub fn translation_by(
-    state: &mut Vec3,
-    by: Vec3,
-) -> tween::ComponentTween<Translation> {
-    let start = *state;
-    let end = *state + by;
-    *state += by;
-    translation(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn translation_by(by: Vec3) -> impl Fn(&mut Vec3) -> Translation {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        translation(start, end)
+    }
 }
 
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
@@ -435,39 +424,31 @@ impl Interpolator for Rotation {
     }
 }
 
-/// Same as
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::tween::ComponentTween;
-/// # use bevy_tween::interpolate::{rotation, Rotation};
-/// # let start = Quat::IDENTITY;
-/// # let end = Quat::IDENTITY;
-/// # assert_eq!(rotation(start, end),
-/// ComponentTween::new(Rotation { start, end })
-/// # );
-/// ```
-pub fn rotation(start: Quat, end: Quat) -> tween::ComponentTween<Rotation> {
-    tween::ComponentTween::new(Rotation { start, end })
+/// Constructor for [`Rotation`]
+pub fn rotation(start: Quat, end: Quat) -> Rotation {
+    Rotation { start, end }
 }
 
-pub fn rotation_to(
-    state: &mut Quat,
-    to: Quat,
-) -> tween::ComponentTween<Rotation> {
-    let start = *state;
-    let end = to;
-    *state = to;
-    rotation(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn rotation_to(to: Quat) -> impl Fn(&mut Quat) -> Rotation {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        rotation(start, end)
+    }
 }
 
-pub fn rotation_by(
-    state: &mut Quat,
-    by: Quat,
-) -> tween::ComponentTween<Rotation> {
-    let start = *state;
-    let end = *state + by;
-    *state = state.mul_quat(by);
-    rotation(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn rotation_by(by: Quat) -> impl Fn(&mut Quat) -> Rotation {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state = state.mul_quat(by);
+        rotation(start, end)
+    }
 }
 
 /// [`Interpolator`] for [`Transform`]'s scale
@@ -487,33 +468,31 @@ impl Interpolator for Scale {
     }
 }
 
-/// Same as
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::tween::ComponentTween;
-/// # use bevy_tween::interpolate::{scale, Scale};
-/// # let start = Vec3::ZERO;
-/// # let end = Vec3::ZERO;
-/// # assert_eq!(scale(start, end),
-/// ComponentTween::new(Scale { start, end })
-/// # );
-/// ```
-pub fn scale(start: Vec3, end: Vec3) -> tween::ComponentTween<Scale> {
-    tween::ComponentTween::new(Scale { start, end })
+/// Constructor for [`Scale`]
+pub fn scale(start: Vec3, end: Vec3) -> Scale {
+    Scale { start, end }
 }
 
-pub fn scale_to(state: &mut Vec3, to: Vec3) -> tween::ComponentTween<Scale> {
-    let start = *state;
-    let end = to;
-    *state = to;
-    scale(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn scale_to(to: Vec3) -> impl Fn(&mut Vec3) -> Scale {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        scale(start, end)
+    }
 }
 
-pub fn scale_by(state: &mut Vec3, by: Vec3) -> tween::ComponentTween<Scale> {
-    let start = *state;
-    let end = *state + by;
-    *state += by;
-    scale(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn scale_by(by: Vec3) -> impl Fn(&mut Vec3) -> Scale {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        scale(start, end)
+    }
 }
 
 /// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
@@ -535,33 +514,31 @@ impl Interpolator for AngleZ {
     }
 }
 
-/// Same as
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::tween::ComponentTween;
-/// # use bevy_tween::interpolate::{angle_z, AngleZ};
-/// # let start = 0.;
-/// # let end = 0.;
-/// # assert_eq!(angle_z(start, end),
-/// ComponentTween::new(AngleZ { start, end })
-/// # );
-/// ```
-pub fn angle_z(start: f32, end: f32) -> tween::ComponentTween<AngleZ> {
-    tween::ComponentTween::new(AngleZ { start, end })
+/// Constructor for [`AngleZ`]
+pub fn angle_z(start: f32, end: f32) -> AngleZ {
+    AngleZ { start, end }
 }
 
-pub fn angle_z_to(state: &mut f32, to: f32) -> tween::ComponentTween<AngleZ> {
-    let start = *state;
-    let end = to;
-    *state = to;
-    angle_z(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn angle_z_to(to: f32) -> impl Fn(&mut f32) -> AngleZ {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        angle_z(start, end)
+    }
 }
 
-pub fn angle_z_by(state: &mut f32, by: f32) -> tween::ComponentTween<AngleZ> {
-    let start = *state;
-    let end = *state + by;
-    *state += by;
-    angle_z(start, end)
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn angle_z_by(by: f32) -> impl Fn(&mut f32) -> AngleZ {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        angle_z(start, end)
+    }
 }
 
 // #[cfg(feature = "bevy_sprite")]
@@ -587,34 +564,22 @@ impl Interpolator for SpriteColor {
     }
 }
 
-/// Same as
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::tween::ComponentTween;
-/// # use bevy_tween::interpolate::{sprite_color, SpriteColor};
-/// # let start = Color::WHITE;
-/// # let end = Color::WHITE;
-/// # assert_eq!(sprite_color(start, end),
-/// ComponentTween::new(SpriteColor { start, end })
-/// # );
-/// ```
+/// Constructor for [`SpriteColor`]
 #[cfg(feature = "bevy_sprite")]
-pub fn sprite_color(
-    start: Color,
-    end: Color,
-) -> tween::ComponentTween<SpriteColor> {
-    tween::ComponentTween::new(SpriteColor { start, end })
+pub fn sprite_color(start: Color, end: Color) -> SpriteColor {
+    SpriteColor { start, end }
 }
 
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
 #[cfg(feature = "bevy_sprite")]
-pub fn sprite_color_to(
-    state: &mut Color,
-    to: Color,
-) -> tween::ComponentTween<SpriteColor> {
-    let start = *state;
-    let end = to;
-    *state = to;
-    sprite_color(start, end)
+pub fn sprite_color_to(to: Color) -> impl Fn(&mut Color) -> SpriteColor {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        sprite_color(start, end)
+    }
 }
 
 // #[cfg(feature = "bevy_sprite")]
@@ -641,32 +606,20 @@ impl Interpolator for ColorMaterial {
     }
 }
 
-/// Same as
-/// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::tween::AssetTween;
-/// # use bevy_tween::interpolate::{color_material, ColorMaterial};
-/// # let start = Color::WHITE;
-/// # let end = Color::WHITE;
-/// # assert_eq!(color_material(start, end),
-/// AssetTween::new(ColorMaterial { start, end })
-/// # );
-/// ```
+/// Constructor for [`ColorMaterial`]
 #[cfg(feature = "bevy_sprite")]
-pub fn color_material(
-    start: Color,
-    end: Color,
-) -> tween::AssetTween<ColorMaterial> {
-    tween::AssetTween::new(ColorMaterial { start, end })
+pub fn color_material(start: Color, end: Color) -> ColorMaterial {
+    ColorMaterial { start, end }
 }
 
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
 #[cfg(feature = "bevy_sprite")]
-pub fn color_material_to(
-    state: &mut Color,
-    to: Color,
-) -> tween::AssetTween<ColorMaterial> {
-    let start = *state;
-    let end = to;
-    *state = to;
-    color_material(start, end)
+pub fn color_material_to(to: Color) -> impl Fn(&mut Color) -> ColorMaterial {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        color_material(start, end)
+    }
 }
