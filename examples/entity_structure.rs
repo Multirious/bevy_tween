@@ -26,10 +26,8 @@ fn sprite(start_x: f32, start_y: f32) -> SpriteBundle {
 /// All of these result in exactly the same animation!
 /// Just use what fit for your use case.
 ///
-/// These will be presented using the more barebone APIs for clarity.
-/// You might want to use shortcuts under "----- or -----" comment.
-/// `ComponentTween`, `ResourceTween`, and `AssetTween` is all type alias
-/// of `Tween`
+/// These will be presented in its most rawest form.
+/// See other examples for better APIs.
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 
@@ -63,10 +61,6 @@ fn setup(mut commands: Commands) {
                 end: angle_end,
             },
         ),
-        // ----- or -----
-        // ComponentTween::tweener_entity( ... ),
-        // ----- or -----
-        // ComponentTween::new( ... ),
     ));
 
     // Sprite and tweener as parent, tweens as children.
@@ -94,10 +88,6 @@ fn setup(mut commands: Commands) {
                         end: angle_end,
                     },
                 ),
-                // ----- or -----
-                // ComponentTween::tweener_entity( ... ),
-                // ----- or -----
-                // ComponentTween::new( ... ),
             ));
         });
 
@@ -122,8 +112,6 @@ fn setup(mut commands: Commands) {
                     end: angle_end,
                 },
             ),
-            // ----- or -----
-            // ComponentTween::tweener_parent( ... ),
         ));
     });
 
@@ -149,8 +137,6 @@ fn setup(mut commands: Commands) {
                             end: angle_end,
                         },
                     ),
-                    // ----- or -----
-                    // ComponentTween::tweener_parent( ... ),
                 ));
             });
     });
