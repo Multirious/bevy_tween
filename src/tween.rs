@@ -485,6 +485,14 @@ impl TargetComponent {
     {
         TargetComponent::from_iter(entities)
     }
+
+    /// Create a new tween with the supplied interpolator out of this target.
+    pub fn tween<I>(&self, interpolator: I) -> Tween<Self, I> {
+        ComponentTween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
 }
 
 impl Default for TargetComponent {
@@ -693,6 +701,20 @@ impl<A: Asset> TargetAsset<A> {
         I: IntoIterator<Item = Handle<A>>,
     {
         TargetAsset::from_iter(assets)
+    }
+
+    /// Create a new tween with the supplied interpolator out of this target.
+    pub fn tween<I>(&self, interpolator: I) -> Tween<Self, I> {
+        let asset = match self {
+            TargetAsset::Asset(handle) => {
+                TargetAsset::Asset(Handle::clone(handle))
+            }
+            TargetAsset::Assets(v) => TargetAsset::Assets(v.clone()),
+        };
+        Tween {
+            target: asset,
+            interpolator,
+        }
     }
 }
 
