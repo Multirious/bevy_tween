@@ -1,104 +1,11 @@
 use bevy::prelude::*;
-use bevy_tween::{prelude::*, tweener::combinator::*};
+use bevy_tween::{
+    interpolate::{TransformChainTween, TransformChainTweenExt},
+    prelude::*,
+    tween::TargetComponent,
+    tweener::combinator::*,
+};
 mod utils;
-
-mod interpolate {
-    use std::sync::OnceLock;
-
-    use bevy::prelude::*;
-    pub use bevy_tween::interpolate::*;
-    use bevy_tween::{prelude::*, tween::ComponentTween};
-
-    pub fn translate_to(end: Vec3) -> ComponentTween<TranslateTo> {
-        ComponentTween::new(TranslateTo::end(end))
-    }
-
-    /// Automatically figure out the current position of this entity and then
-    /// tween from there.
-    pub struct TranslateTo {
-        pub start: OnceLock<Vec3>,
-        pub end: Vec3,
-    }
-
-    impl TranslateTo {
-        pub fn end(end: Vec3) -> TranslateTo {
-            TranslateTo {
-                start: OnceLock::new(),
-                end,
-            }
-        }
-    }
-
-    impl Interpolator for TranslateTo {
-        type Item = Transform;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let start = self.start.get_or_init(|| item.translation);
-            let end = self.end;
-            item.translation = start.lerp(end, value);
-        }
-    }
-
-    pub fn scale_to(end: Vec3) -> ComponentTween<ScaleTo> {
-        ComponentTween::new(ScaleTo::end(end))
-    }
-
-    /// Automatically figure out the current scale of this entity and then
-    /// tween from there.
-    pub struct ScaleTo {
-        pub start: OnceLock<Vec3>,
-        pub end: Vec3,
-    }
-
-    impl ScaleTo {
-        pub fn end(end: Vec3) -> ScaleTo {
-            ScaleTo {
-                start: OnceLock::new(),
-                end,
-            }
-        }
-    }
-
-    impl Interpolator for ScaleTo {
-        type Item = Transform;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let start = self.start.get_or_init(|| item.scale);
-            let end = self.end;
-            item.scale = start.lerp(end, value);
-        }
-    }
-
-    pub fn sprite_color_to(end: Color) -> ComponentTween<SpriteColorTo> {
-        ComponentTween::new(SpriteColorTo::end(end))
-    }
-
-    /// Automatically figure out the current color of this entity and then
-    /// tween from there.
-    pub struct SpriteColorTo {
-        pub start: OnceLock<Color>,
-        pub end: Color,
-    }
-
-    impl SpriteColorTo {
-        pub fn end(end: Color) -> SpriteColorTo {
-            SpriteColorTo {
-                start: OnceLock::new(),
-                end,
-            }
-        }
-    }
-
-    impl Interpolator for SpriteColorTo {
-        type Item = Sprite;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let start = *self.start.get_or_init(|| item.color);
-            let end = self.end;
-            interpolate::SpriteColor { start, end }.interpolate(item, value);
-        }
-    }
-}
 
 fn secs(secs: f32) -> Duration {
     Duration::from_secs_f32(secs)
@@ -135,6 +42,7 @@ fn click_spawn_circle(
     key: Res<ButtonInput<MouseButton>>,
     asset_server: Res<AssetServer>,
 ) {
+    use interpolate::sprite_color;
     let circle_filled_image = asset_server.load("circle_filled.png");
     let spawn =
         key.just_pressed(MouseButton::Left) || key.pressed(MouseButton::Right);
@@ -142,11 +50,15 @@ fn click_spawn_circle(
         if spawn {
             let start = Vec3::new(coord.x, coord.y, 1.);
             let end = Vec3::new(0., 0., 0.);
+            let transform = Transform::from_translation(start);
+            let mut circle_transform =
+                transform.chain_tween(TargetComponent::TweenerEntity);
+            let circle = TargetComponent::tweener_entity();
             commands
                 .spawn((
                     SpriteBundle {
                         texture: circle_filled_image,
-                        transform: Transform::from_translation(start),
+                        transform,
                         ..Default::default()
                     },
                     TweenerBundle::new(Duration::from_secs(2)),
@@ -156,20 +68,17 @@ fn click_spawn_circle(
                     tween(
                         secs(2.),
                         EaseFunction::ExponentialOut,
-                        interpolate::translate_to(end)
-                            .with_interpolator_boxed(),
+                        circle_transform.translation_to(end),
                     ),
                     tween(
                         secs(1.),
                         EaseFunction::BackIn,
-                        interpolate::scale_to(Vec3::ZERO)
-                            .with_interpolator_boxed(),
+                        circle_transform.scale_to(Vec3::ZERO),
                     ),
                     tween(
                         secs(1.),
                         EaseFunction::Linear,
-                        interpolate::sprite_color_to(Color::PINK)
-                            .with_interpolator_boxed(),
+                        circle.tween(sprite_color(Color::WHITE, Color::PINK)),
                     ),
                 )));
         }

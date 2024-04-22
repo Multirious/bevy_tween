@@ -4,7 +4,7 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-use bevy_tween::{prelude::*, tweener::Tweener};
+use bevy_tween::{prelude::*, tween::TargetComponent, tweener::Tweener};
 
 fn main() {
     App::new()
@@ -58,6 +58,7 @@ struct Jeb;
 struct JebTranslationTweener;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    use interpolate::scale;
     commands.spawn((
         Camera2dBundle {
             ..Default::default()
@@ -82,6 +83,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 Name::new("JebTranslationTweener"),
             ));
 
+            let jeb = TargetComponent::tweener_parent();
             // Spawning a tweener that's responsible for a rotating effect
             c.spawn((
                 Name::new("Rotate"),
@@ -90,15 +92,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     .with_repeat_style(RepeatStyle::PingPong)
                     .tween_here(),
                 EaseFunction::CubicInOut,
-                interpolate::component_closure(
+                jeb.tween(interpolate::component_closure(
                     |transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;
                         let angle = (end - start).mul_add(value, start);
                         transform.rotation = Quat::from_rotation_z(angle);
                     },
-                )
-                .for_tweener_parent(),
+                )),
             ));
 
             // Spawning a Tweener that's responsible for scaling effect
@@ -107,7 +108,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 Name::new("Scale up"),
                 TweenerBundle::new(Duration::from_secs(1)).tween_here(),
                 EaseFunction::QuinticIn,
-                interpolate::scale(Vec3::ZERO, Vec3::ONE).for_tweener_parent(),
+                jeb.tween(scale(Vec3::ZERO, Vec3::ONE)),
             ));
         });
 }
@@ -123,6 +124,7 @@ fn jeb_follows_cursor(
     >,
     mut cursor_moved: EventReader<CursorMoved>,
 ) {
+    use interpolate::{sprite_color, translation};
     let jeb_transform = q_jeb.single();
     let (jeb_tweener_entity, jeb_tweener) = q_jeb_translation_tweener.single();
     let Some(coord) = coord.0 else {
@@ -140,7 +142,7 @@ fn jeb_follows_cursor(
         },
     };
     if update {
-        println!("this ran");
+        let jeb = TargetComponent::tweener_parent();
         commands.entity(jeb_tweener_entity).insert((
             TweenerBundle::new(config.tween_duration),
             TimeSpan::try_from(..config.tween_duration).unwrap(),
@@ -149,14 +151,12 @@ fn jeb_follows_cursor(
             // type is differernt.
             //
             // This one for translation
-            interpolate::translation(
+            jeb.tween(translation(
                 jeb_transform.translation,
                 Vec3::new(coord.x, coord.y, 0.),
-            )
-            .for_tweener_parent(),
+            )),
             // This one for color
-            interpolate::sprite_color(Color::PINK, Color::WHITE)
-                .for_tweener_parent(),
+            jeb.tween(sprite_color(Color::PINK, Color::WHITE)),
         ));
     }
 }

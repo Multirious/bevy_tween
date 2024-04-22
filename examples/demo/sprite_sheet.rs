@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{prelude::*, tween::TargetComponent};
 
 mod interpolate {
     use bevy::prelude::*;
@@ -13,8 +13,8 @@ mod interpolate {
         );
     }
 
-    pub fn atlas_index(start: usize, end: usize) -> ComponentTween<AtlasIndex> {
-        ComponentTween::new(AtlasIndex { start, end })
+    pub fn atlas_index(start: usize, end: usize) -> AtlasIndex {
+        AtlasIndex { start, end }
     }
 
     pub struct AtlasIndex {
@@ -49,11 +49,13 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
+    use interpolate::atlas_index;
     let texture = asset_server.load("pink_fire_ball.png");
     let layout =
         TextureAtlasLayout::from_grid(Vec2::new(32., 32.), 16, 1, None, None);
     let len = layout.len();
     let atlas_layout = texture_atlas_layouts.add(layout);
+    let sprite = TargetComponent::tweener_entity();
     commands.spawn((
         SpriteSheetBundle {
             texture,
@@ -68,7 +70,7 @@ fn setup(
             .with_repeat(Repeat::Infinitely)
             .tween_here(),
         EaseFunction::Linear,
-        interpolate::atlas_index(0, len),
+        sprite.tween(atlas_index(0, len)),
     ));
 
     commands.spawn(Camera2dBundle::default());

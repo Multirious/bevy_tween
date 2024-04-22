@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use bevy_tween::{prelude::*, tweener::combinator::*};
+use bevy_tween::{
+    interpolate::ChainTween, prelude::*, tween::TargetComponent,
+    tweener::combinator::*,
+};
 
 fn main() {
     App::new()
@@ -23,6 +26,7 @@ struct EffectPos {
 struct Triangle;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    use interpolate::{angle_z_to, translation_to};
     commands.spawn(Camera2dBundle::default());
 
     let start_x = -300.;
@@ -36,6 +40,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let start_angle = -90.0_f32.to_radians();
     let mid_angle = start_angle + 540.0_f32.to_radians();
     let end_angle = mid_angle + 180.0_f32.to_radians();
+
+    let triangle = TargetComponent::tweener_entity();
+    let mut triangle_translation =
+        ChainTween::new(triangle.clone(), Vec3::new(start_x, 0., 0.));
+    let mut triangle_angle_z = ChainTween::new(triangle, start_angle);
 
     commands
         .spawn((
@@ -53,11 +62,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 secs(1.),
                 EaseFunction::ExponentialIn,
                 (
-                    interpolate::translation(
-                        Vec3::new(start_x, 0., 0.),
-                        Vec3::new(end_x, 0., 0.),
-                    ),
-                    interpolate::angle_z(start_angle, mid_angle),
+                    triangle_translation
+                        .tween(translation_to(Vec3::new(end_x, 0., 0.))),
+                    triangle_angle_z.tween(angle_z_to(mid_angle)),
                 ),
             ),
             backward(secs(0.2)),
@@ -67,11 +74,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 secs(1.),
                 EaseFunction::CircularOut,
                 (
-                    interpolate::translation(
-                        Vec3::new(end_x, 0., 0.),
-                        Vec3::new(start_x, 0., 0.),
-                    ),
-                    interpolate::angle_z(mid_angle, end_angle),
+                    triangle_translation
+                        .tween(translation_to(Vec3::new(start_x, 0., 0.))),
+                    triangle_angle_z.tween(angle_z_to(end_angle)),
                 ),
             ),
         )));
@@ -87,8 +92,10 @@ fn effect_system(
     q_triangle: Query<&Transform, With<Triangle>>,
     mut event: EventReader<TweenEvent<&'static str>>,
 ) {
+    use interpolate::{scale, sprite_color, translation};
     event.read().for_each(|event| match event.data {
         "bump" => {
+            let entity = TargetComponent::TweenerEntity;
             commands.spawn((
                 Effect,
                 SpriteBundle {
@@ -101,14 +108,16 @@ fn effect_system(
                 },
                 TweenerBundle::new(secs(1.)).tween_here(),
                 EaseFunction::QuinticOut,
-                interpolate::translation(
+                entity.tween(translation(
                     effect_pos.trail,
                     effect_pos.trail - Vec3::new(100., 0., 0.),
-                ),
-                interpolate::sprite_color(Color::WHITE, Color::PINK.with_a(0.)),
+                )),
+                entity
+                    .tween(sprite_color(Color::WHITE, Color::PINK.with_a(0.))),
             ));
         }
         "small_boom" => {
+            let entity = TargetComponent::TweenerEntity;
             commands.spawn((
                 Effect,
                 SpriteBundle {
@@ -120,17 +129,18 @@ fn effect_system(
                 },
                 TweenerBundle::new(secs(0.1)).tween_here(),
                 EaseFunction::Linear,
-                interpolate::scale(
+                entity.tween(scale(
                     Vec3::new(0.5, 0.5, 0.),
                     Vec3::new(3., 3., 0.),
-                ),
-                interpolate::sprite_color(
+                )),
+                entity.tween(sprite_color(
                     Color::WHITE.with_a(0.5),
                     Color::PINK.with_a(0.),
-                ),
+                )),
             ));
         }
         "boom" => {
+            let entity = TargetComponent::TweenerEntity;
             commands.spawn((
                 Effect,
                 SpriteBundle {
@@ -140,14 +150,14 @@ fn effect_system(
                 },
                 TweenerBundle::new(secs(0.5)).tween_here(),
                 EaseFunction::QuadraticOut,
-                interpolate::scale(
+                entity.tween(scale(
                     Vec3::new(1., 1., 0.),
                     Vec3::new(15., 15., 0.),
-                ),
-                interpolate::sprite_color(
+                )),
+                entity.tween(sprite_color(
                     Color::WHITE.with_a(1.),
                     Color::PINK.with_a(0.),
-                ),
+                )),
             ));
         }
         _ => {}

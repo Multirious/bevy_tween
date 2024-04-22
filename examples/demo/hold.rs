@@ -2,7 +2,8 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
-    prelude::*, tween_timer::AnimationDirection, tweener::Tweener,
+    prelude::*, tween::TargetComponent, tween_timer::AnimationDirection,
+    tweener::Tweener,
 };
 use rand::prelude::*;
 
@@ -71,6 +72,7 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut window: Query<&mut Window, With<PrimaryWindow>>,
 ) {
+    use interpolate::{effect_intensity, sprite_color};
     window.single_mut().cursor.icon = CursorIcon::Pointer;
     commands.spawn(Camera2dBundle::default());
     let big_x = commands
@@ -82,12 +84,13 @@ fn setup(
             BigX,
         ))
         .id();
+    let big_x = TargetComponent::from(big_x);
     commands.spawn((
         EffectTweener,
         TweenerBundle::new(secs(1.)).tween_here(),
         EaseFunction::QuarticIn,
-        interpolate::effect_intensity(0., 1.),
-        interpolate::sprite_color(Color::WHITE, Color::PINK).for_entity(big_x),
+        effect_intensity(0., 1.),
+        big_x.tween(sprite_color(Color::WHITE, Color::PINK)),
     ));
     commands.spawn((
         RotateTweener,
@@ -95,7 +98,7 @@ fn setup(
             .with_repeat(Repeat::Infinitely)
             .tween_here(),
         EaseFunction::Linear,
-        interpolate::angle_z(0., PI * 0.5).for_entity(big_x),
+        big_x.tween(interpolate::angle_z(0., PI * 0.5)),
     ));
 }
 
