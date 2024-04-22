@@ -643,6 +643,14 @@ impl TargetResource {
     pub fn new() -> TargetResource {
         TargetResource
     }
+
+    /// Create a new tween with the supplied interpolator out of this target.
+    pub fn tween<I>(&self, interpolator: I) -> Tween<Self, I> {
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with generic [`Interpolator`].
