@@ -685,7 +685,7 @@ where
 
 /// Tell the tween what asset of what type to tween.
 #[cfg(feature = "bevy_asset")]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetAsset<A: Asset>
 where
     A: Asset,
@@ -713,15 +713,19 @@ impl<A: Asset> TargetAsset<A> {
 
     /// Create a new tween with the supplied interpolator out of this target.
     pub fn tween<I>(&self, interpolator: I) -> Tween<Self, I> {
-        let asset = match self {
-            TargetAsset::Asset(handle) => {
-                TargetAsset::Asset(Handle::clone(handle))
-            }
-            TargetAsset::Assets(v) => TargetAsset::Assets(v.clone()),
-        };
         Tween {
-            target: asset,
+            target: self.clone(),
             interpolator,
+        }
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A: Asset> Clone for TargetAsset<A> {
+    fn clone(&self) -> Self {
+        match self {
+            TargetAsset::Asset(handle) => TargetAsset::Asset(handle.clone()),
+            TargetAsset::Assets(v) => TargetAsset::Assets(v.clone()),
         }
     }
 }
