@@ -77,58 +77,51 @@ use bevy::prelude::*;
 use crate::utils::color_lerp;
 use crate::{tween, BevyTweenRegisterSystems};
 
-mod chain {
-    use self::tween::{ComponentTween, TargetComponent, Tween};
+mod state {
+    use tween::{ComponentTween, Tween};
 
     use super::*;
 
-    /// Builder for constructing many interpolator that requires a mutable state.
-    pub struct ChainTween<T, S> {
+    // pub trait CombinatorState<S> {
+    //     type Out<FO>;
+    //     fn state_for<F, FO>(&mut self, f: F) -> Self::Out<FO>
+    //     where
+    //         F: FnOnce(&mut S) -> FO;
+    // }
+
+    // impl<T> CombinatorState<T> for T {
+    //     type Out<FO> = FO;
+
+    //     fn state_for<F, FO>(&mut self, f: F) -> Self::Out<FO>
+    //     where
+    //         F: FnOnce(&mut T) -> FO,
+    //     {
+    //         f(self)
+    //     }
+    // }
+
+    /// Constructor for [`GenericTweenState`]
+    pub fn tween_state<T, V>(target: T, value: V) -> GenericTweenState<T, V> {
+        GenericTweenState { target, value }
+    }
+
+    pub struct GenericTweenState<T, V> {
         target: T,
-        state: S,
+        value: V,
     }
 
-    impl<T, S> ChainTween<T, S> {
-        /// Create new [`ChainTween`]
-        pub fn new(target: T, state: S) -> ChainTween<T, S> {
-            Self { target, state }
-        }
-
-        /// Change target in place
-        pub fn with_target(mut self, target: T) -> Self {
-            self.target = target;
-            self
-        }
-
-        /// Change state in place
-        pub fn with_state(mut self, state: S) -> Self {
-            self.state = state;
-            self
+    impl<T, V> GenericTweenState<T, V> {
+        pub fn new(target: T, value: V) -> GenericTweenState<T, V> {
+            GenericTweenState { target, value }
         }
     }
 
-    impl<T, S> ChainTween<T, S>
-    where
-        T: Default,
-    {
-        /// Create new [`ChainTween`]
-        pub fn from_state(state: S) -> ChainTween<T, S> {
-            ChainTween {
-                target: T::default(),
-                state,
-            }
-        }
-    }
-
-    impl<T, S> ChainTween<T, S>
+    impl<T, V> GenericTweenState<T, V>
     where
         T: Clone,
     {
-        pub fn tween<F, I>(&mut self, f: F) -> Tween<T, I>
-        where
-            F: FnOnce(&mut S) -> I,
-        {
-            let interpolator = f(&mut self.state);
+        pub fn tween<I>(&mut self, f: impl FnOnce(&mut V) -> I) -> Tween<T, I> {
+            let interpolator = f(&mut self.value);
             Tween {
                 target: self.target.clone(),
                 interpolator,
@@ -136,82 +129,94 @@ mod chain {
         }
     }
 
-    /// Extension trait for [`Transform`] to create [`ChainTween`] out of.
-    #[allow(private_bounds)]
-    pub trait TransformChainTweenExt:
-        sealed::TransformChainTweenExtSealed
-    {
-        #[allow(missing_docs)]
-        fn chain_tween(
-            self,
-            target: impl Into<TargetComponent>,
-        ) -> ChainTween<TargetComponent, Transform>;
+    /// Constructor for [`TransformTweenState`]
+    pub fn transform_tween_state(
+        target: tween::TargetComponent,
+        value: Transform,
+    ) -> TransformTweenState {
+        TransformTweenState::new(target, value)
     }
 
-    impl TransformChainTweenExt for Transform {
-        /// Create [`ChainTween`] out of this [`Transform`]
-        fn chain_tween(
-            self,
-            target: impl Into<TargetComponent>,
-        ) -> ChainTween<TargetComponent, Transform> {
-            ChainTween {
-                target: target.into(),
-                state: self,
+    pub struct TransformTweenState {
+        target: tween::TargetComponent,
+        value: Transform,
+    }
+
+    impl TransformTweenState {
+        pub fn new(
+            target: tween::TargetComponent,
+            value: Transform,
+        ) -> TransformTweenState {
+            TransformTweenState { target, value }
+        }
+
+        pub fn tween_transform<I>(
+            &mut self,
+            f: impl FnOnce(&mut Transform) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            let interpolator = f(&mut self.value);
+            Tween {
+                target: self.target.clone(),
+                interpolator,
             }
         }
-    }
 
-    #[allow(private_bounds)]
-    pub trait TransformChainTween: sealed::TransformChainTweenSealed {
-        fn translation_to(&mut self, to: Vec3) -> ComponentTween<Translation>;
-        fn rotation_to(&mut self, to: Quat) -> ComponentTween<Rotation>;
-        fn scale_to(&mut self, to: Vec3) -> ComponentTween<Scale>;
-
-        fn translation_by(&mut self, by: Vec3) -> ComponentTween<Translation>;
-        fn rotation_by(&mut self, by: Quat) -> ComponentTween<Rotation>;
-        fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale>;
-        // i forgor how to math this
-        // fn angle_z_to(&mut self, z_to: f32) -> ComponentTween<AngleZ>;
-        // fn angle_z_by(&mut self, z_by: f32) -> ComponentTween<AngleZ>;
-    }
-
-    impl TransformChainTween for ChainTween<TargetComponent, Transform> {
-        fn translation_to(&mut self, to: Vec3) -> ComponentTween<Translation> {
-            self.tween(|v| translation_to(to)(&mut v.translation))
+        pub fn tween_translation<I>(
+            &mut self,
+            f: impl FnOnce(&mut Vec3) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            self.tween_transform(|v| f(&mut v.translation))
         }
 
-        fn rotation_to(&mut self, to: Quat) -> ComponentTween<Rotation> {
-            self.tween(|v| rotation_to(to)(&mut v.rotation))
+        pub fn tween_rotation<I>(
+            &mut self,
+            f: impl FnOnce(&mut Quat) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            self.tween_transform(|v| f(&mut v.rotation))
         }
 
-        fn scale_to(&mut self, to: Vec3) -> ComponentTween<Scale> {
-            self.tween(|v| scale_to(to)(&mut v.scale))
+        pub fn tween_scale<I>(
+            &mut self,
+            f: impl FnOnce(&mut Vec3) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            self.tween_transform(|v| f(&mut v.scale))
         }
 
-        fn translation_by(&mut self, by: Vec3) -> ComponentTween<Translation> {
-            self.tween(|v| translation_by(by)(&mut v.translation))
+        pub fn translation_to(
+            &mut self,
+            to: Vec3,
+        ) -> ComponentTween<Translation> {
+            self.tween_translation(translation_to(to))
         }
 
-        fn rotation_by(&mut self, by: Quat) -> ComponentTween<Rotation> {
-            self.tween(|v| rotation_by(by)(&mut v.rotation))
+        pub fn rotation_to(&mut self, to: Quat) -> ComponentTween<Rotation> {
+            self.tween_rotation(rotation_to(to))
         }
 
-        fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale> {
-            self.tween(|v| scale_by(by)(&mut v.scale))
+        pub fn scale_to(&mut self, to: Vec3) -> ComponentTween<Scale> {
+            self.tween_scale(scale_to(to))
         }
-    }
 
-    mod sealed {
-        use super::*;
-        pub(super) trait TransformChainTweenSealed {}
-        impl TransformChainTweenSealed for ChainTween<TargetComponent, Transform> {}
+        pub fn translation_by(
+            &mut self,
+            by: Vec3,
+        ) -> ComponentTween<Translation> {
+            self.tween_translation(translation_by(by))
+        }
 
-        pub(super) trait TransformChainTweenExtSealed {}
-        impl TransformChainTweenExtSealed for Transform {}
+        pub fn rotation_by(&mut self, by: Quat) -> ComponentTween<Rotation> {
+            self.tween_rotation(rotation_by(by))
+        }
+
+        pub fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale> {
+            self.tween_scale(scale_by(by))
+        }
     }
 }
 
-pub use chain::{ChainTween, TransformChainTween, TransformChainTweenExt};
+pub use state::{
+    transform_tween_state, tween_state, GenericTweenState, TransformTweenState,
+};
 
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
