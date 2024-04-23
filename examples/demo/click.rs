@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::{
-    interpolate::{TransformChainTween, TransformChainTweenExt},
-    prelude::*,
-    tween::TargetComponent,
+    interpolate::transform_tween_state, prelude::*, tween::TargetComponent,
     tweener::combinator::*,
 };
 mod utils;
@@ -51,8 +49,10 @@ fn click_spawn_circle(
             let start = Vec3::new(coord.x, coord.y, 1.);
             let end = Vec3::new(0., 0., 0.);
             let transform = Transform::from_translation(start);
-            let mut circle_transform =
-                transform.chain_tween(TargetComponent::TweenerEntity);
+            let mut circle_transform = transform_tween_state(
+                TargetComponent::TweenerEntity,
+                transform,
+            );
             let circle = TargetComponent::tweener_entity();
             commands
                 .spawn((

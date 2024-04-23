@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::{
-    interpolate::ChainTween, prelude::*, tween::TargetComponent,
+    interpolate::tween_state, prelude::*, tween::TargetComponent,
     tweener::combinator::*,
 };
 
@@ -43,8 +43,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let triangle = TargetComponent::tweener_entity();
     let mut triangle_translation =
-        ChainTween::new(triangle.clone(), Vec3::new(start_x, 0., 0.));
-    let mut triangle_angle_z = ChainTween::new(triangle, start_angle);
+        tween_state(triangle.clone(), Vec3::new(start_x, 0., 0.));
+    let mut triangle_angle_z = tween_state(triangle, start_angle);
 
     commands
         .spawn((
