@@ -1153,7 +1153,7 @@ where
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
-        combinator::tween_exact(span, interpolation, tween)(self);
+        self.spawn_child((span.try_into().unwrap(), interpolation, tween));
         self
     }
 
@@ -1229,7 +1229,14 @@ where
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
-        combinator::tween(duration, interpolation, tween)(self);
+        let start = self.offset;
+        let end = self.offset + duration;
+        self.offset = end;
+        self.spawn_child((
+            TimeSpan::try_from(start..end).unwrap(),
+            interpolation,
+            tween,
+        ));
         self
     }
 
@@ -1473,7 +1480,7 @@ where
         span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
         data: TweenEventData<Data>,
     ) -> &mut Self {
-        combinator::tween_event_exact(span, data)(self);
+        self.spawn_child((span.try_into().unwrap(), data));
         self
     }
 
@@ -1482,8 +1489,7 @@ where
         &mut self,
         data: TweenEventData<Data>,
     ) -> &mut Self {
-        combinator::tween_event(data)(self);
-        self
+        self.tween_event_for(Duration::ZERO, data)
     }
 
     /// Create a tween event for the supplied duration at the current offset.
@@ -1493,7 +1499,10 @@ where
         duration: Duration,
         data: TweenEventData<Data>,
     ) -> &mut Self {
-        combinator::tween_event_for(duration, data)(self);
+        let start = self.offset;
+        let end = self.offset + duration;
+        self.tween_event_exact(start..end, data);
+        self.offset = end;
         self
     }
 
