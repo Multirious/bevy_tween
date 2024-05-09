@@ -11,9 +11,9 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     commands.spawn((
-        TweenerBundle::new(Duration::from_secs_f32(0.5))
+        SpanTweenerBundle::new(Duration::from_secs_f32(0.5))
             .with_repeat(Repeat::times(5)),
-        On::<TweenerEnded>::run(|listener: Listener<TweenerEnded>| {
+        On::<SpanTweenerEnded>::run(|listener: Listener<SpanTweenerEnded>| {
             if listener.is_completed() {
                 println!("done!");
             } else {

@@ -61,7 +61,7 @@ fn click_spawn_circle(
                         transform,
                         ..Default::default()
                     },
-                    TweenerBundle::new(Duration::from_secs(2)),
+                    SpanTweenerBundle::new(Duration::from_secs(2)),
                 ))
                 .tweens()
                 .add(parallel((
@@ -87,7 +87,7 @@ fn click_spawn_circle(
 
 fn despawn_finished_circle(
     mut commands: Commands,
-    mut tweener_ended_reader: EventReader<TweenerEnded>,
+    mut tweener_ended_reader: EventReader<SpanTweenerEnded>,
 ) {
     for t in tweener_ended_reader.read() {
         commands.entity(t.tweener).despawn();

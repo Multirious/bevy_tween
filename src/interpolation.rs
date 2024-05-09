@@ -11,10 +11,8 @@
 
 use bevy::prelude::*;
 
-use crate::{
-    tween::{TweenInterpolationValue, TweenProgress},
-    TweenSystemSet,
-};
+use crate::{tween::TweenInterpolationValue, TweenSystemSet};
+use bevy_time_runner::TimeSpanProgress;
 
 mod ease_functions;
 
@@ -869,10 +867,10 @@ impl Interpolation for EaseClosure {
 pub fn sample_interpolations_system<I>(
     mut commands: Commands,
     query: Query<
-        (Entity, &I, &TweenProgress),
-        Or<(Changed<I>, Changed<TweenProgress>)>,
+        (Entity, &I, &TimeSpanProgress),
+        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
     >,
-    mut removed: RemovedComponents<TweenProgress>,
+    mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: Interpolation + Component,
 {

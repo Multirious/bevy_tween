@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::prelude::TweenEventData;
 
-use super::{EntitySpawner, TimeSpan, TweensBuilder};
+use super::{EntitySpawner, TweenTimeSpan, TweensBuilder};
 use bevy::prelude::*;
 
 /// Tweens in sequence starting from the lastest offset.
@@ -71,7 +71,7 @@ where
         let start = b.offset();
         let end = b.forward(duration).offset();
         b.spawn_child((
-            TimeSpan::try_from(start..end).unwrap(),
+            TweenTimeSpan::try_from(start..end).unwrap(),
             interpolation,
             tween,
         ));
@@ -84,7 +84,7 @@ pub fn tween_exact<S, I, T, E>(
     tween: T,
 ) -> impl FnOnce(&mut TweensBuilder<E>)
 where
-    S: TryInto<TimeSpan>,
+    S: TryInto<TweenTimeSpan>,
     S::Error: std::fmt::Debug,
     I: Bundle,
     T: Bundle,
@@ -104,7 +104,7 @@ where
 {
     move |b| {
         b.spawn_child((
-            TimeSpan::try_from(b.offset()..=b.offset()).unwrap(),
+            TweenTimeSpan::try_from(b.offset()..=b.offset()).unwrap(),
             event,
         ));
     }
@@ -119,7 +119,7 @@ where
     E: EntitySpawner,
 {
     move |b| {
-        b.spawn_child((TimeSpan::try_from(at..=at).unwrap(), event));
+        b.spawn_child((TweenTimeSpan::try_from(at..=at).unwrap(), event));
     }
 }
 
@@ -134,7 +134,7 @@ where
     move |b| {
         let start = b.offset();
         let end = b.forward(length).offset();
-        b.spawn_child((TimeSpan::try_from(start..end).unwrap(), event));
+        b.spawn_child((TweenTimeSpan::try_from(start..end).unwrap(), event));
     }
 }
 
@@ -143,7 +143,7 @@ pub fn tween_event_exact<S, Data, E>(
     event: TweenEventData<Data>,
 ) -> impl FnOnce(&mut TweensBuilder<E>)
 where
-    S: TryInto<TimeSpan>,
+    S: TryInto<TweenTimeSpan>,
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
     E: EntitySpawner,

@@ -111,7 +111,7 @@
 //!   ```
 //! - Also the above 2 combined will works just fine btw.
 
-use std::{cmp::Ordering, ops, time::Duration};
+use std::{cmp::Ordering, time::Duration};
 
 use crate::utils;
 use bevy::{ecs::system::EntityCommands, prelude::*};
@@ -119,11 +119,30 @@ use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_eventlistener::prelude::*;
 use tween_timer::{Repeat, RepeatStyle};
 
+#[allow(deprecated)]
 use crate::{
     prelude::TweenEventData,
     tween::{SkipTweener, TweenProgress, TweenerMarker},
     tween_timer::{self, AnimationDirection, TweenTimer},
 };
+
+#[deprecated(
+    since = "0.5.0",
+    note = "Use `bevy_time_runner::TimeSpan` instead"
+)]
+pub use bevy_time_runner::TimeSpan as TweenTimeSpan;
+
+#[deprecated(
+    since = "0.5.0",
+    note = "Use `bevy_time_runner::NewTimeSpanErrorn` instead"
+)]
+pub use bevy_time_runner::NewTimeSpanError;
+
+#[deprecated(
+    since = "0.5.0",
+    note = "Use `bevy_time_runner::TimeBound` instead"
+)]
+pub use bevy_time_runner::TimeBound;
 
 pub mod combinator;
 
@@ -149,56 +168,31 @@ impl Plugin for TweenerPlugin {
                 tweener_system.in_set(crate::TweenSystemSet::Tweener),
             ),
         )
-        .register_type::<Tweener>()
+        .register_type::<SpanTweener>()
         .register_type::<TimeBound>()
-        .register_type::<TimeSpan>()
-        .add_event::<TweenerEnded>();
+        .register_type::<TweenTimeSpan>()
+        .add_event::<SpanTweenerEnded>();
 
         #[cfg(feature = "bevy_eventlistener")]
-        app.add_plugins(EventListenerPlugin::<TweenerEnded>::default());
+        app.add_plugins(EventListenerPlugin::<SpanTweenerEnded>::default());
     }
 }
-
-#[deprecated(since = "0.5.0", note = "`SpanTweener` is renamed to `Tweener`")]
-#[allow(missing_docs)]
-pub type SpanTweener = Tweener;
 
 /// Span tweener
 #[derive(Debug, Default, Component, Clone, PartialEq, Reflect)]
 #[reflect(Component)]
-pub struct Tweener {
+#[deprecated(
+    since = "0.5.0",
+    note = "The timing inside this crate is moved to `bevy_time_runner`. Use `bevy_time_runner::TimeRunner` instead."
+)]
+pub struct SpanTweener {
     /// The inner timer
     pub timer: TweenTimer,
 }
 
-impl From<TweenTimer> for Tweener {
+impl From<TweenTimer> for SpanTweener {
     fn from(value: TweenTimer) -> Self {
-        Tweener { timer: value }
-    }
-}
-
-/// Bounding enum for [`Duration`] to be exclusivively checked or inclusivively
-/// checked.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
-pub enum TimeBound {
-    /// Inclusively check this duration
-    Inclusive(Duration),
-    /// Exclusively check this duration
-    Exclusive(Duration),
-}
-
-impl TimeBound {
-    /// Get the inner duration
-    pub fn duration(&self) -> Duration {
-        match self {
-            TimeBound::Inclusive(d) | TimeBound::Exclusive(d) => *d,
-        }
-    }
-}
-
-impl Default for TimeBound {
-    fn default() -> Self {
-        TimeBound::Inclusive(Duration::ZERO)
+        SpanTweener { timer: value }
     }
 }
 
@@ -209,180 +203,19 @@ enum DurationQuotient {
     After,
 }
 
-/// Error type for when creating a new [`TimeSpan`].
-#[derive(Debug)]
-pub enum NewTimeSpanError {
-    /// The provided min, max will result in a [`TimeSpan`] that does not
-    /// appear on a timeline
-    NotTime {
-        #[allow(missing_docs)]
-        min: TimeBound,
-        #[allow(missing_docs)]
-        max: TimeBound,
-    },
-    /// The provided min is greater than max and it's not allowed.
-    MinGreaterThanMax {
-        #[allow(missing_docs)]
-        min: TimeBound,
-        #[allow(missing_docs)]
-        max: TimeBound,
-    },
-}
-
-impl std::error::Error for NewTimeSpanError {}
-impl std::fmt::Display for NewTimeSpanError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            NewTimeSpanError::NotTime { min, max } => {
-                write!(f, "This span does not contain any time: min {min:?} max {max:?}")
-            }
-            NewTimeSpanError::MinGreaterThanMax { min, max } => {
-                write!(f, "This span has min greater than max: min {min:?} max {max:?}")
-            }
-        }
-    }
-}
-
-#[deprecated(
-    since = "0.5.0",
-    note = "`TweenTimeSpan ` is renamed to `TimeSpan`"
-)]
-#[allow(missing_docs)]
-pub type TweenTimeSpan = TimeSpan;
-
-/// Define the range of time for a span tween that will be interpolating for.
-#[derive(Debug, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
-#[reflect(Component)]
-pub struct TimeSpan {
-    /// Minimum time for the tween.
-    min: TimeBound,
-    /// Maximum time for the tween.
-    max: TimeBound,
-}
-impl TimeSpan {
-    /// Create a new [`TimeSpan`] unchecked for invalid min, max.
-    pub(crate) fn new_unchecked(min: TimeBound, max: TimeBound) -> TimeSpan {
-        TimeSpan { min, max }
-    }
-
-    /// Create a new [`TimeSpan`]
-    pub fn new(
-        min: TimeBound,
-        max: TimeBound,
-    ) -> Result<TimeSpan, NewTimeSpanError> {
-        if matches!(
-            (min, max),
-            (TimeBound::Exclusive(_), TimeBound::Exclusive(_))
-        ) && min.duration() == max.duration()
-        {
-            return Err(NewTimeSpanError::NotTime { min, max });
-        } else if min.duration() > max.duration() {
-            return Err(NewTimeSpanError::MinGreaterThanMax { min, max });
-        }
-        Ok(Self::new_unchecked(min, max))
-    }
-
-    fn quotient(&self, secs: f32) -> DurationQuotient {
-        let after_min = match self.min {
-            TimeBound::Inclusive(min) => secs >= min.as_secs_f32(),
-            TimeBound::Exclusive(min) => secs > min.as_secs_f32(),
-        };
-        let before_max = match self.max {
-            TimeBound::Inclusive(max) => secs <= max.as_secs_f32(),
-            TimeBound::Exclusive(max) => secs < max.as_secs_f32(),
-        };
-        match (after_min, before_max) {
-            (true, true) => DurationQuotient::Inside,
-            (true, false) => DurationQuotient::After,
-            (false, true) => DurationQuotient::Before,
-            (false, false) => unreachable!(),
-        }
-    }
-
-    /// Get the min time
-    pub fn min(&self) -> TimeBound {
-        self.min
-    }
-
-    /// Get the max time
-    pub fn max(&self) -> TimeBound {
-        self.max
-    }
-}
-
-impl Default for TimeSpan {
-    fn default() -> Self {
-        TimeSpan::try_from(Duration::ZERO..Duration::ZERO).unwrap()
-    }
-}
-
-impl TryFrom<ops::Range<Duration>> for TimeSpan {
-    type Error = NewTimeSpanError;
-
-    fn try_from(range: ops::Range<Duration>) -> Result<Self, Self::Error> {
-        TimeSpan::new(
-            TimeBound::Inclusive(range.start),
-            TimeBound::Exclusive(range.end),
-        )
-    }
-}
-impl TryFrom<ops::RangeInclusive<Duration>> for TimeSpan {
-    type Error = NewTimeSpanError;
-
-    fn try_from(
-        range: ops::RangeInclusive<Duration>,
-    ) -> Result<Self, Self::Error> {
-        TimeSpan::new(
-            TimeBound::Inclusive(*range.start()),
-            TimeBound::Inclusive(*range.end()),
-        )
-    }
-}
-
-impl TryFrom<ops::RangeTo<Duration>> for TimeSpan {
-    type Error = NewTimeSpanError;
-
-    fn try_from(range: ops::RangeTo<Duration>) -> Result<Self, Self::Error> {
-        TimeSpan::new(
-            TimeBound::Inclusive(Duration::ZERO),
-            TimeBound::Exclusive(range.end),
-        )
-    }
-}
-
-impl TryFrom<ops::RangeToInclusive<Duration>> for TimeSpan {
-    type Error = NewTimeSpanError;
-
-    fn try_from(
-        range: ops::RangeToInclusive<Duration>,
-    ) -> Result<Self, Self::Error> {
-        TimeSpan::new(
-            TimeBound::Inclusive(Duration::ZERO),
-            TimeBound::Inclusive(range.end),
-        )
-    }
-}
-
-#[deprecated(
-    since = "0.5.0",
-    note = "`SpanTweenerBundle` is renamed to `TweenerBundle`"
-)]
-#[allow(missing_docs)]
-pub type SpanTweenerBundle = TweenerBundle;
-
 /// Bundle for a span tweener
 #[derive(Default, Bundle)]
-pub struct TweenerBundle {
+pub struct SpanTweenerBundle {
     /// [`Tweener`] span tweener intestine
-    pub tweener: Tweener,
+    pub tweener: SpanTweener,
     /// [`TweenTimer`] marker to declare a tweener
     pub tweener_marker: TweenerMarker,
 }
 
-impl TweenerBundle {
+impl SpanTweenerBundle {
     /// Create new [`TweenerBundle`] with `duration`
     pub fn new(duration: Duration) -> Self {
-        let mut t = TweenerBundle::default();
+        let mut t = SpanTweenerBundle::default();
         t.tweener.timer.set_length(duration);
         t
     }
@@ -495,15 +328,15 @@ impl TweenerBundle {
         let dur = self.tweener.timer.length;
         TweenHereBundle {
             tweener_bundle: self,
-            time_span: TimeSpan::try_from(..dur).unwrap(),
+            time_span: TweenTimeSpan::try_from(..dur).unwrap(),
         }
     }
 }
 
-impl From<TweenTimer> for TweenerBundle {
+impl From<TweenTimer> for SpanTweenerBundle {
     fn from(value: TweenTimer) -> Self {
-        TweenerBundle {
-            tweener: Tweener { timer: value },
+        SpanTweenerBundle {
+            tweener: SpanTweener { timer: value },
             tweener_marker: TweenerMarker,
         }
     }
@@ -514,8 +347,8 @@ impl From<TweenTimer> for TweenerBundle {
 /// whole length of the tweener.
 #[derive(Bundle)]
 pub struct TweenHereBundle {
-    tweener_bundle: TweenerBundle,
-    time_span: TimeSpan,
+    tweener_bundle: SpanTweenerBundle,
+    time_span: TweenTimeSpan,
 }
 
 #[allow(deprecated)]
@@ -530,7 +363,7 @@ mod another_lol {
     #[derive(Default, Bundle)]
     pub struct SpanTweenBundle {
         /// [`TimeSpan`] to define the range of time this span tween will work for.
-        pub span: TimeSpan,
+        pub span: TweenTimeSpan,
     }
 }
 #[allow(deprecated)]
@@ -541,7 +374,7 @@ impl SpanTweenBundle {
     /// Create a new [`SpanTweenBundle`] from this `span`
     pub fn new<S>(span: S) -> Self
     where
-        S: TryInto<TimeSpan>,
+        S: TryInto<TweenTimeSpan>,
         S::Error: std::fmt::Debug,
     {
         SpanTweenBundle {
@@ -564,7 +397,7 @@ mod lol {
     )]
     #[derive(Default, Bundle)]
     pub struct QuickSpanTweenBundle {
-        pub(super) span_tweener: TweenerBundle,
+        pub(super) span_tweener: SpanTweenerBundle,
         pub(super) span_tween: SpanTweenBundle,
     }
 }
@@ -669,15 +502,11 @@ pub fn span_tween(duration: Duration) -> QuickSpanTweenBundle {
     QuickSpanTweenBundle::new(duration)
 }
 
-#[deprecated(since = "0.5.0", note = "`SpanTweener` is renamed to `Tweener`")]
-#[allow(missing_docs)]
-pub type SpanTweenerEnded = TweenerEnded;
-
 /// Fired when a span tweener repeated or completed
 #[cfg_attr(feature = "bevy_eventlistener", derive(EntityEvent))]
 #[cfg_attr(feature = "bevy_eventlistener", can_bubble)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Event, Reflect)]
-pub struct TweenerEnded {
+pub struct SpanTweenerEnded {
     /// Tween timer that just ended
     #[cfg_attr(feature = "bevy_eventlistener", target)]
     pub tweener: Entity,
@@ -688,7 +517,7 @@ pub struct TweenerEnded {
     pub with_repeat: Option<Repeat>,
 }
 
-impl TweenerEnded {
+impl SpanTweenerEnded {
     /// Returns true if the tweener's timer is completed.
     /// Completed meaning that there will be nore more ticking and all
     /// configured repeat is exhausted.
@@ -702,8 +531,8 @@ impl TweenerEnded {
 /// Tick span tweeners then send [`TweenerEnded`] event if qualified for.
 pub fn tick_tweener_system(
     time: Res<Time<Real>>,
-    mut q_tweener: Query<(Entity, &mut Tweener)>,
-    mut ended_writer: EventWriter<TweenerEnded>,
+    mut q_tweener: Query<(Entity, &mut SpanTweener)>,
+    mut ended_writer: EventWriter<SpanTweenerEnded>,
 ) {
     let delta = time.delta_seconds();
     q_tweener.iter_mut().for_each(|(entity, mut tweener)| {
@@ -732,7 +561,7 @@ pub fn tick_tweener_system(
             }
         };
         if send_event {
-            ended_writer.send(TweenerEnded {
+            ended_writer.send(SpanTweenerEnded {
                 tweener: entity,
                 current_direction: timer.direction,
                 with_repeat: timer.repeat.map(|r| r.0),
@@ -747,12 +576,12 @@ pub fn tweener_system(
     mut commands: Commands,
     q_other_tweener: Query<(), With<TweenerMarker>>,
     mut q_tweener: Query<
-        (Entity, &mut Tweener, Option<&Children>),
+        (Entity, &mut SpanTweener, Option<&Children>),
         Without<SkipTweener>,
     >,
-    mut q_tween: Query<(Entity, Option<&mut TweenProgress>, &TimeSpan)>,
+    mut q_tween: Query<(Entity, Option<&mut TweenProgress>, &TweenTimeSpan)>,
     q_added_skip: Query<
-        (Entity, &Tweener, Option<&Children>),
+        (Entity, &SpanTweener, Option<&Children>),
         Added<SkipTweener>,
     >,
     mut tweener_just_completed: Local<Vec<Entity>>,
@@ -835,9 +664,9 @@ pub fn tweener_system(
             while let Some((tween_entity, tween_progress, tween_span)) =
                 tweens.fetch_next()
             {
-                let now_quotient = tween_span.quotient(timer_elasped_now);
+                let now_quotient = quotient(*tween_span, timer_elasped_now);
                 let previous_quotient =
-                    tween_span.quotient(timer_elasped_previous);
+                    quotient(*tween_span, timer_elasped_previous);
 
                 let direction = if repeated.is_none() {
                     match timer_elasped_previous.total_cmp(&timer_elasped_now) {
@@ -914,7 +743,11 @@ pub fn tweener_system(
                     // }
                     match tween_progress {
                         Some(mut tween_progress) => {
-                            tween_progress.update(new_now, new_now_percentage);
+                            update_tween_progress(
+                                &mut tween_progress,
+                                new_now,
+                                new_now_percentage,
+                            );
                         }
                         None => {
                             commands.entity(tween_entity).insert(
@@ -1060,6 +893,30 @@ pub fn tweener_system(
     }
 }
 
+fn quotient(time_span: TweenTimeSpan, secs: f32) -> DurationQuotient {
+    let after_min = match time_span.min() {
+        TimeBound::Inclusive(min) => secs >= min.as_secs_f32(),
+        TimeBound::Exclusive(min) => secs > min.as_secs_f32(),
+    };
+    let before_max = match time_span.max() {
+        TimeBound::Inclusive(max) => secs <= max.as_secs_f32(),
+        TimeBound::Exclusive(max) => secs < max.as_secs_f32(),
+    };
+    match (after_min, before_max) {
+        (true, true) => DurationQuotient::Inside,
+        (true, false) => DurationQuotient::After,
+        (false, true) => DurationQuotient::Before,
+        (false, false) => unreachable!(),
+    }
+}
+
+fn update_tween_progress(s: &mut TweenProgress, now: f32, now_percentage: f32) {
+    s.previous_percentage = s.now_percentage;
+    s.previous = s.now;
+    s.now_percentage = now_percentage;
+    s.now = now;
+}
+
 /// Type that can spawn an entity from a bundle
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
@@ -1149,7 +1006,7 @@ where
     /// ```
     pub fn tween_exact(
         &mut self,
-        span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
+        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
         interpolation: impl Bundle,
         tween: impl Bundle,
     ) -> &mut Self {
@@ -1233,7 +1090,7 @@ where
         let end = self.offset + duration;
         self.offset = end;
         self.spawn_child((
-            TimeSpan::try_from(start..end).unwrap(),
+            TweenTimeSpan::try_from(start..end).unwrap(),
             interpolation,
             tween,
         ));
@@ -1477,7 +1334,7 @@ where
     /// </div>
     pub fn tween_event_exact<Data: Send + Sync + 'static>(
         &mut self,
-        span: impl TryInto<TimeSpan, Error = impl std::fmt::Debug>,
+        span: impl TryInto<TweenTimeSpan, Error = impl std::fmt::Debug>,
         data: TweenEventData<Data>,
     ) -> &mut Self {
         self.spawn_child((span.try_into().unwrap(), data));

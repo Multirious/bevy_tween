@@ -12,6 +12,23 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
+#[deprecated(
+    since = "0.5.0",
+    note = "Use `bevy_time_runner::TimeDirection` instead"
+)]
+pub use bevy_time_runner::TimeDirection as AnimationDirection;
+
+#[deprecated(
+    since = "0.5.0",
+    note = "Use `bevy_time_runner::Repeat` instead"
+)]
+pub use bevy_time_runner::Repeat;
+#[deprecated(
+    since = "0.5.0",
+    note = "Use `bevy_time_runner::RepeatStyle` instead"
+)]
+pub use bevy_time_runner::RepeatStyle;
+
 /// Contains the current elasped time per tick.
 /// Have more informations useful for handling edge cases and retain timing accuracy.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Reflect)]
@@ -211,113 +228,6 @@ impl Default for TweenTimer {
             repeat: Default::default(),
         }
     }
-}
-
-/// Repeat the tween
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
-pub enum Repeat {
-    /// Repeat infinitely
-    Infinitely,
-    /// Repeat infinitely and count the times this timer has repeated
-    InfinitelyCounted {
-        /// The times this timer has repeated
-        times_repeated: i32,
-    },
-    /// Repeat for this amount of times
-    Times {
-        /// Times to repeat for
-        #[allow(missing_docs)]
-        times: i32,
-        /// Times this timer has repeated.
-        #[allow(missing_docs)]
-        times_repeated: i32,
-    },
-}
-
-impl Repeat {
-    /// Repeat infinitely
-    pub fn infinitely() -> Repeat {
-        Repeat::Infinitely
-    }
-
-    /// Repeat infinitely and count the times this timer has repeated
-    pub fn infinitely_counted() -> Repeat {
-        Repeat::InfinitelyCounted { times_repeated: 0 }
-    }
-
-    /// Repeat for this amount of times
-    pub fn times(times: i32) -> Repeat {
-        Repeat::Times {
-            times,
-            times_repeated: 0,
-        }
-    }
-
-    /// Returns if all repeat has been exhausted.
-    /// Infinite repeat always returns false.
-    pub fn exhausted(&self) -> bool {
-        match self {
-            Repeat::Infinitely => false,
-            Repeat::InfinitelyCounted { .. } => false,
-            Repeat::Times {
-                times,
-                times_repeated,
-            } => times_repeated >= times,
-        }
-    }
-
-    /// true if still can repeat, false otherwise.
-    #[deprecated(
-        since = "0.3.0",
-        note = "Use `advance_counter_by(1) == 1` instead"
-    )]
-    pub fn try_advance_counter(&mut self) -> bool {
-        self.advance_counter_by(1) == 1
-    }
-
-    /// Returns actual advanced count.
-    pub fn advance_counter_by(&mut self, by: i32) -> i32 {
-        match self {
-            Repeat::Infinitely => by,
-            Repeat::InfinitelyCounted { times_repeated } => {
-                *times_repeated += by;
-                by
-            }
-            Repeat::Times {
-                times,
-                times_repeated,
-            } => {
-                let times_left = *times - *times_repeated;
-                if times_left == 0 {
-                    return 0;
-                }
-                let times_to_advance =
-                    if times_left > by { by } else { times_left };
-                *times_repeated += times_to_advance;
-                times_to_advance
-            }
-        }
-    }
-}
-
-/// Tween timer repeat behavior
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
-pub enum RepeatStyle {
-    /// Timer will wrap around.
-    #[default]
-    WrapAround,
-    /// Timer will flip its direction.
-    PingPong,
-}
-
-/// Specfy which way the tween timer is ticking
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
-pub enum AnimationDirection {
-    /// Playing forward
-    #[default]
-    Forward,
-    /// Playing backward
-    Backward,
 }
 
 fn saw_wave(x: f32, period: f32) -> f32 {
