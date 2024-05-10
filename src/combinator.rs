@@ -39,7 +39,7 @@ mod animation_spawner {
     }
 
     impl<'r, 'a> AnimationSpawner for SystemAnimationSpawner<'r, 'a> {
-        type SpawnOutput<'o> = EntityCommands<'a>
+        type SpawnOutput<'o> = EntityCommands<'o>
         where Self: 'o;
 
         fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_> {
@@ -72,7 +72,7 @@ mod animation_spawner {
     }
 
     impl<'r, 'a> AnimationSpawner for WorldAnimationSpawner<'r, 'a> {
-        type SpawnOutput<'o> = EntityWorldMut<'a>
+        type SpawnOutput<'o> = EntityWorldMut<'o>
         where Self: 'o;
 
         fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_> {
