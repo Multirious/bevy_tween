@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::prelude::TweenEventData;
 
-use bevy::prelude::*;
+use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_time_runner::TimeSpan;
 
 pub trait AnimationSpawner {
@@ -89,6 +89,25 @@ mod animation_spawner {
     }
 }
 pub use animation_spawner::{SystemAnimationSpawner, WorldAnimationSpawner};
+
+pub trait EntityCommandsAnimateExt<'a> {
+    fn animate(
+        &mut self,
+        f: impl FnOnce(&mut SystemAnimationSpawner<'_, '_>),
+    ) -> &mut EntityCommands<'a>;
+}
+
+impl<'a> EntityCommandsAnimateExt<'a> for EntityCommands<'a> {
+    fn animate(
+        &mut self,
+        f: impl FnOnce(&mut SystemAnimationSpawner<'_, '_>),
+    ) -> &mut EntityCommands<'a> {
+        self.with_children(move |c| {
+            let mut a = SystemAnimationSpawner::new(c);
+            f(&mut a);
+        })
+    }
+}
 
 /// Tweens in sequence starting from the lastest offset.
 pub fn sequence<A, Tuple>(tuple: Tuple) -> impl FnOnce(&mut A)
