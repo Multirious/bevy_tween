@@ -144,8 +144,6 @@ pub use bevy_time_runner::NewTimeSpanError;
 )]
 pub use bevy_time_runner::TimeBound;
 
-pub mod combinator;
-
 /// Plugin for using span tween
 #[derive(Debug)]
 pub struct TweenerPlugin;
