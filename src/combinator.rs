@@ -4,14 +4,97 @@ use std::time::Duration;
 
 use crate::prelude::TweenEventData;
 
-use super::{EntitySpawner, TweenTimeSpan, TweensBuilder};
 use bevy::prelude::*;
+use bevy_time_runner::TimeSpan;
+
+pub trait AnimationSpawner {
+    type SpawnOutput<'o>
+    where
+        Self: 'o;
+    fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_>;
+    fn offset(&self) -> Duration;
+    fn set_offset(&mut self, offset: Duration);
+}
+
+mod animation_spawner {
+    use bevy::ecs::system::EntityCommands;
+    use bevy::hierarchy::ChildBuilder;
+
+    use super::*;
+
+    pub struct SystemAnimationSpawner<'r, 'a> {
+        child_builder: &'r mut ChildBuilder<'a>,
+        offset: Duration,
+    }
+
+    impl<'r, 'a> SystemAnimationSpawner<'r, 'a> {
+        pub fn new(
+            child_builder: &'r mut ChildBuilder<'a>,
+        ) -> SystemAnimationSpawner<'r, 'a> {
+            SystemAnimationSpawner {
+                child_builder,
+                offset: Duration::ZERO,
+            }
+        }
+    }
+
+    impl<'r, 'a> AnimationSpawner for SystemAnimationSpawner<'r, 'a> {
+        type SpawnOutput<'o> = EntityCommands<'a>
+        where Self: 'o;
+
+        fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_> {
+            self.child_builder.spawn(bundle)
+        }
+
+        fn offset(&self) -> Duration {
+            self.offset
+        }
+
+        fn set_offset(&mut self, offset: Duration) {
+            self.offset = offset;
+        }
+    }
+
+    pub struct WorldAnimationSpawner<'r, 'a> {
+        world_child_builder: &'r mut WorldChildBuilder<'a>,
+        offset: Duration,
+    }
+
+    impl<'r, 'a> WorldAnimationSpawner<'r, 'a> {
+        pub fn new(
+            world_child_builder: &'r mut WorldChildBuilder<'a>,
+        ) -> WorldAnimationSpawner<'r, 'a> {
+            WorldAnimationSpawner {
+                world_child_builder,
+                offset: Duration::ZERO,
+            }
+        }
+    }
+
+    impl<'r, 'a> AnimationSpawner for WorldAnimationSpawner<'r, 'a> {
+        type SpawnOutput<'o> = EntityWorldMut<'a>
+        where Self: 'o;
+
+        fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_> {
+            self.world_child_builder.spawn(bundle)
+        }
+
+        fn offset(&self) -> Duration {
+            self.offset
+        }
+
+        fn set_offset(&mut self, offset: Duration) {
+            self.offset = offset;
+        }
+    }
+}
+pub use animation_spawner::{SystemAnimationSpawner, WorldAnimationSpawner};
 
 /// Tweens in sequence starting from the lastest offset.
-pub fn sequence<E, Tuple>(tuple: Tuple) -> impl FnOnce(&mut TweensBuilder<E>)
+pub fn sequence<A, Tuple>(tuple: Tuple) -> impl FnOnce(&mut A)
 where
-    E: EntitySpawner,
-    Tuple: SequenceTuple<E>,
+    A: AnimationSpawner,
+    Tuple: SequenceTuple<A>,
 {
     move |b| tuple.call_each(b)
 }
@@ -20,10 +103,10 @@ where
 /// Each tweens will receive the same offset.
 /// After finishing this, the last offset will be the tween the gives the furthest
 /// offset.
-pub fn parallel<E, Tuple>(tuple: Tuple) -> impl FnOnce(&mut TweensBuilder<E>)
+pub fn parallel<A, Tuple>(tuple: Tuple) -> impl FnOnce(&mut A)
 where
-    E: EntitySpawner,
-    Tuple: ParallelTuple<E>,
+    A: AnimationSpawner,
+    Tuple: ParallelTuple<A>,
 {
     move |b| {
         let offset = b.offset();
@@ -34,9 +117,9 @@ where
             } else {
                 furthest_offset
             };
-            b.go(offset);
+            go(offset)(b);
         });
-        b.go(furthest_offset);
+        go(furthest_offset)(b);
     }
 }
 
@@ -57,126 +140,123 @@ where
 //     }
 // }
 
-pub fn tween<I, T, E>(
+pub fn tween<I, T, A>(
     duration: Duration,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut TweensBuilder<E>)
+) -> impl FnOnce(&mut A)
 where
     I: Bundle,
     T: Bundle,
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        let start = b.offset();
-        let end = b.forward(duration).offset();
-        b.spawn_child((
-            TweenTimeSpan::try_from(start..end).unwrap(),
+    move |a| {
+        let start = a.offset();
+        forward(duration)(a);
+        let end = a.offset();
+        a.spawn((
+            TimeSpan::try_from(start..end).unwrap(),
             interpolation,
             tween,
         ));
     }
 }
 
-pub fn tween_exact<S, I, T, E>(
+pub fn tween_exact<S, I, T, A>(
     span: S,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut TweensBuilder<E>)
+) -> impl FnOnce(&mut A)
 where
-    S: TryInto<TweenTimeSpan>,
+    S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
     I: Bundle,
     T: Bundle,
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        b.spawn_child((span.try_into().unwrap(), interpolation, tween));
+    move |a| {
+        a.spawn((span.try_into().unwrap(), interpolation, tween));
     }
 }
 
-pub fn tween_event<Data, E>(
-    event: TweenEventData<Data>,
-) -> impl FnOnce(&mut TweensBuilder<E>)
+pub fn tween_event<Data, A>(event: TweenEventData<Data>) -> impl FnOnce(&mut A)
 where
     Data: Send + Sync + 'static,
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        b.spawn_child((
-            TweenTimeSpan::try_from(b.offset()..=b.offset()).unwrap(),
-            event,
-        ));
+    move |a| {
+        a.spawn((TimeSpan::try_from(a.offset()..=a.offset()).unwrap(), event));
     }
 }
 
-pub fn tween_event_at<Data, E>(
+pub fn tween_event_at<Data, A>(
     at: Duration,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut TweensBuilder<E>)
+) -> impl FnOnce(&mut A)
 where
     Data: Send + Sync + 'static,
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        b.spawn_child((TweenTimeSpan::try_from(at..=at).unwrap(), event));
+    move |a| {
+        a.spawn((TimeSpan::try_from(at..=at).unwrap(), event));
     }
 }
 
-pub fn tween_event_for<Data, E>(
+pub fn tween_event_for<Data, A>(
     length: Duration,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut TweensBuilder<E>)
+) -> impl FnOnce(&mut A)
 where
     Data: Send + Sync + 'static,
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        let start = b.offset();
-        let end = b.forward(length).offset();
-        b.spawn_child((TweenTimeSpan::try_from(start..end).unwrap(), event));
+    move |a| {
+        let start = a.offset();
+        forward(length)(a);
+        let end = a.offset();
+        a.spawn((TimeSpan::try_from(start..end).unwrap(), event));
     }
 }
 
-pub fn tween_event_exact<S, Data, E>(
+pub fn tween_event_exact<S, Data, A>(
     span: S,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut TweensBuilder<E>)
+) -> impl FnOnce(&mut A)
 where
-    S: TryInto<TweenTimeSpan>,
+    S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        b.spawn_child((span.try_into().unwrap(), event));
+    move |a| {
+        a.spawn((span.try_into().unwrap(), event));
     }
 }
 
-pub fn forward<E>(duration: Duration) -> impl FnOnce(&mut TweensBuilder<E>)
+pub fn forward<A>(duration: Duration) -> impl FnOnce(&mut A)
 where
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        b.forward(duration);
+    move |a| {
+        a.set_offset(a.offset() + duration);
     }
 }
 
-pub fn backward<E>(duration: Duration) -> impl FnOnce(&mut TweensBuilder<E>)
+pub fn backward<A>(duration: Duration) -> impl FnOnce(&mut A)
 where
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        b.backward(duration);
+    move |a| {
+        a.set_offset(a.offset().saturating_sub(duration));
     }
 }
 
-pub fn go<E>(duration: Duration) -> impl FnOnce(&mut TweensBuilder<E>)
+pub fn go<A>(duration: Duration) -> impl FnOnce(&mut A)
 where
-    E: EntitySpawner,
+    A: AnimationSpawner,
 {
-    move |b| {
-        b.go(duration);
+    move |a| {
+        a.set_offset(duration);
     }
 }
 
@@ -185,14 +265,14 @@ where
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 #[allow(private_bounds)]
-pub trait SequenceTuple<E: EntitySpawner>:
-    sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>
+pub trait SequenceTuple<A: AnimationSpawner>:
+    sealed::TupleFnOnceSealed<A, ()>
 {
 }
-impl<T, E> SequenceTuple<E> for T
+impl<T, A> SequenceTuple<A> for T
 where
-    T: sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>,
-    E: EntitySpawner,
+    T: sealed::TupleFnOnceSealed<A, ()>,
+    A: AnimationSpawner,
 {
 }
 
@@ -201,24 +281,24 @@ where
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 #[allow(private_bounds)]
-pub trait ParallelTuple<E: EntitySpawner>:
-    sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>
+pub trait ParallelTuple<A: AnimationSpawner>:
+    sealed::TupleFnOnceSealed<A, ()>
 {
 }
-impl<T, E> ParallelTuple<E> for T
+impl<T, A> ParallelTuple<A> for T
 where
-    T: sealed::TupleFnOnceSealed<TweensBuilder<E>, ()>,
-    E: EntitySpawner,
+    T: sealed::TupleFnOnceSealed<A, ()>,
+    A: AnimationSpawner,
 {
 }
-// pub trait ChainTuple<V, E: EntitySpawner>:
+// pub trait ChainTuple<V, A: AnimationSpawner>:
 //     sealed::TupleFnOnceSealed<V, Box<dyn FnOnce(&mut TweensBuilder<E>)>>
 // {
 // }
 // impl<T, E, V> ChainTuple<V, E> for T
 // where
 //     T: sealed::TupleFnOnceSealed<V, Box<dyn FnOnce(&mut TweensBuilder<E>)>>,
-//     E: EntitySpawner,
+//     A: AnimationSpawner,
 // {
 // }
 

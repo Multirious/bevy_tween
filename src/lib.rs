@@ -137,6 +137,8 @@ pub mod tween_timer;
 #[allow(deprecated)]
 pub mod tweener;
 
+pub mod combinator;
+
 /// Commonly used items
 pub mod prelude {
     pub use std::time::Duration;
