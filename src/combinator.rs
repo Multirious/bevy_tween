@@ -63,34 +63,34 @@ impl<'r, 'a> SpawnAnimation for AnimationSpawner<'r, 'a> {
 // }
 
 /// Extension trait for types that can be used to make an animation.
-pub trait MakeAnimationExt {
-    /// Construct [`MakeAnimation`]
-    fn make_animation(&mut self) -> MakeAnimation<'_>;
+pub trait InsertAnimationExt {
+    /// Construct [`InsertAnimation`]
+    fn insert_animation(&mut self) -> InsertAnimation<'_>;
 }
 
-impl<'a> MakeAnimationExt for EntityCommands<'a> {
-    fn make_animation(&mut self) -> MakeAnimation<'_> {
-        MakeAnimation {
+impl<'a> InsertAnimationExt for EntityCommands<'a> {
+    fn insert_animation(&mut self) -> InsertAnimation<'_> {
+        InsertAnimation {
             entity_commands: self.reborrow(),
             time_runner: TimeRunner::default(),
         }
     }
 }
 
-impl<'w, 's> MakeAnimationExt for Commands<'w, 's> {
-    fn make_animation(&mut self) -> MakeAnimation<'_> {
+impl<'w, 's> InsertAnimationExt for Commands<'w, 's> {
+    fn insert_animation(&mut self) -> InsertAnimation<'_> {
         let entity_commands = self.spawn_empty();
-        MakeAnimation {
+        InsertAnimation {
             entity_commands,
             time_runner: TimeRunner::default(),
         }
     }
 }
 
-impl<'a> MakeAnimationExt for ChildBuilder<'a> {
-    fn make_animation(&mut self) -> MakeAnimation<'_> {
+impl<'a> InsertAnimationExt for ChildBuilder<'a> {
+    fn insert_animation(&mut self) -> InsertAnimation<'_> {
         let entity_commands = self.spawn_empty();
-        MakeAnimation {
+        InsertAnimation {
             entity_commands,
             time_runner: TimeRunner::default(),
         }
@@ -98,11 +98,11 @@ impl<'a> MakeAnimationExt for ChildBuilder<'a> {
 }
 
 /// Configure [`TimeRunner`] through a builder API and add animation entities
-pub struct MakeAnimation<'a> {
+pub struct InsertAnimation<'a> {
     entity_commands: EntityCommands<'a>,
     time_runner: TimeRunner,
 }
-impl<'a> MakeAnimation<'a> {
+impl<'a> InsertAnimation<'a> {
     /// Configure [`TimeRunner`]'s [`Repeat`]
     pub fn repeat(mut self, repeat: Repeat) -> Self {
         match self.time_runner.repeat() {
@@ -129,13 +129,16 @@ impl<'a> MakeAnimation<'a> {
         self
     }
 
-    /// Add animations from a closure
+    /// Add animations from a closure. Animation entities will be subjected
+    /// as a children of this entity.
     pub fn animate<F>(self, animation: F) -> EntityCommands<'a>
     where
         F: FnOnce(&mut AnimationSpawner, Duration) -> Duration,
     {
-        let mut time_runner = self.time_runner;
-        let mut entity_commands = self.entity_commands;
+        let InsertAnimation {
+            mut entity_commands,
+            mut time_runner,
+        } = self;
         let mut dur = Duration::ZERO;
         entity_commands.with_children(|c| {
             let mut a = AnimationSpawner::new(c);
@@ -145,59 +148,85 @@ impl<'a> MakeAnimation<'a> {
         entity_commands.insert(time_runner);
         entity_commands
     }
+
+    /// Add animations directly to this entity.
+    /// No children will be added like in [`MakeAnimation::animate`].
+    /// Has less entities as a result but cannot create complex animations.
+    pub fn animate_here<I, T>(
+        self,
+        duration: Duration,
+        interpolation: I,
+        tweens: T,
+    ) -> EntityCommands<'a>
+    where
+        I: Bundle,
+        T: Bundle,
+    {
+        let InsertAnimation {
+            mut entity_commands,
+            mut time_runner,
+        } = self;
+        time_runner.set_length(duration);
+        entity_commands.insert((
+            TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
+            interpolation,
+            tweens,
+        ));
+        entity_commands
+    }
 }
 
-fn test_system(mut commands: Commands) {
-    use crate::{interpolate::translation, prelude::*, tween::TargetComponent};
+// fn test_system(mut commands: Commands) {
+//     use crate::{interpolate::translation, prelude::*, tween::TargetComponent};
 
-    let my_entity = commands.spawn_empty().id();
-    let target = TargetComponent::Entity(my_entity);
-    commands
-        .make_animation()
-        .repeat(Repeat::Infinitely)
-        .animate(|a, pos| {
-            let walk = || {
-                tween(
-                    Duration::from_secs(1),
-                    EaseFunction::Linear,
-                    target.with(translation(Vec3::ZERO, Vec3::ONE)),
-                )
-            };
-            sequence((walk(), walk()))(a, pos)
-        });
+//     let my_entity = commands.spawn_empty().id();
+//     let target = TargetComponent::Entity(my_entity);
+//     commands
+//         .make_animation()
+//         .repeat(Repeat::Infinitely)
+//         .animate(|a, pos| {
+//             let walk = || {
+//                 tween(
+//                     Duration::from_secs(1),
+//                     EaseFunction::Linear,
+//                     target.with(translation(Vec3::ZERO, Vec3::ONE)),
+//                 )
+//             };
+//             sequence((walk(), walk()))(a, pos)
+//         });
 
-    let target = TargetComponent::TweenerEntity;
-    let my_entity = commands
-        .spawn_empty()
-        .make_animation()
-        .repeat(Repeat::Infinitely)
-        .animate(|a, pos| {
-            let walk = || {
-                tween(
-                    Duration::from_secs(1),
-                    EaseFunction::Linear,
-                    target.with(translation(Vec3::ZERO, Vec3::ONE)),
-                )
-            };
-            sequence((walk(), walk()))(a, pos)
-        });
+//     let target = TargetComponent::TweenerEntity;
+//     let my_entity = commands
+//         .spawn_empty()
+//         .make_animation()
+//         .repeat(Repeat::Infinitely)
+//         .animate(|a, pos| {
+//             let walk = || {
+//                 tween(
+//                     Duration::from_secs(1),
+//                     EaseFunction::Linear,
+//                     target.with(translation(Vec3::ZERO, Vec3::ONE)),
+//                 )
+//             };
+//             sequence((walk(), walk()))(a, pos)
+//         });
 
-    let target = TargetComponent::TweenerEntity;
-    let my_entity = commands.spawn_empty().with_children(|c| {
-        c.make_animation()
-            .repeat(Repeat::Infinitely)
-            .animate(|a, pos| {
-                let walk = || {
-                    tween(
-                        Duration::from_secs(1),
-                        EaseFunction::Linear,
-                        target.with(translation(Vec3::ZERO, Vec3::ONE)),
-                    )
-                };
-                sequence((walk(), walk()))(a, pos)
-            });
-    });
-}
+//     let target = TargetComponent::TweenerEntity;
+//     let my_entity = commands.spawn_empty().with_children(|c| {
+//         c.make_animation()
+//             .repeat(Repeat::Infinitely)
+//             .animate(|a, pos| {
+//                 let walk = || {
+//                     tween(
+//                         Duration::from_secs(1),
+//                         EaseFunction::Linear,
+//                         target.with(translation(Vec3::ZERO, Vec3::ONE)),
+//                     )
+//                 };
+//                 sequence((walk(), walk()))(a, pos)
+//             });
+//     });
+// }
 
 /// Animations in sequence.
 ///
