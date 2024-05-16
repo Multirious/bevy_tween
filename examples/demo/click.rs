@@ -1,7 +1,10 @@
 use bevy::prelude::*;
+use bevy_time_runner::TimeRunnerEnded;
+use bevy_tween::bevy_time_runner::TimeRunnerPlugin;
+use bevy_tween::tween::TweenerMarker;
 use bevy_tween::{
-    interpolate::transform_tween_state, prelude::*, tween::TargetComponent,
-    tweener::combinator::*,
+    combinator::*, interpolate::transform_tween_state, prelude::*,
+    tween::TargetComponent,
 };
 mod utils;
 
@@ -11,7 +14,11 @@ fn secs(secs: f32) -> Duration {
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            TimeRunnerPlugin::default(),
+            DefaultTweenPlugins,
+        ))
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -42,10 +49,10 @@ fn click_spawn_circle(
 ) {
     use interpolate::sprite_color;
     let circle_filled_image = asset_server.load("circle_filled.png");
-    let spawn =
-        key.just_pressed(MouseButton::Left) || key.pressed(MouseButton::Right);
     if let Some(coord) = coord.0 {
-        if spawn {
+        if key.just_pressed(MouseButton::Left)
+            || key.pressed(MouseButton::Right)
+        {
             let start = Vec3::new(coord.x, coord.y, 1.);
             let end = Vec3::new(0., 0., 0.);
             let transform = Transform::from_translation(start);
@@ -61,35 +68,38 @@ fn click_spawn_circle(
                         transform,
                         ..Default::default()
                     },
-                    SpanTweenerBundle::new(Duration::from_secs(2)),
+                    TweenerMarker,
                 ))
-                .tweens()
-                .add(parallel((
-                    tween(
-                        secs(2.),
-                        EaseFunction::ExponentialOut,
-                        circle_transform.translation_to(end),
-                    ),
-                    tween(
-                        secs(1.),
-                        EaseFunction::BackIn,
-                        circle_transform.scale_to(Vec3::ZERO),
-                    ),
-                    tween(
-                        secs(1.),
-                        EaseFunction::Linear,
-                        circle.with(sprite_color(Color::WHITE, Color::PINK)),
-                    ),
-                )));
+                .insert_animation()
+                .animate(|a, pos| {
+                    parallel((
+                        tween(
+                            secs(2.),
+                            EaseFunction::ExponentialOut,
+                            circle_transform.translation_to(end),
+                        ),
+                        tween(
+                            secs(1.),
+                            EaseFunction::BackIn,
+                            circle_transform.scale_to(Vec3::ZERO),
+                        ),
+                        tween(
+                            secs(1.),
+                            EaseFunction::Linear,
+                            circle
+                                .with(sprite_color(Color::WHITE, Color::PINK)),
+                        ),
+                    ))(a, pos)
+                });
         }
     }
 }
 
 fn despawn_finished_circle(
     mut commands: Commands,
-    mut tweener_ended_reader: EventReader<SpanTweenerEnded>,
+    mut time_runner_ended_reader: EventReader<TimeRunnerEnded>,
 ) {
-    for t in tweener_ended_reader.read() {
-        commands.entity(t.tweener).despawn();
+    for t in time_runner_ended_reader.read() {
+        commands.entity(t.time_runner).despawn();
     }
 }
