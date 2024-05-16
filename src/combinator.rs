@@ -306,7 +306,7 @@ where
     }
 }
 
-pub fn tween_event_exact<S, Data, A>(
+pub fn event_exact<S, Data, A>(
     span: S,
     event: TweenEventData<Data>,
 ) -> impl FnOnce(&mut A, Duration) -> Duration
