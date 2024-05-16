@@ -117,6 +117,8 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 mod utils;
 
+pub use bevy_time_runner;
+
 pub mod interpolate;
 pub mod interpolation;
 pub mod tween;
