@@ -160,7 +160,7 @@ fn test_system(mut commands: Commands) {
                 tween(
                     Duration::from_secs(1),
                     EaseFunction::Linear,
-                    target.tween(translation(Vec3::ZERO, Vec3::ONE)),
+                    target.with(translation(Vec3::ZERO, Vec3::ONE)),
                 )
             };
             sequence((walk(), walk()))(a, pos)
@@ -176,7 +176,7 @@ fn test_system(mut commands: Commands) {
                 tween(
                     Duration::from_secs(1),
                     EaseFunction::Linear,
-                    target.tween(translation(Vec3::ZERO, Vec3::ONE)),
+                    target.with(translation(Vec3::ZERO, Vec3::ONE)),
                 )
             };
             sequence((walk(), walk()))(a, pos)
@@ -191,7 +191,7 @@ fn test_system(mut commands: Commands) {
                     tween(
                         Duration::from_secs(1),
                         EaseFunction::Linear,
-                        target.tween(translation(Vec3::ZERO, Vec3::ONE)),
+                        target.with(translation(Vec3::ZERO, Vec3::ONE)),
                     )
                 };
                 sequence((walk(), walk()))(a, pos)

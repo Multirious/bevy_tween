@@ -78,7 +78,7 @@ fn click_spawn_circle(
                     tween(
                         secs(1.),
                         EaseFunction::Linear,
-                        circle.tween(sprite_color(Color::WHITE, Color::PINK)),
+                        circle.with(sprite_color(Color::WHITE, Color::PINK)),
                     ),
                 )));
         }

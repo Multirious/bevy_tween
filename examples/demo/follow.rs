@@ -112,7 +112,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 TimeSpan::try_from(..Duration::from_secs(2)).unwrap(),
                 TweenerMarker,
                 EaseFunction::CubicInOut,
-                jeb.tween(a),
+                jeb.with(a),
             ));
 
             // Spawning a Tweener that's responsible for scaling effect
@@ -123,7 +123,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
                 TweenerMarker,
                 EaseFunction::QuinticIn,
-                jeb.tween(scale(Vec3::ZERO, Vec3::ONE)),
+                jeb.with(scale(Vec3::ZERO, Vec3::ONE)),
             ));
         });
 }
@@ -166,12 +166,12 @@ fn jeb_follows_cursor(
             // type is differernt.
             //
             // This one for translation
-            jeb.tween(translation(
+            jeb.with(translation(
                 jeb_transform.translation,
                 Vec3::new(coord.x, coord.y, 0.),
             )),
             // This one for color
-            jeb.tween(sprite_color(Color::PINK, Color::WHITE)),
+            jeb.with(sprite_color(Color::PINK, Color::WHITE)),
         ));
     }
 }

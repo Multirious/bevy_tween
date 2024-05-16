@@ -90,7 +90,7 @@ fn setup(
         SpanTweenerBundle::new(secs(1.)).tween_here(),
         EaseFunction::QuarticIn,
         effect_intensity(0., 1.),
-        big_x.tween(sprite_color(Color::WHITE, Color::PINK)),
+        big_x.with(sprite_color(Color::WHITE, Color::PINK)),
     ));
     commands.spawn((
         RotateTweener,
@@ -98,7 +98,7 @@ fn setup(
             .with_repeat(Repeat::Infinitely)
             .tween_here(),
         EaseFunction::Linear,
-        big_x.tween(interpolate::angle_z(0., PI * 0.5)),
+        big_x.with(interpolate::angle_z(0., PI * 0.5)),
     ));
 }
 

@@ -108,12 +108,11 @@ fn effect_system(
                 },
                 SpanTweenerBundle::new(secs(1.)).tween_here(),
                 EaseFunction::QuinticOut,
-                entity.tween(translation(
+                entity.with(translation(
                     effect_pos.trail,
                     effect_pos.trail - Vec3::new(100., 0., 0.),
                 )),
-                entity
-                    .tween(sprite_color(Color::WHITE, Color::PINK.with_a(0.))),
+                entity.with(sprite_color(Color::WHITE, Color::PINK.with_a(0.))),
             ));
         }
         "small_boom" => {
@@ -129,11 +128,11 @@ fn effect_system(
                 },
                 SpanTweenerBundle::new(secs(0.1)).tween_here(),
                 EaseFunction::Linear,
-                entity.tween(scale(
+                entity.with(scale(
                     Vec3::new(0.5, 0.5, 0.),
                     Vec3::new(3., 3., 0.),
                 )),
-                entity.tween(sprite_color(
+                entity.with(sprite_color(
                     Color::WHITE.with_a(0.5),
                     Color::PINK.with_a(0.),
                 )),
@@ -150,11 +149,11 @@ fn effect_system(
                 },
                 SpanTweenerBundle::new(secs(0.5)).tween_here(),
                 EaseFunction::QuadraticOut,
-                entity.tween(scale(
+                entity.with(scale(
                     Vec3::new(1., 1., 0.),
                     Vec3::new(15., 15., 0.),
                 )),
-                entity.tween(sprite_color(
+                entity.with(sprite_color(
                     Color::WHITE.with_a(1.),
                     Color::PINK.with_a(0.),
                 )),

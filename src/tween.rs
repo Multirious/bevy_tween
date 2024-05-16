@@ -443,7 +443,7 @@ impl TargetComponent {
     }
 
     /// Create a new tween with the supplied interpolator out of this target.
-    pub fn tween<I>(&self, interpolator: I) -> Tween<Self, I> {
+    pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
         ComponentTween {
             target: self.clone(),
             interpolator,

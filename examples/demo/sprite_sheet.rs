@@ -70,7 +70,7 @@ fn setup(
             .with_repeat(Repeat::Infinitely)
             .tween_here(),
         EaseFunction::Linear,
-        sprite.tween(atlas_index(0, len)),
+        sprite.with(atlas_index(0, len)),
     ));
 
     commands.spawn(Camera2dBundle::default());
