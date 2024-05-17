@@ -62,9 +62,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             TweenerMarker,
         ))
-        .insert_animation()
+        .animation()
         .repeat(Repeat::Infinitely)
-        .animate(|a, pos| {
+        .insert(|a, pos| {
             sequence((
                 event(TweenEventData::with_data("bump")),
                 tween(
@@ -121,8 +121,8 @@ fn effect_system(
                     },
                     TweenerMarker,
                 ))
-                .insert_animation()
-                .animate_here(
+                .animation()
+                .insert_here(
                     secs(1.),
                     EaseFunction::QuinticOut,
                     (
@@ -151,8 +151,8 @@ fn effect_system(
                     },
                     TweenerMarker,
                 ))
-                .insert_animation()
-                .animate_here(
+                .animation()
+                .insert_here(
                     secs(0.1),
                     EaseFunction::Linear,
                     (
@@ -179,8 +179,8 @@ fn effect_system(
                     },
                     TweenerMarker,
                 ))
-                .insert_animation()
-                .animate_here(
+                .animation()
+                .insert_here(
                     secs(0.5),
                     EaseFunction::QuadraticOut,
                     (

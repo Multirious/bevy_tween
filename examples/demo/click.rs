@@ -70,8 +70,8 @@ fn click_spawn_circle(
                     },
                     TweenerMarker,
                 ))
-                .insert_animation()
-                .animate(|a, pos| {
+                .animation()
+                .insert(|a, pos| {
                     parallel((
                         tween(
                             secs(2.),

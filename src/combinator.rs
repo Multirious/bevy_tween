@@ -63,34 +63,34 @@ impl<'r, 'a> SpawnAnimation for AnimationSpawner<'r, 'a> {
 // }
 
 /// Extension trait for types that can be used to make an animation.
-pub trait InsertAnimationExt {
+pub trait AnimationBuilderExt {
     /// Construct [`InsertAnimation`]
-    fn insert_animation(&mut self) -> InsertAnimation<'_>;
+    fn animation(&mut self) -> AnimationBuilder<'_>;
 }
 
-impl<'a> InsertAnimationExt for EntityCommands<'a> {
-    fn insert_animation(&mut self) -> InsertAnimation<'_> {
-        InsertAnimation {
+impl<'a> AnimationBuilderExt for EntityCommands<'a> {
+    fn animation(&mut self) -> AnimationBuilder<'_> {
+        AnimationBuilder {
             entity_commands: self.reborrow(),
             time_runner: TimeRunner::default(),
         }
     }
 }
 
-impl<'w, 's> InsertAnimationExt for Commands<'w, 's> {
-    fn insert_animation(&mut self) -> InsertAnimation<'_> {
+impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
+    fn animation(&mut self) -> AnimationBuilder<'_> {
         let entity_commands = self.spawn_empty();
-        InsertAnimation {
+        AnimationBuilder {
             entity_commands,
             time_runner: TimeRunner::default(),
         }
     }
 }
 
-impl<'a> InsertAnimationExt for ChildBuilder<'a> {
-    fn insert_animation(&mut self) -> InsertAnimation<'_> {
+impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
+    fn animation(&mut self) -> AnimationBuilder<'_> {
         let entity_commands = self.spawn_empty();
-        InsertAnimation {
+        AnimationBuilder {
             entity_commands,
             time_runner: TimeRunner::default(),
         }
@@ -98,11 +98,11 @@ impl<'a> InsertAnimationExt for ChildBuilder<'a> {
 }
 
 /// Configure [`TimeRunner`] through a builder API and add animation entities
-pub struct InsertAnimation<'a> {
+pub struct AnimationBuilder<'a> {
     entity_commands: EntityCommands<'a>,
     time_runner: TimeRunner,
 }
-impl<'a> InsertAnimation<'a> {
+impl<'a> AnimationBuilder<'a> {
     /// Configure [`TimeRunner`]'s [`Repeat`]
     pub fn repeat(mut self, repeat: Repeat) -> Self {
         match self.time_runner.repeat() {
@@ -131,11 +131,11 @@ impl<'a> InsertAnimation<'a> {
 
     /// Add animations from a closure. Animation entities will be subjected
     /// as a children of this entity.
-    pub fn animate<F>(self, animation: F) -> EntityCommands<'a>
+    pub fn insert<F>(self, animation: F) -> EntityCommands<'a>
     where
         F: FnOnce(&mut AnimationSpawner, Duration) -> Duration,
     {
-        let InsertAnimation {
+        let AnimationBuilder {
             mut entity_commands,
             mut time_runner,
         } = self;
@@ -151,7 +151,7 @@ impl<'a> InsertAnimation<'a> {
 
     /// Insert animation components directly to this entity.
     /// Can be used to create a simple animation quickly.
-    pub fn animate_here<I, T>(
+    pub fn insert_here<I, T>(
         self,
         duration: Duration,
         interpolation: I,
@@ -161,7 +161,7 @@ impl<'a> InsertAnimation<'a> {
         I: Bundle,
         T: Bundle,
     {
-        let InsertAnimation {
+        let AnimationBuilder {
             mut entity_commands,
             mut time_runner,
         } = self;

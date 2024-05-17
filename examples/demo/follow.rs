@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_time_runner::{TimeRunner, TimeRunnerPlugin};
 use bevy_tween::{
-    combinator::InsertAnimationExt,
+    combinator::AnimationBuilderExt,
     interpolate::{scale, sprite_color, translation},
     prelude::*,
     tween::{TargetComponent, TweenerMarker},
@@ -89,10 +89,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             let jeb = TargetComponent::tweener_parent();
             // Spawning an animator that's responsible for a rotating effect
             c.spawn(TweenerMarker)
-                .insert_animation()
+                .animation()
                 .repeat(Repeat::Infinitely)
                 .repeat_style(RepeatStyle::PingPong)
-                .animate_here(
+                .insert_here(
                     Duration::from_secs(2),
                     EaseFunction::CubicInOut,
                     jeb.with_closure(|transform: &mut Transform, value| {
@@ -105,7 +105,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
             // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
-            c.spawn(TweenerMarker).insert_animation().animate_here(
+            c.spawn(TweenerMarker).animation().insert_here(
                 Duration::from_secs(1),
                 EaseFunction::QuinticIn,
                 jeb.with(scale(Vec3::ZERO, Vec3::ONE)),
@@ -150,8 +150,8 @@ fn jeb_follows_cursor(
         let jeb = TargetComponent::tweener_parent();
         commands
             .entity(jeb_animator_entity)
-            .insert_animation()
-            .animate_here(
+            .animation()
+            .insert_here(
                 config.tween_duration,
                 config.tween_ease,
                 (
