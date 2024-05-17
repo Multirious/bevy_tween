@@ -247,6 +247,7 @@
 
 use bevy::prelude::*;
 
+use crate::combinator::TargetState;
 use crate::interpolate::Interpolator;
 use crate::{utils, BevyTweenRegisterSystems};
 
@@ -442,6 +443,11 @@ impl TargetComponent {
         TargetComponent::from_iter(entities)
     }
 
+    /// Create a new [`TargetState`] with the initial value out of this target.
+    pub fn state<V>(&self, value: V) -> TargetState<Self, V> {
+        TargetState::new(self.clone(), value)
+    }
+
     /// Create a new tween with the supplied interpolator out of this target.
     pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
         Tween {
@@ -617,6 +623,11 @@ impl TargetResource {
         TargetResource
     }
 
+    /// Create a new [`TargetState`] with the initial value out of this target.
+    pub fn state<V>(&self, value: V) -> TargetState<Self, V> {
+        TargetState::new(self.clone(), value)
+    }
+
     /// Create a new tween with the supplied interpolator out of this target.
     pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
         Tween {
@@ -699,6 +710,11 @@ impl<A: Asset> TargetAsset<A> {
         I: IntoIterator<Item = Handle<A>>,
     {
         TargetAsset::from_iter(assets)
+    }
+
+    /// Create a new [`TargetState`] with the initial value out of this target.
+    pub fn state<V>(&self, value: V) -> TargetState<Self, V> {
+        TargetState::new(self.clone(), value)
     }
 
     /// Create a new tween with the supplied interpolator out of this target.
