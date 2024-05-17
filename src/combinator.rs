@@ -149,9 +149,8 @@ impl<'a> InsertAnimation<'a> {
         entity_commands
     }
 
-    /// Add animations directly to this entity.
-    /// No children will be added like in [`MakeAnimation::animate`].
-    /// Has less entities as a result but cannot create complex animations.
+    /// Insert animation components directly to this entity.
+    /// Can be used to create a simple animation quickly.
     pub fn animate_here<I, T>(
         self,
         duration: Duration,
@@ -171,6 +170,7 @@ impl<'a> InsertAnimation<'a> {
             TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
             interpolation,
             tweens,
+            time_runner,
         ));
         entity_commands
     }
