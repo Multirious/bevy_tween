@@ -7,6 +7,119 @@ use crate::prelude::TweenEventData;
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_time_runner::{Repeat, RepeatStyle, TimeRunner, TimeSpan};
 
+mod state {
+    use tween::ComponentTween;
+
+    use crate::interpolate::*;
+    use crate::tween::{self, Tween};
+
+    use super::*;
+
+    pub struct TargetState<T, V> {
+        target: T,
+        value: V,
+    }
+
+    impl<T, V> TargetState<T, V>
+    where
+        T: Clone,
+    {
+        pub fn with<I>(&mut self, f: impl FnOnce(&mut V) -> I) -> Tween<T, I> {
+            let interpolator = f(&mut self.value);
+            Tween {
+                target: self.target.clone(),
+                interpolator,
+            }
+        }
+    }
+
+    /// Constructor for [`TransformTweenState`]
+    pub fn transform_tween_state(
+        target: tween::TargetComponent,
+        value: Transform,
+    ) -> TransformTweenState {
+        TransformTweenState::new(target, value)
+    }
+
+    pub struct TransformTweenState {
+        target: tween::TargetComponent,
+        value: Transform,
+    }
+
+    impl TransformTweenState {
+        pub fn new(
+            target: tween::TargetComponent,
+            value: Transform,
+        ) -> TransformTweenState {
+            TransformTweenState { target, value }
+        }
+
+        pub fn transform_with<I>(
+            &mut self,
+            f: impl FnOnce(&mut Transform) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            let interpolator = f(&mut self.value);
+            Tween {
+                target: self.target.clone(),
+                interpolator,
+            }
+        }
+
+        pub fn translation_with<I>(
+            &mut self,
+            f: impl FnOnce(&mut Vec3) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            self.transform_with(|v| f(&mut v.translation))
+        }
+
+        pub fn rotation_with<I>(
+            &mut self,
+            f: impl FnOnce(&mut Quat) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            self.transform_with(|v| f(&mut v.rotation))
+        }
+
+        pub fn scale_with<I>(
+            &mut self,
+            f: impl FnOnce(&mut Vec3) -> I,
+        ) -> Tween<tween::TargetComponent, I> {
+            self.transform_with(|v| f(&mut v.scale))
+        }
+
+        pub fn translation_to(
+            &mut self,
+            to: Vec3,
+        ) -> ComponentTween<Translation> {
+            self.translation_with(translation_to(to))
+        }
+
+        pub fn rotation_to(&mut self, to: Quat) -> ComponentTween<Rotation> {
+            self.rotation_with(rotation_to(to))
+        }
+
+        pub fn scale_to(&mut self, to: Vec3) -> ComponentTween<Scale> {
+            self.scale_with(scale_to(to))
+        }
+
+        pub fn translation_by(
+            &mut self,
+            by: Vec3,
+        ) -> ComponentTween<Translation> {
+            self.translation_with(translation_by(by))
+        }
+
+        pub fn rotation_by(&mut self, by: Quat) -> ComponentTween<Rotation> {
+            self.rotation_with(rotation_by(by))
+        }
+
+        pub fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale> {
+            self.scale_with(scale_by(by))
+        }
+    }
+}
+
+pub use state::{transform_tween_state, TargetState, TransformTweenState};
+
 /// Trait for types that can spawn an entity regards to animation.
 pub trait SpawnAnimation {
     /// Output from [`Self::spawn`].
