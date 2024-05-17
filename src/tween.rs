@@ -444,7 +444,24 @@ impl TargetComponent {
 
     /// Create a new tween with the supplied interpolator out of this target.
     pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
-        ComponentTween {
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
+
+    /// Create a new tween with the supplied closure out of this target.
+    pub fn with_closure<F, C>(
+        &self,
+        closure: F,
+    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    where
+        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        C: Component,
+    {
+        let closure = crate::interpolate::closure(closure);
+        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+        Tween {
             target: self.clone(),
             interpolator,
         }
@@ -607,6 +624,23 @@ impl TargetResource {
             interpolator,
         }
     }
+
+    /// Create a new tween with the supplied closure out of this target.
+    pub fn with_closure<F, C>(
+        &self,
+        closure: F,
+    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    where
+        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        C: Component,
+    {
+        let closure = crate::interpolate::closure(closure);
+        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with generic [`Interpolator`].
@@ -669,6 +703,23 @@ impl<A: Asset> TargetAsset<A> {
 
     /// Create a new tween with the supplied interpolator out of this target.
     pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
+
+    /// Create a new tween with the supplied closure out of this target.
+    pub fn with_closure<F, C>(
+        &self,
+        closure: F,
+    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    where
+        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        C: Component,
+    {
+        let closure = crate::interpolate::closure(closure);
+        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
         Tween {
             target: self.clone(),
             interpolator,
