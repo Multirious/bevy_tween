@@ -7,6 +7,7 @@ use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_time_runner::{TimeRunner, TimeRunnerPlugin};
 use bevy_tween::{
     combinator::InsertAnimationExt,
+    interpolate::{scale, sprite_color, translation},
     prelude::*,
     tween::{TargetComponent, TweenerMarker},
 };
@@ -64,7 +65,6 @@ struct Jeb;
 struct JebTranslationAnimator;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    use interpolate::scale;
     commands.spawn((
         Camera2dBundle {
             ..Default::default()
@@ -124,7 +124,6 @@ fn jeb_follows_cursor(
     >,
     mut cursor_moved: EventReader<CursorMoved>,
 ) {
-    use interpolate::{sprite_color, translation};
     let jeb_transform = q_jeb.single();
     let (jeb_animator_entity, jeb_time_runner) =
         q_jeb_translation_animator.single();
