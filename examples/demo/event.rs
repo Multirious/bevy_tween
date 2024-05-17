@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin};
 use bevy_tween::{
     combinator::*,
-    interpolate::tween_state,
     prelude::*,
     tween::{TargetComponent, TweenerMarker},
 };
@@ -49,9 +48,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let end_angle = mid_angle + 180.0_f32.to_radians();
 
     let triangle = TargetComponent::tweener_entity();
-    let mut triangle_translation =
-        tween_state(triangle.clone(), Vec3::new(start_x, 0., 0.));
-    let mut triangle_angle_z = tween_state(triangle, start_angle);
+    let mut triangle_translation = triangle.state(Vec3::new(start_x, 0., 0.));
+    let mut triangle_angle_z = triangle.state(start_angle);
 
     commands
         .spawn((
@@ -72,8 +70,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::ExponentialIn,
                     (
                         triangle_translation
-                            .tween(translation_to(Vec3::new(end_x, 0., 0.))),
-                        triangle_angle_z.tween(angle_z_to(mid_angle)),
+                            .with(translation_to(Vec3::new(end_x, 0., 0.))),
+                        triangle_angle_z.with(angle_z_to(mid_angle)),
                     ),
                 ),
                 backward(secs(0.2)),
@@ -84,8 +82,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     EaseFunction::CircularOut,
                     (
                         triangle_translation
-                            .tween(translation_to(Vec3::new(start_x, 0., 0.))),
-                        triangle_angle_z.tween(angle_z_to(end_angle)),
+                            .with(translation_to(Vec3::new(start_x, 0., 0.))),
+                        triangle_angle_z.with(angle_z_to(end_angle)),
                     ),
                 ),
             ))(a, pos)

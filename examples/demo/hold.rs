@@ -1,9 +1,10 @@
 use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_time_runner::{TimeRunner, TimeRunnerPlugin};
 use bevy_tween::{
-    prelude::*, tween::TargetComponent, tween_timer::AnimationDirection,
-    tweener::SpanTweener,
+    bevy_time_runner::TimeDirection, combinator::AnimationBuilderExt,
+    prelude::*, tween::TargetComponent,
 };
 use rand::prelude::*;
 
@@ -46,6 +47,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
+            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
             interpolate::custom_interpolators_plugin,
         ))
@@ -59,10 +61,10 @@ fn main() {
 pub struct BigX;
 
 #[derive(Component)]
-pub struct EffectTweener;
+pub struct EffectAnimator;
 
 #[derive(Component)]
-pub struct RotateTweener;
+pub struct RotatationAnimator;
 
 #[derive(Default, Resource)]
 pub struct EffectIntensitiy(f32);
@@ -85,39 +87,41 @@ fn setup(
         ))
         .id();
     let big_x = TargetComponent::from(big_x);
-    commands.spawn((
-        EffectTweener,
-        SpanTweenerBundle::new(secs(1.)).tween_here(),
+    commands.spawn(EffectAnimator).animation().insert_here(
+        secs(1.),
         EaseFunction::QuarticIn,
-        effect_intensity(0., 1.),
-        big_x.with(sprite_color(Color::WHITE, Color::PINK)),
-    ));
-    commands.spawn((
-        RotateTweener,
-        SpanTweenerBundle::new(Duration::from_secs_f32(1.))
-            .with_repeat(Repeat::Infinitely)
-            .tween_here(),
-        EaseFunction::Linear,
-        big_x.with(interpolate::angle_z(0., PI * 0.5)),
-    ));
+        (
+            effect_intensity(0., 1.),
+            big_x.with(sprite_color(Color::PINK, Color::WHITE)),
+        ),
+    );
+    commands
+        .spawn(RotatationAnimator)
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert_here(
+            secs(1.),
+            EaseFunction::Linear,
+            big_x.with(interpolate::angle_z(0., PI * 0.5)),
+        );
 }
 
 fn mouse_hold(
-    mut q_effect_tween_timer: Query<&mut SpanTweener, With<EffectTweener>>,
+    mut q_effect_animator: Query<&mut TimeRunner, With<EffectAnimator>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
-    q_effect_tween_timer.single_mut().timer.direction = if mouse_down {
-        AnimationDirection::Forward
+    q_effect_animator.single_mut().set_direction(if mouse_down {
+        TimeDirection::Forward
     } else {
-        AnimationDirection::Backward
-    };
+        TimeDirection::Backward
+    });
 }
 
 fn big_x_do_effect(
     effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
-    mut q_rotate_tweener: Query<&mut SpanTweener, With<RotateTweener>>,
+    mut q_rotation_animator: Query<&mut TimeRunner, With<RotatationAnimator>>,
 ) {
     let mut rng = rand::thread_rng();
     let dx: f32 = rng.gen();
@@ -125,6 +129,7 @@ fn big_x_do_effect(
     q_big_x.single_mut().translation =
         Vec3::new(dx - 0.5, dy - 0.5, 0.) * 100. * effect_intensity.0;
 
-    q_rotate_tweener.single_mut().timer.speed_scale =
-        Duration::from_secs_f32(effect_intensity.0);
+    q_rotation_animator
+        .single_mut()
+        .set_time_scale(effect_intensity.0);
 }

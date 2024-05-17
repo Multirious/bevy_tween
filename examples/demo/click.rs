@@ -2,10 +2,7 @@ use bevy::prelude::*;
 use bevy_time_runner::TimeRunnerEnded;
 use bevy_tween::bevy_time_runner::TimeRunnerPlugin;
 use bevy_tween::tween::TweenerMarker;
-use bevy_tween::{
-    combinator::*, interpolate::transform_tween_state, prelude::*,
-    tween::TargetComponent,
-};
+use bevy_tween::{combinator::*, prelude::*, tween::TargetComponent};
 mod utils;
 
 fn secs(secs: f32) -> Duration {
@@ -56,11 +53,8 @@ fn click_spawn_circle(
             let start = Vec3::new(coord.x, coord.y, 1.);
             let end = Vec3::new(0., 0., 0.);
             let transform = Transform::from_translation(start);
-            let mut circle_transform = transform_tween_state(
-                TargetComponent::TweenerEntity,
-                transform,
-            );
-            let circle = TargetComponent::tweener_entity();
+            let circle = TargetComponent::TweenerEntity;
+            let mut circle_transform = circle.transform_state(transform);
             commands
                 .spawn((
                     SpriteBundle {
