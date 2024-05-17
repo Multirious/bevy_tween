@@ -1,12 +1,19 @@
 use bevy::prelude::*;
+use bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin};
 use bevy_tween::{
-    interpolate::tween_state, prelude::*, tween::TargetComponent,
-    tweener::combinator::*,
+    combinator::*,
+    interpolate::tween_state,
+    prelude::*,
+    tween::{TargetComponent, TweenerMarker},
 };
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            TimeRunnerPlugin::default(),
+            DefaultTweenPlugins,
+        ))
         .add_systems(Startup, setup)
         .add_systems(Update, (effect_system, despawn_effect_system))
         .run();
@@ -53,33 +60,36 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 texture: asset_server.load("triangle_filled.png"),
                 ..Default::default()
             },
-            SpanTweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
+            TweenerMarker,
         ))
-        .tweens()
-        .add(sequence((
-            tween_event(TweenEventData::with_data("bump")),
-            tween(
-                secs(1.),
-                EaseFunction::ExponentialIn,
-                (
-                    triangle_translation
-                        .tween(translation_to(Vec3::new(end_x, 0., 0.))),
-                    triangle_angle_z.tween(angle_z_to(mid_angle)),
+        .insert_animation()
+        .repeat(Repeat::Infinitely)
+        .animate(|a, pos| {
+            sequence((
+                event(TweenEventData::with_data("bump")),
+                tween(
+                    secs(1.),
+                    EaseFunction::ExponentialIn,
+                    (
+                        triangle_translation
+                            .tween(translation_to(Vec3::new(end_x, 0., 0.))),
+                        triangle_angle_z.tween(angle_z_to(mid_angle)),
+                    ),
                 ),
-            ),
-            backward(secs(0.2)),
-            tween_event_for(secs(0.2), TweenEventData::with_data("small_boom")),
-            tween_event(TweenEventData::with_data("boom")),
-            tween(
-                secs(1.),
-                EaseFunction::CircularOut,
-                (
-                    triangle_translation
-                        .tween(translation_to(Vec3::new(start_x, 0., 0.))),
-                    triangle_angle_z.tween(angle_z_to(end_angle)),
+                backward(secs(0.2)),
+                event_for(secs(0.2), TweenEventData::with_data("small_boom")),
+                event(TweenEventData::with_data("boom")),
+                tween(
+                    secs(1.),
+                    EaseFunction::CircularOut,
+                    (
+                        triangle_translation
+                            .tween(translation_to(Vec3::new(start_x, 0., 0.))),
+                        triangle_angle_z.tween(angle_z_to(end_angle)),
+                    ),
                 ),
-            ),
-        )));
+            ))(a, pos)
+        });
 }
 
 #[derive(Component)]
@@ -96,68 +106,94 @@ fn effect_system(
     event.read().for_each(|event| match event.data {
         "bump" => {
             let entity = TargetComponent::TweenerEntity;
-            commands.spawn((
-                Effect,
-                SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(20., 100.)),
+            commands
+                .spawn((
+                    Effect,
+                    SpriteBundle {
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(20., 100.)),
+                            ..Default::default()
+                        },
+                        transform: Transform::from_translation(
+                            effect_pos.trail,
+                        ),
                         ..Default::default()
                     },
-                    transform: Transform::from_translation(effect_pos.trail),
-                    ..Default::default()
-                },
-                SpanTweenerBundle::new(secs(1.)).tween_here(),
-                EaseFunction::QuinticOut,
-                entity.with(translation(
-                    effect_pos.trail,
-                    effect_pos.trail - Vec3::new(100., 0., 0.),
-                )),
-                entity.with(sprite_color(Color::WHITE, Color::PINK.with_a(0.))),
-            ));
+                    TweenerMarker,
+                ))
+                .insert_animation()
+                .animate_here(
+                    secs(1.),
+                    EaseFunction::QuinticOut,
+                    (
+                        entity.with(translation(
+                            effect_pos.trail,
+                            effect_pos.trail - Vec3::new(100., 0., 0.),
+                        )),
+                        entity.with(sprite_color(
+                            Color::WHITE,
+                            Color::PINK.with_a(0.),
+                        )),
+                    ),
+                );
         }
         "small_boom" => {
             let entity = TargetComponent::TweenerEntity;
-            commands.spawn((
-                Effect,
-                SpriteBundle {
-                    texture: asset_server.load("circle.png"),
-                    transform: Transform::from_translation(
-                        q_triangle.single().translation,
+            commands
+                .spawn((
+                    Effect,
+                    SpriteBundle {
+                        texture: asset_server.load("circle.png"),
+                        transform: Transform::from_translation(
+                            q_triangle.single().translation,
+                        ),
+                        ..Default::default()
+                    },
+                    TweenerMarker,
+                ))
+                .insert_animation()
+                .animate_here(
+                    secs(0.1),
+                    EaseFunction::Linear,
+                    (
+                        entity.with(scale(
+                            Vec3::new(0.5, 0.5, 0.),
+                            Vec3::new(3., 3., 0.),
+                        )),
+                        entity.with(sprite_color(
+                            Color::WHITE.with_a(0.5),
+                            Color::PINK.with_a(0.),
+                        )),
                     ),
-                    ..Default::default()
-                },
-                SpanTweenerBundle::new(secs(0.1)).tween_here(),
-                EaseFunction::Linear,
-                entity.with(scale(
-                    Vec3::new(0.5, 0.5, 0.),
-                    Vec3::new(3., 3., 0.),
-                )),
-                entity.with(sprite_color(
-                    Color::WHITE.with_a(0.5),
-                    Color::PINK.with_a(0.),
-                )),
-            ));
+                );
         }
         "boom" => {
             let entity = TargetComponent::TweenerEntity;
-            commands.spawn((
-                Effect,
-                SpriteBundle {
-                    texture: asset_server.load("circle.png"),
-                    transform: Transform::from_translation(effect_pos.boom),
-                    ..Default::default()
-                },
-                SpanTweenerBundle::new(secs(0.5)).tween_here(),
-                EaseFunction::QuadraticOut,
-                entity.with(scale(
-                    Vec3::new(1., 1., 0.),
-                    Vec3::new(15., 15., 0.),
-                )),
-                entity.with(sprite_color(
-                    Color::WHITE.with_a(1.),
-                    Color::PINK.with_a(0.),
-                )),
-            ));
+            commands
+                .spawn((
+                    Effect,
+                    SpriteBundle {
+                        texture: asset_server.load("circle.png"),
+                        transform: Transform::from_translation(effect_pos.boom),
+                        ..Default::default()
+                    },
+                    TweenerMarker,
+                ))
+                .insert_animation()
+                .animate_here(
+                    secs(0.5),
+                    EaseFunction::QuadraticOut,
+                    (
+                        entity.with(scale(
+                            Vec3::new(1., 1., 0.),
+                            Vec3::new(15., 15., 0.),
+                        )),
+                        entity.with(sprite_color(
+                            Color::WHITE.with_a(1.),
+                            Color::PINK.with_a(0.),
+                        )),
+                    ),
+                );
         }
         _ => {}
     });
@@ -166,11 +202,11 @@ fn effect_system(
 fn despawn_effect_system(
     mut commands: Commands,
     q_effect: Query<(), With<Effect>>,
-    mut ended: EventReader<SpanTweenerEnded>,
+    mut ended: EventReader<TimeRunnerEnded>,
 ) {
     ended.read().for_each(|ended| {
-        if ended.is_completed() && q_effect.contains(ended.tweener) {
-            commands.entity(ended.tweener).despawn_recursive();
+        if ended.is_completed() && q_effect.contains(ended.time_runner) {
+            commands.entity(ended.time_runner).despawn_recursive();
         }
     });
 }
