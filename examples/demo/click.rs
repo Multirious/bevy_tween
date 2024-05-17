@@ -1,8 +1,10 @@
 use bevy::prelude::*;
-use bevy_time_runner::TimeRunnerEnded;
-use bevy_tween::bevy_time_runner::TimeRunnerPlugin;
-use bevy_tween::tween::TweenerMarker;
-use bevy_tween::{combinator::*, prelude::*, tween::TargetComponent};
+use bevy_tween::{
+    bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin},
+    combinator::*,
+    prelude::*,
+    tween::{TargetComponent, TweenerMarker},
+};
 mod utils;
 
 fn secs(secs: f32) -> Duration {

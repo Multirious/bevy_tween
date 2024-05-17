@@ -1,10 +1,11 @@
 use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_time_runner::{TimeRunner, TimeRunnerPlugin};
 use bevy_tween::{
-    bevy_time_runner::TimeDirection, combinator::AnimationBuilderExt,
-    prelude::*, tween::TargetComponent,
+    bevy_time_runner::{TimeDirection, TimeRunner, TimeRunnerPlugin},
+    combinator::AnimationBuilderExt,
+    prelude::*,
+    tween::TargetComponent,
 };
 use rand::prelude::*;
 

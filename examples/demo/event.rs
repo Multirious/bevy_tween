@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin};
 use bevy_tween::{
+    bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin},
     combinator::*,
     prelude::*,
     tween::{TargetComponent, TweenerMarker},
