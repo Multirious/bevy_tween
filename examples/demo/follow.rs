@@ -4,8 +4,9 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-use bevy_time_runner::{TimeRunner, TimeRunnerPlugin, TimeSpan};
+use bevy_time_runner::{TimeRunner, TimeRunnerPlugin};
 use bevy_tween::{
+    combinator::InsertAnimationExt,
     prelude::*,
     tween::{TargetComponent, TweenerMarker},
 };
@@ -33,7 +34,7 @@ fn main() {
 enum UpdateKind {
     CursorMoved,
     CusorStopped,
-    TweenerCompleted,
+    AnimatorCompleted,
 }
 
 // Let us change the the tween ease and duration at runtime
@@ -60,7 +61,7 @@ struct Jeb;
 /// Marker component for the tween entity we will be modifying to make the follow
 /// effect
 #[derive(Component)]
-struct JebTranslationTweener;
+struct JebTranslationAnimator;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     use interpolate::scale;
@@ -81,50 +82,34 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             Jeb,
         ))
         .with_children(|c| {
-            // Spawning the marker for a tweener that will be responsible
+            // Spawning the marker for an animator that will be responsible
             // for the follow effect
-            c.spawn((
-                JebTranslationTweener,
-                TweenerMarker,
-                Name::new("JebTranslationTweener"),
-            ));
+            c.spawn((JebTranslationAnimator, TweenerMarker));
 
             let jeb = TargetComponent::tweener_parent();
-            let a: Box<dyn Interpolator<Item = _>> = Box::new(
-                interpolate::closure(|transform: &mut Transform, value| {
-                    let start = 0.;
-                    let end = TAU;
-                    let angle = (end - start).mul_add(value, start);
-                    transform.rotation = Quat::from_rotation_z(angle);
-                }),
-            );
-            // Spawning a tweener that's responsible for a rotating effect
-            c.spawn((
-                Name::new("Rotate"),
-                {
-                    let mut t = TimeRunner::new(Duration::from_secs(2));
-                    t.set_repeat(Some((
-                        Repeat::Infinitely,
-                        RepeatStyle::PingPong,
-                    )));
-                    t
-                },
-                TimeSpan::try_from(..Duration::from_secs(2)).unwrap(),
-                TweenerMarker,
-                EaseFunction::CubicInOut,
-                jeb.with(a),
-            ));
+            // Spawning an animator that's responsible for a rotating effect
+            c.spawn(TweenerMarker)
+                .insert_animation()
+                .repeat(Repeat::Infinitely)
+                .repeat_style(RepeatStyle::PingPong)
+                .animate_here(
+                    Duration::from_secs(2),
+                    EaseFunction::CubicInOut,
+                    jeb.with_closure(|transform: &mut Transform, value| {
+                        let start = 0.;
+                        let end = TAU;
+                        transform.rotation =
+                            Quat::from_rotation_z(start.lerp(end, value));
+                    }),
+                );
 
             // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
-            c.spawn((
-                Name::new("Scale up"),
-                TimeRunner::new(Duration::from_secs(1)),
-                TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
-                TweenerMarker,
+            c.spawn(TweenerMarker).insert_animation().animate_here(
+                Duration::from_secs(1),
                 EaseFunction::QuinticIn,
                 jeb.with(scale(Vec3::ZERO, Vec3::ONE)),
-            ));
+            );
         });
 }
 
@@ -133,24 +118,30 @@ fn jeb_follows_cursor(
     coord: Res<utils::MainCursorWorldCoord>,
     config: Res<Config>,
     q_jeb: Query<&Transform, With<Jeb>>,
-    q_jeb_translation_tweener: Query<
+    q_jeb_translation_animator: Query<
         (Entity, Option<&TimeRunner>),
-        With<JebTranslationTweener>,
+        With<JebTranslationAnimator>,
     >,
     mut cursor_moved: EventReader<CursorMoved>,
 ) {
     use interpolate::{sprite_color, translation};
     let jeb_transform = q_jeb.single();
-    let (jeb_tweener_entity, jeb_tweener) = q_jeb_translation_tweener.single();
+    let (jeb_animator_entity, jeb_time_runner) =
+        q_jeb_translation_animator.single();
     let Some(coord) = coord.0 else {
         return;
     };
     let update = match config.update_kind {
         UpdateKind::CursorMoved => cursor_moved.read().next().is_some(),
-        UpdateKind::CusorStopped => cursor_moved.read().next().is_none(),
-        UpdateKind::TweenerCompleted => match jeb_tweener {
-            Some(jeb_tweener) => {
-                jeb_tweener.is_completed()
+        UpdateKind::CusorStopped => {
+            let dx = (coord.x - jeb_transform.translation.x).abs();
+            let dy = (coord.x - jeb_transform.translation.x).abs();
+            let is_near_coord = dx < 0.05 && dy < 0.05;
+            cursor_moved.read().next().is_none() && !is_near_coord
+        }
+        UpdateKind::AnimatorCompleted => match jeb_time_runner {
+            Some(jeb_time_runner) => {
+                jeb_time_runner.is_completed()
                     && coord != jeb_transform.translation.xy()
             }
             None => true,
@@ -158,20 +149,19 @@ fn jeb_follows_cursor(
     };
     if update {
         let jeb = TargetComponent::tweener_parent();
-        commands.entity(jeb_tweener_entity).insert((
-            TimeRunner::new(config.tween_duration),
-            TimeSpan::try_from(..config.tween_duration).unwrap(),
-            config.tween_ease, // don't forget the ease
-            // You can have multiple tween in the same Entity as long as their
-            // type is differernt.
-            //
-            // This one for translation
-            jeb.with(translation(
-                jeb_transform.translation,
-                Vec3::new(coord.x, coord.y, 0.),
-            )),
-            // This one for color
-            jeb.with(sprite_color(Color::PINK, Color::WHITE)),
-        ));
+        commands
+            .entity(jeb_animator_entity)
+            .insert_animation()
+            .animate_here(
+                config.tween_duration,
+                config.tween_ease,
+                (
+                    jeb.with(translation(
+                        jeb_transform.translation,
+                        Vec3::new(coord.x, coord.y, 0.),
+                    )),
+                    jeb.with(sprite_color(Color::WHITE, Color::PINK)),
+                ),
+            );
     }
 }
