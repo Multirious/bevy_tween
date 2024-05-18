@@ -2,8 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
-    bevy_time_runner::{TimeDirection, TimeRunner, TimeRunnerPlugin},
-    combinator::AnimationBuilderExt,
+    bevy_time_runner::{TimeRunner, TimeRunnerPlugin},
     prelude::*,
     tween::TargetComponent,
 };
@@ -82,6 +81,10 @@ fn setup(
         .spawn((
             SpriteBundle {
                 texture: asset_server.load("big_x.png"),
+                sprite: Sprite {
+                    color: Color::PINK,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             BigX,

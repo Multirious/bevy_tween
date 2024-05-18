@@ -4,9 +4,8 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-use bevy_time_runner::{TimeRunner, TimeRunnerPlugin};
 use bevy_tween::{
-    combinator::AnimationBuilderExt,
+    bevy_time_runner::{TimeRunner, TimeRunnerPlugin},
     interpolate::{scale, sprite_color, translation},
     prelude::*,
     tween::{TargetComponent, TweenerMarker},

@@ -1,5 +1,9 @@
 use bevy::prelude::*;
-use bevy_tween::{prelude::*, tween::TargetComponent};
+use bevy_tween::{
+    bevy_time_runner::TimeRunnerPlugin,
+    prelude::*,
+    tween::{TargetComponent, TweenerMarker},
+};
 
 mod interpolate {
     use bevy::prelude::*;
@@ -37,6 +41,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
+            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
             interpolate::custom_interpolators_plugin,
         ))
@@ -56,22 +61,23 @@ fn setup(
     let len = layout.len();
     let atlas_layout = texture_atlas_layouts.add(layout);
     let sprite = TargetComponent::tweener_entity();
-    commands.spawn((
-        SpriteSheetBundle {
-            texture,
-            atlas: TextureAtlas {
-                layout: atlas_layout,
-                index: 0,
+    commands
+        .spawn((
+            SpriteSheetBundle {
+                texture,
+                atlas: atlas_layout.into(),
+                transform: Transform::IDENTITY.with_scale(Vec3::splat(15.)),
+                ..Default::default()
             },
-            transform: Transform::IDENTITY.with_scale(Vec3::splat(15.)),
-            ..Default::default()
-        },
-        SpanTweenerBundle::new(Duration::from_secs(1))
-            .with_repeat(Repeat::Infinitely)
-            .tween_here(),
-        EaseFunction::Linear,
-        sprite.with(atlas_index(0, len)),
-    ));
+            TweenerMarker,
+        ))
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert_here(
+            Duration::from_secs(1),
+            EaseFunction::Linear,
+            sprite.with(atlas_index(0, len)),
+        );
 
     commands.spawn(Camera2dBundle::default());
 }
