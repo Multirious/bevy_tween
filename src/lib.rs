@@ -132,7 +132,9 @@ pub mod prelude {
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
     pub use crate::interpolation::EaseFunction;
 
-    pub use crate::bevy_time_runner::{Repeat, RepeatStyle};
+    pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
+
+    pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
     pub use crate::tween::{TweenEvent, TweenEventData};
 
