@@ -2,9 +2,11 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_tween::{
+    bevy_time_runner::TimeRunnerPlugin,
+    combinator::{parallel, tween_exact, SpawnAnimation},
+    interpolate::{angle_z, translation},
     prelude::*,
-    tween::TargetComponent,
-    tweener::{EntitySpawner, TweensBuilder},
+    tween::{TargetComponent, TweenerMarker},
 };
 
 fn main() {
@@ -19,6 +21,7 @@ fn main() {
                 }),
                 ..Default::default()
             }),
+            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
         ))
         .add_systems(Startup, setup)
@@ -50,61 +53,36 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 (i + 2) as f32,
             )
         })
+        .map(TargetComponent::Entity)
         .collect::<Vec<_>>();
 
     let secs = 12.;
 
     commands
-        .spawn(
-            SpanTweenerBundle::new(Duration::from_secs_f32(secs))
-                .with_repeat(Repeat::Infinitely),
-        )
-        .with_children(|c| {
-            c.tweens()
-                .add(snap_rotate(triangles[4], secs, 7, 4., ease))
-                .add(snap_rotate(triangles[3], secs, 7, 6., ease))
-                .add(snap_rotate(triangles[2], secs, 7, 8., ease))
-                .add(snap_rotate(triangles[1], secs, 7, 10., ease))
-                .add(snap_rotate(triangles[0], secs, 7, 12., ease));
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert(|a, pos| {
+            parallel((
+                snap_rotate(triangles[4].clone(), secs, 7, 4., ease),
+                snap_rotate(triangles[3].clone(), secs, 7, 6., ease),
+                snap_rotate(triangles[2].clone(), secs, 7, 8., ease),
+                snap_rotate(triangles[1].clone(), secs, 7, 10., ease),
+                snap_rotate(triangles[0].clone(), secs, 7, 12., ease),
+            ))(a, pos)
         });
 
+    let dotted_line_target = TargetComponent::tweener_entity();
     commands
-        .spawn((
-            SpatialBundle::default(),
-            SpanTweenerBundle::new(Duration::from_secs_f32(12. / 7.))
-                .with_repeat(Repeat::Infinitely)
-                .tween_here(),
+        .spawn((SpatialBundle::default(), TweenerMarker))
+        .with_children(dotted_line)
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert_here(
+            Duration::from_secs_f32(12. / 7.),
             EaseFunction::ExponentialInOut,
-            ComponentTween::new(interpolate::Translation {
-                start: Vec3::ZERO,
-                end: Vec3::new(30. * 10., 0., 0.),
-            }),
-        ))
-        .with_children(|c| {
-            let color = Color::WHITE;
-            let count = 70;
-            let height = 5.;
-            let width = 20.;
-            let spacing = 30.;
-            let x_offset =
-                -(width * count as f32 + (spacing - width) * count as f32) / 2.;
-            for i in 0..count {
-                let i = i as f32;
-                c.spawn(SpriteBundle {
-                    sprite: Sprite {
-                        color,
-                        custom_size: Some(Vec2::new(width, height)),
-                        ..Default::default()
-                    },
-                    transform: Transform::from_xyz(
-                        i * spacing + x_offset,
-                        0.,
-                        0.,
-                    ),
-                    ..Default::default()
-                });
-            }
-        });
+            dotted_line_target
+                .with(translation(Vec3::ZERO, Vec3::new(30. * 10., 0., 0.))),
+        );
 
     commands.spawn(SpriteBundle {
         sprite: Sprite {
@@ -117,31 +95,28 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn snap_rotate<S: EntitySpawner>(
-    target: impl Into<TargetComponent>,
+fn snap_rotate<A: SpawnAnimation>(
+    target: TargetComponent,
     secs: f32,
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) -> impl FnOnce(&mut TweensBuilder<S>) {
-    move |b| {
-        let target = target.into();
+) -> impl FnOnce(&mut A, Duration) -> Duration {
+    move |a, pos| {
         for i in 0..max {
             let max = max as f32;
             let i = i as f32;
-            b.tween_exact(
+            tween_exact(
                 Duration::from_secs_f32(i / max * secs)
                     ..Duration::from_secs_f32((i + 1.) / max * secs),
                 ease,
-                ComponentTween::new_target_boxed(
-                    target.clone(),
-                    interpolate::AngleZ {
-                        start: rev * TAU * (max - i) / max,
-                        end: rev * TAU * (max - i - 1.) / max,
-                    },
-                ),
-            );
+                target.with(angle_z(
+                    rev * TAU * (max - i) / max,
+                    rev * TAU * (max - i - 1.) / max,
+                )),
+            )(a, pos);
         }
+        pos + Duration::from_secs_f32(secs)
     }
 }
 
@@ -162,4 +137,26 @@ fn triangle(
             ..Default::default()
         },))
         .id()
+}
+
+fn dotted_line(c: &mut ChildBuilder) {
+    let color = Color::WHITE;
+    let count = 70;
+    let height = 5.;
+    let width = 20.;
+    let spacing = 30.;
+    let x_offset =
+        -(width * count as f32 + (spacing - width) * count as f32) / 2.;
+    for i in 0..count {
+        let i = i as f32;
+        c.spawn(SpriteBundle {
+            sprite: Sprite {
+                color,
+                custom_size: Some(Vec2::new(width, height)),
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(i * spacing + x_offset, 0., 0.),
+            ..Default::default()
+        });
+    }
 }

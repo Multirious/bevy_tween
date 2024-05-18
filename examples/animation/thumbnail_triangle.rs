@@ -2,14 +2,20 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_tween::{
+    bevy_time_runner::TimeRunnerPlugin,
+    combinator::{parallel, tween_exact, SpawnAnimation},
+    interpolate::angle_z,
     prelude::*,
     tween::TargetComponent,
-    tweener::{EntitySpawner, TweensBuilder},
 };
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            TimeRunnerPlugin::default(),
+            DefaultTweenPlugins,
+        ))
         .add_systems(Startup, setup)
         .run();
 }
@@ -48,50 +54,47 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .map(|(i, color)| {
             triangle(&mut commands, square_image.clone(), *color, i as f32)
         })
+        .map(TargetComponent::Entity)
         .collect::<Vec<_>>();
 
     let secs = 12.;
 
     commands
-        .spawn(
-            SpanTweenerBundle::new(Duration::from_secs_f32(secs))
-                .with_repeat(Repeat::Infinitely),
-        )
-        .with_children(|c| {
-            c.tweens()
-                .add(snap_rotate(triangles[4], secs, 7, 4., ease))
-                .add(snap_rotate(triangles[3], secs, 7, 6., ease))
-                .add(snap_rotate(triangles[2], secs, 7, 8., ease))
-                .add(snap_rotate(triangles[1], secs, 7, 10., ease))
-                .add(snap_rotate(triangles[0], secs, 7, 12., ease));
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert(|a, pos| {
+            parallel((
+                snap_rotate(triangles[4].clone(), secs, 7, 4., ease),
+                snap_rotate(triangles[3].clone(), secs, 7, 6., ease),
+                snap_rotate(triangles[2].clone(), secs, 7, 8., ease),
+                snap_rotate(triangles[1].clone(), secs, 7, 10., ease),
+                snap_rotate(triangles[0].clone(), secs, 7, 12., ease),
+            ))(a, pos)
         });
 }
 
-fn snap_rotate<S: EntitySpawner>(
-    target: impl Into<TargetComponent>,
+fn snap_rotate<A: SpawnAnimation>(
+    target: TargetComponent,
     secs: f32,
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) -> impl FnOnce(&mut TweensBuilder<S>) {
-    move |b| {
-        let target = target.into();
+) -> impl FnOnce(&mut A, Duration) -> Duration {
+    move |a, pos| {
         for i in 0..max {
             let max = max as f32;
             let i = i as f32;
-            b.tween_exact(
+            tween_exact(
                 Duration::from_secs_f32(i / max * secs)
                     ..Duration::from_secs_f32((i + 1.) / max * secs),
                 ease,
-                ComponentTween::new_target_boxed(
-                    target.clone(),
-                    interpolate::AngleZ {
-                        start: rev * TAU * (max - i) / max,
-                        end: rev * TAU * (max - i - 1.) / max,
-                    },
-                ),
-            );
+                target.with(angle_z(
+                    rev * TAU * (max - i) / max,
+                    rev * TAU * (max - i - 1.) / max,
+                )),
+            )(a, pos);
         }
+        pos + Duration::from_secs_f32(secs)
     }
 }
 
