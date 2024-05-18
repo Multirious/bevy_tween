@@ -122,20 +122,6 @@ pub use bevy_time_runner;
 pub mod interpolate;
 pub mod interpolation;
 pub mod tween;
-#[deprecated(
-    since = "0.5.0",
-    note = "The timing inside this crate is moved to `bevy_time_runner`"
-)]
-#[allow(deprecated)]
-pub mod tween_timer;
-
-#[cfg(feature = "default_tweener")]
-#[deprecated(
-    since = "0.5.0",
-    note = "The timing inside this crate is moved to `bevy_time_runner`"
-)]
-#[allow(deprecated)]
-pub mod tweener;
 
 /// Commonly used items
 pub mod prelude {
@@ -144,14 +130,7 @@ pub mod prelude {
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
     pub use crate::interpolation::EaseFunction;
 
-    pub use crate::tween_timer::{Repeat, RepeatStyle};
-
-    #[cfg(feature = "default_tweener")]
-    #[allow(deprecated)]
-    pub use crate::tweener::{
-        span_tween, SpanTweenerBundle, SpanTweenerEnded, TweenTimeSpan,
-        TweensBuilderExt,
-    };
+    pub use crate::bevy_time_runner::{Repeat, RepeatStyle};
 
     pub use crate::tween::{TweenEvent, TweenEventData};
 
