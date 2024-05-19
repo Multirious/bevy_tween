@@ -251,21 +251,17 @@ use crate::interpolate::Interpolator;
 use crate::{utils, BevyTweenRegisterSystems};
 
 mod systems;
-#[allow(deprecated)]
 #[cfg(feature = "bevy_asset")]
 pub use systems::{
     apply_asset_tween_system, asset_dyn_tween_system, asset_tween_system,
-    asset_tween_system_full,
 };
-#[allow(deprecated)]
 pub use systems::{
     apply_component_tween_system, component_dyn_tween_system,
-    component_tween_system, component_tween_system_full,
+    component_tween_system,
 };
-#[allow(deprecated)]
 pub use systems::{
     apply_resource_tween_system, resource_dyn_tween_system,
-    resource_tween_system, resource_tween_system_full,
+    resource_tween_system,
 };
 pub use systems::{tween_event_system, tween_event_taking_system};
 
