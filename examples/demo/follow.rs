@@ -91,7 +91,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             c.animation()
                 .repeat(Repeat::Infinitely)
                 .repeat_style(RepeatStyle::PingPong)
-                .insert_here(
+                .insert_tween_here(
                     Duration::from_secs(2),
                     EaseFunction::CubicInOut,
                     jeb.with_closure(|transform: &mut Transform, value| {
@@ -104,7 +104,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
             // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
-            c.animation().insert_here(
+            c.animation().insert_tween_here(
                 Duration::from_secs(1),
                 EaseFunction::QuinticIn,
                 jeb.with(scale(Vec3::ZERO, Vec3::ONE)),
@@ -150,7 +150,7 @@ fn jeb_follows_cursor(
         commands
             .entity(jeb_animator_entity)
             .animation()
-            .insert_here(
+            .insert_tween_here(
                 config.tween_duration,
                 config.tween_ease,
                 (

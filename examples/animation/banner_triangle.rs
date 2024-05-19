@@ -77,7 +77,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(dotted_line)
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert_here(
+        .insert_tween_here(
             Duration::from_secs_f32(12. / 7.),
             EaseFunction::ExponentialInOut,
             dotted_line_target

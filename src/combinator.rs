@@ -268,9 +268,9 @@ impl<'a> AnimationBuilder<'a> {
         entity_commands
     }
 
-    /// Insert animation components directly to this entity.
+    /// Insert tween components directly to this entity.
     /// Can be used to create a simple animation quickly.
-    pub fn insert_here<I, T>(
+    pub fn insert_tween_here<I, T>(
         self,
         duration: Duration,
         interpolation: I,

@@ -120,7 +120,7 @@ fn effect_system(
                     AnimationTarget,
                 ))
                 .animation()
-                .insert_here(
+                .insert_tween_here(
                     secs(1.),
                     EaseFunction::QuinticOut,
                     (
@@ -150,7 +150,7 @@ fn effect_system(
                     AnimationTarget,
                 ))
                 .animation()
-                .insert_here(
+                .insert_tween_here(
                     secs(0.1),
                     EaseFunction::Linear,
                     (
@@ -178,7 +178,7 @@ fn effect_system(
                     AnimationTarget,
                 ))
                 .animation()
-                .insert_here(
+                .insert_tween_here(
                     secs(0.5),
                     EaseFunction::QuadraticOut,
                     (

@@ -71,7 +71,7 @@ fn setup(
         ))
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert_here(
+        .insert_tween_here(
             Duration::from_secs(1),
             EaseFunction::Linear,
             sprite.with(atlas_index(0, len)),

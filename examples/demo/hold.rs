@@ -91,19 +91,22 @@ fn setup(
         ))
         .id();
     let big_x = TargetComponent::from(big_x);
-    commands.spawn(EffectAnimator).animation().insert_here(
-        secs(1.),
-        EaseFunction::QuarticIn,
-        (
-            effect_intensity(0., 1.),
-            big_x.with(sprite_color(Color::PINK, Color::WHITE)),
-        ),
-    );
+    commands
+        .spawn(EffectAnimator)
+        .animation()
+        .insert_tween_here(
+            secs(1.),
+            EaseFunction::QuarticIn,
+            (
+                effect_intensity(0., 1.),
+                big_x.with(sprite_color(Color::PINK, Color::WHITE)),
+            ),
+        );
     commands
         .spawn(RotatationAnimator)
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert_here(
+        .insert_tween_here(
             secs(1.),
             EaseFunction::Linear,
             big_x.with(interpolate::angle_z(0., PI * 0.5)),
