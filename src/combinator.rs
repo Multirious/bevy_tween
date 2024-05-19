@@ -427,7 +427,7 @@ where
     }
 }
 
-pub fn forward<'a>(
+pub fn forward(
     by: Duration,
 ) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
     move |_, pos| pos + by

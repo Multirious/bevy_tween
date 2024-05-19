@@ -246,6 +246,7 @@
 //! [`DefaultDynInterpolatorsPlugin`]: crate::interpolate::DefaultDynInterpolatorsPlugin
 
 use bevy::prelude::*;
+use bevy_time_runner::TimeSpanProgress;
 
 use crate::combinator::TargetState;
 use crate::interpolate::Interpolator;
@@ -270,29 +271,6 @@ pub use systems::{tween_event_system, tween_event_taking_system};
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
 pub struct SkipTween;
-
-#[allow(deprecated)]
-mod man {
-    use super::*;
-    /// Skip a tweener from functioning.
-    #[derive(
-        Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect,
-    )]
-    #[reflect(Component)]
-    #[deprecated(
-        since = "0.5.0",
-        note = "The timing inside this crate is moved to `bevy_time_runner`. Use `bevy_time_runner::SkipTimeRunner` instead."
-    )]
-    pub struct SkipTweener;
-}
-#[allow(deprecated)]
-pub use man::SkipTweener;
-
-#[deprecated(
-    since = "0.5.0",
-    note = "Use `bevy_time_runner::TimeSpanProgress` instead"
-)]
-pub use bevy_time_runner::TimeSpanProgress as TweenProgress;
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
 /// [`EaseClosure`] when a tween has the component [`TweenProgress`].
@@ -384,15 +362,6 @@ where
     {
         Self::new(Box::new(interpolator))
     }
-}
-
-/// Useful for the implementor to specify what this *target* will return the
-/// tweenable [`Self::Item`] which should match [`Interpolator::Item`].
-/// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`].
-#[deprecated(since = "0.3.0", note = "It's not really that useful")]
-pub trait TweenTarget {
-    /// Type to be interpolated
-    type Item;
 }
 
 /// Convenient alias for [`Tween`] that [`TargetComponent`] with generic [`Interpolator`].
@@ -859,7 +828,7 @@ pub struct TweenEvent<Data = ()> {
     /// Custom user data
     pub data: Data,
     /// Progress percentage of the tween
-    pub progress: TweenProgress,
+    pub progress: TimeSpanProgress,
     /// Sampled value of an interpolation.
     pub interpolation_value: Option<f32>,
     /// The entity
