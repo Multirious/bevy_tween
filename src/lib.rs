@@ -221,6 +221,11 @@ pub struct TweenCorePlugin {
 
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
+        if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
+            app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
+                schedule: self.app_resource.schedule,
+            });
+        }
         app.configure_sets(
             self.app_resource.schedule,
             (
@@ -228,7 +233,7 @@ impl Plugin for TweenCorePlugin {
                 TweenSystemSet::ApplyTween,
             )
                 .chain()
-                .after(bevy_time_runner::time_runner_system),
+                .after(bevy_time_runner::TimeRunnerSet::Progress),
         )
         .insert_resource(self.app_resource.clone())
         .register_type::<tween::AnimationTarget>()
