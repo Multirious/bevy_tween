@@ -3,27 +3,6 @@ use bevy::ecs::schedule::SystemConfigs;
 use bevy_time_runner::TimeSpanProgress;
 use std::any::type_name;
 
-/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
-/// value provided by [`TweenInterpolationValue`] component.
-#[allow(clippy::type_complexity)]
-#[deprecated(
-    since = "0.3.0",
-    note = "Use `component_tween_system` instead with less required generic"
-)]
-pub fn component_tween_system_full<C, I>(
-    q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
-    q_tween: Query<
-        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
-        Without<SkipTween>,
-    >,
-    q_component: Query<&mut I::Item>,
-) where
-    C: Component,
-    I: Interpolator<Item = C> + Send + Sync + 'static,
-{
-    apply_component_tween_system(q_tweener, q_tween, q_component);
-}
-
 /// Alias for [`apply_component_tween_system`] and may contains more systems
 /// in the future.
 pub fn component_tween_system<I>() -> SystemConfigs
@@ -83,7 +62,7 @@ where
 /// ```
 #[allow(clippy::type_complexity)]
 pub fn apply_component_tween_system<I>(
-    q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
+    q_animation_target: Query<(Option<&Parent>, Has<AnimationTarget>)>,
     q_tween: Query<
         (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
         Without<SkipTween>,
@@ -96,31 +75,27 @@ pub fn apply_component_tween_system<I>(
     fn get_singular_target(
         entity: Entity,
         target: &TargetComponent,
-        q_tweener: &Query<(Option<&Parent>, Has<TweenerMarker>)>,
+        q_animation_target: &Query<(Option<&Parent>, Has<AnimationTarget>)>,
     ) -> Option<Entity> {
         match target {
-            TargetComponent::TweenerEntity => match q_tweener.get(entity) {
-                Ok((_, true)) => Some(entity),
-                Ok((Some(this_parent), false)) => {
-                    match q_tweener.get(this_parent.get()) {
-                        Ok((_, true)) => Some(this_parent.get()),
-                        _ => None,
-                    }
-                }
-                _ => None,
-            },
-            TargetComponent::TweenerParent => match q_tweener.get(entity) {
-                Ok((Some(this_parent), true)) => Some(this_parent.get()),
-                Ok((Some(this_parent), false)) => {
-                    match q_tweener.get(this_parent.get()) {
-                        Ok((Some(tweener_parent), true)) => {
-                            Some(tweener_parent.get())
+            TargetComponent::Marker => {
+                let mut curr = entity;
+                loop {
+                    match q_animation_target.get(curr) {
+                        Ok((parent, has_marker)) => {
+                            if has_marker {
+                                return Some(curr);
+                            } else {
+                                match parent {
+                                    Some(parent) => curr = parent.get(),
+                                    None => return None,
+                                }
+                            }
                         }
-                        _ => None,
+                        _ => return None,
                     }
                 }
-                _ => None,
-            },
+            }
             TargetComponent::Entity(e) => Some(*e),
             TargetComponent::Entities(_) => panic!("Should not reach this"),
         }
@@ -147,9 +122,11 @@ pub fn apply_component_tween_system<I>(
                 });
             }
             _ => {
-                let Some(target) =
-                    get_singular_target(entity, &tween.target, &q_tweener)
-                else {
+                let Some(target) = get_singular_target(
+                    entity,
+                    &tween.target,
+                    &q_animation_target,
+                ) else {
                     return;
                 };
 
@@ -180,26 +157,6 @@ where
 {
     apply_component_tween_system::<Box<dyn Interpolator<Item = C>>>
         .into_configs()
-}
-
-/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
-/// value provided by [`TweenInterpolationValue`] component.
-#[deprecated(
-    since = "0.3.0",
-    note = "Use `resource_tween_system` instead with less required generic"
-)]
-#[allow(clippy::type_complexity)]
-pub fn resource_tween_system_full<R, I>(
-    q_tween: Query<
-        (&Tween<TargetResource, I>, &TweenInterpolationValue),
-        Without<SkipTween>,
-    >,
-    resource: Option<ResMut<I::Item>>,
-) where
-    R: Resource,
-    I: Interpolator<Item = R> + Send + Sync + 'static,
-{
-    apply_resource_tween_system(q_tween, resource);
 }
 
 /// Alias for [`apply_resource_tween_system`] and may contains more systems
@@ -291,27 +248,6 @@ where
 {
     apply_resource_tween_system::<Box<dyn Interpolator<Item = R>>>
         .into_configs()
-}
-
-/// Tween any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
-/// value provided by [`TweenInterpolationValue`] component.
-#[cfg(feature = "bevy_asset")]
-#[deprecated(
-    since = "0.3.0",
-    note = "Use `asset_tween_system` instead with less required generic"
-)]
-#[allow(clippy::type_complexity)]
-pub fn asset_tween_system_full<A, I>(
-    q_tween: Query<
-        (&Tween<TargetAsset<A>, I>, &TweenInterpolationValue),
-        Without<SkipTween>,
-    >,
-    asset: Option<ResMut<Assets<I::Item>>>,
-) where
-    A: Asset,
-    I: Interpolator<Item = A> + Send + Sync + 'static,
-{
-    apply_asset_tween_system(q_tween, asset);
 }
 
 /// Alias for [`apply_asset_tween_system`] and may contains more systems

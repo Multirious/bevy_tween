@@ -158,18 +158,11 @@ pub use tween::asset_dyn_tween_system;
 #[cfg(feature = "bevy_asset")]
 pub use tween::asset_tween_system;
 #[cfg(feature = "bevy_asset")]
-#[allow(deprecated)]
-pub use tween::asset_tween_system_full;
-
 pub use tween::component_dyn_tween_system;
 pub use tween::component_tween_system;
-#[allow(deprecated)]
-pub use tween::component_tween_system_full;
 
 pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
-#[allow(deprecated)]
-pub use tween::resource_tween_system_full;
 
 pub use tween::tween_event_system;
 pub use tween::tween_event_taking_system;
@@ -238,7 +231,7 @@ impl Plugin for TweenCorePlugin {
                 .after(bevy_time_runner::time_runner_system),
         )
         .insert_resource(self.app_resource.clone())
-        .register_type::<tween::TweenerMarker>()
+        .register_type::<tween::AnimationTarget>()
         .register_type::<tween::TweenInterpolationValue>();
     }
 }
