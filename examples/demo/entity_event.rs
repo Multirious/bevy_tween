@@ -10,7 +10,6 @@ fn main() {
     App::new()
         .add_plugins((
             MinimalPlugins,
-            EventListenerPlugin::<TimeRunnerEnded>::default(),
             TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
         ))
