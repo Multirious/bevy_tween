@@ -926,8 +926,8 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_eventlistener",
- "bevy_time_runner",
  "bevy_lookup_curve",
+ "bevy_time_runner",
  "rand",
 ]
 

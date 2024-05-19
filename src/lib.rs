@@ -179,12 +179,16 @@ pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        PluginGroupBuilder::start::<DefaultTweenPlugins>()
+        let p = PluginGroupBuilder::start::<DefaultTweenPlugins>();
+        let p = p
             .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin)
-            .add(tween::DefaultTweenEventsPlugin)
+            .add(tween::DefaultTweenEventsPlugin);
+        #[cfg(feature = "bevy_lookup_curve")]
+        let p = p.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+        p
     }
 }
 

@@ -16,6 +16,8 @@ use bevy_time_runner::TimeSpanProgress;
 
 mod ease_functions;
 
+pub mod bevy_lookup_curve;
+
 /// A trait for implementing interpolation algorithms.
 ///
 /// Currently only used for registering [`sample_interpolations_system`].
@@ -870,69 +872,6 @@ impl Interpolation for EaseClosure {
     }
 }
 
-/// Use [`bevy_lookup_curve`] for interpolation.
-pub struct LookupCurveInterpolationPlugin;
-
-impl Plugin for LookupCurveInterpolationPlugin {
-    fn build(&self, app: &mut App) {
-        let app_resource = app
-            .world
-            .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be inserted to world");
-        app.add_systems(
-            app_resource.schedule,
-            sample_interpolations_mut_system::<LookupCurveCached>
-                .in_set(TweenSystemSet::UpdateInterpolationValue),
-        );
-    }
-}
-
-/// Use [`LookupCurve`](bevy_lookup_curve::LookupCurve) for interpolation with cache.
-#[derive(Default, Component)]
-pub struct LookupCurveCached {
-    /// The [`LookupCurve`](bevy_lookup_curve::LookupCurve) that will be used
-    /// for interpolation
-    pub curve: bevy_lookup_curve::LookupCurve,
-    cache: bevy_lookup_curve::LookupCache,
-}
-
-impl LookupCurveCached {
-    /// Create new [`LookupCurveCached`] with new cache inside
-    pub fn new(curve: bevy_lookup_curve::LookupCurve) -> LookupCurveCached {
-        LookupCurveCached {
-            curve,
-            cache: bevy_lookup_curve::LookupCache::new(),
-        }
-    }
-}
-
-impl InterpolationMut for LookupCurveCached {
-    fn sample_mut(&mut self, v: f32) -> f32 {
-        self.curve.lookup_cached(v, &mut self.cache)
-    }
-}
-
-/// Use [`LookupCurve`](bevy_lookup_curve::LookupCurve) for interpolation.
-#[derive(Default, Component)]
-pub struct LookupCurve {
-    /// The [`LookupCurve`](bevy_lookup_curve::LookupCurve) that will be used
-    /// for interpolation
-    pub curve: bevy_lookup_curve::LookupCurve,
-}
-
-impl LookupCurve {
-    /// Create new [`LookupCurve`]
-    pub fn new(curve: bevy_lookup_curve::LookupCurve) -> LookupCurve {
-        LookupCurve { curve }
-    }
-}
-
-impl Interpolation for LookupCurve {
-    fn sample(&self, v: f32) -> f32 {
-        self.curve.lookup(v)
-    }
-}
-
 /// This system will automatically sample in each entities with a
 /// [`TweenProgress`] component then insert [`TweenInterpolationValue`].
 /// Remove [`TweenInterpolationValue`] if [`TweenProgress`] is removed.
@@ -967,10 +906,10 @@ pub fn sample_interpolations_system<I>(
 pub fn sample_interpolations_mut_system<I>(
     mut commands: Commands,
     mut query: Query<
-        (Entity, &mut I, &TweenProgress),
-        Or<(Changed<I>, Changed<TweenProgress>)>,
+        (Entity, &mut I, &TimeSpanProgress),
+        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
     >,
-    mut removed: RemovedComponents<TweenProgress>,
+    mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: InterpolationMut + Component,
 {
@@ -993,7 +932,7 @@ pub fn sample_interpolations_mut_system<I>(
 /// idk how to name this
 fn remove_removed(
     commands: &mut Commands,
-    removed: &mut RemovedComponents<TweenProgress>,
+    removed: &mut RemovedComponents<TimeSpanProgress>,
 ) {
     removed.read().for_each(|entity| {
         if let Some(mut entity) = commands.get_entity(entity) {
