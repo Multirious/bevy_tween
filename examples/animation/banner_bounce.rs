@@ -7,7 +7,7 @@ use bevy::{
 };
 use bevy_tween::{
     bevy_time_runner::TimeRunnerPlugin,
-    combinator::{go, parallel, tween_exact, SpawnAnimation},
+    combinator::{go, parallel, tween_exact, AnimationSpawner},
     prelude::*,
     tween::TargetComponent,
 };
@@ -367,9 +367,9 @@ fn sprite_alpha_to(to: f32) -> impl Fn(&mut f32) -> InterpolateSpriteAlpha {
     }
 }
 
-fn set_value<B: Bundle, A: SpawnAnimation>(
+fn set_value<B: Bundle>(
     interpolator: B,
-) -> impl FnOnce(&mut A, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
     move |a, pos| {
         tween_exact(pos..=Duration::ZERO, EaseFunction::Linear, interpolator)(
             a, pos,

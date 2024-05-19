@@ -3,7 +3,7 @@ use std::f32::consts::TAU;
 use bevy::prelude::*;
 use bevy_tween::{
     bevy_time_runner::TimeRunnerPlugin,
-    combinator::{parallel, tween_exact, SpawnAnimation},
+    combinator::{parallel, tween_exact, AnimationSpawner},
     interpolate::{angle_z, translation},
     prelude::*,
     tween::TargetComponent,
@@ -95,13 +95,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-fn snap_rotate<A: SpawnAnimation>(
+fn snap_rotate(
     target: TargetComponent,
     secs: f32,
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) -> impl FnOnce(&mut A, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
     move |a, pos| {
         for i in 0..max {
             let max = max as f32;
