@@ -126,17 +126,6 @@ mod state {
 
 pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
-/// Trait for types that can spawn an entity regards to animation.
-pub trait SpawnAnimation {
-    /// Output from [`Self::spawn`].
-    type SpawnOutput<'o>
-    where
-        Self: 'o;
-
-    /// Spawn an entity.
-    fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_>;
-}
-
 pub struct AnimationSpawner<'r, 'a> {
     child_builder: &'r mut ChildBuilder<'a>,
 }
@@ -147,39 +136,11 @@ impl<'r, 'a> AnimationSpawner<'r, 'a> {
     ) -> AnimationSpawner<'r, 'a> {
         AnimationSpawner { child_builder }
     }
-}
 
-impl<'r, 'a> SpawnAnimation for AnimationSpawner<'r, 'a> {
-    type SpawnOutput<'o> = EntityCommands<'o>
-        where Self: 'o;
-
-    fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_> {
+    pub fn spawn(&mut self, bundle: impl Bundle) -> EntityCommands<'_> {
         self.child_builder.spawn(bundle)
     }
 }
-
-// pub struct WorldAnimationSpawner<'r, 'a> {
-//     world_child_builder: &'r mut WorldChildBuilder<'a>,
-// }
-
-// impl<'r, 'a> WorldAnimationSpawner<'r, 'a> {
-//     pub(crate) fn new(
-//         world_child_builder: &'r mut WorldChildBuilder<'a>,
-//     ) -> WorldAnimationSpawner<'r, 'a> {
-//         WorldAnimationSpawner {
-//             world_child_builder,
-//         }
-//     }
-// }
-
-// impl<'r, 'a> SpawnAnimation for WorldAnimationSpawner<'r, 'a> {
-//     type SpawnOutput<'o> = EntityWorldMut<'o>
-//         where Self: 'o;
-
-//     fn spawn(&mut self, bundle: impl Bundle) -> Self::SpawnOutput<'_> {
-//         self.world_child_builder.spawn(bundle)
-//     }
-// }
 
 /// Extension trait for types that can be used to make an animation.
 pub trait AnimationBuilderExt {
@@ -351,10 +312,11 @@ impl<'a> AnimationBuilder<'a> {
 ///
 /// Each animation output will be passed to the next one.
 /// Returns position from the last animation.
-pub fn sequence<A, S>(sequence: S) -> impl FnOnce(&mut A, Duration) -> Duration
+pub fn sequence<S>(
+    sequence: S,
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
-    A: SpawnAnimation,
-    S: Sequence<A>,
+    S: Sequence,
 {
     move |b, pos| sequence.call(b, pos)
 }
@@ -363,23 +325,23 @@ where
 ///
 /// Each animation will receive the same starting position.
 /// Returns the longest offset from the passed animations.
-pub fn parallel<A, P>(parallel: P) -> impl FnOnce(&mut A, Duration) -> Duration
+pub fn parallel<P>(
+    parallel: P,
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
-    A: SpawnAnimation,
-    P: Parallel<A>,
+    P: Parallel,
 {
     move |b, pos| parallel.call(b, pos)
 }
 
-pub fn tween<I, T, A>(
+pub fn tween<I, T>(
     duration: Duration,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut A, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     I: Bundle,
     T: Bundle,
-    A: SpawnAnimation,
 {
     move |a, pos| {
         let start = pos;
@@ -393,17 +355,16 @@ where
     }
 }
 
-pub fn tween_exact<S, I, T, A>(
+pub fn tween_exact<S, I, T>(
     span: S,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut A, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
     I: Bundle,
     T: Bundle,
-    A: SpawnAnimation,
 {
     move |a, pos| {
         a.spawn((span.try_into().unwrap(), interpolation, tween));
@@ -411,12 +372,11 @@ where
     }
 }
 
-pub fn event<Data, A>(
+pub fn event<Data>(
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut A, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
-    A: SpawnAnimation,
 {
     move |a, pos| {
         a.spawn((TimeSpan::try_from(pos..=pos).unwrap(), event));
@@ -424,13 +384,12 @@ where
     }
 }
 
-pub fn event_at<Data, A>(
+pub fn event_at<Data>(
     at: Duration,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut A, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
-    A: SpawnAnimation,
 {
     move |a, pos| {
         a.spawn((TimeSpan::try_from(at..=at).unwrap(), event));
@@ -438,13 +397,12 @@ where
     }
 }
 
-pub fn event_for<Data, A>(
+pub fn event_for<Data>(
     length: Duration,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut A, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
-    A: SpawnAnimation,
 {
     move |a, pos| {
         let start = pos;
@@ -454,15 +412,14 @@ where
     }
 }
 
-pub fn event_exact<S, Data, A>(
+pub fn event_exact<S, Data>(
     span: S,
     event: TweenEventData<Data>,
-) -> impl FnOnce(&mut A, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
-    A: SpawnAnimation,
 {
     move |a, pos| {
         a.spawn((span.try_into().unwrap(), event));
@@ -470,24 +427,21 @@ where
     }
 }
 
-pub fn forward<'a, A>(by: Duration) -> impl FnOnce(&mut A, Duration) -> Duration
-where
-    A: SpawnAnimation,
-{
+pub fn forward<'a>(
+    by: Duration,
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
     move |_, pos| pos + by
 }
 
-pub fn backward<A>(by: Duration) -> impl FnOnce(&mut A, Duration) -> Duration
-where
-    A: SpawnAnimation,
-{
+pub fn backward(
+    by: Duration,
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
     move |_, pos| pos.saturating_sub(by)
 }
 
-pub fn go<A>(to: Duration) -> impl FnOnce(&mut A, Duration) -> Duration
-where
-    A: SpawnAnimation,
-{
+pub fn go(
+    to: Duration,
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
     move |_, _| to
 }
 
@@ -496,63 +450,48 @@ where
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 #[allow(private_bounds)]
-pub trait Sequence<A>: sealed::SequenceSealed<A>
-where
-    A: SpawnAnimation,
-{
-}
-impl<T, A> Sequence<A> for T
-where
-    T: sealed::SequenceSealed<A>,
-    A: SpawnAnimation,
-{
-}
+pub trait Sequence: sealed::SequenceSealed {}
+impl<T> Sequence for T where T: sealed::SequenceSealed {}
 
 /// Tuple of FnOnces in [`parallel()`],
 /// support up to 16 indexes but can be circumvented by nesting tuples.
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 #[allow(private_bounds)]
-pub trait Parallel<A>: sealed::ParallelSealed<A>
-where
-    A: SpawnAnimation,
-{
-}
-impl<T, A> Parallel<A> for T
-where
-    T: sealed::ParallelSealed<A>,
-    A: SpawnAnimation,
-{
-}
+pub trait Parallel: sealed::ParallelSealed {}
+impl<T> Parallel for T where T: sealed::ParallelSealed {}
+
 mod sealed {
     use super::*;
 
-    pub(super) trait SequenceSealed<A> {
-        fn call(self, a: &mut A, pos: Duration) -> Duration;
+    pub(super) trait SequenceSealed {
+        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration;
     }
 
-    impl<A, T: FnOnce(&mut A, Duration) -> Duration> SequenceSealed<A> for T {
-        fn call(self, a: &mut A, pos: Duration) -> Duration {
+    impl<T: FnOnce(&mut AnimationSpawner, Duration) -> Duration> SequenceSealed
+        for T
+    {
+        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration {
             self(a, pos)
         }
     }
 
-    pub(super) trait ParallelSealed<A> {
-        fn call(self, a: &mut A, pos: Duration) -> Duration;
+    pub(super) trait ParallelSealed {
+        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration;
     }
 
-    impl<A, T: FnOnce(&mut A, Duration) -> Duration> ParallelSealed<A> for T {
-        fn call(self, a: &mut A, pos: Duration) -> Duration {
+    impl<T: FnOnce(&mut AnimationSpawner, Duration) -> Duration> ParallelSealed
+        for T
+    {
+        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration {
             self(a, pos)
         }
     }
 
     macro_rules! impl_sequence {
         ($($i:tt $t:ident)+) => {
-            impl<
-                A, $($t: SequenceSealed<A>,)+
-            > SequenceSealed<A> for ($($t,)*) {
-                fn call(self, a: &mut A, pos: Duration) -> Duration {
+            impl< $($t: SequenceSealed,)+ > SequenceSealed for ($($t,)*) {
+                fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration {
                     $(
                         let pos = self.$i.call(a, pos);
                     )*
@@ -563,10 +502,8 @@ mod sealed {
     }
     macro_rules! impl_parallel {
         ($($i:tt $t:ident)+) => {
-            impl<
-                A, $($t: ParallelSealed<A>,)+
-            > ParallelSealed<A> for ($($t,)*) {
-                fn call(self, a: &mut A, start: Duration) -> Duration {
+            impl< $($t: ParallelSealed,)+ > ParallelSealed for ($($t,)*) {
+                fn call(self, a: &mut AnimationSpawner, start: Duration) -> Duration {
                     let mut furthest = start;
                     $(
                         let pos = self.$i.call(a, start);
