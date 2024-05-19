@@ -2,17 +2,13 @@ use bevy::prelude::*;
 use bevy_tween::interpolate::{AngleZ, Translation};
 use bevy_tween::prelude::*;
 use bevy_tween::{
-    bevy_time_runner::{TimeRunner, TimeRunnerPlugin, TimeSpan},
+    bevy_time_runner::{TimeRunner, TimeSpan},
     tween::TargetComponent,
 };
 
 fn main() {
     App::new()
-        .add_plugins((
-            DefaultPlugins,
-            TimeRunnerPlugin::default(),
-            DefaultTweenPlugins,
-        ))
+        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
         .run();
 }

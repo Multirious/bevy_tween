@@ -1,18 +1,12 @@
 use bevy::prelude::*;
 use bevy_tween::{
-    bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin},
-    combinator::*,
-    prelude::*,
+    bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
     tween::TargetComponent,
 };
 
 fn main() {
     App::new()
-        .add_plugins((
-            DefaultPlugins,
-            TimeRunnerPlugin::default(),
-            DefaultTweenPlugins,
-        ))
+        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
         .add_systems(Update, (effect_system, despawn_effect_system))
         .run();
@@ -62,32 +56,30 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert(|a, pos| {
-            sequence((
-                event(TweenEventData::with_data("bump")),
-                tween(
-                    secs(1.),
-                    EaseFunction::ExponentialIn,
-                    (
-                        triangle_translation
-                            .with(translation_to(Vec3::new(end_x, 0., 0.))),
-                        triangle_angle_z.with(angle_z_to(mid_angle)),
-                    ),
+        .insert(sequence((
+            event(TweenEventData::with_data("bump")),
+            tween(
+                secs(1.),
+                EaseFunction::ExponentialIn,
+                (
+                    triangle_translation
+                        .with(translation_to(Vec3::new(end_x, 0., 0.))),
+                    triangle_angle_z.with(angle_z_to(mid_angle)),
                 ),
-                backward(secs(0.2)),
-                event_for(secs(0.2), TweenEventData::with_data("small_boom")),
-                event(TweenEventData::with_data("boom")),
-                tween(
-                    secs(1.),
-                    EaseFunction::CircularOut,
-                    (
-                        triangle_translation
-                            .with(translation_to(Vec3::new(start_x, 0., 0.))),
-                        triangle_angle_z.with(angle_z_to(end_angle)),
-                    ),
+            ),
+            backward(secs(0.2)),
+            event_for(secs(0.2), TweenEventData::with_data("small_boom")),
+            event(TweenEventData::with_data("boom")),
+            tween(
+                secs(1.),
+                EaseFunction::CircularOut,
+                (
+                    triangle_translation
+                        .with(translation_to(Vec3::new(start_x, 0., 0.))),
+                    triangle_angle_z.with(angle_z_to(end_angle)),
                 ),
-            ))(a, pos)
-        });
+            ),
+        )));
 }
 
 #[derive(Component)]

@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::{
-    bevy_time_runner::TimeRunnerPlugin, prelude::*, tween::TargetComponent,
-};
+use bevy_tween::{prelude::*, tween::TargetComponent};
 
 mod interpolate {
     use bevy::prelude::*;
@@ -39,7 +37,6 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
             interpolate::custom_interpolators_plugin,
         ))

@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::{
-    bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin},
-    combinator::*,
-    prelude::*,
+    bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
     tween::TargetComponent,
 };
 mod utils;
@@ -13,11 +11,7 @@ fn secs(secs: f32) -> Duration {
 
 fn main() {
     App::new()
-        .add_plugins((
-            DefaultPlugins,
-            TimeRunnerPlugin::default(),
-            DefaultTweenPlugins,
-        ))
+        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -67,26 +61,23 @@ fn click_spawn_circle(
                     AnimationTarget,
                 ))
                 .animation()
-                .insert(|a, pos| {
-                    parallel((
-                        tween(
-                            secs(2.),
-                            EaseFunction::ExponentialOut,
-                            circle_transform.translation_to(end),
-                        ),
-                        tween(
-                            secs(1.),
-                            EaseFunction::BackIn,
-                            circle_transform.scale_to(Vec3::ZERO),
-                        ),
-                        tween(
-                            secs(1.),
-                            EaseFunction::Linear,
-                            circle
-                                .with(sprite_color(Color::WHITE, Color::PINK)),
-                        ),
-                    ))(a, pos)
-                });
+                .insert(parallel((
+                    tween(
+                        secs(2.),
+                        EaseFunction::ExponentialOut,
+                        circle_transform.translation_to(end),
+                    ),
+                    tween(
+                        secs(1.),
+                        EaseFunction::BackIn,
+                        circle_transform.scale_to(Vec3::ZERO),
+                    ),
+                    tween(
+                        secs(1.),
+                        EaseFunction::Linear,
+                        circle.with(sprite_color(Color::WHITE, Color::PINK)),
+                    ),
+                )));
         }
     }
 }

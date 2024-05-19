@@ -6,7 +6,6 @@ use bevy::{
     window,
 };
 use bevy_tween::{
-    bevy_time_runner::TimeRunnerPlugin,
     combinator::{go, parallel, tween_exact, AnimationSpawner},
     prelude::*,
     tween::TargetComponent,
@@ -33,7 +32,6 @@ fn main() {
                 }),
                 ..Default::default()
             }),
-            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
         ))
         .add_systems(Startup, (animation, setup_camera))
@@ -226,130 +224,123 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert(|a, pos| {
-            parallel((
-                (
-                    set_value(
-                        bevy_tween_text_color
-                            .with(sprite_color_to(white_color)),
-                    ),
-                    tween_exact(
-                        secs(0.)..secs(5.),
-                        EaseFunction::QuinticOut,
-                        bevy_tween_text_angle_z.with(angle_z_to(PI * 4.)),
-                    ),
-                    tween_exact(
-                        secs(0.)..secs(9.),
-                        EaseFunction::CircularOut,
-                        bevy_tween_text_scale.with(scale_to(Vec3::ONE * SCALE)),
-                    ),
-                    tween_exact(
-                        secs(11.)..secs(11.5),
-                        EaseFunction::SineOut,
-                        bevy_tween_text_scale
-                            .with(scale_to(Vec3::ONE * text_pop_scale * SCALE)),
-                    ),
-                    tween_exact(
-                        secs(11.5)..secs(12.),
-                        EaseFunction::SineIn,
-                        bevy_tween_text_scale
-                            .with(scale_to(Vec3::ZERO * SCALE)),
-                    ),
-                    tween_exact(
-                        secs(10.)..secs(12.),
-                        EaseFunction::QuinticIn,
-                        bevy_tween_text_color
-                            .with(sprite_color_to(white_color.with_a(0.0))),
-                    ),
-                    tween_exact(
-                        secs(11.)..secs(12.),
-                        EaseFunction::QuinticIn,
-                        bevy_tween_text_angle_z.with(angle_z_to(PI * 7.)),
-                    ),
+        .insert(parallel((
+            (
+                set_value(
+                    bevy_tween_text_color.with(sprite_color_to(white_color)),
                 ),
-                (
-                    set_value(
-                        square_and_triangle_alpha.with(sprite_alpha_to(1.)),
-                    ),
-                    tween_exact(
-                        secs(0.)..secs(9.),
-                        EaseFunction::CircularOut,
-                        square_and_triangle_scale
-                            .with(scale_to(Vec3::ONE * SCALE)),
-                    ),
-                    tween_exact(
-                        secs(4.)..secs(10.),
-                        EaseFunction::ExponentialInOut,
-                        square_and_triangle_alpha.with(sprite_alpha_to(0.)),
-                    ),
-                    tween_exact(
-                        secs(0.)..secs(12.),
-                        EaseFunction::ExponentialOut,
-                        triangle_angle_z.with(angle_z_to(-PI * 10.)),
-                    ),
-                    tween_exact(
-                        secs(0.)..secs(12.),
-                        EaseFunction::ExponentialOut,
-                        square_angle_z.with(angle_z_to(PI * 10.)),
-                    ),
-                    tween_exact(
-                        secs(0.)..secs(4.),
-                        EaseFunction::ExponentialOut,
-                        triangle_translation.with(translation_to(
-                            Vec3::new(150., -20., 0.) * SCALE,
-                        )),
-                    ),
-                    tween_exact(
-                        secs(0.)..secs(4.),
-                        EaseFunction::ExponentialOut,
-                        square_translation.with(translation_to(
-                            Vec3::new(-150., 20., 0.) * SCALE,
-                        )),
-                    ),
+                tween_exact(
+                    secs(0.)..secs(5.),
+                    EaseFunction::QuinticOut,
+                    bevy_tween_text_angle_z.with(angle_z_to(PI * 4.)),
                 ),
-                (
-                    tween_exact(
-                        secs(6.)..secs(6.2),
-                        EaseFunction::Linear,
-                        cornering_left_translation
-                            .with(translation_to(destinated_cornering_left)),
-                    ),
-                    tween_exact(
-                        secs(6.)..secs(6.2),
-                        EaseFunction::Linear,
-                        cornering_right_translation
-                            .with(translation_to(destinated_cornering_right)),
-                    ),
-                    tween_exact(
-                        secs(9.8)..secs(10.),
-                        EaseFunction::Linear,
-                        cornering_left_translation
-                            .with(translation_to(cornering_left_tween_end)),
-                    ),
-                    tween_exact(
-                        secs(9.8)..secs(10.),
-                        EaseFunction::Linear,
-                        cornering_right_translation
-                            .with(translation_to(cornering_right_tween_end)),
-                    ),
+                tween_exact(
+                    secs(0.)..secs(9.),
+                    EaseFunction::CircularOut,
+                    bevy_tween_text_scale.with(scale_to(Vec3::ONE * SCALE)),
                 ),
-                (
-                    tween_exact(
-                        secs(0.)..secs(5.),
-                        EaseFunction::QuinticOut,
-                        dot_grid_scale
-                            .with(scale_to(Vec3::new(0.4, 0.4, 0.) * SCALE)),
-                    ),
-                    tween_exact(
-                        secs(11.5)..secs(12.),
-                        EaseFunction::QuadraticInOut,
-                        dot_grid_scale
-                            .with(scale_to(Vec3::new(0.01, 0.01, 0.) * SCALE)),
-                    ),
+                tween_exact(
+                    secs(11.)..secs(11.5),
+                    EaseFunction::SineOut,
+                    bevy_tween_text_scale
+                        .with(scale_to(Vec3::ONE * text_pop_scale * SCALE)),
                 ),
-                go(secs(12.)),
-            ))(a, pos)
-        });
+                tween_exact(
+                    secs(11.5)..secs(12.),
+                    EaseFunction::SineIn,
+                    bevy_tween_text_scale.with(scale_to(Vec3::ZERO * SCALE)),
+                ),
+                tween_exact(
+                    secs(10.)..secs(12.),
+                    EaseFunction::QuinticIn,
+                    bevy_tween_text_color
+                        .with(sprite_color_to(white_color.with_a(0.0))),
+                ),
+                tween_exact(
+                    secs(11.)..secs(12.),
+                    EaseFunction::QuinticIn,
+                    bevy_tween_text_angle_z.with(angle_z_to(PI * 7.)),
+                ),
+            ),
+            (
+                set_value(square_and_triangle_alpha.with(sprite_alpha_to(1.))),
+                tween_exact(
+                    secs(0.)..secs(9.),
+                    EaseFunction::CircularOut,
+                    square_and_triangle_scale.with(scale_to(Vec3::ONE * SCALE)),
+                ),
+                tween_exact(
+                    secs(4.)..secs(10.),
+                    EaseFunction::ExponentialInOut,
+                    square_and_triangle_alpha.with(sprite_alpha_to(0.)),
+                ),
+                tween_exact(
+                    secs(0.)..secs(12.),
+                    EaseFunction::ExponentialOut,
+                    triangle_angle_z.with(angle_z_to(-PI * 10.)),
+                ),
+                tween_exact(
+                    secs(0.)..secs(12.),
+                    EaseFunction::ExponentialOut,
+                    square_angle_z.with(angle_z_to(PI * 10.)),
+                ),
+                tween_exact(
+                    secs(0.)..secs(4.),
+                    EaseFunction::ExponentialOut,
+                    triangle_translation.with(translation_to(
+                        Vec3::new(150., -20., 0.) * SCALE,
+                    )),
+                ),
+                tween_exact(
+                    secs(0.)..secs(4.),
+                    EaseFunction::ExponentialOut,
+                    square_translation.with(translation_to(
+                        Vec3::new(-150., 20., 0.) * SCALE,
+                    )),
+                ),
+            ),
+            (
+                tween_exact(
+                    secs(6.)..secs(6.2),
+                    EaseFunction::Linear,
+                    cornering_left_translation
+                        .with(translation_to(destinated_cornering_left)),
+                ),
+                tween_exact(
+                    secs(6.)..secs(6.2),
+                    EaseFunction::Linear,
+                    cornering_right_translation
+                        .with(translation_to(destinated_cornering_right)),
+                ),
+                tween_exact(
+                    secs(9.8)..secs(10.),
+                    EaseFunction::Linear,
+                    cornering_left_translation
+                        .with(translation_to(cornering_left_tween_end)),
+                ),
+                tween_exact(
+                    secs(9.8)..secs(10.),
+                    EaseFunction::Linear,
+                    cornering_right_translation
+                        .with(translation_to(cornering_right_tween_end)),
+                ),
+            ),
+            (
+                tween_exact(
+                    secs(0.)..secs(5.),
+                    EaseFunction::QuinticOut,
+                    dot_grid_scale
+                        .with(scale_to(Vec3::new(0.4, 0.4, 0.) * SCALE)),
+                ),
+                tween_exact(
+                    secs(11.5)..secs(12.),
+                    EaseFunction::QuadraticInOut,
+                    dot_grid_scale
+                        .with(scale_to(Vec3::new(0.01, 0.01, 0.) * SCALE)),
+                ),
+            ),
+            go(secs(12.)),
+        )));
 }
 
 type InterpolateSpriteAlpha = Box<dyn Interpolator<Item = Sprite>>;

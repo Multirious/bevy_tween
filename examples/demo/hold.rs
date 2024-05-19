@@ -2,9 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
-    bevy_time_runner::{TimeRunner, TimeRunnerPlugin},
-    prelude::*,
-    tween::TargetComponent,
+    bevy_time_runner::TimeRunner, prelude::*, tween::TargetComponent,
 };
 use rand::prelude::*;
 
@@ -47,7 +45,6 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
             interpolate::custom_interpolators_plugin,
         ))

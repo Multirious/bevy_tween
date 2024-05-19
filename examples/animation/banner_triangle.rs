@@ -2,7 +2,6 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_tween::{
-    bevy_time_runner::TimeRunnerPlugin,
     combinator::{parallel, tween_exact, AnimationSpawner},
     interpolate::{angle_z, translation},
     prelude::*,
@@ -21,7 +20,6 @@ fn main() {
                 }),
                 ..Default::default()
             }),
-            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
         ))
         .add_systems(Startup, setup)
@@ -61,15 +59,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert(|a, pos| {
-            parallel((
-                snap_rotate(triangles[4].clone(), secs, 7, 4., ease),
-                snap_rotate(triangles[3].clone(), secs, 7, 6., ease),
-                snap_rotate(triangles[2].clone(), secs, 7, 8., ease),
-                snap_rotate(triangles[1].clone(), secs, 7, 10., ease),
-                snap_rotate(triangles[0].clone(), secs, 7, 12., ease),
-            ))(a, pos)
-        });
+        .insert(parallel((
+            snap_rotate(triangles[4].clone(), secs, 7, 4., ease),
+            snap_rotate(triangles[3].clone(), secs, 7, 6., ease),
+            snap_rotate(triangles[2].clone(), secs, 7, 8., ease),
+            snap_rotate(triangles[1].clone(), secs, 7, 10., ease),
+            snap_rotate(triangles[0].clone(), secs, 7, 12., ease),
+        )));
 
     let dotted_line_target = TargetComponent::marker();
     commands
