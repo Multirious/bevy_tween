@@ -1,6 +1,6 @@
 /// Interpolation types support for [`bevy_lookup_curve`](::bevy_lookup_curve)
 use super::*;
-use ::bevy_lookup_curve::{Knot, KnotInterpolation, LookupCache, LookupCurve};
+use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 
 /// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation.
 pub struct BevyLookupCurveInterpolationPlugin;
@@ -14,80 +14,59 @@ impl Plugin for BevyLookupCurveInterpolationPlugin {
         app.add_systems(
             app_resource.schedule,
             (
-                sample_interpolations_system::<Curve>
+                sample_lookup_curve_system
                     .in_set(TweenSystemSet::UpdateInterpolationValue),
-                sample_interpolations_mut_system::<CurveCached>
-                    .in_set(TweenSystemSet::UpdateInterpolationValue),
+                // sample_interpolations_mut_system::<CurveCached>
+                //     .in_set(TweenSystemSet::UpdateInterpolationValue),
             ),
         );
     }
 }
 
-/// Use [`LookupCurve`](bevy_lookup_curve::LookupCurve) for interpolation with cache.
-#[derive(Default, Component)]
-pub struct CurveCached(pub LookupCurve, pub LookupCache);
+/// Wrapper for [`LookupCache`] to make it a component
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
+pub struct LookupCurveCache(pub LookupCache);
 
-impl CurveCached {
-    /// Create new [`CurveCached`] with new cache inside
-    pub fn new(curve: LookupCurve) -> CurveCached {
-        CurveCached(curve, LookupCache::new())
-    }
+/// Interpolation system for [`Handle<LookupCurve>`]
+#[allow(clippy::type_complexity)]
+pub fn sample_lookup_curve_system(
+    mut commands: Commands,
+    mut query: Query<
+        (
+            Entity,
+            &Handle<LookupCurve>,
+            Option<&mut LookupCurveCache>,
+            &TimeSpanProgress,
+        ),
+        Or<(Changed<Handle<LookupCurve>>, Changed<TimeSpanProgress>)>,
+    >,
+    mut removed: RemovedComponents<TimeSpanProgress>,
+    lookup_curve: Res<Assets<LookupCurve>>,
+) {
+    query
+        .iter_mut()
+        .for_each(|(entity, curve, cache, progress)| {
+            if progress.now_percentage.is_nan() {
+                return;
+            }
 
-    /// Create new [`CurveCached`] with linear curve
-    pub fn new_linear() -> CurveCached {
-        CurveCached(
-            LookupCurve::new(vec![
-                Knot {
-                    position: Vec2::ZERO,
-                    interpolation: KnotInterpolation::Linear,
-                    ..Default::default()
-                },
-                Knot {
-                    position: Vec2::ONE,
-                    interpolation: KnotInterpolation::Linear,
-                    ..Default::default()
-                },
-            ]),
-            LookupCache::new(),
-        )
-    }
-}
+            let Some(curve) = lookup_curve.get(curve) else {
+                error!("Curve handle is not valid");
+                return;
+            };
+            let value = match cache {
+                Some(mut cache) => curve.lookup_cached(
+                    progress.now_percentage.clamp(0., 1.),
+                    &mut cache.0,
+                ),
 
-impl InterpolationMut for CurveCached {
-    fn sample_mut(&mut self, v: f32) -> f32 {
-        self.0.lookup_cached(v, &mut self.1)
-    }
-}
+                None => curve.lookup(progress.now_percentage.clamp(0., 1.)),
+            };
 
-/// Use [`LookupCurve`](bevy_lookup_curve::LookupCurve) for interpolation.
-#[derive(Default, Component)]
-pub struct Curve(pub bevy_lookup_curve::LookupCurve);
-
-impl Curve {
-    /// Create new [`Curve`]
-    pub fn new(curve: bevy_lookup_curve::LookupCurve) -> Curve {
-        Curve(curve)
-    }
-
-    /// Create new [`Curve`] with linear curve
-    pub fn new_linear() -> Curve {
-        Curve(LookupCurve::new(vec![
-            Knot {
-                position: Vec2::ZERO,
-                interpolation: KnotInterpolation::Linear,
-                ..Default::default()
-            },
-            Knot {
-                position: Vec2::ONE,
-                interpolation: KnotInterpolation::Linear,
-                ..Default::default()
-            },
-        ]))
-    }
-}
-
-impl Interpolation for Curve {
-    fn sample(&self, v: f32) -> f32 {
-        self.0.lookup(v)
-    }
+            commands
+                .entity(entity)
+                .insert(TweenInterpolationValue(value));
+        });
+    super::remove_removed(&mut commands, &mut removed);
 }

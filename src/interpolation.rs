@@ -16,6 +16,7 @@ use bevy_time_runner::TimeSpanProgress;
 
 mod ease_functions;
 
+#[cfg(feature = "bevy_lookup_curve")]
 pub mod bevy_lookup_curve;
 
 /// A trait for implementing interpolation algorithms.
@@ -26,16 +27,6 @@ pub trait Interpolation {
     /// Input should be between 0–1 and returns value that should be
     /// between 0–1
     fn sample(&self, v: f32) -> f32;
-}
-
-/// A trait for implementing interpolation algorithms that requires mutable access.
-///
-/// Currently only used for registering [`sample_interpolations_mut_system`].
-pub trait InterpolationMut {
-    /// Sample a value from this algorithm mutably.
-    /// Input should be between 0–1 and returns value that should be
-    /// between 0–1
-    fn sample_mut(&mut self, v: f32) -> f32;
 }
 
 /// Plugin for [`EaseFunction`]
@@ -896,36 +887,6 @@ pub fn sample_interpolations_system<I>(
             .entity(entity)
             .insert(TweenInterpolationValue(value));
     });
-    remove_removed(&mut commands, &mut removed);
-}
-
-/// This system will automatically sample mutably in each entities
-/// with a [`TweenProgress`] component then insert [`TweenInterpolationValue`].
-/// Remove [`TweenInterpolationValue`] if [`TweenProgress`] is removed.
-#[allow(clippy::type_complexity)]
-pub fn sample_interpolations_mut_system<I>(
-    mut commands: Commands,
-    mut query: Query<
-        (Entity, &mut I, &TimeSpanProgress),
-        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
-    >,
-    mut removed: RemovedComponents<TimeSpanProgress>,
-) where
-    I: InterpolationMut + Component,
-{
-    query
-        .iter_mut()
-        .for_each(|(entity, mut interpolator, progress)| {
-            if progress.now_percentage.is_nan() {
-                return;
-            }
-            let value =
-                interpolator.sample_mut(progress.now_percentage.clamp(0., 1.));
-
-            commands
-                .entity(entity)
-                .insert(TweenInterpolationValue(value));
-        });
     remove_removed(&mut commands, &mut removed);
 }
 

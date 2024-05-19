@@ -117,6 +117,8 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 mod utils;
 
+#[cfg(feature = "bevy_lookup_curve")]
+pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
 pub mod interpolate;
