@@ -62,7 +62,7 @@ where
 /// ```
 #[allow(clippy::type_complexity)]
 pub fn apply_component_tween_system<I>(
-    q_tweener: Query<(Option<&Parent>, Has<TweenerMarker>)>,
+    q_animation_target: Query<(Option<&Parent>, Has<AnimationTarget>)>,
     q_tween: Query<
         (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
         Without<SkipTween>,
@@ -75,31 +75,27 @@ pub fn apply_component_tween_system<I>(
     fn get_singular_target(
         entity: Entity,
         target: &TargetComponent,
-        q_tweener: &Query<(Option<&Parent>, Has<TweenerMarker>)>,
+        q_animation_target: &Query<(Option<&Parent>, Has<AnimationTarget>)>,
     ) -> Option<Entity> {
         match target {
-            TargetComponent::TweenerEntity => match q_tweener.get(entity) {
-                Ok((_, true)) => Some(entity),
-                Ok((Some(this_parent), false)) => {
-                    match q_tweener.get(this_parent.get()) {
-                        Ok((_, true)) => Some(this_parent.get()),
-                        _ => None,
-                    }
-                }
-                _ => None,
-            },
-            TargetComponent::TweenerParent => match q_tweener.get(entity) {
-                Ok((Some(this_parent), true)) => Some(this_parent.get()),
-                Ok((Some(this_parent), false)) => {
-                    match q_tweener.get(this_parent.get()) {
-                        Ok((Some(tweener_parent), true)) => {
-                            Some(tweener_parent.get())
+            TargetComponent::Marker => {
+                let mut curr = entity;
+                loop {
+                    match q_animation_target.get(curr) {
+                        Ok((parent, has_marker)) => {
+                            if has_marker {
+                                return Some(curr);
+                            } else {
+                                match parent {
+                                    Some(parent) => curr = parent.get(),
+                                    None => return None,
+                                }
+                            }
                         }
-                        _ => None,
+                        _ => return None,
                     }
                 }
-                _ => None,
-            },
+            }
             TargetComponent::Entity(e) => Some(*e),
             TargetComponent::Entities(_) => panic!("Should not reach this"),
         }
@@ -126,9 +122,11 @@ pub fn apply_component_tween_system<I>(
                 });
             }
             _ => {
-                let Some(target) =
-                    get_singular_target(entity, &tween.target, &q_tweener)
-                else {
+                let Some(target) = get_singular_target(
+                    entity,
+                    &tween.target,
+                    &q_animation_target,
+                ) else {
                     return;
                 };
 

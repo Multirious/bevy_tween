@@ -404,10 +404,7 @@ pub type ComponentDynTween<C> =
 /// Tell the tween what component of what entity to tween.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetComponent {
-    /// Target the entity that contains this tween's tweener.
-    TweenerEntity,
-    /// Target the parent of this tween's tweener.
-    TweenerParent,
+    Marker,
     /// Target this entity.
     Entity(Entity),
     /// Target these entities.
@@ -415,14 +412,8 @@ pub enum TargetComponent {
 }
 
 impl TargetComponent {
-    /// Target the entity that contains this tween's tweener.
-    pub fn tweener_entity() -> TargetComponent {
-        TargetComponent::TweenerEntity
-    }
-
-    /// Target the parent of this tween's tweener.
-    pub fn tweener_parent() -> TargetComponent {
-        TargetComponent::TweenerParent
+    pub fn marker() -> TargetComponent {
+        TargetComponent::Marker
     }
 
     /// Target this entity.
@@ -449,7 +440,7 @@ impl TargetComponent {
 
 impl Default for TargetComponent {
     fn default() -> Self {
-        TargetComponent::tweener_entity()
+        TargetComponent::marker()
     }
 }
 
@@ -495,89 +486,20 @@ impl<const N: usize> From<&[Entity; N]> for TargetComponent {
     }
 }
 
-/// A tweener must have this marker within the entity to let
-/// [`ComponentTween`]s' system correctly search for the tweener that owns them.
-#[derive(Debug, Default, PartialEq, Eq, Hash, Component, Reflect)]
-pub struct TweenerMarker;
+/// [`ComponentTween`]'s system will navigate up the parent chain
+/// for this marker component while using [`TargetComponent::Marker`].
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
+pub struct AnimationTarget;
 
 impl<I> ComponentTween<I>
 where
     I: Interpolator,
     I::Item: Component,
 {
-    /// Convenient shortcut for targetting tweener's entity.
-    ///
-    /// ```
-    /// # use bevy::prelude::*;
-    /// # use bevy_tween::prelude::*;
-    /// # const interpolator: interpolate::Translation = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
-    /// use bevy_tween::tween::TargetComponent;
-    /// assert_eq!(
-    ///     ComponentTween::tweener_entity(interpolator),
-    ///     ComponentTween::new_target(
-    ///         TargetComponent::TweenerEntity,
-    ///         interpolator
-    ///     )
-    /// );
-    /// ```
-    pub fn tweener_entity(interpolator: I) -> Self {
-        ComponentTween::new_target(
-            TargetComponent::tweener_entity(),
-            interpolator,
-        )
-    }
-
-    /// Convenient shortcut for targetting tweener's parent.
-    ///
-    /// ```
-    /// # use bevy::prelude::*;
-    /// # use bevy_tween::prelude::*;
-    /// # const interpolator: interpolate::Translation = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
-    /// use bevy_tween::tween::TargetComponent;
-    /// assert_eq!(
-    ///     ComponentTween::tweener_parent(
-    ///         interpolator
-    ///     ),
-    ///     ComponentTween::new_target(
-    ///         TargetComponent::TweenerParent,
-    ///         interpolator
-    ///     )
-    /// );
-    /// ```
-    pub fn tweener_parent(interpolator: I) -> Self {
-        ComponentTween::new_target(
-            TargetComponent::tweener_parent(),
-            interpolator,
-        )
-    }
 }
 
-impl<C> ComponentDynTween<C>
-where
-    C: Component,
-{
-    /// Convenient method for targetting tweener's entity.
-    pub fn tweener_entity_boxed<I>(interpolator: I) -> Self
-    where
-        I: Interpolator<Item = C>,
-    {
-        ComponentTween::new_target(
-            TargetComponent::tweener_entity(),
-            Box::new(interpolator),
-        )
-    }
-
-    /// Convenient method for targetting tweener's parent.
-    pub fn tweener_parent_boxed<I>(interpolator: I) -> Self
-    where
-        I: Interpolator<Item = C>,
-    {
-        ComponentTween::new_target(
-            TargetComponent::tweener_parent(),
-            Box::new(interpolator),
-        )
-    }
-}
+impl<C> ComponentDynTween<C> where C: Component {}
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with generic [`Interpolator`].
 pub type ResourceTween<I> = Tween<TargetResource, I>;

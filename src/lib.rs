@@ -227,7 +227,7 @@ impl Plugin for TweenCorePlugin {
                 .after(bevy_time_runner::time_runner_system),
         )
         .insert_resource(self.app_resource.clone())
-        .register_type::<tween::TweenerMarker>()
+        .register_type::<tween::AnimationTarget>()
         .register_type::<tween::TweenInterpolationValue>();
     }
 }
