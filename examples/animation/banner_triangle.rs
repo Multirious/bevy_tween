@@ -6,7 +6,7 @@ use bevy_tween::{
     combinator::{parallel, tween_exact, SpawnAnimation},
     interpolate::{angle_z, translation},
     prelude::*,
-    tween::{TargetComponent, TweenerMarker},
+    tween::TargetComponent,
 };
 
 fn main() {
@@ -71,9 +71,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ))(a, pos)
         });
 
-    let dotted_line_target = TargetComponent::tweener_entity();
+    let dotted_line_target = TargetComponent::marker();
     commands
-        .spawn((SpatialBundle::default(), TweenerMarker))
+        .spawn((SpatialBundle::default(), AnimationTarget))
         .with_children(dotted_line)
         .animation()
         .repeat(Repeat::Infinitely)

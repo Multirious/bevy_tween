@@ -8,7 +8,7 @@ use bevy_tween::{
     bevy_time_runner::{TimeRunner, TimeRunnerPlugin},
     interpolate::{scale, sprite_color, translation},
     prelude::*,
-    tween::{TargetComponent, TweenerMarker},
+    tween::TargetComponent,
 };
 
 fn main() {
@@ -79,16 +79,16 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..Default::default()
             },
             Jeb,
+            AnimationTarget,
         ))
         .with_children(|c| {
             // Spawning the marker for an animator that will be responsible
             // for the follow effect
-            c.spawn((JebTranslationAnimator, TweenerMarker));
+            c.spawn(JebTranslationAnimator);
 
-            let jeb = TargetComponent::tweener_parent();
+            let jeb = TargetComponent::marker();
             // Spawning an animator that's responsible for a rotating effect
-            c.spawn(TweenerMarker)
-                .animation()
+            c.animation()
                 .repeat(Repeat::Infinitely)
                 .repeat_style(RepeatStyle::PingPong)
                 .insert_here(
@@ -104,7 +104,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
             // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
-            c.spawn(TweenerMarker).animation().insert_here(
+            c.animation().insert_here(
                 Duration::from_secs(1),
                 EaseFunction::QuinticIn,
                 jeb.with(scale(Vec3::ZERO, Vec3::ONE)),
@@ -146,7 +146,7 @@ fn jeb_follows_cursor(
         },
     };
     if update {
-        let jeb = TargetComponent::tweener_parent();
+        let jeb = TargetComponent::marker();
         commands
             .entity(jeb_animator_entity)
             .animation()

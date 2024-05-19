@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::{
-    bevy_time_runner::TimeRunnerPlugin,
-    prelude::*,
-    tween::{TargetComponent, TweenerMarker},
+    bevy_time_runner::TimeRunnerPlugin, prelude::*, tween::TargetComponent,
 };
 
 mod interpolate {
@@ -60,7 +58,7 @@ fn setup(
         TextureAtlasLayout::from_grid(Vec2::new(32., 32.), 16, 1, None, None);
     let len = layout.len();
     let atlas_layout = texture_atlas_layouts.add(layout);
-    let sprite = TargetComponent::tweener_entity();
+    let sprite = TargetComponent::marker();
     commands
         .spawn((
             SpriteSheetBundle {
@@ -69,7 +67,7 @@ fn setup(
                 transform: Transform::IDENTITY.with_scale(Vec3::splat(15.)),
                 ..Default::default()
             },
-            TweenerMarker,
+            AnimationTarget,
         ))
         .animation()
         .repeat(Repeat::Infinitely)

@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::interpolate::{AngleZ, Translation};
 use bevy_tween::prelude::*;
-use bevy_tween::tween::TweenerMarker;
 use bevy_tween::{
     bevy_time_runner::{TimeRunner, TimeRunnerPlugin, TimeSpan},
     tween::TargetComponent,
@@ -52,19 +51,19 @@ fn setup(mut commands: Commands) {
     let y = 0. * spacing_y + offset_y;
     commands.spawn((
         sprite(start_x, y),
+        AnimationTarget,
         TimeRunner::new(Duration::from_secs(5)),
-        TweenerMarker,
         TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
         EaseFunction::QuadraticInOut,
         ComponentTween::new_target(
-            TargetComponent::tweener_entity(),
+            TargetComponent::marker(),
             Translation {
                 start: Vec3::new(start_x, y, 0.),
                 end: Vec3::new(end_x, y, 0.),
             },
         ),
         ComponentTween::new_target(
-            TargetComponent::tweener_entity(),
+            TargetComponent::marker(),
             AngleZ {
                 start: angle_start,
                 end: angle_end,
@@ -73,8 +72,8 @@ fn setup(mut commands: Commands) {
     ));
     // equivalent to
     //
-    // let target = TargetComponent::tweener_entity();
-    // commands.animate()
+    // let target = TargetComponent::marker();
+    // commands.spawn((sprite(...), AnimationTarget)).animate()
     //     .insert_here(
     //         Duration::from_secs(5),
     //         EaseFunction::QuadraticOut,
@@ -89,22 +88,22 @@ fn setup(mut commands: Commands) {
     commands
         .spawn((
             sprite(start_x, y),
+            AnimationTarget,
             TimeRunner::new(Duration::from_secs(5)),
-            TweenerMarker,
         ))
         .with_children(|c| {
             c.spawn((
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
                 EaseFunction::QuadraticInOut,
                 ComponentTween::new_target(
-                    TargetComponent::tweener_entity(),
+                    TargetComponent::marker(),
                     Translation {
                         start: Vec3::new(start_x, y, 0.),
                         end: Vec3::new(end_x, y, 0.),
                     },
                 ),
                 ComponentTween::new_target(
-                    TargetComponent::tweener_entity(),
+                    TargetComponent::marker(),
                     AngleZ {
                         start: angle_start,
                         end: angle_end,
@@ -114,8 +113,8 @@ fn setup(mut commands: Commands) {
         });
     // equivalent to
     //
-    // let target = TargetComponent::tweener_entity();
-    // commands.spawn(sprite(...))
+    // let target = TargetComponent::marker();
+    // commands.spawn((sprite(...), AnimationTarget))
     //     .animate()
     //     .insert(tween(
     //         Duration::from_secs(5),
@@ -128,32 +127,33 @@ fn setup(mut commands: Commands) {
 
     // Only Sprite as parent, time runner and tweens as children.
     let y = 2. * spacing_y + offset_y;
-    commands.spawn(sprite(start_x, y)).with_children(|c| {
-        c.spawn((
-            TimeRunner::new(Duration::from_secs(5)),
-            TweenerMarker,
-            TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-            EaseFunction::QuadraticInOut,
-            ComponentTween::new_target(
-                TargetComponent::tweener_parent(),
-                Translation {
-                    start: Vec3::new(start_x, y, 0.),
-                    end: Vec3::new(end_x, y, 0.),
-                },
-            ),
-            ComponentTween::new_target(
-                TargetComponent::tweener_parent(),
-                AngleZ {
-                    start: angle_start,
-                    end: angle_end,
-                },
-            ),
-        ));
-    });
+    commands
+        .spawn((sprite(start_x, y), AnimationTarget))
+        .with_children(|c| {
+            c.spawn((
+                TimeRunner::new(Duration::from_secs(5)),
+                TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+                EaseFunction::QuadraticInOut,
+                ComponentTween::new_target(
+                    TargetComponent::marker(),
+                    Translation {
+                        start: Vec3::new(start_x, y, 0.),
+                        end: Vec3::new(end_x, y, 0.),
+                    },
+                ),
+                ComponentTween::new_target(
+                    TargetComponent::marker(),
+                    AngleZ {
+                        start: angle_start,
+                        end: angle_end,
+                    },
+                ),
+            ));
+        });
     // equivalent to
     //
-    // let target = TargetComponent::tweener_entity();
-    // commands.spawn(sprite(...)).with_children(|c| {
+    // let target = TargetComponent::marker();
+    // commands.spawn((sprite(...), AnimationTarget)).with_children(|c| {
     //     c.animate().insert_here(
     //         Duration::from_secs(5),
     //         EaseFunction::QuadraticOut,
@@ -166,33 +166,35 @@ fn setup(mut commands: Commands) {
 
     // Only Sprite as parent, tweens as children of a time runner.
     let y = 3. * spacing_y + offset_y;
-    commands.spawn(sprite(start_x, y)).with_children(|c| {
-        c.spawn((TimeRunner::new(Duration::from_secs(5)), TweenerMarker))
-            .with_children(|c| {
-                c.spawn((
-                    TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-                    EaseFunction::QuadraticInOut,
-                    ComponentTween::new_target(
-                        TargetComponent::tweener_parent(),
-                        Translation {
-                            start: Vec3::new(start_x, y, 0.),
-                            end: Vec3::new(end_x, y, 0.),
-                        },
-                    ),
-                    ComponentTween::new_target(
-                        TargetComponent::tweener_parent(),
-                        AngleZ {
-                            start: angle_start,
-                            end: angle_end,
-                        },
-                    ),
-                ));
-            });
-    });
+    commands
+        .spawn((sprite(start_x, y), AnimationTarget))
+        .with_children(|c| {
+            c.spawn(TimeRunner::new(Duration::from_secs(5)))
+                .with_children(|c| {
+                    c.spawn((
+                        TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+                        EaseFunction::QuadraticInOut,
+                        ComponentTween::new_target(
+                            TargetComponent::marker(),
+                            Translation {
+                                start: Vec3::new(start_x, y, 0.),
+                                end: Vec3::new(end_x, y, 0.),
+                            },
+                        ),
+                        ComponentTween::new_target(
+                            TargetComponent::marker(),
+                            AngleZ {
+                                start: angle_start,
+                                end: angle_end,
+                            },
+                        ),
+                    ));
+                });
+        });
     // equivalent to
     //
-    // let target = TargetComponent::tweener_entity();
-    // commands.spawn(sprite(...)).with_children(|c| {
+    // let target = TargetComponent::marker();
+    // commands.spawn((sprite(...), AnimationTarget)).with_children(|c| {
     //     c.animate().insert(tween(
     //         Duration::from_secs(5),
     //         EaseFunction::QuadraticOut,

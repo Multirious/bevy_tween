@@ -3,7 +3,7 @@ use bevy_tween::{
     bevy_time_runner::{TimeRunnerEnded, TimeRunnerPlugin},
     combinator::*,
     prelude::*,
-    tween::{TargetComponent, TweenerMarker},
+    tween::TargetComponent,
 };
 
 fn main() {
@@ -47,7 +47,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mid_angle = start_angle + 540.0_f32.to_radians();
     let end_angle = mid_angle + 180.0_f32.to_radians();
 
-    let triangle = TargetComponent::tweener_entity();
+    let triangle = TargetComponent::marker();
     let mut triangle_translation = triangle.state(Vec3::new(start_x, 0., 0.));
     let mut triangle_angle_z = triangle.state(start_angle);
 
@@ -58,7 +58,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 texture: asset_server.load("triangle_filled.png"),
                 ..Default::default()
             },
-            TweenerMarker,
+            AnimationTarget,
         ))
         .animation()
         .repeat(Repeat::Infinitely)
@@ -103,7 +103,7 @@ fn effect_system(
     use interpolate::{scale, sprite_color, translation};
     event.read().for_each(|event| match event.data {
         "bump" => {
-            let entity = TargetComponent::TweenerEntity;
+            let entity = TargetComponent::marker();
             commands
                 .spawn((
                     Effect,
@@ -117,7 +117,7 @@ fn effect_system(
                         ),
                         ..Default::default()
                     },
-                    TweenerMarker,
+                    AnimationTarget,
                 ))
                 .animation()
                 .insert_here(
@@ -136,7 +136,7 @@ fn effect_system(
                 );
         }
         "small_boom" => {
-            let entity = TargetComponent::TweenerEntity;
+            let entity = TargetComponent::marker();
             commands
                 .spawn((
                     Effect,
@@ -147,7 +147,7 @@ fn effect_system(
                         ),
                         ..Default::default()
                     },
-                    TweenerMarker,
+                    AnimationTarget,
                 ))
                 .animation()
                 .insert_here(
@@ -166,7 +166,7 @@ fn effect_system(
                 );
         }
         "boom" => {
-            let entity = TargetComponent::TweenerEntity;
+            let entity = TargetComponent::marker();
             commands
                 .spawn((
                     Effect,
@@ -175,7 +175,7 @@ fn effect_system(
                         transform: Transform::from_translation(effect_pos.boom),
                         ..Default::default()
                     },
-                    TweenerMarker,
+                    AnimationTarget,
                 ))
                 .animation()
                 .insert_here(
