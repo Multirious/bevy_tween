@@ -20,6 +20,7 @@ resolver = "2"
 [dependencies]
 bevy = { version = "0.13.0", default-features = false }
 bevy_eventlistener = { version = "0.7.0", optional = true }
+bevy_time_runner = { git = "https://github.com/Multirious/bevy_time_runner" }
 
 [dev-dependencies]
 bevy-inspector-egui = "0.23"

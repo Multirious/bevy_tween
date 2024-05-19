@@ -53,7 +53,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 texture: asset_server.load("triangle_filled.png"),
                 ..Default::default()
             },
-            TweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
+            SpanTweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
         ))
         .tweens()
         .add(sequence((
@@ -106,7 +106,7 @@ fn effect_system(
                     transform: Transform::from_translation(effect_pos.trail),
                     ..Default::default()
                 },
-                TweenerBundle::new(secs(1.)).tween_here(),
+                SpanTweenerBundle::new(secs(1.)).tween_here(),
                 EaseFunction::QuinticOut,
                 entity.tween(translation(
                     effect_pos.trail,
@@ -127,7 +127,7 @@ fn effect_system(
                     ),
                     ..Default::default()
                 },
-                TweenerBundle::new(secs(0.1)).tween_here(),
+                SpanTweenerBundle::new(secs(0.1)).tween_here(),
                 EaseFunction::Linear,
                 entity.tween(scale(
                     Vec3::new(0.5, 0.5, 0.),
@@ -148,7 +148,7 @@ fn effect_system(
                     transform: Transform::from_translation(effect_pos.boom),
                     ..Default::default()
                 },
-                TweenerBundle::new(secs(0.5)).tween_here(),
+                SpanTweenerBundle::new(secs(0.5)).tween_here(),
                 EaseFunction::QuadraticOut,
                 entity.tween(scale(
                     Vec3::new(1., 1., 0.),
@@ -167,7 +167,7 @@ fn effect_system(
 fn despawn_effect_system(
     mut commands: Commands,
     q_effect: Query<(), With<Effect>>,
-    mut ended: EventReader<TweenerEnded>,
+    mut ended: EventReader<SpanTweenerEnded>,
 ) {
     ended.read().for_each(|ended| {
         if ended.is_completed() && q_effect.contains(ended.tweener) {

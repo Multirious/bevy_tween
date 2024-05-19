@@ -66,7 +66,7 @@ fn setup(
             transform: Transform::IDENTITY.with_scale(Vec3::splat(15.)),
             ..Default::default()
         },
-        TweenerBundle::new(Duration::from_secs(1))
+        SpanTweenerBundle::new(Duration::from_secs(1))
             .with_repeat(Repeat::Infinitely)
             .tween_here(),
         EaseFunction::Linear,

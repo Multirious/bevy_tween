@@ -44,8 +44,8 @@ fn setup(mut commands: Commands) {
     let y = 0. * spacing_y + offset_y;
     commands.spawn((
         sprite(start_x, y),
-        TweenerBundle::new(Duration::from_secs(5)),
-        TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+        SpanTweenerBundle::new(Duration::from_secs(5)),
+        TweenTimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
         EaseFunction::QuadraticInOut,
         ComponentTween::new_target(
             TargetComponent::tweener_entity(),
@@ -68,11 +68,11 @@ fn setup(mut commands: Commands) {
     commands
         .spawn((
             sprite(start_x, y),
-            TweenerBundle::new(Duration::from_secs(5)),
+            SpanTweenerBundle::new(Duration::from_secs(5)),
         ))
         .with_children(|c| {
             c.spawn((
-                TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+                TweenTimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
                 EaseFunction::QuadraticInOut,
                 ComponentTween::new_target(
                     TargetComponent::tweener_entity(),
@@ -95,8 +95,8 @@ fn setup(mut commands: Commands) {
     let y = 2. * spacing_y + offset_y;
     commands.spawn(sprite(start_x, y)).with_children(|c| {
         c.spawn((
-            TweenerBundle::new(Duration::from_secs(5)),
-            TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+            SpanTweenerBundle::new(Duration::from_secs(5)),
+            TweenTimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
             EaseFunction::QuadraticInOut,
             ComponentTween::new_target(
                 TargetComponent::tweener_parent(),
@@ -118,10 +118,10 @@ fn setup(mut commands: Commands) {
     // Only Sprite as parent, tweens as children of a tweener.
     let y = 3. * spacing_y + offset_y;
     commands.spawn(sprite(start_x, y)).with_children(|c| {
-        c.spawn(TweenerBundle::new(Duration::from_secs(5)))
+        c.spawn(SpanTweenerBundle::new(Duration::from_secs(5)))
             .with_children(|c| {
                 c.spawn((
-                    TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+                    TweenTimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
                     EaseFunction::QuadraticInOut,
                     ComponentTween::new_target(
                         TargetComponent::tweener_parent(),
@@ -147,10 +147,10 @@ fn setup(mut commands: Commands) {
     let sprite = commands.spawn(sprite(start_x, y)).id();
 
     commands
-        .spawn(TweenerBundle::new(Duration::from_secs(5)))
+        .spawn(SpanTweenerBundle::new(Duration::from_secs(5)))
         .with_children(|c| {
             c.spawn((
-                TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+                TweenTimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
                 EaseFunction::QuadraticInOut,
                 ComponentTween::new_target(
                     sprite,

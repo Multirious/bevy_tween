@@ -1,5 +1,6 @@
 use super::*;
 use bevy::ecs::schedule::SystemConfigs;
+use bevy_time_runner::TimeSpanProgress;
 use std::any::type_name;
 
 /// Tween any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
@@ -421,7 +422,7 @@ where
     apply_asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
 }
 
-/// Fires [`TweenEvent`] with optional user data whenever [`TweenProgress`]
+/// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// cloning the data.
 #[allow(clippy::type_complexity)]
@@ -430,7 +431,7 @@ pub fn tween_event_system<Data>(
         (
             Entity,
             &TweenEventData<Data>,
-            &TweenProgress,
+            &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
         Without<SkipTween>,
@@ -453,7 +454,7 @@ pub fn tween_event_system<Data>(
     );
 }
 
-/// Fires [`TweenEvent`] with optional user data whenever [`TweenProgress`]
+/// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// taking the data and leaves the value `None`.
 #[allow(clippy::type_complexity)]
@@ -462,7 +463,7 @@ pub fn tween_event_taking_system<Data>(
         (
             Entity,
             &mut TweenEventData<Data>,
-            &TweenProgress,
+            &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
         Without<SkipTween>,

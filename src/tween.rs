@@ -245,12 +245,9 @@
 //! [`DefaultInterpolatorsPlugin`]: crate::interpolate::DefaultInterpolatorsPlugin
 //! [`DefaultDynInterpolatorsPlugin`]: crate::interpolate::DefaultDynInterpolatorsPlugin
 
-use std::cmp::Ordering;
-
 use bevy::prelude::*;
 
 use crate::interpolate::Interpolator;
-use crate::tween_timer::AnimationDirection;
 use crate::{utils, BevyTweenRegisterSystems};
 
 mod systems;
@@ -277,69 +274,28 @@ pub use systems::{tween_event_system, tween_event_taking_system};
 #[reflect(Component)]
 pub struct SkipTween;
 
-/// Skip a tweener from functioning.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
-#[reflect(Component)]
-pub struct SkipTweener;
-
-/// [`TweenProgress`] should be automatically managed by a tweener.
-/// An assigned tweener will take care of it.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Component, Reflect)]
-#[reflect(Component)]
-pub struct TweenProgress {
-    /// Value between 0–1 signalling the progress of a tween in percentage.
-    /// Value can be more than 1 or negative to account for overshooting
-    /// and undershooting. It's up to the implementor on how to deal with this.
-    pub now_percentage: f32,
-    /// Now in seconds
-    pub now: f32,
-    /// Value between 0–1 signalling the progress of a tween in percentage.
-    /// Value can be more than 1 or negative to account for overshooting
-    /// and undershooting. It's up to the implementor on how to deal with this.
-    pub previous_percentage: f32,
-    /// Previous in seconds
-    pub previous: f32,
+#[allow(deprecated)]
+mod man {
+    use super::*;
+    /// Skip a tweener from functioning.
+    #[derive(
+        Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect,
+    )]
+    #[reflect(Component)]
+    #[deprecated(
+        since = "0.5.0",
+        note = "The timing inside this crate is moved to `bevy_time_runner`. Use `bevy_time_runner::SkipTimeRunner` instead."
+    )]
+    pub struct SkipTweener;
 }
+#[allow(deprecated)]
+pub use man::SkipTweener;
 
-impl TweenProgress {
-    /// Get progression direction of the tween
-    pub fn direction(&self) -> Option<AnimationDirection> {
-        match self.now.total_cmp(&self.previous) {
-            Ordering::Greater => Some(AnimationDirection::Forward),
-            Ordering::Equal => None,
-            Ordering::Less => Some(AnimationDirection::Backward),
-        }
-    }
-
-    pub(crate) fn update(&mut self, now: f32, now_percentage: f32) {
-        self.previous_percentage = self.now_percentage;
-        self.previous = self.now;
-        self.now_percentage = now_percentage;
-        self.now = now;
-    }
-
-    // /// Check for Nan and Infinite value which is currently considered invalid.
-    // pub fn new(previous: f32, now: f32) -> Option<TweenProgress> {
-    //     if previous.is_finite() && now.is_finite() {
-    //         Some(TweenProgress::new_unchecked(now, previous))
-    //     } else {
-    //         None
-    //     }
-    // }
-
-    // /// Create new [`TweenProgress`] without checking for any Nan or Infinite value
-    // fn new_unchecked(previous: f32, now: f32) -> TweenProgress {
-    //     TweenProgress { now, previous }
-    // }
-
-    // pub fn now(&self) -> f32 {
-    //     self.now
-    // }
-
-    // pub fn previous(&self) -> f32 {
-    //     self.previous
-    // }
-}
+#[deprecated(
+    since = "0.5.0",
+    note = "Use `bevy_time_runner::TimeSpanProgress` instead"
+)]
+pub use bevy_time_runner::TimeSpanProgress as TweenProgress;
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
 /// [`EaseClosure`] when a tween has the component [`TweenProgress`].

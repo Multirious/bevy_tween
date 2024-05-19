@@ -56,7 +56,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands
         .spawn(
-            TweenerBundle::new(Duration::from_secs_f32(secs))
+            SpanTweenerBundle::new(Duration::from_secs_f32(secs))
                 .with_repeat(Repeat::Infinitely),
         )
         .with_children(|c| {
@@ -71,7 +71,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             SpatialBundle::default(),
-            TweenerBundle::new(Duration::from_secs_f32(12. / 7.))
+            SpanTweenerBundle::new(Duration::from_secs_f32(12. / 7.))
                 .with_repeat(Repeat::Infinitely)
                 .tween_here(),
             EaseFunction::ExponentialInOut,

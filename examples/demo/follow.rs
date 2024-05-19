@@ -4,12 +4,17 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
-use bevy_tween::{prelude::*, tween::TargetComponent, tweener::Tweener};
+use bevy_time_runner::{TimeRunner, TimeRunnerPlugin, TimeSpan};
+use bevy_tween::{
+    prelude::*,
+    tween::{TargetComponent, TweenerMarker},
+};
 
 fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
+            TimeRunnerPlugin::default(),
             DefaultTweenPlugins,
             ResourceInspectorPlugin::<Config>::new(),
         ))
@@ -80,33 +85,43 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             // for the follow effect
             c.spawn((
                 JebTranslationTweener,
+                TweenerMarker,
                 Name::new("JebTranslationTweener"),
             ));
 
             let jeb = TargetComponent::tweener_parent();
+            let a: Box<dyn Interpolator<Item = _>> = Box::new(
+                interpolate::closure(|transform: &mut Transform, value| {
+                    let start = 0.;
+                    let end = TAU;
+                    let angle = (end - start).mul_add(value, start);
+                    transform.rotation = Quat::from_rotation_z(angle);
+                }),
+            );
             // Spawning a tweener that's responsible for a rotating effect
             c.spawn((
                 Name::new("Rotate"),
-                TweenerBundle::new(Duration::from_secs(2))
-                    .with_repeat(Repeat::Infinitely)
-                    .with_repeat_style(RepeatStyle::PingPong)
-                    .tween_here(),
+                {
+                    let mut t = TimeRunner::new(Duration::from_secs(2));
+                    t.set_repeat(Some((
+                        Repeat::Infinitely,
+                        RepeatStyle::PingPong,
+                    )));
+                    t
+                },
+                TimeSpan::try_from(..Duration::from_secs(2)).unwrap(),
+                TweenerMarker,
                 EaseFunction::CubicInOut,
-                jeb.tween(interpolate::component_closure(
-                    |transform: &mut Transform, value| {
-                        let start = 0.;
-                        let end = TAU;
-                        let angle = (end - start).mul_add(value, start);
-                        transform.rotation = Quat::from_rotation_z(angle);
-                    },
-                )),
+                jeb.tween(a),
             ));
 
             // Spawning a Tweener that's responsible for scaling effect
             // when you launch up the demo.
             c.spawn((
                 Name::new("Scale up"),
-                TweenerBundle::new(Duration::from_secs(1)).tween_here(),
+                TimeRunner::new(Duration::from_secs(1)),
+                TimeSpan::try_from(..Duration::from_secs(1)).unwrap(),
+                TweenerMarker,
                 EaseFunction::QuinticIn,
                 jeb.tween(scale(Vec3::ZERO, Vec3::ONE)),
             ));
@@ -119,7 +134,7 @@ fn jeb_follows_cursor(
     config: Res<Config>,
     q_jeb: Query<&Transform, With<Jeb>>,
     q_jeb_translation_tweener: Query<
-        (Entity, Option<&Tweener>),
+        (Entity, Option<&TimeRunner>),
         With<JebTranslationTweener>,
     >,
     mut cursor_moved: EventReader<CursorMoved>,
@@ -135,7 +150,7 @@ fn jeb_follows_cursor(
         UpdateKind::CusorStopped => cursor_moved.read().next().is_none(),
         UpdateKind::TweenerCompleted => match jeb_tweener {
             Some(jeb_tweener) => {
-                jeb_tweener.timer.is_completed()
+                jeb_tweener.is_completed()
                     && coord != jeb_transform.translation.xy()
             }
             None => true,
@@ -144,7 +159,7 @@ fn jeb_follows_cursor(
     if update {
         let jeb = TargetComponent::tweener_parent();
         commands.entity(jeb_tweener_entity).insert((
-            TweenerBundle::new(config.tween_duration),
+            TimeRunner::new(config.tween_duration),
             TimeSpan::try_from(..config.tween_duration).unwrap(),
             config.tween_ease, // don't forget the ease
             // You can have multiple tween in the same Entity as long as their

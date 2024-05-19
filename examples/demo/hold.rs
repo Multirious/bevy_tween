@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_tween::{
     prelude::*, tween::TargetComponent, tween_timer::AnimationDirection,
-    tweener::Tweener,
+    tweener::SpanTweener,
 };
 use rand::prelude::*;
 
@@ -87,14 +87,14 @@ fn setup(
     let big_x = TargetComponent::from(big_x);
     commands.spawn((
         EffectTweener,
-        TweenerBundle::new(secs(1.)).tween_here(),
+        SpanTweenerBundle::new(secs(1.)).tween_here(),
         EaseFunction::QuarticIn,
         effect_intensity(0., 1.),
         big_x.tween(sprite_color(Color::WHITE, Color::PINK)),
     ));
     commands.spawn((
         RotateTweener,
-        TweenerBundle::new(Duration::from_secs_f32(1.))
+        SpanTweenerBundle::new(Duration::from_secs_f32(1.))
             .with_repeat(Repeat::Infinitely)
             .tween_here(),
         EaseFunction::Linear,
@@ -103,7 +103,7 @@ fn setup(
 }
 
 fn mouse_hold(
-    mut q_effect_tween_timer: Query<&mut Tweener, With<EffectTweener>>,
+    mut q_effect_tween_timer: Query<&mut SpanTweener, With<EffectTweener>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
@@ -117,7 +117,7 @@ fn mouse_hold(
 fn big_x_do_effect(
     effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
-    mut q_rotate_tweener: Query<&mut Tweener, With<RotateTweener>>,
+    mut q_rotate_tweener: Query<&mut SpanTweener, With<RotateTweener>>,
 ) {
     let mut rng = rand::thread_rng();
     let dx: f32 = rng.gen();
