@@ -132,7 +132,7 @@ pub mod prelude {
 
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle};
 
-    pub use crate::tween::{TweenEvent, TweenEventData};
+    pub use crate::tween::{AnimationTarget, TweenEvent, TweenEventData};
 
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
