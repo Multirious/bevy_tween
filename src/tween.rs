@@ -405,6 +405,7 @@ pub type ComponentDynTween<C> =
 /// Tell the tween what component of what entity to tween.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetComponent {
+    /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
     Marker,
     /// Target this entity.
     Entity(Entity),
@@ -413,6 +414,7 @@ pub enum TargetComponent {
 }
 
 impl TargetComponent {
+    /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
     pub fn marker() -> TargetComponent {
         TargetComponent::Marker
     }
