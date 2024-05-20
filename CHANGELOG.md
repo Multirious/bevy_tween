@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.4.0 - 2024-04-08
+
+### Changes
+- Add `SpanTweensBuilder::add` trait
+- Add `SpanTweenPreset` trait
+- Update examples to use the preset APIs.
+- Documentations
+- Add "Features" section to README.md
+- Add "Contributions" section to README.md
+- Add "Your contributions" section to README.md
+
 ## v0.3.1 - 2024-04-04
 - Fix README.md
 
@@ -27,7 +38,7 @@
   `collaspe_elasped` will update the `previous` field instead.
 - Change `Repeat` to use `i32` instead of `usize` and update their corresponding methods.
 
-### Adds
+### Changes
 - Add `TweenAppResource`
 - Add `DefaultTweenEventsPlugin`
 - Add `TweenEventData`
@@ -52,8 +63,6 @@
 - Register `TweenProgress` in `TweenCorePlugin`
 - Add unit tests for `TweenTimer`
 - Lots of documentations and code examples
-
-### Changes
 - Remove `TweenTarget` and `Interpolator` trait requirement from `Tween<T, I>`
 - Remove many `TweenTarget` requirement from `Tween<T, I>` implementations
 - Improves `TweenTimer::tick()` code to account to new `Elasped`

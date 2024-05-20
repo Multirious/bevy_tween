@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{
+    bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
+    tween::TargetComponent,
+};
 
 fn main() {
     App::new()
@@ -23,6 +26,7 @@ struct EffectPos {
 struct Triangle;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    use interpolate::{angle_z_to, translation_to};
     commands.spawn(Camera2dBundle::default());
 
     let start_x = -300.;
@@ -37,6 +41,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mid_angle = start_angle + 540.0_f32.to_radians();
     let end_angle = mid_angle + 180.0_f32.to_radians();
 
+    let triangle = TargetComponent::marker();
+    let mut triangle_translation = triangle.state(Vec3::new(start_x, 0., 0.));
+    let mut triangle_angle_z = triangle.state(start_angle);
+
     commands
         .spawn((
             Triangle,
@@ -44,49 +52,34 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 texture: asset_server.load("triangle_filled.png"),
                 ..Default::default()
             },
-            SpanTweenerBundle::new(secs(2.)).with_repeat(Repeat::Infinitely),
+            AnimationTarget,
         ))
-        .with_children(|c| {
-            // &'static str is available as an default event data but it's
-            // recommended to use dedicated custom type instead to leverage the
-            // rust type system.
-            c.span_tweens()
-                .tween_event(TweenEventData::with_data("bump"))
-                .tween(
-                    secs(1.),
-                    EaseFunction::ExponentialIn,
-                    (
-                        ComponentTween::new(interpolate::Translation {
-                            start: Vec3::new(start_x, 0., 0.),
-                            end: Vec3::new(end_x, 0., 0.),
-                        }),
-                        ComponentTween::new(interpolate::AngleZ {
-                            start: start_angle,
-                            end: mid_angle,
-                        }),
-                    ),
-                )
-                .backward(secs(0.2))
-                .tween_event_for(
-                    secs(0.2),
-                    TweenEventData::with_data("small_boom"),
-                )
-                .tween_event(TweenEventData::with_data("boom"))
-                .tween(
-                    secs(1.),
-                    EaseFunction::CircularOut,
-                    (
-                        ComponentTween::new(interpolate::Translation {
-                            start: Vec3::new(end_x, 0., 0.),
-                            end: Vec3::new(start_x, 0., 0.),
-                        }),
-                        ComponentTween::new(interpolate::AngleZ {
-                            start: mid_angle,
-                            end: end_angle,
-                        }),
-                    ),
-                );
-        });
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert(sequence((
+            event(TweenEventData::with_data("bump")),
+            tween(
+                secs(1.),
+                EaseFunction::ExponentialIn,
+                (
+                    triangle_translation
+                        .with(translation_to(Vec3::new(end_x, 0., 0.))),
+                    triangle_angle_z.with(angle_z_to(mid_angle)),
+                ),
+            ),
+            backward(secs(0.2)),
+            event_for(secs(0.2), TweenEventData::with_data("small_boom")),
+            event(TweenEventData::with_data("boom")),
+            tween(
+                secs(1.),
+                EaseFunction::CircularOut,
+                (
+                    triangle_translation
+                        .with(translation_to(Vec3::new(start_x, 0., 0.))),
+                    triangle_angle_z.with(angle_z_to(end_angle)),
+                ),
+            ),
+        )));
 }
 
 #[derive(Component)]
@@ -99,71 +92,98 @@ fn effect_system(
     q_triangle: Query<&Transform, With<Triangle>>,
     mut event: EventReader<TweenEvent<&'static str>>,
 ) {
+    use interpolate::{scale, sprite_color, translation};
     event.read().for_each(|event| match event.data {
         "bump" => {
-            commands.spawn((
-                Effect,
-                SpriteBundle {
-                    sprite: Sprite {
-                        custom_size: Some(Vec2::new(20., 100.)),
+            let entity = TargetComponent::marker();
+            commands
+                .spawn((
+                    Effect,
+                    SpriteBundle {
+                        sprite: Sprite {
+                            custom_size: Some(Vec2::new(20., 100.)),
+                            ..Default::default()
+                        },
+                        transform: Transform::from_translation(
+                            effect_pos.trail,
+                        ),
                         ..Default::default()
                     },
-                    transform: Transform::from_translation(effect_pos.trail),
-                    ..Default::default()
-                },
-                SpanTweenerBundle::new(secs(1.)).tween_here(),
-                EaseFunction::QuinticOut,
-                ComponentTween::new(interpolate::Translation {
-                    start: effect_pos.trail,
-                    end: effect_pos.trail - Vec3::new(100., 0., 0.),
-                }),
-                ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE,
-                    end: Color::WHITE.with_a(0.),
-                }),
-            ));
+                    AnimationTarget,
+                ))
+                .animation()
+                .insert_tween_here(
+                    secs(1.),
+                    EaseFunction::QuinticOut,
+                    (
+                        entity.with(translation(
+                            effect_pos.trail,
+                            effect_pos.trail - Vec3::new(100., 0., 0.),
+                        )),
+                        entity.with(sprite_color(
+                            Color::WHITE,
+                            Color::PINK.with_a(0.),
+                        )),
+                    ),
+                );
         }
         "small_boom" => {
-            commands.spawn((
-                Effect,
-                SpriteBundle {
-                    texture: asset_server.load("circle.png"),
-                    transform: Transform::from_translation(
-                        q_triangle.single().translation,
+            let entity = TargetComponent::marker();
+            commands
+                .spawn((
+                    Effect,
+                    SpriteBundle {
+                        texture: asset_server.load("circle.png"),
+                        transform: Transform::from_translation(
+                            q_triangle.single().translation,
+                        ),
+                        ..Default::default()
+                    },
+                    AnimationTarget,
+                ))
+                .animation()
+                .insert_tween_here(
+                    secs(0.1),
+                    EaseFunction::Linear,
+                    (
+                        entity.with(scale(
+                            Vec3::new(0.5, 0.5, 0.),
+                            Vec3::new(3., 3., 0.),
+                        )),
+                        entity.with(sprite_color(
+                            Color::WHITE.with_a(0.5),
+                            Color::PINK.with_a(0.),
+                        )),
                     ),
-                    ..Default::default()
-                },
-                SpanTweenerBundle::new(secs(0.1)).tween_here(),
-                EaseFunction::Linear,
-                ComponentTween::new(interpolate::Scale {
-                    start: Vec3::new(0.5, 0.5, 0.),
-                    end: Vec3::new(3., 3., 0.),
-                }),
-                ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE.with_a(0.2),
-                    end: Color::WHITE.with_a(0.),
-                }),
-            ));
+                );
         }
         "boom" => {
-            commands.spawn((
-                Effect,
-                SpriteBundle {
-                    texture: asset_server.load("circle.png"),
-                    transform: Transform::from_translation(effect_pos.boom),
-                    ..Default::default()
-                },
-                SpanTweenerBundle::new(secs(0.5)).tween_here(),
-                EaseFunction::QuadraticOut,
-                ComponentTween::new(interpolate::Scale {
-                    start: Vec3::new(1., 1., 0.),
-                    end: Vec3::new(15., 15., 0.),
-                }),
-                ComponentTween::new(interpolate::SpriteColor {
-                    start: Color::WHITE.with_a(0.5),
-                    end: Color::WHITE.with_a(0.),
-                }),
-            ));
+            let entity = TargetComponent::marker();
+            commands
+                .spawn((
+                    Effect,
+                    SpriteBundle {
+                        texture: asset_server.load("circle.png"),
+                        transform: Transform::from_translation(effect_pos.boom),
+                        ..Default::default()
+                    },
+                    AnimationTarget,
+                ))
+                .animation()
+                .insert_tween_here(
+                    secs(0.5),
+                    EaseFunction::QuadraticOut,
+                    (
+                        entity.with(scale(
+                            Vec3::new(1., 1., 0.),
+                            Vec3::new(15., 15., 0.),
+                        )),
+                        entity.with(sprite_color(
+                            Color::WHITE.with_a(1.),
+                            Color::PINK.with_a(0.),
+                        )),
+                    ),
+                );
         }
         _ => {}
     });
@@ -172,11 +192,11 @@ fn effect_system(
 fn despawn_effect_system(
     mut commands: Commands,
     q_effect: Query<(), With<Effect>>,
-    mut ended: EventReader<SpanTweenerEnded>,
+    mut ended: EventReader<TimeRunnerEnded>,
 ) {
     ended.read().for_each(|ended| {
-        if ended.is_completed() && q_effect.contains(ended.tweener) {
-            commands.entity(ended.tweener).despawn_recursive();
+        if ended.is_completed() && q_effect.contains(ended.time_runner) {
+            commands.entity(ended.time_runner).despawn_recursive();
         }
     });
 }

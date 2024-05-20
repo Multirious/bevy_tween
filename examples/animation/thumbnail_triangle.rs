@@ -1,7 +1,12 @@
 use std::f32::consts::TAU;
 
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{
+    combinator::{parallel, tween_exact, AnimationSpawner},
+    interpolate::angle_z,
+    prelude::*,
+    tween::TargetComponent,
+};
 
 fn main() {
     App::new()
@@ -44,47 +49,45 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .map(|(i, color)| {
             triangle(&mut commands, square_image.clone(), *color, i as f32)
         })
+        .map(TargetComponent::Entity)
         .collect::<Vec<_>>();
 
     let secs = 12.;
 
     commands
-        .spawn(
-            SpanTweenerBundle::new(Duration::from_secs_f32(secs))
-                .with_repeat(Repeat::Infinitely),
-        )
-        .with_children(|c| {
-            snap_rotate(c, triangles[4], secs, 7, 4., ease);
-            snap_rotate(c, triangles[3], secs, 7, 6., ease);
-            snap_rotate(c, triangles[2], secs, 7, 8., ease);
-            snap_rotate(c, triangles[1], secs, 7, 10., ease);
-            snap_rotate(c, triangles[0], secs, 7, 12., ease);
-        });
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert(parallel((
+            snap_rotate(triangles[4].clone(), secs, 7, 4., ease),
+            snap_rotate(triangles[3].clone(), secs, 7, 6., ease),
+            snap_rotate(triangles[2].clone(), secs, 7, 8., ease),
+            snap_rotate(triangles[1].clone(), secs, 7, 10., ease),
+            snap_rotate(triangles[0].clone(), secs, 7, 12., ease),
+        )));
 }
 
 fn snap_rotate(
-    c: &mut ChildBuilder<'_>,
-    entity: Entity,
+    target: TargetComponent,
     secs: f32,
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) {
-    for i in 0..max {
-        let max = max as f32;
-        let i = i as f32;
-        c.span_tweens().tween_exact(
-            Duration::from_secs_f32(i / max * secs)
-                ..Duration::from_secs_f32((i + 1.) / max * secs),
-            ease,
-            ComponentTween::new_target_boxed(
-                entity,
-                interpolate::AngleZ {
-                    start: rev * TAU * (max - i) / max,
-                    end: rev * TAU * (max - i - 1.) / max,
-                },
-            ),
-        );
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+    move |a, pos| {
+        for i in 0..max {
+            let max = max as f32;
+            let i = i as f32;
+            tween_exact(
+                Duration::from_secs_f32(i / max * secs)
+                    ..Duration::from_secs_f32((i + 1.) / max * secs),
+                ease,
+                target.with(angle_z(
+                    rev * TAU * (max - i) / max,
+                    rev * TAU * (max - i - 1.) / max,
+                )),
+            )(a, pos);
+        }
+        pos + Duration::from_secs_f32(secs)
     }
 }
 

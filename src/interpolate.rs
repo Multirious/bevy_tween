@@ -91,6 +91,71 @@ where
     Box::new(f)
 }
 
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ComponentTween;
+/// # use bevy_tween::interpolate::{closure, component_closure};
+/// # let start = Vec3::ZERO;
+/// # let end = Vec3::ZERO;
+/// # let f = || {};
+/// # assert_eq!(component_closure(f),
+/// ComponentTween::new_boxed(closure(f))
+/// # );
+/// ```
+pub fn component_closure<C, F>(
+    f: F,
+) -> tween::ComponentTween<BoxedInterpolator<C>>
+where
+    C: Component,
+    F: Fn(&mut C, f32) + Send + Sync + 'static,
+{
+    tween::ComponentTween::new_boxed(closure(f))
+}
+
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::ResourceTween;
+/// # use bevy_tween::interpolate::{closure, resource_closure};
+/// # let start = Vec3::ZERO;
+/// # let end = Vec3::ZERO;
+/// # let f = || {};
+/// # assert_eq!(resource_closure(f),
+/// ResourceTween::new_boxed(closure(f))
+/// # );
+/// ```
+pub fn resource_closure<A, F>(
+    f: F,
+) -> tween::ResourceTween<BoxedInterpolator<A>>
+where
+    A: Asset,
+    F: Fn(&mut A, f32) + Send + Sync + 'static,
+{
+    tween::ResourceTween::new_boxed(closure(f))
+}
+
+/// Same as
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy_tween::tween::AssetTween;
+/// # use bevy_tween::interpolate::{closure, asset_closure};
+/// # let start = Vec3::ZERO;
+/// # let end = Vec3::ZERO;
+/// # let f = || {};
+/// # assert_eq!(asset_closure(f),
+/// AssetTween::new_boxed(closure(f))
+/// # );
+/// ```
+#[cfg(feature = "bevy_asset")]
+pub fn asset_closure<A, F>(f: F) -> tween::AssetTween<BoxedInterpolator<A>>
+where
+    A: Asset,
+    F: Fn(&mut A, f32) + Send + Sync + 'static,
+{
+    tween::AssetTween::new_boxed(closure(f))
+}
+
 /// [`Interpolator`] is used to specify how to interpolate an [`Self::Item`] by the
 /// implementor.
 ///
@@ -315,6 +380,33 @@ impl Interpolator for Translation {
     }
 }
 
+/// Constructor for [`Translation`]
+pub fn translation(start: Vec3, end: Vec3) -> Translation {
+    Translation { start, end }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn translation_to(to: Vec3) -> impl Fn(&mut Vec3) -> Translation {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        translation(start, end)
+    }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn translation_by(by: Vec3) -> impl Fn(&mut Vec3) -> Translation {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        translation(start, end)
+    }
+}
+
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 // #[reflect(InterpolatorTransform)]
@@ -329,6 +421,33 @@ impl Interpolator for Rotation {
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         item.rotation = self.start.slerp(self.end, value);
+    }
+}
+
+/// Constructor for [`Rotation`]
+pub fn rotation(start: Quat, end: Quat) -> Rotation {
+    Rotation { start, end }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn rotation_to(to: Quat) -> impl Fn(&mut Quat) -> Rotation {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        rotation(start, end)
+    }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn rotation_by(by: Quat) -> impl Fn(&mut Quat) -> Rotation {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state = state.mul_quat(by);
+        rotation(start, end)
     }
 }
 
@@ -349,6 +468,33 @@ impl Interpolator for Scale {
     }
 }
 
+/// Constructor for [`Scale`]
+pub fn scale(start: Vec3, end: Vec3) -> Scale {
+    Scale { start, end }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn scale_to(to: Vec3) -> impl Fn(&mut Vec3) -> Scale {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        scale(start, end)
+    }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn scale_by(by: Vec3) -> impl Fn(&mut Vec3) -> Scale {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        scale(start, end)
+    }
+}
+
 /// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
 /// Usually used for 2D rotation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
@@ -365,6 +511,33 @@ impl Interpolator for AngleZ {
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         let angle = (self.end - self.start).mul_add(value, self.start);
         item.rotation = Quat::from_rotation_z(angle);
+    }
+}
+
+/// Constructor for [`AngleZ`]
+pub fn angle_z(start: f32, end: f32) -> AngleZ {
+    AngleZ { start, end }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn angle_z_to(to: f32) -> impl Fn(&mut f32) -> AngleZ {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        angle_z(start, end)
+    }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+pub fn angle_z_by(by: f32) -> impl Fn(&mut f32) -> AngleZ {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        angle_z(start, end)
     }
 }
 
@@ -391,6 +564,24 @@ impl Interpolator for SpriteColor {
     }
 }
 
+/// Constructor for [`SpriteColor`]
+#[cfg(feature = "bevy_sprite")]
+pub fn sprite_color(start: Color, end: Color) -> SpriteColor {
+    SpriteColor { start, end }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+#[cfg(feature = "bevy_sprite")]
+pub fn sprite_color_to(to: Color) -> impl Fn(&mut Color) -> SpriteColor {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        sprite_color(start, end)
+    }
+}
+
 // #[cfg(feature = "bevy_sprite")]
 // type ReflectInterpolatorColorMaterial =
 //     ReflectInterpolator<bevy::sprite::ColorMaterial>;
@@ -412,5 +603,23 @@ impl Interpolator for ColorMaterial {
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         item.color = color_lerp(self.start, self.end, value);
+    }
+}
+
+/// Constructor for [`ColorMaterial`]
+#[cfg(feature = "bevy_sprite")]
+pub fn color_material(start: Color, end: Color) -> ColorMaterial {
+    ColorMaterial { start, end }
+}
+
+/// Create an interpolation relative to previous value.
+/// Usually used with [`Chain::tween()`]
+#[cfg(feature = "bevy_sprite")]
+pub fn color_material_to(to: Color) -> impl Fn(&mut Color) -> ColorMaterial {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        color_material(start, end)
     }
 }

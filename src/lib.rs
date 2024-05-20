@@ -1,5 +1,5 @@
-//! All examples in this crate will be using the [`span_tween`] implementation
-//! which requires the feature "span_tween" and it is enabled by default.
+//! All examples in this crate will be using the default tweener implementation
+//! which requires the feature "default_tweener" and it is enabled by default.
 //!
 //! # Getting started
 //!
@@ -28,7 +28,7 @@
 //!   [`TargetResource`].
 //! - "**How**" to interpolate, such as [`interpolate::Translation`] and
 //!   [`interpolate::SpriteColor`]. And they're used with something like [`EaseFunction`]
-//! - "**When**" to interpolate such as [`TweenTimeSpan`].
+//! - "**When**" to interpolate such as [`TimeSpan`].
 //!
 //! # Multi-entities architecture
 //!
@@ -36,7 +36,7 @@
 //! Generally implemented by using child-parent hierarchy. The exact
 //! details is specific to a tweener/tween implementation.
 //!
-//! See [span tween structure](span_tween#entity-structure).
+//! See [tweener structure](tweener#entity-structure).
 //!
 //! # Examples
 //!
@@ -92,9 +92,9 @@
 //!
 //! ## Usages
 //!
-//! Run `cargo run --example span_tween` to see this in action.
+//! Run `cargo run --example entity_structure` to see this in action.
 //! ```no_run
-#![doc = include_str!("../examples/span_tween/span_tween.rs")]
+#![doc = include_str!("../examples/entity_structure.rs")]
 //! ```
 //! 
 //! [`Tween`]: tween::Tween
@@ -105,7 +105,7 @@
 //! [`TargetComponent`]: tween::TargetComponent
 //! [`TargetAsset`]: tween::TargetAsset
 //! [`TargetResource`]: tween::TargetResource
-//! [`TweenTimeSpan`]: span_tween::TweenTimeSpan
+//! [`TimeSpan`]: tweener::TimeSpan
 //! [`ComponentTween`]: tween::ComponentTween
 //! [`ComponentTweenDyn`]: tween::ComponentTweenDyn
 #![allow(clippy::needless_doctest_main)]
@@ -117,13 +117,13 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 mod utils;
 
+pub use bevy_time_runner;
+
 pub mod interpolate;
 pub mod interpolation;
 pub mod tween;
-pub mod tween_timer;
 
-#[cfg(feature = "span_tween")]
-pub mod span_tween;
+pub mod combinator;
 
 /// Commonly used items
 pub mod prelude {
@@ -132,17 +132,11 @@ pub mod prelude {
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
     pub use crate::interpolation::EaseFunction;
 
-    pub use crate::tween_timer::{Repeat, RepeatStyle};
+    pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
-    #[cfg(feature = "span_tween")]
-    #[allow(deprecated)]
-    pub use crate::span_tween::{
-        span_tween, ChildSpanTweenBuilderExt, SpanTweenBundle,
-        SpanTweenerBundle, SpanTweenerEnded, SpanTweensBuilderExt,
-        WorldChildSpanTweenBuilderExt,
-    };
+    pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
-    pub use crate::tween::{TweenEvent, TweenEventData};
+    pub use crate::tween::{AnimationTarget, TweenEvent, TweenEventData};
 
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
@@ -164,18 +158,11 @@ pub use tween::asset_dyn_tween_system;
 #[cfg(feature = "bevy_asset")]
 pub use tween::asset_tween_system;
 #[cfg(feature = "bevy_asset")]
-#[allow(deprecated)]
-pub use tween::asset_tween_system_full;
-
 pub use tween::component_dyn_tween_system;
 pub use tween::component_tween_system;
-#[allow(deprecated)]
-pub use tween::component_tween_system_full;
 
 pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
-#[allow(deprecated)]
-pub use tween::resource_tween_system_full;
 
 pub use tween::tween_event_system;
 pub use tween::tween_event_taking_system;
@@ -187,20 +174,17 @@ pub use tween::tween_event_taking_system;
 /// - [`interpolate::DefaultInterpolatorsPlugin`]
 /// - [`interpolate::DefaultDynInterpolatorsPlugin`]
 /// - [`interpolation::EaseFunctionPlugin`]
-/// - [`span_tween::SpanTweenPlugin`] if `"span_tween"` feature is enabled.
+/// - [`tweener::TweenerPlugin`] if `"default_tweener"` feature is enabled.
 pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        let p = PluginGroupBuilder::start::<DefaultTweenPlugins>()
+        PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin)
-            .add(tween::DefaultTweenEventsPlugin);
-        #[cfg(feature = "span_tween")]
-        let p = p.add(span_tween::SpanTweenPlugin);
-        p
+            .add(tween::DefaultTweenEventsPlugin)
     }
 }
 
@@ -224,13 +208,9 @@ impl Default for TweenAppResource {
 ///
 /// [`TweenSystemSet`] configuration:
 /// - In schedule configured by [`TweenAppResource`]:
-///   1. [`TickTweener`],
-///   2. [`Tweener`],
-///   3. [`UpdateInterpolationValue`],
-///   4. [`ApplyTween`],
+///   1. [`UpdateInterpolationValue`],
+///   2. [`ApplyTween`],
 ///
-///   [`TickTweener`]: [`TweenSystemSet::TickTweene`]
-///   [`Tweener`]: [`TweenSystemSet::Tweener`]
 ///   [`UpdateInterpolationValue`]: [`TweenSystemSet::UpdateInterpolationValue`]
 ///   [`ApplyTween`]: [`TweenSystemSet::ApplyTween`]
 #[derive(Default)]
@@ -241,23 +221,22 @@ pub struct TweenCorePlugin {
 
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
+        if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
+            app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
+                schedule: self.app_resource.schedule,
+            });
+        }
         app.configure_sets(
             self.app_resource.schedule,
             (
-                TweenSystemSet::TickTweener,
-                TweenSystemSet::Tweener,
                 TweenSystemSet::UpdateInterpolationValue,
                 TweenSystemSet::ApplyTween,
             )
-                .chain(),
+                .chain()
+                .after(bevy_time_runner::TimeRunnerSet::Progress),
         )
         .insert_resource(self.app_resource.clone())
-        .register_type::<tween_timer::TweenTimer>()
-        .register_type::<tween_timer::AnimationDirection>()
-        .register_type::<tween_timer::Repeat>()
-        .register_type::<tween_timer::RepeatStyle>()
-        .register_type::<tween::TweenProgress>()
-        .register_type::<tween::TweenerMarker>()
+        .register_type::<tween::AnimationTarget>()
         .register_type::<tween::TweenInterpolationValue>();
     }
 }
@@ -267,10 +246,18 @@ impl Plugin for TweenCorePlugin {
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
     /// This set is for systems that responsible for ticking any
-    /// tweener such as [`span_tween::tick_span_tweener_system`].
+    /// tweener such as [`tweener::tick_tweener_system`].
+    #[deprecated(
+        since = "0.5.0",
+        note = "The timing inside this crate is moved to `bevy_time_runner`"
+    )]
     TickTweener,
     /// This set is for systems that responsible for updating any
-    /// tweener such as [`span_tween::span_tweener_system`].
+    /// tweener such as [`tweener::tweener_system`].
+    #[deprecated(
+        since = "0.5.0",
+        note = "The timing inside this crate is moved to `bevy_time_runner`"
+    )]
     Tweener,
     /// This set is for systems that responsible for updating any
     /// [`tween::TweenInterpolationValue`] such as

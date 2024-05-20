@@ -5,7 +5,11 @@ use bevy::{
     prelude::*,
     window,
 };
-use bevy_tween::prelude::*;
+use bevy_tween::{
+    combinator::{go, parallel, tween_exact, AnimationSpawner},
+    prelude::*,
+    tween::TargetComponent,
+};
 
 const SCALE: f32 = 2.0;
 
@@ -128,7 +132,8 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             })
             .id()
     };
-    let triangle = commands
+    let dot_grid = TargetComponent::entity(dot_grid);
+    let triangle_id = commands
         .spawn(SpriteBundle {
             texture: triangle_image,
             sprite: Sprite {
@@ -139,7 +144,8 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
-    let square = commands
+    let triangle = TargetComponent::entity(triangle_id);
+    let square_id = commands
         .spawn(SpriteBundle {
             texture: square_image,
             sprite: Sprite {
@@ -150,6 +156,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
+    let square = TargetComponent::entity(square_id);
     let bevy_tween_text = commands
         .spawn(SpriteBundle {
             texture: bevy_tween_image,
@@ -157,6 +164,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
+    let bevy_tween_text = TargetComponent::entity(bevy_tween_text);
     let cornering_left = commands
         .spawn(SpriteBundle {
             texture: square_filled_image.clone(),
@@ -172,6 +180,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
+    let cornering_left = TargetComponent::entity(cornering_left);
     let cornering_right = commands
         .spawn(SpriteBundle {
             texture: square_filled_image.clone(),
@@ -187,245 +196,174 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
+    let cornering_right = TargetComponent::entity(cornering_right);
+
+    let square_and_triangle =
+        TargetComponent::entities([triangle_id, square_id]);
 
     // ========================================================================
+    let mut bevy_tween_text_color = bevy_tween_text.state(white_color);
+    let mut bevy_tween_text_angle_z = bevy_tween_text.state(PI);
+    let mut bevy_tween_text_scale = bevy_tween_text.state(Vec3::ZERO * SCALE);
+    let mut square_and_triangle_scale =
+        square_and_triangle.state(Vec3::ZERO * SCALE);
+    let mut square_and_triangle_alpha = square_and_triangle.state(1.);
+    let mut square_angle_z = square.state(0.);
+    let mut triangle_angle_z = triangle.state(0.);
+    let mut triangle_translation = triangle.state(Vec3::ZERO);
+    let mut square_translation = square.state(Vec3::ZERO);
+    let mut cornering_right_translation =
+        cornering_right.state(cornering_right_tween_start);
+    let mut cornering_left_translation =
+        cornering_left.state(cornering_left_tween_start);
+    let mut dot_grid_scale = dot_grid.state(Vec3::new(0.01, 0.01, 0.) * SCALE);
+
     fn secs(secs: f32) -> Duration {
         Duration::from_secs_f32(secs)
     }
     commands
-        .spawn(
-            SpanTweenerBundle::new(secs(12.)).with_repeat(Repeat::Infinitely),
-        )
-        .with_children(|c| {
-            c.span_tweens()
-                // [ bevy_tween_text ] ========================================
-                .tween_exact(
-                    secs(0.)..=secs(0.),
-                    EaseFunction::Linear,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        SpriteColor {
-                            start: white_color,
-                            end: white_color,
-                        },
-                    ),
-                )
-                .tween_exact(
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert(parallel((
+            (
+                set_value(
+                    bevy_tween_text_color.with(sprite_color_to(white_color)),
+                ),
+                tween_exact(
                     secs(0.)..secs(5.),
                     EaseFunction::QuinticOut,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        interpolate::AngleZ {
-                            start: PI,
-                            end: PI * 4.,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    bevy_tween_text_angle_z.with(angle_z_to(PI * 4.)),
+                ),
+                tween_exact(
                     secs(0.)..secs(9.),
                     EaseFunction::CircularOut,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        Scale {
-                            start: Vec3::ZERO * SCALE,
-                            end: Vec3::ONE * SCALE,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    bevy_tween_text_scale.with(scale_to(Vec3::ONE * SCALE)),
+                ),
+                tween_exact(
                     secs(11.)..secs(11.5),
                     EaseFunction::SineOut,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        Scale {
-                            start: Vec3::ONE * SCALE,
-                            end: Vec3::ONE * text_pop_scale * SCALE,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    bevy_tween_text_scale
+                        .with(scale_to(Vec3::ONE * text_pop_scale * SCALE)),
+                ),
+                tween_exact(
                     secs(11.5)..secs(12.),
                     EaseFunction::SineIn,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        Scale {
-                            start: Vec3::ONE * text_pop_scale * SCALE,
-                            end: Vec3::ZERO * SCALE,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    bevy_tween_text_scale.with(scale_to(Vec3::ZERO * SCALE)),
+                ),
+                tween_exact(
                     secs(10.)..secs(12.),
                     EaseFunction::QuinticIn,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        SpriteColor {
-                            start: white_color,
-                            end: white_color.with_a(0.0),
-                        },
-                    ),
-                )
-                .tween_exact(
+                    bevy_tween_text_color
+                        .with(sprite_color_to(white_color.with_a(0.0))),
+                ),
+                tween_exact(
                     secs(11.)..secs(12.),
                     EaseFunction::QuinticIn,
-                    ComponentTween::new_target(
-                        bevy_tween_text,
-                        interpolate::AngleZ {
-                            start: PI * 4.,
-                            end: PI * 7.,
-                        },
-                    ),
-                )
-                // [ square and triangle ] ====================================
-                .tween_exact(
-                    secs(0.)..=secs(0.),
-                    EaseFunction::Linear,
-                    ComponentTween::new_target_boxed(
-                        [square, triangle],
-                        interpolate::closure(
-                            |sprite: &mut Sprite, value: f32| {
-                                sprite.color =
-                                    sprite.color.with_a(1_f32.lerp(1., value));
-                            },
-                        ),
-                    ),
-                )
-                .tween_exact(
+                    bevy_tween_text_angle_z.with(angle_z_to(PI * 7.)),
+                ),
+            ),
+            (
+                set_value(square_and_triangle_alpha.with(sprite_alpha_to(1.))),
+                tween_exact(
                     secs(0.)..secs(9.),
                     EaseFunction::CircularOut,
-                    ComponentTween::new_target(
-                        [square, triangle],
-                        Scale {
-                            start: Vec3::ZERO * SCALE,
-                            end: Vec3::ONE * SCALE,
-                        },
-                    ),
-                )
-                .tween_exact(
-                    secs(4.)..secs(12.),
+                    square_and_triangle_scale.with(scale_to(Vec3::ONE * SCALE)),
+                ),
+                tween_exact(
+                    secs(4.)..secs(10.),
                     EaseFunction::ExponentialInOut,
-                    ComponentTween::new_target_boxed(
-                        [triangle, square],
-                        interpolate::closure(
-                            |sprite: &mut Sprite, value: f32| {
-                                sprite.color = sprite
-                                    .color
-                                    .with_a(sprite.color.a().lerp(0., value));
-                            },
-                        ),
-                    ),
-                )
-                .tween_exact(
+                    square_and_triangle_alpha.with(sprite_alpha_to(0.)),
+                ),
+                tween_exact(
                     secs(0.)..secs(12.),
                     EaseFunction::ExponentialOut,
-                    ComponentTween::new_target(
-                        square,
-                        interpolate::AngleZ {
-                            start: 0.,
-                            end: PI * 10.,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    triangle_angle_z.with(angle_z_to(-PI * 10.)),
+                ),
+                tween_exact(
                     secs(0.)..secs(12.),
                     EaseFunction::ExponentialOut,
-                    ComponentTween::new_target(
-                        triangle,
-                        interpolate::AngleZ {
-                            start: 0.,
-                            end: -PI * 10.,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    square_angle_z.with(angle_z_to(PI * 10.)),
+                ),
+                tween_exact(
                     secs(0.)..secs(4.),
                     EaseFunction::ExponentialOut,
-                    ComponentTween::new_target(
-                        triangle,
-                        Translation {
-                            start: Vec3::new(0., 0., 0.) * SCALE,
-                            end: Vec3::new(150., -20., 0.) * SCALE,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    triangle_translation.with(translation_to(
+                        Vec3::new(150., -20., 0.) * SCALE,
+                    )),
+                ),
+                tween_exact(
                     secs(0.)..secs(4.),
                     EaseFunction::ExponentialOut,
-                    ComponentTween::new_target(
-                        square,
-                        Translation {
-                            start: Vec3::new(0., 0., 0.) * SCALE,
-                            end: Vec3::new(-150., 20., 0.) * SCALE,
-                        },
-                    ),
-                )
-                // [ cornering ] ===============================================
-                .tween_exact(
+                    square_translation.with(translation_to(
+                        Vec3::new(-150., 20., 0.) * SCALE,
+                    )),
+                ),
+            ),
+            (
+                tween_exact(
                     secs(6.)..secs(6.2),
                     EaseFunction::Linear,
-                    ComponentTween::new_target(
-                        cornering_left,
-                        Translation {
-                            start: cornering_left_tween_start,
-                            end: destinated_cornering_left,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    cornering_left_translation
+                        .with(translation_to(destinated_cornering_left)),
+                ),
+                tween_exact(
                     secs(6.)..secs(6.2),
                     EaseFunction::Linear,
-                    ComponentTween::new_target(
-                        cornering_right,
-                        Translation {
-                            start: cornering_right_tween_start,
-                            end: destinated_cornering_right,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    cornering_right_translation
+                        .with(translation_to(destinated_cornering_right)),
+                ),
+                tween_exact(
                     secs(9.8)..secs(10.),
                     EaseFunction::Linear,
-                    ComponentTween::new_target(
-                        cornering_left,
-                        Translation {
-                            start: destinated_cornering_left,
-                            end: cornering_left_tween_end,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    cornering_left_translation
+                        .with(translation_to(cornering_left_tween_end)),
+                ),
+                tween_exact(
                     secs(9.8)..secs(10.),
                     EaseFunction::Linear,
-                    ComponentTween::new_target(
-                        cornering_right,
-                        Translation {
-                            start: destinated_cornering_right,
-                            end: cornering_right_tween_end,
-                        },
-                    ),
-                )
-                // [ dot_grid ] ===============================================
-                .tween_exact(
+                    cornering_right_translation
+                        .with(translation_to(cornering_right_tween_end)),
+                ),
+            ),
+            (
+                tween_exact(
                     secs(0.)..secs(5.),
                     EaseFunction::QuinticOut,
-                    ComponentTween::new_target(
-                        dot_grid,
-                        Scale {
-                            start: Vec3::new(0.01, 0.01, 0.) * SCALE,
-                            end: Vec3::new(0.4, 0.4, 0.) * SCALE,
-                        },
-                    ),
-                )
-                .tween_exact(
+                    dot_grid_scale
+                        .with(scale_to(Vec3::new(0.4, 0.4, 0.) * SCALE)),
+                ),
+                tween_exact(
                     secs(11.5)..secs(12.),
                     EaseFunction::QuadraticInOut,
-                    ComponentTween::new_target(
-                        dot_grid,
-                        Scale {
-                            start: Vec3::new(0.4, 0.4, 0.) * SCALE,
-                            end: Vec3::new(0.01, 0.01, 0.) * SCALE,
-                        },
-                    ),
-                );
-        });
+                    dot_grid_scale
+                        .with(scale_to(Vec3::new(0.01, 0.01, 0.) * SCALE)),
+                ),
+            ),
+            go(secs(12.)),
+        )));
+}
+
+type InterpolateSpriteAlpha = Box<dyn Interpolator<Item = Sprite>>;
+fn sprite_alpha(start: f32, end: f32) -> InterpolateSpriteAlpha {
+    Box::new(interpolate::closure(move |sprite: &mut Sprite, value| {
+        sprite.color = sprite.color.with_a(start.lerp(end, value));
+    }))
+}
+
+fn sprite_alpha_to(to: f32) -> impl Fn(&mut f32) -> InterpolateSpriteAlpha {
+    move |alpha| {
+        let a = sprite_alpha(*alpha, to);
+        *alpha = to;
+        a
+    }
+}
+
+fn set_value<B: Bundle>(
+    interpolator: B,
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+    move |a, pos| {
+        tween_exact(pos..=Duration::ZERO, EaseFunction::Linear, interpolator)(
+            a, pos,
+        )
+    }
 }

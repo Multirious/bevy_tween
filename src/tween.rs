@@ -245,30 +245,25 @@
 //! [`DefaultInterpolatorsPlugin`]: crate::interpolate::DefaultInterpolatorsPlugin
 //! [`DefaultDynInterpolatorsPlugin`]: crate::interpolate::DefaultDynInterpolatorsPlugin
 
-use std::cmp::Ordering;
-
 use bevy::prelude::*;
+use bevy_time_runner::TimeSpanProgress;
 
+use crate::combinator::TargetState;
 use crate::interpolate::Interpolator;
-use crate::tween_timer::AnimationDirection;
-use crate::BevyTweenRegisterSystems;
+use crate::{utils, BevyTweenRegisterSystems};
 
 mod systems;
-#[allow(deprecated)]
 #[cfg(feature = "bevy_asset")]
 pub use systems::{
     apply_asset_tween_system, asset_dyn_tween_system, asset_tween_system,
-    asset_tween_system_full,
 };
-#[allow(deprecated)]
 pub use systems::{
     apply_component_tween_system, component_dyn_tween_system,
-    component_tween_system, component_tween_system_full,
+    component_tween_system,
 };
-#[allow(deprecated)]
 pub use systems::{
     apply_resource_tween_system, resource_dyn_tween_system,
-    resource_tween_system, resource_tween_system_full,
+    resource_tween_system,
 };
 pub use systems::{tween_event_system, tween_event_taking_system};
 
@@ -276,70 +271,6 @@ pub use systems::{tween_event_system, tween_event_taking_system};
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
 pub struct SkipTween;
-
-/// Skip a tweener from functioning.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
-#[reflect(Component)]
-pub struct SkipTweener;
-
-/// [`TweenProgress`] should be automatically managed by a tweener.
-/// An assigned tweener will take care of it.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Component, Reflect)]
-#[reflect(Component)]
-pub struct TweenProgress {
-    /// Value between 0–1 signalling the progress of a tween in percentage.
-    /// Value can be more than 1 or negative to account for overshooting
-    /// and undershooting. It's up to the implementor on how to deal with this.
-    pub now_percentage: f32,
-    /// Now in seconds
-    pub now: f32,
-    /// Value between 0–1 signalling the progress of a tween in percentage.
-    /// Value can be more than 1 or negative to account for overshooting
-    /// and undershooting. It's up to the implementor on how to deal with this.
-    pub previous_percentage: f32,
-    /// Previous in seconds
-    pub previous: f32,
-}
-
-impl TweenProgress {
-    /// Get progression direction of the tween
-    pub fn direction(&self) -> Option<AnimationDirection> {
-        match self.now.total_cmp(&self.previous) {
-            Ordering::Greater => Some(AnimationDirection::Forward),
-            Ordering::Equal => None,
-            Ordering::Less => Some(AnimationDirection::Backward),
-        }
-    }
-
-    pub(crate) fn update(&mut self, now: f32, now_percentage: f32) {
-        self.previous_percentage = self.now_percentage;
-        self.previous = self.now;
-        self.now_percentage = now_percentage;
-        self.now = now;
-    }
-
-    // /// Check for Nan and Infinite value which is currently considered invalid.
-    // pub fn new(previous: f32, now: f32) -> Option<TweenProgress> {
-    //     if previous.is_finite() && now.is_finite() {
-    //         Some(TweenProgress::new_unchecked(now, previous))
-    //     } else {
-    //         None
-    //     }
-    // }
-
-    // /// Create new [`TweenProgress`] without checking for any Nan or Infinite value
-    // fn new_unchecked(previous: f32, now: f32) -> TweenProgress {
-    //     TweenProgress { now, previous }
-    // }
-
-    // pub fn now(&self) -> f32 {
-    //     self.now
-    // }
-
-    // pub fn previous(&self) -> f32 {
-    //     self.previous
-    // }
-}
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
 /// [`EaseClosure`] when a tween has the component [`TweenProgress`].
@@ -389,6 +320,20 @@ where
     pub fn new(interpolator: I) -> Self {
         Tween::new_target(T::default(), interpolator)
     }
+
+    /// Convert the current generic interpolator into a dynamic one.
+    pub fn with_interpolator_boxed(
+        self,
+    ) -> Tween<T, Box<dyn Interpolator<Item = I::Item>>> {
+        let Tween {
+            target,
+            interpolator,
+        } = self;
+        Tween {
+            target,
+            interpolator: Box::new(interpolator),
+        }
+    }
 }
 
 impl<T, Item> Tween<T, Box<dyn Interpolator<Item = Item>>>
@@ -419,15 +364,6 @@ where
     }
 }
 
-/// Useful for the implementor to specify what this *target* will return the
-/// tweenable [`Self::Item`] which should match [`Interpolator::Item`].
-/// See [`TargetComponent`], [`TargetResource`], and [`TargetAsset`].
-#[deprecated(since = "0.3.0", note = "It's not really that useful")]
-pub trait TweenTarget {
-    /// Type to be interpolated
-    type Item;
-}
-
 /// Convenient alias for [`Tween`] that [`TargetComponent`] with generic [`Interpolator`].
 pub type ComponentTween<I> = Tween<TargetComponent, I>;
 
@@ -438,10 +374,8 @@ pub type ComponentDynTween<C> =
 /// Tell the tween what component of what entity to tween.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetComponent {
-    /// Target the entity that contains this tween's tweener.
-    TweenerEntity,
-    /// Target the parent of this tween's tweener.
-    TweenerParent,
+    /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
+    Marker,
     /// Target this entity.
     Entity(Entity),
     /// Target these entities.
@@ -449,14 +383,9 @@ pub enum TargetComponent {
 }
 
 impl TargetComponent {
-    /// Target the entity that contains this tween's tweener.
-    pub fn tweener_entity() -> TargetComponent {
-        TargetComponent::TweenerEntity
-    }
-
-    /// Target the parent of this tween's tweener.
-    pub fn tweener_parent() -> TargetComponent {
-        TargetComponent::TweenerParent
+    /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
+    pub fn marker() -> TargetComponent {
+        TargetComponent::Marker
     }
 
     /// Target this entity.
@@ -471,11 +400,41 @@ impl TargetComponent {
     {
         TargetComponent::from_iter(entities)
     }
+
+    /// Create a new [`TargetState`] with the initial value out of this target.
+    pub fn state<V>(&self, value: V) -> TargetState<Self, V> {
+        TargetState::new(self.clone(), value)
+    }
+
+    /// Create a new tween with the supplied interpolator out of this target.
+    pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
+
+    /// Create a new tween with the supplied closure out of this target.
+    pub fn with_closure<F, C>(
+        &self,
+        closure: F,
+    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    where
+        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        C: Component,
+    {
+        let closure = crate::interpolate::closure(closure);
+        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
 }
 
 impl Default for TargetComponent {
     fn default() -> Self {
-        TargetComponent::tweener_entity()
+        TargetComponent::marker()
     }
 }
 
@@ -521,85 +480,20 @@ impl<const N: usize> From<&[Entity; N]> for TargetComponent {
     }
 }
 
-/// A tweener must have this marker within the entity to let
-/// [`ComponentTween`]s' system correctly search for the tweener that owns them.
-#[derive(Debug, Default, PartialEq, Eq, Hash, Component, Reflect)]
-pub struct TweenerMarker;
+/// [`ComponentTween`]'s system will navigate up the parent chain
+/// for this marker component while using [`TargetComponent::Marker`].
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
+pub struct AnimationTarget;
 
 impl<I> ComponentTween<I>
 where
     I: Interpolator,
     I::Item: Component,
 {
-    /// Convenient shortcut for targetting tweener's entity.
-    ///
-    /// ```
-    /// # use bevy_tween::prelude::*;
-    /// # const interpolator = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
-    /// assert_eq!(
-    ///     ComponentTween::tweener_entity(interpolator),
-    ///     ComponentTween::new_target(
-    ///         TargetComponent::TweenerEntity,
-    ///         interpolator
-    ///     )
-    /// );
-    /// ```
-    pub fn tweener_entity(interpolator: I) -> Self {
-        ComponentTween::new_target(
-            TargetComponent::tweener_entity(),
-            interpolator,
-        )
-    }
-
-    /// Convenient shortcut for targetting tweener's parent.
-    ///
-    /// ```
-    /// # use bevy_tween::prelude::*;
-    /// # const interpolator = interpolate::Translation { start: Vec3::ZERO, end: Vec3::ZERO };
-    /// assert_eq!(
-    ///     ComponentTween::tweener_parent(
-    ///         interpolator
-    ///     ),
-    ///     ComponentTween::new_target(
-    ///         TargetComponent::TweenerParent,
-    ///         interpolator
-    ///     )
-    /// );
-    /// ```
-    pub fn tweener_parent(interpolator: I) -> Self {
-        ComponentTween::new_target(
-            TargetComponent::tweener_parent(),
-            interpolator,
-        )
-    }
 }
 
-impl<C> ComponentDynTween<C>
-where
-    C: Component,
-{
-    /// Convenient method for targetting tweener's entity.
-    pub fn tweener_entity_boxed<I>(interpolator: I) -> Self
-    where
-        I: Interpolator<Item = C>,
-    {
-        ComponentTween::new_target(
-            TargetComponent::tweener_entity(),
-            Box::new(interpolator),
-        )
-    }
-
-    /// Convenient method for targetting tweener's parent.
-    pub fn tweener_parent_boxed<I>(interpolator: I) -> Self
-    where
-        I: Interpolator<Item = C>,
-    {
-        ComponentTween::new_target(
-            TargetComponent::tweener_parent(),
-            Box::new(interpolator),
-        )
-    }
-}
+impl<C> ComponentDynTween<C> where C: Component {}
 
 /// Convenient alias for [`Tween`] that [`TargetResource`] with generic [`Interpolator`].
 pub type ResourceTween<I> = Tween<TargetResource, I>;
@@ -617,6 +511,36 @@ impl TargetResource {
     pub fn new() -> TargetResource {
         TargetResource
     }
+
+    /// Create a new [`TargetState`] with the initial value out of this target.
+    pub fn state<V>(&self, value: V) -> TargetState<Self, V> {
+        TargetState::new(self.clone(), value)
+    }
+
+    /// Create a new tween with the supplied interpolator out of this target.
+    pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
+
+    /// Create a new tween with the supplied closure out of this target.
+    pub fn with_closure<F, C>(
+        &self,
+        closure: F,
+    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    where
+        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        C: Component,
+    {
+        let closure = crate::interpolate::closure(closure);
+        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
 }
 
 /// Convenient alias for [`Tween`] that [`TargetAsset`] with generic [`Interpolator`].
@@ -628,9 +552,30 @@ pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
 pub type AssetDynTween<A> =
     Tween<TargetAsset<A>, Box<dyn Interpolator<Item = A>>>;
 
+impl<I> AssetTween<I>
+where
+    I: Interpolator,
+    I::Item: Asset,
+{
+    /// Set the target to the supplied asset.
+    pub fn for_asset(mut self, asset: Handle<I::Item>) -> Self {
+        self.target = TargetAsset::Asset(asset);
+        self
+    }
+
+    /// Set the target to the supplied assets.
+    pub fn for_assets<Iter>(mut self, assets: Iter) -> Self
+    where
+        Iter: IntoIterator<Item = Handle<I::Item>>,
+    {
+        self.target = TargetAsset::from_iter(assets);
+        self
+    }
+}
+
 /// Tell the tween what asset of what type to tween.
 #[cfg(feature = "bevy_asset")]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetAsset<A: Asset>
 where
     A: Asset,
@@ -654,6 +599,46 @@ impl<A: Asset> TargetAsset<A> {
         I: IntoIterator<Item = Handle<A>>,
     {
         TargetAsset::from_iter(assets)
+    }
+
+    /// Create a new [`TargetState`] with the initial value out of this target.
+    pub fn state<V>(&self, value: V) -> TargetState<Self, V> {
+        TargetState::new(self.clone(), value)
+    }
+
+    /// Create a new tween with the supplied interpolator out of this target.
+    pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
+
+    /// Create a new tween with the supplied closure out of this target.
+    pub fn with_closure<F, C>(
+        &self,
+        closure: F,
+    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    where
+        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        C: Component,
+    {
+        let closure = crate::interpolate::closure(closure);
+        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+        Tween {
+            target: self.clone(),
+            interpolator,
+        }
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A: Asset> Clone for TargetAsset<A> {
+    fn clone(&self) -> Self {
+        match self {
+            TargetAsset::Asset(handle) => TargetAsset::Asset(handle.clone()),
+            TargetAsset::Assets(v) => TargetAsset::Assets(v.clone()),
+        }
     }
 }
 
@@ -732,14 +717,7 @@ impl Plugin for DefaultTweenEventsPlugin {
 /// # Examples
 ///
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::prelude::*;
-/// # use bevy::ecs::system::CommandQueue;
-/// #
-/// # let world = World::default();
-/// # let mut queue = CommandQueue::default();
-/// # let mut commands = Commands::new(&mut queue, &world);
-/// #
+#[doc = utils::doc_test_boilerplate!()]
 /// commands
 ///     .spawn((SpanTweenerBundle::new(Duration::from_secs(5))))
 ///     .with_children(|c| {
@@ -761,13 +739,12 @@ impl Plugin for DefaultTweenEventsPlugin {
 ///         ));
 ///     });
 /// ```
-///
+/// 
 /// ## Using custom data
 ///
 /// You have to regsiter [`tween_event_system`] or [`tween_event_taking_system`]
 /// before using custom data with [`TweenEvent<Data>`]. And add your custom event.
 /// Check [`DefaultTweenEventsPlugin`] for built-in events.
-///
 /// ```
 /// use bevy::prelude::*;
 /// use bevy_tween::prelude::*;
@@ -785,16 +762,8 @@ impl Plugin for DefaultTweenEventsPlugin {
 ///         .add_event::<TweenEvent<MyTweenData>>();
 /// }
 /// ```
-///
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy_tween::prelude::*;
-/// # use bevy::ecs::system::CommandQueue;
-/// #
-/// # let world = World::default();
-/// # let mut queue = CommandQueue::default();
-/// # let mut commands = Commands::new(&mut queue, &world);
-/// #
+#[doc = utils::doc_test_boilerplate!()]
 /// # #[derive(Clone)]
 /// # enum MyTweenData {
 /// #     Idle,
@@ -859,7 +828,7 @@ pub struct TweenEvent<Data = ()> {
     /// Custom user data
     pub data: Data,
     /// Progress percentage of the tween
-    pub progress: TweenProgress,
+    pub progress: TimeSpanProgress,
     /// Sampled value of an interpolation.
     pub interpolation_value: Option<f32>,
     /// The entity
