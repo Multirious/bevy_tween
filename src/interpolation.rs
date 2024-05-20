@@ -16,6 +16,9 @@ use bevy_time_runner::TimeSpanProgress;
 
 mod ease_functions;
 
+#[cfg(feature = "bevy_lookup_curve")]
+pub mod bevy_lookup_curve;
+
 /// A trait for implementing interpolation algorithms.
 ///
 /// Currently only used for registering [`sample_interpolations_system`].
@@ -39,7 +42,7 @@ impl Plugin for EaseFunctionPlugin {
         let app_resource = app
             .world
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` to be inserted to world");
         app.add_systems(
             app_resource.schedule,
             sample_interpolations_system::<EaseFunction>
@@ -826,7 +829,7 @@ impl Plugin for EaseClosurePlugin {
         let app_resource = app
             .world
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` to be inserted to world");
         app.add_systems(
             app_resource.schedule,
             sample_interpolations_system::<EaseClosure>
@@ -884,6 +887,14 @@ pub fn sample_interpolations_system<I>(
             .entity(entity)
             .insert(TweenInterpolationValue(value));
     });
+    remove_removed(&mut commands, &mut removed);
+}
+
+/// idk how to name this
+fn remove_removed(
+    commands: &mut Commands,
+    removed: &mut RemovedComponents<TimeSpanProgress>,
+) {
     removed.read().for_each(|entity| {
         if let Some(mut entity) = commands.get_entity(entity) {
             entity.remove::<TweenInterpolationValue>();
