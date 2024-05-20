@@ -935,8 +935,8 @@ version = "0.4.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_svg",
  "bevy_eventlistener",
+ "bevy_svg",
  "bevy_time_runner",
  "rand",
 ]
@@ -2517,7 +2517,7 @@ version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6b41438d2fc63c46c74a2203bf5ccd82c41ba04347b2fcf5754f230b167067d5"
 dependencies = [
- "ttf-parser 0.20.0",
+ "ttf-parser 0.21.1",
 ]
 
 [[package]]
