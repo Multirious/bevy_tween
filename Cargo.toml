@@ -35,9 +35,6 @@ default = [
   "bevy_eventlistener"
 ]
 
-# Deprecated, unused.
-default_tweener = []
-
 # Adds tweening systems for asset
 bevy_asset = [ "bevy/bevy_asset" ]
 # Adds nothing just yet but required by the "bevy_sprite" feature.
