@@ -939,6 +939,7 @@ dependencies = [
  "bevy_svg",
  "bevy_time_runner",
  "rand",
+ "ron",
 ]
 
 [[package]]
