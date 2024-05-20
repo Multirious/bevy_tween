@@ -82,7 +82,7 @@ name = "bevy_logo"
 path = "examples/animation/bevy_logo.rs"
 required-features = [
   "bevy_sprite",
-  "span_tween",
+  "bevy_lookup_curve",
 ]
 
 [[example]]
