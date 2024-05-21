@@ -3,13 +3,14 @@ use bevy_lookup_curve::{
     editor::LookupCurveEditor, LookupCurve, LookupCurvePlugin,
 };
 use bevy_svg::prelude::*;
-use bevy_time_runner::TimeRunner;
+use bevy_time_runner::{TimeRunner, TimeSpan};
 use bevy_tween::{
-    combinator::{backward, forward, sequence, tween},
+    combinator::{backward, forward, sequence, tween, AnimationSpawner},
     interpolate::{rotation, rotation_to, translation_to},
     prelude::*,
     tween::TargetComponent,
 };
+use interpolate::show;
 
 fn main() {
     App::new()
@@ -18,6 +19,7 @@ fn main() {
             LookupCurvePlugin,
             SvgPlugin,
             DefaultTweenPlugins,
+            interpolate::custom_interpolators_plugin,
         ))
         .add_systems(Startup, setup)
         .add_systems(
@@ -132,6 +134,7 @@ fn setup(
             origin: Origin::TopLeft,
             transform: Transform::from_translation(bevy_text_pos_1)
                 .with_rotation(bevy_text_rot_0),
+            visibility: Visibility::Hidden,
             ..Default::default()
         })
         .id();
@@ -165,6 +168,7 @@ fn setup(
                 ),
             ),
             backward(secs(4.)),
+            set(bevy_text.with(show())),
             tween(
                 secs(1.),
                 EaseFunction::BackOut,
@@ -178,7 +182,7 @@ fn restart_animation(
     input: Res<ButtonInput<KeyCode>>,
     mut animator: Query<&mut TimeRunner, With<AnimationAnimator>>,
 ) {
-    if input.pressed(KeyCode::KeyR) {
+    if input.just_pressed(KeyCode::KeyR) {
         let mut animator = animator.single_mut();
         animator.set_tick(0.);
     }
@@ -274,6 +278,19 @@ fn save_curve_on_exit(
     }
 }
 
+fn set<B: Bundle>(
+    tween: B,
+) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+    move |a, pos| {
+        a.spawn((
+            TimeSpan::try_from(pos..=pos).unwrap(),
+            EaseFunction::Linear,
+            tween,
+        ));
+        pos
+    }
+}
+
 // fn init_cam_curve() {
 //     use bevy_lookup_curve::{Knot, KnotInterpolation};
 //     use std::{fs::File, io::Write};
@@ -300,3 +317,27 @@ fn save_curve_on_exit(
 //     let to_string = &ron::to_string(&curve).unwrap();
 //     file.write_all(to_string.as_bytes()).unwrap();
 // }
+
+mod interpolate {
+    use bevy::prelude::*;
+    use bevy_tween::{interpolate::closure, prelude::*};
+
+    pub fn custom_interpolators_plugin(app: &mut App) {
+        app.add_tween_systems(bevy_tween::component_dyn_tween_system::<
+            Visibility,
+        >());
+    }
+
+    type VisiblityInterpolator = BoxedInterpolator<Visibility>;
+
+    pub fn show() -> VisiblityInterpolator {
+        Box::new(closure(|visiblity, value| {
+            println!("show: {value}");
+            if value > 0.5 {
+                *visiblity = Visibility::Visible;
+            } else {
+                *visiblity = Visibility::Hidden;
+            }
+        }))
+    }
+}
