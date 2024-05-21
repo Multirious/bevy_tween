@@ -29,12 +29,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     use interpolate::{angle_z_to, translation_to};
     commands.spawn(Camera2dBundle::default());
 
-    let start_x = -300.;
-    let end_x = 300.;
+    let x_left = -300.;
+    let x_right = 300.;
 
     commands.insert_resource(EffectPos {
-        trail: Vec3::new(start_x - 40., 0., 0.),
-        boom: Vec3::new(end_x, 0., 0.),
+        trail: Vec3::new(x_left - 40., 0., 0.),
+        boom: Vec3::new(x_right, 0., 0.),
     });
 
     let start_angle = -90.0_f32.to_radians();
@@ -42,7 +42,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let end_angle = mid_angle + 180.0_f32.to_radians();
 
     let triangle = TargetComponent::marker();
-    let mut triangle_translation = triangle.state(Vec3::new(start_x, 0., 0.));
+    let mut triangle_translation = triangle.state(Vec3::new(x_left, 0., 0.));
     let mut triangle_angle_z = triangle.state(start_angle);
 
     commands
@@ -63,7 +63,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 EaseFunction::ExponentialIn,
                 (
                     triangle_translation
-                        .with(translation_to(Vec3::new(end_x, 0., 0.))),
+                        .with(translation_to(Vec3::new(x_right, 0., 0.))),
                     triangle_angle_z.with(angle_z_to(mid_angle)),
                 ),
             ),
@@ -75,7 +75,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 EaseFunction::CircularOut,
                 (
                     triangle_translation
-                        .with(translation_to(Vec3::new(start_x, 0., 0.))),
+                        .with(translation_to(Vec3::new(x_left, 0., 0.))),
                     triangle_angle_z.with(angle_z_to(end_angle)),
                 ),
             ),
