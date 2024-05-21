@@ -373,33 +373,39 @@ where
 }
 
 pub fn event<Data>(
-    event: TweenEventData<Data>,
+    event_data: Data,
 ) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
 {
     move |a, pos| {
-        a.spawn((TimeSpan::try_from(pos..=pos).unwrap(), event));
+        a.spawn((
+            TimeSpan::try_from(pos..=pos).unwrap(),
+            TweenEventData::with_data(event_data),
+        ));
         pos
     }
 }
 
 pub fn event_at<Data>(
     at: Duration,
-    event: TweenEventData<Data>,
+    event_data: Data,
 ) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
 {
     move |a, pos| {
-        a.spawn((TimeSpan::try_from(at..=at).unwrap(), event));
+        a.spawn((
+            TimeSpan::try_from(at..=at).unwrap(),
+            TweenEventData::with_data(event_data),
+        ));
         pos
     }
 }
 
 pub fn event_for<Data>(
     length: Duration,
-    event: TweenEventData<Data>,
+    event_data: Data,
 ) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
@@ -407,14 +413,17 @@ where
     move |a, pos| {
         let start = pos;
         let end = pos + length;
-        a.spawn((TimeSpan::try_from(start..end).unwrap(), event));
+        a.spawn((
+            TimeSpan::try_from(start..end).unwrap(),
+            TweenEventData::with_data(event_data),
+        ));
         end
     }
 }
 
 pub fn event_exact<S, Data>(
     span: S,
-    event: TweenEventData<Data>,
+    event_data: Data,
 ) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
 where
     S: TryInto<TimeSpan>,
@@ -422,7 +431,10 @@ where
     Data: Send + Sync + 'static,
 {
     move |a, pos| {
-        a.spawn((span.try_into().unwrap(), event));
+        a.spawn((
+            span.try_into().unwrap(),
+            TweenEventData::with_data(event_data),
+        ));
         pos
     }
 }
