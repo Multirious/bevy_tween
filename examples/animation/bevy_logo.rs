@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*};
+use bevy::{app::AppExit, prelude::*, time::Stopwatch, utils::HashMap};
 use bevy_lookup_curve::{
     editor::LookupCurveEditor, LookupCurve, LookupCurvePlugin,
 };
@@ -258,8 +258,8 @@ fn save_curve_on_exit(
 ) {
     use std::{fs::File, io::Write};
     if app_exit.read().last().is_some() {
-        println!("saving curves");
         for (curve, name) in &curves.0 {
+            println!("Saving {name}");
             let curve = lookup_curve.get(curve).unwrap();
             let file_path = "assets/".to_string() + name;
             let mut file = File::options()
