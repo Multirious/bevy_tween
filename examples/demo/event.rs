@@ -40,7 +40,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mid_angle = start_angle + 540.0_f32.to_radians();
     let end_angle = mid_angle + 180.0_f32.to_radians();
 
-    let triangle = TargetComponent::marker();
+    let triangle = AnimationTarget.into_target();
     let mut triangle_translation = triangle.state(Vec3::new(x_left, 0., 0.));
 
     let mut triangle_angle_z = triangle.state(start_angle);
