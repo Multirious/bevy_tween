@@ -8,7 +8,6 @@ use bevy::{
 use bevy_tween::{
     combinator::{go, parallel, tween_exact, AnimationSpawner},
     prelude::*,
-    tween::TargetComponent,
 };
 
 const SCALE: f32 = 2.0;
@@ -132,7 +131,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             })
             .id()
     };
-    let dot_grid = TargetComponent::entity(dot_grid);
+    let dot_grid = dot_grid.into_target();
     let triangle_id = commands
         .spawn(SpriteBundle {
             texture: triangle_image,
@@ -144,7 +143,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
-    let triangle = TargetComponent::entity(triangle_id);
+    let triangle = triangle_id.into_target();
     let square_id = commands
         .spawn(SpriteBundle {
             texture: square_image,
@@ -156,7 +155,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
-    let square = TargetComponent::entity(square_id);
+    let square = square_id.into_target();
     let bevy_tween_text = commands
         .spawn(SpriteBundle {
             texture: bevy_tween_image,
@@ -164,7 +163,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
-    let bevy_tween_text = TargetComponent::entity(bevy_tween_text);
+    let bevy_tween_text = bevy_tween_text.into_target();
     let cornering_left = commands
         .spawn(SpriteBundle {
             texture: square_filled_image.clone(),
@@ -180,7 +179,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
-    let cornering_left = TargetComponent::entity(cornering_left);
+    let cornering_left = cornering_left.into_target();
     let cornering_right = commands
         .spawn(SpriteBundle {
             texture: square_filled_image.clone(),
@@ -196,10 +195,9 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..Default::default()
         })
         .id();
-    let cornering_right = TargetComponent::entity(cornering_right);
+    let cornering_right = cornering_right.into_target();
 
-    let square_and_triangle =
-        TargetComponent::entities([triangle_id, square_id]);
+    let square_and_triangle = [triangle_id, square_id].into_target();
 
     // ========================================================================
     let mut bevy_tween_text_color = bevy_tween_text.state(white_color);

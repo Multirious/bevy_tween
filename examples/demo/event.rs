@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
-    tween::TargetComponent,
 };
 
 fn main() {
@@ -43,6 +42,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let triangle = TargetComponent::marker();
     let mut triangle_translation = triangle.state(Vec3::new(x_left, 0., 0.));
+
     let mut triangle_angle_z = triangle.state(start_angle);
 
     commands
@@ -95,7 +95,7 @@ fn effect_system(
     use interpolate::{scale, sprite_color, translation};
     event.read().for_each(|event| match event.data {
         "bump" => {
-            let entity = TargetComponent::marker();
+            let entity = AnimationTarget.into_target();
             commands
                 .spawn((
                     Effect,
@@ -128,7 +128,7 @@ fn effect_system(
                 );
         }
         "small_boom" => {
-            let entity = TargetComponent::marker();
+            let entity = AnimationTarget.into_target();
             commands
                 .spawn((
                     Effect,
@@ -158,7 +158,7 @@ fn effect_system(
                 );
         }
         "boom" => {
-            let entity = TargetComponent::marker();
+            let entity = AnimationTarget.into_target();
             commands
                 .spawn((
                     Effect,

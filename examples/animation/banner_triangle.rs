@@ -51,7 +51,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 (i + 2) as f32,
             )
         })
-        .map(TargetComponent::Entity)
+        .map(|t| t.into_target())
         .collect::<Vec<_>>();
 
     let secs = 12.;
@@ -67,7 +67,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             snap_rotate(triangles[0].clone(), secs, 7, 12., ease),
         )));
 
-    let dotted_line_target = TargetComponent::marker();
+    let dotted_line_target = AnimationTarget.into_target();
     commands
         .spawn((SpatialBundle::default(), AnimationTarget))
         .with_children(dotted_line)

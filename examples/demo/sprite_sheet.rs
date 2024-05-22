@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::{prelude::*, tween::TargetComponent};
+use bevy_tween::prelude::*;
 
 mod interpolate {
     use bevy::prelude::*;
@@ -55,7 +55,7 @@ fn setup(
         TextureAtlasLayout::from_grid(Vec2::new(32., 32.), 16, 1, None, None);
     let len = layout.len();
     let atlas_layout = texture_atlas_layouts.add(layout);
-    let sprite = TargetComponent::marker();
+    let sprite = AnimationTarget.into_target();
     commands
         .spawn((
             SpriteSheetBundle {

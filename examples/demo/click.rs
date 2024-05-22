@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
-    tween::TargetComponent,
 };
 mod utils;
 
@@ -49,7 +48,7 @@ fn click_spawn_circle(
             let start = Vec3::new(coord.x, coord.y, 1.);
             let end = Vec3::new(0., 0., 0.);
             let transform = Transform::from_translation(start);
-            let circle = TargetComponent::marker();
+            let circle = AnimationTarget.into_target();
             let mut circle_transform = circle.transform_state(transform);
             commands
                 .spawn((

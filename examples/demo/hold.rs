@@ -1,9 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_tween::{
-    bevy_time_runner::TimeRunner, prelude::*, tween::TargetComponent,
-};
+use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
 
 mod interpolate {
@@ -87,7 +85,7 @@ fn setup(
             BigX,
         ))
         .id();
-    let big_x = TargetComponent::from(big_x);
+    let big_x = big_x.into_target();
     commands
         .spawn(EffectAnimator)
         .animation()

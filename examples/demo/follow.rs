@@ -8,7 +8,6 @@ use bevy_tween::{
     bevy_time_runner::TimeRunner,
     interpolate::{scale, sprite_color, translation},
     prelude::*,
-    tween::TargetComponent,
 };
 
 fn main() {
@@ -85,7 +84,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             // for the follow effect
             c.spawn(JebTranslationAnimator);
 
-            let jeb = TargetComponent::marker();
+            let jeb = AnimationTarget.into_target();
             // Spawning an animator that's responsible for a rotating effect
             c.animation()
                 .repeat(Repeat::Infinitely)
@@ -145,7 +144,7 @@ fn jeb_follows_cursor(
         },
     };
     if update {
-        let jeb = TargetComponent::marker();
+        let jeb = AnimationTarget.into_target();
         commands
             .entity(jeb_animator_entity)
             .animation()

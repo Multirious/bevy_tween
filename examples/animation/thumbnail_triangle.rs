@@ -49,7 +49,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .map(|(i, color)| {
             triangle(&mut commands, square_image.clone(), *color, i as f32)
         })
-        .map(TargetComponent::Entity)
+        .map(|t| t.into_target())
         .collect::<Vec<_>>();
 
     let secs = 12.;
