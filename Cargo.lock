@@ -879,7 +879,7 @@ dependencies = [
 [[package]]
 name = "bevy_time_runner"
 version = "0.1.0"
-source = "git+https://github.com/Multirious/bevy_time_runner#d5748a8a3600881a2c928a1423ea723647308610"
+source = "git+https://github.com/Multirious/bevy_time_runner#da815393215551c2a7a779ec3b0cf1b9e8102202"
 dependencies = [
  "bevy",
  "bevy_eventlistener",
