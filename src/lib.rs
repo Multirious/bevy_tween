@@ -136,7 +136,9 @@ pub mod prelude {
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
-    pub use crate::tween::{AnimationTarget, TweenEvent, TweenEventData};
+    pub use crate::tween::{
+        AnimationTarget, IntoTarget, TweenEvent, TweenEventData,
+    };
 
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
