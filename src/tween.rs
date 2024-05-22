@@ -375,6 +375,7 @@ pub type ComponentDynTween<C> =
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
 pub enum TargetComponent {
     /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
+    #[non_exhaustive]
     Marker,
     /// Target this entity.
     Entity(Entity),
