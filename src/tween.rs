@@ -834,3 +834,125 @@ pub struct TweenEvent<Data = ()> {
     /// The entity
     pub entity: Entity,
 }
+
+/// Trait for type to convert into a target type.
+pub trait IntoTarget {
+    /// The target type
+    type Target;
+
+    /// Convert [`Self`] into [`Self::Target`]
+    fn into_target(self) -> Self::Target;
+}
+
+impl IntoTarget for Entity {
+    type Target = TargetComponent;
+
+    fn into_target(self) -> Self::Target {
+        TargetComponent::entity(self)
+    }
+}
+
+impl<const N: usize> IntoTarget for [Entity; N] {
+    type Target = TargetComponent;
+
+    fn into_target(self) -> Self::Target {
+        TargetComponent::entities(self)
+    }
+}
+
+impl IntoTarget for Vec<Entity> {
+    type Target = TargetComponent;
+
+    fn into_target(self) -> Self::Target {
+        TargetComponent::entities(self)
+    }
+}
+
+impl IntoTarget for &[Entity] {
+    type Target = TargetComponent;
+
+    fn into_target(self) -> Self::Target {
+        TargetComponent::entities(self.iter().copied())
+    }
+}
+
+impl<const N: usize> IntoTarget for &[Entity; N] {
+    type Target = TargetComponent;
+
+    fn into_target(self) -> Self::Target {
+        TargetComponent::entities(self.iter().copied())
+    }
+}
+
+impl IntoTarget for &Vec<Entity> {
+    type Target = TargetComponent;
+
+    fn into_target(self) -> Self::Target {
+        TargetComponent::entities(self.iter().copied())
+    }
+}
+
+impl IntoTarget for AnimationTarget {
+    type Target = TargetComponent;
+
+    fn into_target(self) -> Self::Target {
+        TargetComponent::marker()
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A> IntoTarget for Handle<A>
+where
+    A: Asset,
+{
+    type Target = TargetAsset<A>;
+
+    fn into_target(self) -> Self::Target {
+        TargetAsset::asset(self)
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A: Asset, const N: usize> IntoTarget for [Handle<A>; N] {
+    type Target = TargetAsset<A>;
+
+    fn into_target(self) -> Self::Target {
+        TargetAsset::assets(self)
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A: Asset> IntoTarget for Vec<Handle<A>> {
+    type Target = TargetAsset<A>;
+
+    fn into_target(self) -> Self::Target {
+        TargetAsset::assets(self)
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A: Asset> IntoTarget for &[Handle<A>] {
+    type Target = TargetAsset<A>;
+
+    fn into_target(self) -> Self::Target {
+        TargetAsset::assets(self.iter().cloned())
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A: Asset, const N: usize> IntoTarget for &[Handle<A>; N] {
+    type Target = TargetAsset<A>;
+
+    fn into_target(self) -> Self::Target {
+        TargetAsset::assets(self.iter().cloned())
+    }
+}
+
+#[cfg(feature = "bevy_asset")]
+impl<A: Asset> IntoTarget for &Vec<Handle<A>> {
+    type Target = TargetAsset<A>;
+
+    fn into_target(self) -> Self::Target {
+        TargetAsset::assets(self.iter().cloned())
+    }
+}
