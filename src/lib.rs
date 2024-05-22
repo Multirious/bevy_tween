@@ -245,20 +245,6 @@ impl Plugin for TweenCorePlugin {
 /// See [`TweenCorePlugin`] for default system configuration.
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
-    /// This set is for systems that responsible for ticking any
-    /// tweener such as [`tweener::tick_tweener_system`].
-    #[deprecated(
-        since = "0.5.0",
-        note = "The timing inside this crate is moved to `bevy_time_runner`"
-    )]
-    TickTweener,
-    /// This set is for systems that responsible for updating any
-    /// tweener such as [`tweener::tweener_system`].
-    #[deprecated(
-        since = "0.5.0",
-        note = "The timing inside this crate is moved to `bevy_time_runner`"
-    )]
-    Tweener,
     /// This set is for systems that responsible for updating any
     /// [`tween::TweenInterpolationValue`] such as
     /// [`interpolation::sample_interpolations_system`].
