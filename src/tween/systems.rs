@@ -1,5 +1,8 @@
 use super::*;
-use bevy::ecs::schedule::SystemConfigs;
+use bevy::{
+    ecs::{query::QueryEntityError, schedule::SystemConfigs},
+    utils::{HashMap, HashSet},
+};
 use bevy_time_runner::TimeSpanProgress;
 use std::any::type_name;
 
@@ -68,38 +71,14 @@ pub fn apply_component_tween_system<I>(
         Without<SkipTween>,
     >,
     mut q_component: Query<&mut I::Item>,
+    mut last_entity_error: Local<HashMap<Entity, QueryEntityError>>,
+    mut last_search_error: Local<HashSet<Entity>>,
 ) where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component,
 {
-    fn get_singular_target(
-        entity: Entity,
-        target: &TargetComponent,
-        q_animation_target: &Query<(Option<&Parent>, Has<AnimationTarget>)>,
-    ) -> Option<Entity> {
-        match target {
-            TargetComponent::Marker => {
-                let mut curr = entity;
-                loop {
-                    match q_animation_target.get(curr) {
-                        Ok((parent, has_marker)) => {
-                            if has_marker {
-                                return Some(curr);
-                            } else {
-                                match parent {
-                                    Some(parent) => curr = parent.get(),
-                                    None => return None,
-                                }
-                            }
-                        }
-                        _ => return None,
-                    }
-                }
-            }
-            TargetComponent::Entity(e) => Some(*e),
-            TargetComponent::Entities(_) => panic!("Should not reach this"),
-        }
-    }
+    let mut entity_error = HashMap::new();
+    let mut search_error = HashSet::new();
     q_tween
         .iter()
         .for_each(|(entity, tween, ease_value)| match &tween.target {
@@ -109,10 +88,22 @@ pub fn apply_component_tween_system<I>(
                         match q_component.get_mut(*target) {
                             Ok(target_component) => target_component,
                             Err(e) => {
-                                warn!(
-                                    "{} query error: {e}",
-                                    type_name::<ComponentTween<I>>()
-                                );
+                                if last_entity_error
+                                    .get(target)
+                                    .map(|old_e| old_e != &e)
+                                    .unwrap_or(true)
+                                    && entity_error
+                                        .get(target)
+                                        .map(|old_e| old_e != &e)
+                                        .unwrap_or(true)
+                                {
+                                    error!(
+                                        "{} attempted to tween {} component but got query error: {e}",
+                                        type_name::<I>(),
+                                        type_name::<I::Item>()
+                                    );
+                                }
+                                entity_error.insert(*target, e);
                                 return;
                             }
                         };
@@ -122,21 +113,62 @@ pub fn apply_component_tween_system<I>(
                 });
             }
             _ => {
-                let Some(target) = get_singular_target(
-                    entity,
-                    &tween.target,
-                    &q_animation_target,
-                ) else {
-                    return;
+                let target = match &tween.target {
+                    TargetComponent::Marker => {
+                        let mut curr = entity;
+                        let found = 'l: loop {
+                            match q_animation_target.get(curr) {
+                                Ok((parent, has_marker)) => {
+                                    if has_marker {
+                                        break 'l Some(curr);
+                                    } else {
+                                        match parent {
+                                            Some(parent) => curr = parent.get(),
+                                            None => break 'l None,
+                                        }
+                                    }
+                                }
+                                _ => break 'l None,
+                            }
+                        };
+                        match found {
+                            Some(found) => found,
+                            None => {
+                                if !last_search_error.contains(&entity) && !search_error.contains(&entity) {
+                                    error!(
+                                        "Tween {:?} {} cannot find AnimationTarget marker",
+                                        entity,
+                                        type_name::<I>(),
+                                    );
+                                }
+                                search_error.insert(entity);
+                                return;
+                            },
+                        }
+                    }
+                    TargetComponent::Entity(e) => *e,
+                    _ => unreachable!(),
                 };
 
                 let mut target_component = match q_component.get_mut(target) {
                     Ok(target_component) => target_component,
                     Err(e) => {
-                        warn!(
-                            "{} query error: {e}",
-                            type_name::<ComponentTween<I>>()
-                        );
+                        if last_entity_error
+                            .get(&target)
+                            .map(|old_e| old_e != &e)
+                            .unwrap_or(true)
+                            && entity_error
+                                .get(&target)
+                                .map(|old_e| old_e != &e)
+                                .unwrap_or(true)
+                        {
+                            error!(
+                                "{} attempted to tween {} component but got query error: {e}",
+                                type_name::<I>(),
+                                type_name::<I::Item>()
+                            );
+                        }
+                        entity_error.insert(target, e);
                         return;
                     }
                 };
@@ -144,7 +176,9 @@ pub fn apply_component_tween_system<I>(
                     .interpolator
                     .interpolate(&mut target_component, ease_value.0);
             }
-        })
+        });
+    *last_entity_error = entity_error;
+    *last_search_error = search_error;
 }
 
 /// System alias for [`component_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
@@ -225,14 +259,22 @@ pub fn apply_resource_tween_system<I>(
         Without<SkipTween>,
     >,
     resource: Option<ResMut<I::Item>>,
+    mut last_error: Local<bool>,
 ) where
     I: Interpolator,
     I::Item: Resource,
 {
     let Some(mut resource) = resource else {
-        warn!("Resource does not exists for a resource tween.");
+        if !*last_error {
+            error!(
+                "{} resource tween system cannot find the resource",
+                type_name::<I>()
+            );
+            *last_error = true;
+        }
         return;
     };
+    *last_error = false;
     q_tween.iter().for_each(|(tween, ease_value)| {
         tween.interpolator.interpolate(&mut resource, ease_value.0);
     })
@@ -316,20 +358,41 @@ pub fn apply_asset_tween_system<I>(
         Without<SkipTween>,
     >,
     asset: Option<ResMut<Assets<I::Item>>>,
+    mut last_resource_error: Local<bool>,
+    mut last_asset_error: Local<HashSet<AssetId<I::Item>>>,
 ) where
     I: Interpolator,
     I::Item: Asset,
 {
+    let mut asset_error = HashSet::new();
+
     let Some(mut asset) = asset else {
-        warn!("Asset resource does not exists for an asset tween.");
+        if !*last_resource_error {
+            error!(
+                "{} asset tween system cannot find the asset resource",
+                type_name::<I>()
+            );
+            *last_resource_error = true;
+        }
         return;
     };
+    *last_resource_error = false;
     q_tween
         .iter()
         .for_each(|(tween, ease_value)| match &tween.target {
             TargetAsset::Asset(a) => {
                 let Some(asset) = asset.get_mut(a) else {
-                    warn!("Asset not found for an asset tween");
+                    if !last_asset_error.contains(&a.id())
+                        && !asset_error.contains(&a.id())
+                    {
+                        error!(
+                            "{} attempted to tween {} asset {} but it does not exists",
+                                type_name::<I>(),
+                            type_name::<I::Item>(),
+                            a.id()
+                        );
+                    }
+                    asset_error.insert(a.id());
                     return;
                 };
                 tween.interpolator.interpolate(asset, ease_value.0);
@@ -337,13 +400,25 @@ pub fn apply_asset_tween_system<I>(
             TargetAsset::Assets(assets) => {
                 for a in assets {
                     let Some(a) = asset.get_mut(a) else {
-                        warn!("Asset not found for an asset tween");
+                        if !last_asset_error.contains(&a.id())
+                            && !asset_error.contains(&a.id())
+                        {
+                            error!(
+                                "{} attempted to tween {} asset {} but it does not exists",
+                                type_name::<I>(),
+                                type_name::<I::Item>(),
+                                a.id()
+                            );
+                        }
+                        asset_error.insert(a.id());
                         continue;
                     };
                     tween.interpolator.interpolate(a, ease_value.0);
                 }
             }
-        })
+        });
+
+    *last_asset_error = asset_error;
 }
 
 /// System alias for [`asset_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
