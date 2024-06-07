@@ -97,7 +97,7 @@ fn snap_rotate(
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
         for i in 0..max {
             let max = max as f32;
@@ -112,7 +112,7 @@ fn snap_rotate(
                 )),
             )(a, pos);
         }
-        pos + Duration::from_secs_f32(secs)
+        *pos += Duration::from_secs_f32(secs)
     }
 }
 

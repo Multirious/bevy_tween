@@ -358,10 +358,8 @@ fn sprite_alpha_to(to: f32) -> impl Fn(&mut f32) -> InterpolateSpriteAlpha {
 
 fn set_value<B: Bundle>(
     interpolator: B,
-) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
-        tween_exact(pos..=Duration::ZERO, EaseFunction::Linear, interpolator)(
-            a, pos,
-        )
+        tween_exact(*pos..=*pos, EaseFunction::Linear, interpolator)(a, pos)
     }
 }
