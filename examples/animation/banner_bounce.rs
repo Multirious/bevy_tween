@@ -6,7 +6,7 @@ use bevy::{
     window,
 };
 use bevy_tween::{
-    combinator::{go, parallel, tween_exact, AnimationSpawner},
+    combinator::{go, parallel, tween_exact, AnimationCommands},
     prelude::*,
 };
 
@@ -358,7 +358,7 @@ fn sprite_alpha_to(to: f32) -> impl Fn(&mut f32) -> InterpolateSpriteAlpha {
 
 fn set_value<B: Bundle>(
     interpolator: B,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration {
     move |a, pos| {
         tween_exact(pos..=Duration::ZERO, EaseFunction::Linear, interpolator)(
             a, pos,

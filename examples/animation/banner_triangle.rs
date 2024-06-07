@@ -2,7 +2,7 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_tween::{
-    combinator::{parallel, tween_exact, AnimationSpawner},
+    combinator::{parallel, tween_exact, AnimationCommands},
     interpolate::{angle_z, translation},
     prelude::*,
     tween::TargetComponent,
@@ -97,7 +97,7 @@ fn snap_rotate(
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration {
     move |a, pos| {
         for i in 0..max {
             let max = max as f32;

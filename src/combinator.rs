@@ -126,15 +126,15 @@ mod state {
 
 pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
-pub struct AnimationSpawner<'r, 'a> {
+pub struct AnimationCommands<'r, 'a> {
     child_builder: &'r mut ChildBuilder<'a>,
 }
 
-impl<'r, 'a> AnimationSpawner<'r, 'a> {
+impl<'r, 'a> AnimationCommands<'r, 'a> {
     pub(crate) fn new(
         child_builder: &'r mut ChildBuilder<'a>,
-    ) -> AnimationSpawner<'r, 'a> {
-        AnimationSpawner { child_builder }
+    ) -> AnimationCommands<'r, 'a> {
+        AnimationCommands { child_builder }
     }
 
     pub fn spawn(&mut self, bundle: impl Bundle) -> EntityCommands<'_> {
@@ -213,7 +213,7 @@ impl<'a> AnimationBuilder<'a> {
     /// as a children of this entity.
     pub fn insert<F>(self, animation: F) -> EntityCommands<'a>
     where
-        F: FnOnce(&mut AnimationSpawner, Duration) -> Duration,
+        F: FnOnce(&mut AnimationCommands, Duration) -> Duration,
     {
         let AnimationBuilder {
             mut entity_commands,
@@ -221,7 +221,7 @@ impl<'a> AnimationBuilder<'a> {
         } = self;
         let mut dur = Duration::ZERO;
         entity_commands.with_children(|c| {
-            let mut a = AnimationSpawner::new(c);
+            let mut a = AnimationCommands::new(c);
             dur = animation(&mut a, dur);
         });
         time_runner.set_length(dur);
@@ -314,7 +314,7 @@ impl<'a> AnimationBuilder<'a> {
 /// Returns position from the last animation.
 pub fn sequence<S>(
     sequence: S,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     S: Sequence,
 {
@@ -327,7 +327,7 @@ where
 /// Returns the longest offset from the passed animations.
 pub fn parallel<P>(
     parallel: P,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     P: Parallel,
 {
@@ -338,7 +338,7 @@ pub fn tween<I, T>(
     duration: Duration,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     I: Bundle,
     T: Bundle,
@@ -359,7 +359,7 @@ pub fn tween_exact<S, I, T>(
     span: S,
     interpolation: I,
     tween: T,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
@@ -374,7 +374,7 @@ where
 
 pub fn event<Data>(
     event_data: Data,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
 {
@@ -390,7 +390,7 @@ where
 pub fn event_at<Data>(
     at: Duration,
     event_data: Data,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
 {
@@ -406,7 +406,7 @@ where
 pub fn event_for<Data>(
     length: Duration,
     event_data: Data,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     Data: Send + Sync + 'static,
 {
@@ -424,7 +424,7 @@ where
 pub fn event_exact<S, Data>(
     span: S,
     event_data: Data,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
@@ -441,19 +441,19 @@ where
 
 pub fn forward(
     by: Duration,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration {
     move |_, pos| pos + by
 }
 
 pub fn backward(
     by: Duration,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration {
     move |_, pos| pos.saturating_sub(by)
 }
 
 pub fn go(
     to: Duration,
-) -> impl FnOnce(&mut AnimationSpawner, Duration) -> Duration {
+) -> impl FnOnce(&mut AnimationCommands, Duration) -> Duration {
     move |_, _| to
 }
 
@@ -477,25 +477,25 @@ mod sealed {
     use super::*;
 
     pub(super) trait SequenceSealed {
-        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration;
+        fn call(self, a: &mut AnimationCommands, pos: Duration) -> Duration;
     }
 
-    impl<T: FnOnce(&mut AnimationSpawner, Duration) -> Duration> SequenceSealed
+    impl<T: FnOnce(&mut AnimationCommands, Duration) -> Duration> SequenceSealed
         for T
     {
-        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration {
+        fn call(self, a: &mut AnimationCommands, pos: Duration) -> Duration {
             self(a, pos)
         }
     }
 
     pub(super) trait ParallelSealed {
-        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration;
+        fn call(self, a: &mut AnimationCommands, pos: Duration) -> Duration;
     }
 
-    impl<T: FnOnce(&mut AnimationSpawner, Duration) -> Duration> ParallelSealed
+    impl<T: FnOnce(&mut AnimationCommands, Duration) -> Duration> ParallelSealed
         for T
     {
-        fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration {
+        fn call(self, a: &mut AnimationCommands, pos: Duration) -> Duration {
             self(a, pos)
         }
     }
@@ -503,7 +503,7 @@ mod sealed {
     macro_rules! impl_sequence {
         ($($i:tt $t:ident)+) => {
             impl< $($t: SequenceSealed,)+ > SequenceSealed for ($($t,)*) {
-                fn call(self, a: &mut AnimationSpawner, pos: Duration) -> Duration {
+                fn call(self, a: &mut AnimationCommands, pos: Duration) -> Duration {
                     $(
                         let pos = self.$i.call(a, pos);
                     )*
@@ -515,7 +515,7 @@ mod sealed {
     macro_rules! impl_parallel {
         ($($i:tt $t:ident)+) => {
             impl< $($t: ParallelSealed,)+ > ParallelSealed for ($($t,)*) {
-                fn call(self, a: &mut AnimationSpawner, start: Duration) -> Duration {
+                fn call(self, a: &mut AnimationCommands, start: Duration) -> Duration {
                     let mut furthest = start;
                     $(
                         let pos = self.$i.call(a, start);
