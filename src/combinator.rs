@@ -153,6 +153,7 @@ impl<'a> AnimationBuilderExt for EntityCommands<'a> {
         AnimationBuilder {
             entity_commands: self.reborrow(),
             time_runner: TimeRunner::default(),
+            custom_length: None,
         }
     }
 }
@@ -163,6 +164,7 @@ impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
         AnimationBuilder {
             entity_commands,
             time_runner: TimeRunner::default(),
+            custom_length: None,
         }
     }
 }
@@ -173,6 +175,7 @@ impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
         AnimationBuilder {
             entity_commands,
             time_runner: TimeRunner::default(),
+            custom_length: None,
         }
     }
 }
@@ -181,6 +184,7 @@ impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
 pub struct AnimationBuilder<'a> {
     entity_commands: EntityCommands<'a>,
     time_runner: TimeRunner,
+    custom_length: Option<Duration>,
 }
 impl<'a> AnimationBuilder<'a> {
     /// Configure [`TimeRunner`]'s [`Repeat`]
@@ -209,8 +213,24 @@ impl<'a> AnimationBuilder<'a> {
         self
     }
 
+    /// Configure [`TimeRunner`]'s `paused`
+    pub fn paused(mut self, paused: bool) -> Self {
+        self.time_runner.set_paused(paused);
+        self
+    }
+
+    /// Use custom duration instead of determined by combinator duration.
+    pub fn length(mut self, duration: Duration) -> Self {
+        self.custom_length = Some(duration);
+        self
+    }
+
     /// Add animations from a closure. Animation entities will be subjected
     /// as a children of this entity.
+    /// [`TimeRunner`]'s length is determined by last `&mut Duration` value unless use
+    /// [`Self::length`].
+    /// It's also possible to use combinator like [`go`], [`forward`], and [`backward`]
+    /// as the last combinator to customize the length.
     pub fn insert<F>(self, animation: F) -> EntityCommands<'a>
     where
         F: FnOnce(&mut AnimationCommands, &mut Duration),
@@ -218,19 +238,25 @@ impl<'a> AnimationBuilder<'a> {
         let AnimationBuilder {
             mut entity_commands,
             mut time_runner,
+            custom_length,
         } = self;
         let mut dur = Duration::ZERO;
         entity_commands.with_children(|c| {
             let mut a = AnimationCommands::new(c);
             animation(&mut a, &mut dur);
         });
-        time_runner.set_length(dur);
+        match custom_length {
+            Some(length) => time_runner.set_length(length),
+            None => time_runner.set_length(dur),
+        }
         entity_commands.insert(time_runner);
         entity_commands
     }
 
     /// Insert tween components directly to this entity.
     /// Can be used to create a simple animation quickly.
+    /// [`TimeRunner`]'s length is determined by provided `duration` unless use
+    /// [`Self::length`]
     pub fn insert_tween_here<I, T>(
         self,
         duration: Duration,
@@ -244,8 +270,13 @@ impl<'a> AnimationBuilder<'a> {
         let AnimationBuilder {
             mut entity_commands,
             mut time_runner,
+            custom_length,
         } = self;
-        time_runner.set_length(duration);
+        match custom_length {
+            Some(length) => time_runner.set_length(length),
+            None => time_runner.set_length(duration),
+        }
+
         entity_commands.insert((
             TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
             interpolation,
