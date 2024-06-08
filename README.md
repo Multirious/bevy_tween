@@ -68,10 +68,9 @@ See [demos](#Demos)
 
 Goals:
 - [x] Flexible 🎉
-- [ ] Built-in Keyframe animation support.
 - integration with other crates (?)
   - [ ] `bevy_animation`
-  - [ ] `bevy_lookup_curve`
+  - [x] `bevy_lookup_curve`
 - [ ] Editor. While the original goal for this crate is tweening from code,
        this crate absolutely has the capability to work on any complex animations.
        The editor will aid in such jobs.
