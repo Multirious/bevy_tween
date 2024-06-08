@@ -7,7 +7,7 @@ use bevy_tween::{
     combinator::tween,
     interpolate::translation,
     prelude::*,
-    tween::TargetComponent,
+    tween::{AnimationTarget, TargetComponent},
 };
 
 fn main() {
