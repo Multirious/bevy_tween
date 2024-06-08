@@ -266,11 +266,12 @@ impl<'a> AnimationBuilder<'a> {
     pub fn repeat(mut self, repeat: Repeat) -> Self {
         match self.time_runner.repeat() {
             Some((_, repeat_style)) => {
-                self.time_runner.set_repeat(Some((repeat, repeat_style)))
+                self.time_runner.set_repeat(Some((repeat, repeat_style)));
             }
-            None => self
-                .time_runner
-                .set_repeat(Some((repeat, RepeatStyle::default()))),
+            None => {
+                self.time_runner
+                    .set_repeat(Some((repeat, RepeatStyle::default())));
+            }
         }
         self
     }
@@ -279,11 +280,12 @@ impl<'a> AnimationBuilder<'a> {
     pub fn repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
         match self.time_runner.repeat() {
             Some((repeat, _)) => {
-                self.time_runner.set_repeat(Some((repeat, repeat_style)))
+                self.time_runner.set_repeat(Some((repeat, repeat_style)));
             }
-            None => self
-                .time_runner
-                .set_repeat(Some((Repeat::Infinitely, repeat_style))),
+            None => {
+                self.time_runner
+                    .set_repeat(Some((Repeat::Infinitely, repeat_style)));
+            }
         }
         self
     }
@@ -321,8 +323,12 @@ impl<'a> AnimationBuilder<'a> {
             animation(&mut a, &mut dur);
         });
         match custom_length {
-            Some(length) => time_runner.set_length(length),
-            None => time_runner.set_length(dur),
+            Some(length) => {
+                time_runner.set_length(length);
+            }
+            None => {
+                time_runner.set_length(dur);
+            }
         }
         entity_commands.insert(time_runner);
         entity_commands
@@ -348,8 +354,12 @@ impl<'a> AnimationBuilder<'a> {
             custom_length,
         } = self;
         match custom_length {
-            Some(length) => time_runner.set_length(length),
-            None => time_runner.set_length(duration),
+            Some(length) => {
+                time_runner.set_length(length);
+            }
+            None => {
+                time_runner.set_length(duration);
+            }
         }
 
         entity_commands.insert((
