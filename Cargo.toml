@@ -20,6 +20,7 @@ resolver = "2"
 [dependencies]
 bevy = { version = "0.13.0", default-features = false }
 bevy_time_runner = { version = "0.1.4" }
+bevy_lookup_curve = { version = "0.2.1", optional = true }
 
 [dev-dependencies]
 bevy-inspector-egui = "0.23"
@@ -46,6 +47,8 @@ bevy_render = [ "bevy/bevy_render"]
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
 # Add entity-targeted events with bevy_eventlistener
 bevy_eventlistener = [ "bevy_time_runner/bevy_eventlistener" ]
+# Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
+bevy_lookup_curve = [ "dep:bevy_lookup_curve" ]
 
 [package.metadata.docs.rs]
 all-features = true
