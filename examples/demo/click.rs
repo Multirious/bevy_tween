@@ -1,90 +1,11 @@
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{
+    bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
+};
 mod utils;
 
-mod m {
-    use std::sync::OnceLock;
-
-    use bevy::prelude::*;
-    use bevy_tween::prelude::*;
-
-    /// Automatically figure out the current position of this entity and then
-    /// tween from there.
-    pub struct TranslateTo {
-        pub start: OnceLock<Vec3>,
-        pub end: Vec3,
-    }
-
-    impl TranslateTo {
-        pub fn end(end: Vec3) -> TranslateTo {
-            TranslateTo {
-                start: OnceLock::new(),
-                end,
-            }
-        }
-    }
-
-    impl Interpolator for TranslateTo {
-        type Item = Transform;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let start = self.start.get_or_init(|| item.translation);
-            let end = self.end;
-            item.translation = start.lerp(end, value);
-        }
-    }
-
-    /// Automatically figure out the current scale of this entity and then
-    /// tween from there.
-    pub struct ScaleTo {
-        pub start: OnceLock<Vec3>,
-        pub end: Vec3,
-    }
-
-    impl ScaleTo {
-        pub fn end(end: Vec3) -> ScaleTo {
-            ScaleTo {
-                start: OnceLock::new(),
-                end,
-            }
-        }
-    }
-
-    impl Interpolator for ScaleTo {
-        type Item = Transform;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let start = self.start.get_or_init(|| item.scale);
-            let end = self.end;
-            item.scale = start.lerp(end, value);
-        }
-    }
-
-    /// Automatically figure out the current color of this entity and then
-    /// tween from there.
-    pub struct SpriteColorTo {
-        pub start: OnceLock<Color>,
-        pub end: Color,
-    }
-
-    impl SpriteColorTo {
-        pub fn end(end: Color) -> SpriteColorTo {
-            SpriteColorTo {
-                start: OnceLock::new(),
-                end,
-            }
-        }
-    }
-
-    impl Interpolator for SpriteColorTo {
-        type Item = Sprite;
-
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
-            let start = *self.start.get_or_init(|| item.color);
-            let end = self.end;
-            interpolate::SpriteColor { start, end }.interpolate(item, value);
-        }
-    }
+fn secs(secs: f32) -> Duration {
+    Duration::from_secs_f32(secs)
 }
 
 fn main() {
@@ -118,53 +39,53 @@ fn click_spawn_circle(
     key: Res<ButtonInput<MouseButton>>,
     asset_server: Res<AssetServer>,
 ) {
+    use interpolate::sprite_color;
     let circle_filled_image = asset_server.load("circle_filled.png");
-    let spawn =
-        key.just_pressed(MouseButton::Left) || key.pressed(MouseButton::Right);
     if let Some(coord) = coord.0 {
-        if spawn {
+        if key.just_pressed(MouseButton::Left)
+            || key.pressed(MouseButton::Right)
+        {
             let start = Vec3::new(coord.x, coord.y, 1.);
             let end = Vec3::new(0., 0., 0.);
+            let transform = Transform::from_translation(start);
+            let circle = AnimationTarget.into_target();
+            let mut circle_transform = circle.transform_state(transform);
             commands
                 .spawn((
                     SpriteBundle {
                         texture: circle_filled_image,
-                        transform: Transform::from_translation(start),
+                        transform,
                         ..Default::default()
                     },
-                    SpanTweenerBundle::new(Duration::from_secs(2)),
+                    AnimationTarget,
                 ))
-                .with_children(|c| {
-                    c.span_tweens()
-                        .tween_exact(
-                            ..Duration::from_secs(2),
-                            EaseFunction::ExponentialOut,
-                            ComponentTween::new_boxed(m::TranslateTo::end(end)),
-                        )
-                        .tween_exact(
-                            ..Duration::from_secs(1),
-                            EaseFunction::BackIn,
-                            ComponentTween::new_boxed(m::ScaleTo::end(
-                                Vec3::ZERO,
-                            )),
-                        )
-                        .tween_exact(
-                            ..Duration::from_secs(1),
-                            EaseFunction::Linear,
-                            ComponentTween::new_boxed(m::SpriteColorTo::end(
-                                Color::PINK,
-                            )),
-                        );
-                });
+                .animation()
+                .insert(parallel((
+                    tween(
+                        secs(2.),
+                        EaseFunction::ExponentialOut,
+                        circle_transform.translation_to(end),
+                    ),
+                    tween(
+                        secs(1.),
+                        EaseFunction::BackIn,
+                        circle_transform.scale_to(Vec3::ZERO),
+                    ),
+                    tween(
+                        secs(1.),
+                        EaseFunction::Linear,
+                        circle.with(sprite_color(Color::WHITE, Color::PINK)),
+                    ),
+                )));
         }
     }
 }
 
 fn despawn_finished_circle(
     mut commands: Commands,
-    mut tweener_ended_reader: EventReader<SpanTweenerEnded>,
+    mut time_runner_ended_reader: EventReader<TimeRunnerEnded>,
 ) {
-    for t in tweener_ended_reader.read() {
-        commands.entity(t.tweener).despawn();
+    for t in time_runner_ended_reader.read() {
+        commands.entity(t.time_runner).despawn_recursive();
     }
 }

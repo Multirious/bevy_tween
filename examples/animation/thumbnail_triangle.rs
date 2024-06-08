@@ -2,8 +2,9 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_tween::{
+    combinator::{parallel, tween_exact, AnimationCommands},
+    interpolate::angle_z,
     prelude::*,
-    span_tween::{EntitySpawner, SpanTweensBuilder},
     tween::TargetComponent,
 };
 
@@ -19,7 +20,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let bevy_text = asset_server.load("bevy.png");
     let tween_text = asset_server.load("tween.png");
-    let square_image = asset_server.load("big_triangle.png");
+    let triangle_image = asset_server.load("big_triangle.png");
     let ease = EaseFunction::ExponentialInOut;
 
     commands.spawn(SpriteBundle {
@@ -42,74 +43,64 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Color::rgb_u8(124, 232, 255),
         Color::rgb_u8(204, 249, 255),
     ];
+    let mut spawn_triangle = |color, z| {
+        commands
+            .spawn((SpriteBundle {
+                sprite: Sprite {
+                    color,
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(0., 0., z),
+                texture: triangle_image.clone(),
+                ..Default::default()
+            },))
+            .id()
+    };
     let triangles = colors
         .iter()
         .enumerate()
-        .map(|(i, color)| {
-            triangle(&mut commands, square_image.clone(), *color, i as f32)
-        })
+        .map(|(i, color)| spawn_triangle(*color, (i + 2) as f32))
+        .map(|t| t.into_target())
         .collect::<Vec<_>>();
 
     let secs = 12.;
 
     commands
-        .spawn(
-            SpanTweenerBundle::new(Duration::from_secs_f32(secs))
-                .with_repeat(Repeat::Infinitely),
-        )
-        .with_children(|c| {
-            c.span_tweens()
-                .add(snap_rotate(triangles[4], secs, 7, 4., ease))
-                .add(snap_rotate(triangles[3], secs, 7, 6., ease))
-                .add(snap_rotate(triangles[2], secs, 7, 8., ease))
-                .add(snap_rotate(triangles[1], secs, 7, 10., ease))
-                .add(snap_rotate(triangles[0], secs, 7, 12., ease));
-        });
+        .animation()
+        .repeat(Repeat::Infinitely)
+        .insert(parallel((
+            snap_rotate(triangles[4].clone(), secs, 7, 4., ease),
+            snap_rotate(triangles[3].clone(), secs, 7, 6., ease),
+            snap_rotate(triangles[2].clone(), secs, 7, 8., ease),
+            snap_rotate(triangles[1].clone(), secs, 7, 10., ease),
+            snap_rotate(triangles[0].clone(), secs, 7, 12., ease),
+        )));
 }
 
-fn snap_rotate<E: EntitySpawner>(
-    target: impl Into<TargetComponent>,
-    secs: f32,
+fn secs(secs: f32) -> Duration {
+    Duration::from_secs_f32(secs)
+}
+
+fn snap_rotate(
+    target: TargetComponent,
+    dur: f32,
     max: usize,
     rev: f32,
     ease: EaseFunction,
-) -> impl FnOnce(&mut SpanTweensBuilder<E>) {
-    move |b| {
-        let target = target.into();
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
+    move |a, pos| {
         for i in 0..max {
             let max = max as f32;
             let i = i as f32;
-            b.tween_exact(
-                Duration::from_secs_f32(i / max * secs)
-                    ..Duration::from_secs_f32((i + 1.) / max * secs),
+            tween_exact(
+                secs(i / max * dur)..secs((i + 1.) / max * dur),
                 ease,
-                ComponentTween::new_target_boxed(
-                    target.clone(),
-                    interpolate::AngleZ {
-                        start: rev * TAU * (max - i) / max,
-                        end: rev * TAU * (max - i - 1.) / max,
-                    },
-                ),
-            );
+                target.with(angle_z(
+                    rev * TAU * (max - i) / max,
+                    rev * TAU * (max - i - 1.) / max,
+                )),
+            )(a, pos);
         }
+        *pos += secs(dur)
     }
-}
-
-fn triangle(
-    commands: &mut Commands,
-    texture: Handle<Image>,
-    color: Color,
-    z: f32,
-) -> Entity {
-    commands
-        .spawn((SpriteBundle {
-            sprite: Sprite {
-                color,
-                ..Default::default()
-            },
-            transform: Transform::from_xyz(0., 0., z),
-            texture,
-            ..Default::default()
-        },))
-        .id()
 }

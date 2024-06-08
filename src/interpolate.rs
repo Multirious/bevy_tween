@@ -17,7 +17,7 @@
 //! There are a few amount of built-in interpolator because this crate only
 //! implemented the most common ones such as [`Translation`] or
 //! [`SpriteColor`] and some more.
-//! For others, you must implemented your own!
+//! For others, you must implement your own!
 //!
 //! Let's say you've created some custom component and you want to interpolate it:
 //! ```no_run
@@ -315,6 +315,31 @@ impl Interpolator for Translation {
     }
 }
 
+/// Constructor for [`Translation`]
+pub fn translation(start: Vec3, end: Vec3) -> Translation {
+    Translation { start, end }
+}
+
+/// Constructor for [`Translation`] that's relative to previous value using currying.
+pub fn translation_to(to: Vec3) -> impl Fn(&mut Vec3) -> Translation {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        translation(start, end)
+    }
+}
+
+/// Constructor for [`Translation`] that's relative to previous value using currying.
+pub fn translation_by(by: Vec3) -> impl Fn(&mut Vec3) -> Translation {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        translation(start, end)
+    }
+}
+
 /// [`Interpolator`] for [`Transform`]'s rotation using the [`Quat::slerp`] function.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 // #[reflect(InterpolatorTransform)]
@@ -329,6 +354,31 @@ impl Interpolator for Rotation {
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         item.rotation = self.start.slerp(self.end, value);
+    }
+}
+
+/// Constructor for [`Rotation`]
+pub fn rotation(start: Quat, end: Quat) -> Rotation {
+    Rotation { start, end }
+}
+
+/// Constructor for [`Rotation`] that's relative to previous value using currying.
+pub fn rotation_to(to: Quat) -> impl Fn(&mut Quat) -> Rotation {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        rotation(start, end)
+    }
+}
+
+/// Constructor for [`Rotation`] that's relative to previous value using currying.
+pub fn rotation_by(by: Quat) -> impl Fn(&mut Quat) -> Rotation {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state = state.mul_quat(by);
+        rotation(start, end)
     }
 }
 
@@ -349,6 +399,31 @@ impl Interpolator for Scale {
     }
 }
 
+/// Constructor for [`Scale`]
+pub fn scale(start: Vec3, end: Vec3) -> Scale {
+    Scale { start, end }
+}
+
+/// Constructor for [`Scale`] that's relative to previous value using currying.
+pub fn scale_to(to: Vec3) -> impl Fn(&mut Vec3) -> Scale {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        scale(start, end)
+    }
+}
+
+/// Constructor for [`Scale`] that's relative to previous value using currying.
+pub fn scale_by(by: Vec3) -> impl Fn(&mut Vec3) -> Scale {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        scale(start, end)
+    }
+}
+
 /// [`Interpolator`] for [`Transform`]'s rotation at Z axis.
 /// Usually used for 2D rotation.
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
@@ -365,6 +440,31 @@ impl Interpolator for AngleZ {
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         let angle = (self.end - self.start).mul_add(value, self.start);
         item.rotation = Quat::from_rotation_z(angle);
+    }
+}
+
+/// Constructor for [`AngleZ`]
+pub fn angle_z(start: f32, end: f32) -> AngleZ {
+    AngleZ { start, end }
+}
+
+/// Constructor for [`AngleZ`] that's relative to previous value using currying.
+pub fn angle_z_to(to: f32) -> impl Fn(&mut f32) -> AngleZ {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        angle_z(start, end)
+    }
+}
+
+/// Constructor for [`AngleZ`] that's relative to previous value using currying.
+pub fn angle_z_by(by: f32) -> impl Fn(&mut f32) -> AngleZ {
+    move |state| {
+        let start = *state;
+        let end = *state + by;
+        *state += by;
+        angle_z(start, end)
     }
 }
 
@@ -391,6 +491,23 @@ impl Interpolator for SpriteColor {
     }
 }
 
+/// Constructor for [`SpriteColor`]
+#[cfg(feature = "bevy_sprite")]
+pub fn sprite_color(start: Color, end: Color) -> SpriteColor {
+    SpriteColor { start, end }
+}
+
+/// Constructor for [`SpriteColor`] that's relative to previous value using currying.
+#[cfg(feature = "bevy_sprite")]
+pub fn sprite_color_to(to: Color) -> impl Fn(&mut Color) -> SpriteColor {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        sprite_color(start, end)
+    }
+}
+
 // #[cfg(feature = "bevy_sprite")]
 // type ReflectInterpolatorColorMaterial =
 //     ReflectInterpolator<bevy::sprite::ColorMaterial>;
@@ -412,5 +529,22 @@ impl Interpolator for ColorMaterial {
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
         item.color = color_lerp(self.start, self.end, value);
+    }
+}
+
+/// Constructor for [`ColorMaterial`]
+#[cfg(feature = "bevy_sprite")]
+pub fn color_material(start: Color, end: Color) -> ColorMaterial {
+    ColorMaterial { start, end }
+}
+
+/// Constructor for [`ColorMaterial`] that's relative to previous value using currying.
+#[cfg(feature = "bevy_sprite")]
+pub fn color_material_to(to: Color) -> impl Fn(&mut Color) -> ColorMaterial {
+    move |state| {
+        let start = *state;
+        let end = to;
+        *state = to;
+        color_material(start, end)
     }
 }
