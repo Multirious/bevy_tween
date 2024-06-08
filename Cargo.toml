@@ -125,3 +125,11 @@ required-features = [
 [[example]]
 name = "entity_structure"
 path = "examples/entity_structure.rs"
+
+[[example]]
+name = "bevy_lookup_curve"
+path = "examples/bevy_lookup_curve.rs"
+required-features = [
+  "bevy_sprite",
+  "bevy_lookup_curve",
+]
