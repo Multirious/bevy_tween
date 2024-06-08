@@ -50,7 +50,7 @@ jobs:
       run: cargo +nightly doc --all-features --no-deps
 
     - name: Check all examples
-      run: cargo check --example '*'
+      run: cargo check --examples -F bevy_lookup_curve
       
     - name: Run tests
       run: cargo test
