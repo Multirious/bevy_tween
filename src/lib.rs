@@ -271,7 +271,7 @@
 //! [`ComponentTween`]: tween::ComponentTween
 //! [`ComponentTweenDyn`]: tween::ComponentTweenDyn
 #![allow(clippy::needless_doctest_main)]
-#![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
+#![cfg_attr(all(doc, nightly), feature(doc_auto_cfg))]
 #![warn(missing_docs)]
 
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
