@@ -56,7 +56,7 @@
 //!     // )
 //! );
 //! ```
-//! This insert everything directly into your entity.
+//! This insert every animation components directly into your entity.
 //! Use this if you wish to keep your entity
 //! structure simple (no children) and doesn't need complicated animation.
 //!
@@ -94,7 +94,7 @@
 //!     ),
 //! )));
 //! ```
-//! This adds one [`TimeRunner`] to your entity and 2 tween entities as the child.
+//! This adds one [`TimeRunner`] to your entity and 2 [`Tween`] entities as the child.
 //!
 //! ### State
 //!
@@ -259,17 +259,8 @@
 //!
 //! </details>
 //!
+//! [`TimeRunner`]: bevy_time_runner::TimeRunner
 //! [`Tween`]: tween::Tween
-//! [`TweenDyn`]: tween::Tween
-//! [`Interpolator`]: interpolate::Interpolator
-//! [`Interpolation`]: interpolation::Interpolation
-//! [`EaseFunction`]: interpolation::EaseFunction
-//! [`TargetComponent`]: tween::TargetComponent
-//! [`TargetAsset`]: tween::TargetAsset
-//! [`TargetResource`]: tween::TargetResource
-//! [`TimeSpan`]: tweener::TimeSpan
-//! [`ComponentTween`]: tween::ComponentTween
-//! [`ComponentTweenDyn`]: tween::ComponentTweenDyn
 #![allow(clippy::needless_doctest_main)]
 #![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
 #![warn(missing_docs)]
