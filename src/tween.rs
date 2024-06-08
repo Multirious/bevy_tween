@@ -1,6 +1,6 @@
 //! Module containing implementations for tween
 //!
-//! # [`Tween`]
+//! # Tween
 //!
 //! **Plugins**:
 //! - [`DefaultTweenEventsPlugin`]
@@ -8,9 +8,6 @@
 //! **Components**:
 //! - [`Tween<T, I>`]
 //! - [`SkipTween`]
-//! - [`SkipTweener`]
-//! - [`TweenerMarker`]
-//! - [`TweenProgress`]
 //! - [`TweenInterpolationValue`]
 //! - [`TweenEventData`]
 //!
@@ -24,7 +21,7 @@
 //! - [`tween_event_system`]
 //! - [`tween_event_taking_system`]
 //!
-//! Built-in targets:
+//! **Targets**:
 //! - [`TargetComponent`]
 //! - [`TargetResource`]
 //! - [`TargetAsset`]
@@ -38,7 +35,7 @@
 //! The [`DefaultTweenPlugins`] will already register some systems for you already to get started.
 //! Check [`DefaultInterpolatorsPlugin`] or [`DefaultDynInterpolatorsPlugin`].
 //!
-//! This crate contains some systems with generic for tweening components, assets,
+//! This crate contains generic systems tweening components, assets,
 //! and resources, allowing you to quickly register your custom interpolators.
 //!
 //! Systems:
@@ -65,42 +62,39 @@
 //!     use bevy_tween::prelude::*;
 //!
 //!     pub struct FooA {
-//!         pub start: f32,
-//!         pub end: f32,
+//!         /* ... */
 //!     }
 //!
 //!     impl Interpolator for FooA {
-//!         type Item = super::Foo;
-//!
-//!         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//!             item.a = self.start.lerp(self.end, value);
-//!         }
+//!         # type Item = super::Foo;
+//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//!         #     todo!()
+//!         # }
+//!         /* ... */
 //!     }
 //!
 //!     pub struct FooB {
-//!         pub start: f32,
-//!         pub end: f32,
+//!         /* ... */
 //!     }
 //!
 //!     impl Interpolator for FooB {
-//!         type Item = super::Foo;
-//!
-//!         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//!             item.b = self.start.lerp(self.end, value);
-//!         }
+//!         # type Item = super::Foo;
+//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//!         #     todo!()
+//!         # }
+//!         /* ... */
 //!     }
 //!
 //!     pub struct FooC {
-//!         pub start: f32,
-//!         pub end: f32,
+//!         /* ... */
 //!     }
 //!
 //!     impl Interpolator for FooC {
-//!         type Item = super::Foo;
-//!
-//!         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//!             item.c = self.start.lerp(self.end, value);
-//!         }
+//!         # type Item = super::Foo;
+//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//!         #     todo!()
+//!         # }
+//!         /* ... */
 //!     }
 //! }
 //! # }
@@ -126,34 +120,25 @@
 //! # mod my_interpolate {
 //! #     use bevy::prelude::*;
 //! #     use bevy_tween::prelude::*;
-//! #     pub struct FooA {
-//! #         pub start: f32,
-//! #         pub end: f32,
-//! #     }
+//! #     pub struct FooA {}
 //! #     impl Interpolator for FooA {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//! #             item.a = self.start.lerp(self.end, value);
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #             todo!()
 //! #         }
 //! #     }
-//! #     pub struct FooB {
-//! #         pub start: f32,
-//! #         pub end: f32,
-//! #     }
+//! #     pub struct FooB {}
 //! #     impl Interpolator for FooB {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//! #             item.b = self.start.lerp(self.end, value);
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #             todo!()
 //! #         }
 //! #     }
-//! #     pub struct FooC {
-//! #         pub start: f32,
-//! #         pub end: f32,
-//! #     }
+//! #     pub struct FooC {}
 //! #     impl Interpolator for FooC {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//! #             item.c = self.start.lerp(self.end, value);
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #             todo!()
 //! #         }
 //! #     }
 //! # }
@@ -193,48 +178,38 @@
 //! # mod my_interpolate {
 //! #     use bevy::prelude::*;
 //! #     use bevy_tween::prelude::*;
-//! #     pub struct FooA {
-//! #         pub start: f32,
-//! #         pub end: f32,
-//! #     }
+//! #     pub struct FooA {}
 //! #     impl Interpolator for FooA {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//! #             item.a = self.start.lerp(self.end, value);
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #             todo!()
 //! #         }
 //! #     }
-//! #     pub struct FooB {
-//! #         pub start: f32,
-//! #         pub end: f32,
-//! #     }
+//! #     pub struct FooB {}
 //! #     impl Interpolator for FooB {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//! #             item.b = self.start.lerp(self.end, value);
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #             todo!()
 //! #         }
 //! #     }
-//! #     pub struct FooC {
-//! #         pub start: f32,
-//! #         pub end: f32,
-//! #     }
+//! #     pub struct FooC {}
 //! #     impl Interpolator for FooC {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//! #             item.c = self.start.lerp(self.end, value);
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #             todo!()
 //! #         }
 //! #     }
 //! # }
 //! fn main() {
 //!     use my_interpolate::*;
+//!     use bevy_tween::component_dyn_tween_system;
 //!
 //!     // One system to rule them all
 //!     // Note that we're only using the `Foo` type, not `FooA`, `FooB`,
 //!     // and `FooC`!
-//!     App::new().add_tween_systems(bevy_tween::component_tween_system::<
-//!         BoxedInterpolator<Foo>,
-//!     >());
-//!     // BoxedInterpolator definition:
-//!     // type BoxedInterpolator<Item> = Box<dyn Interpolator<Item>>;
+//!     App::new().add_tween_systems(component_dyn_tween_system::<Foo>());
+//!     // `component_dyn_tween_system` is just an alias for
+//!     // `component_tween_system::<Box<dyn Interpolator<Item = ...>>>`
 //! }
 //! # }
 //! ```
@@ -273,7 +248,7 @@ pub use systems::{tween_event_system, tween_event_taking_system};
 pub struct SkipTween;
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
-/// [`EaseClosure`] when a tween has the component [`TweenProgress`].
+/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`].
 /// See [`sample_interpolations_system`]
 ///
 /// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
@@ -713,42 +688,45 @@ impl Plugin for DefaultTweenEventsPlugin {
     }
 }
 
-/// Fires [`TweenEvent`] whenever [`TweenProgress`] and [`TweenEventData`] exist in the same entity.
+/// Fires [`TweenEvent`] whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity.
 ///
 /// # Examples
 ///
 /// ```
 #[doc = utils::doc_test_boilerplate!()]
+/// use bevy_tween::bevy_time_runner::{TimeRunner, TimeSpan};
+///
 /// commands
-///     .spawn((SpanTweenerBundle::new(Duration::from_secs(5))))
+///     .spawn((TimeRunner::new(Duration::from_secs(3))))
 ///     .with_children(|c| {
-///         // The event will be fired repetitively every frame
-///         // between the second 2 and 3.
+///         // The event will be fired once at the second 1.
 ///         c.spawn((
-///             SpanTweenBundle::new(
-///                 Duration::from_secs(2)..Duration::from_secs(3),
-///             ),
+///             TimeSpan::try_from(
+///                 Duration::from_secs(1)..=Duration::from_secs(1),
+///             ).unwrap(),
 ///             TweenEventData::new(),
 ///         ));
 ///
-///         // The event will be fired once at the second 1.
+///         // The event will be fired repetitively every frame
+///         // between the second 2 and 3.
 ///         c.spawn((
-///             SpanTweenBundle::new(
-///                 Duration::from_secs(1)..=Duration::from_secs(1),
-///             ),
+///             TimeSpan::try_from(
+///                 Duration::from_secs(2)..Duration::from_secs(3),
+///             ).unwrap(),
 ///             TweenEventData::new(),
 ///         ));
 ///     });
 /// ```
-/// 
+///
 /// ## Using custom data
 ///
 /// You have to regsiter [`tween_event_system`] or [`tween_event_taking_system`]
 /// before using custom data with [`TweenEvent<Data>`]. And add your custom event.
 /// Check [`DefaultTweenEventsPlugin`] for built-in events.
-/// ```
+/// ```no_run
 /// use bevy::prelude::*;
 /// use bevy_tween::prelude::*;
+/// use bevy_tween::tween_event_system;
 ///
 /// #[derive(Clone)]
 /// enum MyTweenData {
@@ -758,9 +736,10 @@ impl Plugin for DefaultTweenEventsPlugin {
 ///
 /// fn main() {
 ///     App::new()
-///         .add_plugins(DefaultTweenPlugins)
-///         .add_tween_systems(bevy_tween::tween_event_system::<MyTweenData>)
-///         .add_event::<TweenEvent<MyTweenData>>();
+///         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+///         .add_tween_systems(tween_event_system::<MyTweenData>)
+///         .add_event::<TweenEvent<MyTweenData>>()
+///         .run();
 /// }
 /// ```
 /// ```
@@ -770,24 +749,24 @@ impl Plugin for DefaultTweenEventsPlugin {
 /// #     Idle,
 /// #     Fly,
 /// # }
-/// #
+/// # use bevy_tween::bevy_time_runner::{TimeRunner, TimeSpan};
 /// commands
-///     .spawn((SpanTweenerBundle::new(Duration::from_secs(5))))
+///     .spawn(TimeRunner::new(Duration::from_secs(5)))
 ///     .with_children(|c| {
 ///
 ///         // The `TweenEvent<MyTweenData>` event will be fired once at the second 2.
 ///         c.spawn((
-///             SpanTweenBundle::new(
+///             TimeSpan::try_from(
 ///                 Duration::from_secs(2)..=Duration::from_secs(2),
-///             ),
+///             ).unwrap(),
 ///             TweenEventData::with_data(MyTweenData::Idle),
 ///         ));
 ///
 ///         // The `TweenEvent<MyTweenData>` event will be fired once at the second 3.
 ///         c.spawn((
-///             SpanTweenBundle::new(
-///                 Duration::from_secs(3)..=Duration::from_secs(3),
-///             ),
+///             TimeSpan::try_from(
+///                 Duration::from_secs(2)..=Duration::from_secs(2),
+///             ).unwrap(),
 ///             TweenEventData::with_data(MyTweenData::Fly),
 ///         ));
 ///     });
@@ -822,7 +801,7 @@ where
     }
 }
 
-/// Fires whenever [`TweenProgress`] and [`TweenEventData`] exist in the same entity
+/// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
 /// by [`tween_event_system`] or [`tween_event_taking_system`].
 #[derive(Debug, Clone, PartialEq, Event, Reflect)]
 pub struct TweenEvent<Data = ()> {

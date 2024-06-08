@@ -280,7 +280,7 @@ pub fn apply_resource_tween_system<I>(
     })
 }
 
-/// System alias for [`resource_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+/// System alias for [`apply_resource_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `resource_tween_system::<BoxedInterpolator<...>>()` for consistency
@@ -421,7 +421,7 @@ pub fn apply_asset_tween_system<I>(
     *last_asset_error = asset_error;
 }
 
-/// System alias for [`asset_tween_system_full`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+/// System alias for [`apply_asset_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `asset_tween_system::<BoxedInterpolator<...>>()` for consistency

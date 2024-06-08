@@ -17,7 +17,7 @@
 //! There are a few amount of built-in interpolator because this crate only
 //! implemented the most common ones such as [`Translation`] or
 //! [`SpriteColor`] and some more.
-//! For others, you must implemented your own!
+//! For others, you must implement your own!
 //!
 //! Let's say you've created some custom component and you want to interpolate it:
 //! ```no_run
@@ -320,8 +320,7 @@ pub fn translation(start: Vec3, end: Vec3) -> Translation {
     Translation { start, end }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`Translation`] that's relative to previous value using currying.
 pub fn translation_to(to: Vec3) -> impl Fn(&mut Vec3) -> Translation {
     move |state| {
         let start = *state;
@@ -331,8 +330,7 @@ pub fn translation_to(to: Vec3) -> impl Fn(&mut Vec3) -> Translation {
     }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`Translation`] that's relative to previous value using currying.
 pub fn translation_by(by: Vec3) -> impl Fn(&mut Vec3) -> Translation {
     move |state| {
         let start = *state;
@@ -364,8 +362,7 @@ pub fn rotation(start: Quat, end: Quat) -> Rotation {
     Rotation { start, end }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`Rotation`] that's relative to previous value using currying.
 pub fn rotation_to(to: Quat) -> impl Fn(&mut Quat) -> Rotation {
     move |state| {
         let start = *state;
@@ -375,8 +372,7 @@ pub fn rotation_to(to: Quat) -> impl Fn(&mut Quat) -> Rotation {
     }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`Rotation`] that's relative to previous value using currying.
 pub fn rotation_by(by: Quat) -> impl Fn(&mut Quat) -> Rotation {
     move |state| {
         let start = *state;
@@ -408,8 +404,7 @@ pub fn scale(start: Vec3, end: Vec3) -> Scale {
     Scale { start, end }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`Scale`] that's relative to previous value using currying.
 pub fn scale_to(to: Vec3) -> impl Fn(&mut Vec3) -> Scale {
     move |state| {
         let start = *state;
@@ -419,8 +414,7 @@ pub fn scale_to(to: Vec3) -> impl Fn(&mut Vec3) -> Scale {
     }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`Scale`] that's relative to previous value using currying.
 pub fn scale_by(by: Vec3) -> impl Fn(&mut Vec3) -> Scale {
     move |state| {
         let start = *state;
@@ -454,8 +448,7 @@ pub fn angle_z(start: f32, end: f32) -> AngleZ {
     AngleZ { start, end }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`AngleZ`] that's relative to previous value using currying.
 pub fn angle_z_to(to: f32) -> impl Fn(&mut f32) -> AngleZ {
     move |state| {
         let start = *state;
@@ -465,8 +458,7 @@ pub fn angle_z_to(to: f32) -> impl Fn(&mut f32) -> AngleZ {
     }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`AngleZ`] that's relative to previous value using currying.
 pub fn angle_z_by(by: f32) -> impl Fn(&mut f32) -> AngleZ {
     move |state| {
         let start = *state;
@@ -505,8 +497,7 @@ pub fn sprite_color(start: Color, end: Color) -> SpriteColor {
     SpriteColor { start, end }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`SpriteColor`] that's relative to previous value using currying.
 #[cfg(feature = "bevy_sprite")]
 pub fn sprite_color_to(to: Color) -> impl Fn(&mut Color) -> SpriteColor {
     move |state| {
@@ -547,8 +538,7 @@ pub fn color_material(start: Color, end: Color) -> ColorMaterial {
     ColorMaterial { start, end }
 }
 
-/// Create an interpolation relative to previous value.
-/// Usually used with [`Chain::tween()`]
+/// Constructor for [`ColorMaterial`] that's relative to previous value using currying.
 #[cfg(feature = "bevy_sprite")]
 pub fn color_material_to(to: Color) -> impl Fn(&mut Color) -> ColorMaterial {
     move |state| {

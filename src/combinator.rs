@@ -14,12 +14,18 @@ mod state {
     use crate::tween::{self, TargetComponent, Tween};
     use bevy::prelude::*;
 
+    /// Generic target and state
     pub struct TargetState<T, V> {
         pub target: T,
         pub value: V,
     }
 
     impl<T, V> TargetState<T, V> {
+        /// Create new [`TargetState`] from target and initial value
+        /// Recommended to use other methods like:
+        /// - [`TargetComponent::state`]
+        /// - [`TargetAsset::state`](crate::tween::TargetAsset::state)
+        /// - [`TargetResource::state`](crate::tween::TargetAsset::state)
         pub fn new(target: T, value: V) -> Self {
             TargetState { target, value }
         }
@@ -39,6 +45,22 @@ mod state {
     where
         T: Clone,
     {
+        /// Create [`ComponentTween`] of a value from this state and relative interpolator constructor
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// # use bevy::prelude::*;
+        /// # use bevy_tween::prelude::*;
+        /// use bevy_tween::interpolate::translation_to;
+        ///
+        /// # let sprite = Entity::PLACEHOLDER;
+        /// let my_target = sprite.into_target();
+        /// let mut my_target_translation = my_target.state(Vec3::ZERO);
+        ///
+        /// // Creating a ComponentTween that's tweening from previous value to Vec3::ONE
+        /// let tween = my_target_translation.with(translation_to(Vec3::ONE));
+        /// ```
         pub fn with<I>(&mut self, f: impl FnOnce(&mut V) -> I) -> Tween<T, I> {
             let interpolator = f(&mut self.value);
             Tween {
@@ -48,21 +70,40 @@ mod state {
         }
     }
 
+    /// Extension trait to create [`TransformTargetState`]
     pub trait TransformTargetStateExt {
+        /// Create [`TransformTargetState`] from [`Self`] and initial value
         fn transform_state(&self, value: Transform) -> TransformTargetState;
     }
+
     impl TransformTargetStateExt for TargetComponent {
+        /// Create [`TransformTargetState`] from [`TargetComponent`] and initial value
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// # use bevy_tween::prelude::*;
+        /// # use bevy::prelude::*;
+        /// # let sprite = Entity::PLACEHOLDER;
+        /// let my_target = sprite.into_target();
+        /// let mut my_target_translation = my_target.transform_state(Transform::IDENTITY);
+        ///
+        /// // Creating a ComponentTween that's tweening from previous translation to Vec3::ONE
+        /// let tween = my_target_translation.translation_to(Vec3::ONE);
+        /// ```
         fn transform_state(&self, value: Transform) -> TransformTargetState {
             TransformTargetState::new(self.clone(), value)
         }
     }
 
+    /// Transform state for animating entity
     pub struct TransformTargetState {
         target: TargetComponent,
         value: Transform,
     }
 
     impl TransformTargetState {
+        /// Create new [`TransformTargetState`]
         pub fn new(
             target: TargetComponent,
             value: Transform,
@@ -70,6 +111,7 @@ mod state {
             TransformTargetState { target, value }
         }
 
+        /// Create [`ComponentTween`] of transform from this state and relative interpolator constructor
         pub fn transform_with<I>(
             &mut self,
             f: impl FnOnce(&mut Transform) -> I,
@@ -81,6 +123,7 @@ mod state {
             }
         }
 
+        /// Create [`ComponentTween`] of transform's translation from this state and relative interpolator constructor
         pub fn translation_with<I>(
             &mut self,
             f: impl FnOnce(&mut Vec3) -> I,
@@ -88,6 +131,7 @@ mod state {
             self.transform_with(|v| f(&mut v.translation))
         }
 
+        /// Create [`ComponentTween`] of transform's rotation from this state and relative interpolator constructor
         pub fn rotation_with<I>(
             &mut self,
             f: impl FnOnce(&mut Quat) -> I,
@@ -95,6 +139,7 @@ mod state {
             self.transform_with(|v| f(&mut v.rotation))
         }
 
+        /// Create [`ComponentTween`] of transform's scale from this state and relative interpolator constructor
         pub fn scale_with<I>(
             &mut self,
             f: impl FnOnce(&mut Vec3) -> I,
@@ -102,6 +147,7 @@ mod state {
             self.transform_with(|v| f(&mut v.scale))
         }
 
+        /// Create [`ComponentTween`] of transform's translation tweening to provided input
         pub fn translation_to(
             &mut self,
             to: Vec3,
@@ -109,14 +155,17 @@ mod state {
             self.translation_with(translation_to(to))
         }
 
+        /// Create [`ComponentTween`] of transform's rotation tweening to provided input
         pub fn rotation_to(&mut self, to: Quat) -> ComponentTween<Rotation> {
             self.rotation_with(rotation_to(to))
         }
 
+        /// Create [`ComponentTween`] of transform's scale tweening to provided input
         pub fn scale_to(&mut self, to: Vec3) -> ComponentTween<Scale> {
             self.scale_with(scale_to(to))
         }
 
+        /// Create [`ComponentTween`] of transform's translation tweening by provided input
         pub fn translation_by(
             &mut self,
             by: Vec3,
@@ -124,10 +173,12 @@ mod state {
             self.translation_with(translation_by(by))
         }
 
+        /// Create [`ComponentTween`] of transform's rotation tweening by provided input
         pub fn rotation_by(&mut self, by: Quat) -> ComponentTween<Rotation> {
             self.rotation_with(rotation_by(by))
         }
 
+        /// Create [`ComponentTween`] of transform's scale tweening by provided input
         pub fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale> {
             self.scale_with(scale_by(by))
         }
@@ -136,6 +187,7 @@ mod state {
 
 pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
+/// Commands to use within an animation combinator
 pub struct AnimationCommands<'r, 'a> {
     child_builder: &'r mut ChildBuilder<'a>,
 }
@@ -147,6 +199,8 @@ impl<'r, 'a> AnimationCommands<'r, 'a> {
         AnimationCommands { child_builder }
     }
 
+    /// Spawn an entity as a child.
+    /// Currently always spawn as a child of animation root that should contains [`bevy_time_runner::TimeRunner`].
     pub fn spawn(&mut self, bundle: impl Bundle) -> EntityCommands<'_> {
         self.child_builder.spawn(bundle)
     }
@@ -154,11 +208,14 @@ impl<'r, 'a> AnimationCommands<'r, 'a> {
 
 /// Extension trait for types that can be used to make an animation.
 pub trait AnimationBuilderExt {
-    /// Construct [`InsertAnimation`]
+    /// Construct [`AnimationBuilder`] from [`Self`]
     fn animation(&mut self) -> AnimationBuilder<'_>;
 }
 
 impl<'a> AnimationBuilderExt for EntityCommands<'a> {
+    /// Construct [`AnimationBuilder`] from [`EntityCommands`].
+    /// Use this entity as the animation root.
+    /// Animations will be created as children this entity.
     fn animation(&mut self) -> AnimationBuilder<'_> {
         AnimationBuilder {
             entity_commands: self.reborrow(),
@@ -169,6 +226,8 @@ impl<'a> AnimationBuilderExt for EntityCommands<'a> {
 }
 
 impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
+    /// Construct [`AnimationBuilder`] from [`Commands`].
+    /// This will automatically spawn an entity for animation root.
     fn animation(&mut self) -> AnimationBuilder<'_> {
         let entity_commands = self.spawn_empty();
         AnimationBuilder {
@@ -180,6 +239,8 @@ impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
 }
 
 impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
+    /// Construct [`AnimationBuilder`] from [`ChildBuilder`].
+    /// This will automatically spawn a child entity for animation root.
     fn animation(&mut self) -> AnimationBuilder<'_> {
         let entity_commands = self.spawn_empty();
         AnimationBuilder {
@@ -375,6 +436,11 @@ where
     move |b, pos| parallel.call(b, pos)
 }
 
+/// Combinator for creating a basic tween using interpolation and a tween.
+///
+/// Starts from last position and tween for provided `duration`
+///
+/// Position is shifted to this tween's end.
 pub fn tween<I, T>(
     duration: Duration,
     interpolation: I,
@@ -396,6 +462,11 @@ where
     }
 }
 
+/// Combinator for creating a basic tween using interpolation and a tween.
+///
+/// Starts and ends at provided span.
+///
+/// Position is not mutated because the operation is not relative.
 pub fn tween_exact<S, I, T>(
     span: S,
     interpolation: I,
@@ -412,6 +483,11 @@ where
     }
 }
 
+/// Combinator for creating an tween event.
+///
+/// Event will be emitted at the last position.
+///
+/// Position is not mutated because the event has no length.
 pub fn event<Data>(
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
@@ -426,6 +502,11 @@ where
     }
 }
 
+/// Combinator for creating an tween event.
+///
+/// Event will be emitted at the provided position.
+///
+/// Position is not mutated because the operation is not relative.
 pub fn event_at<Data>(
     at: Duration,
     event_data: Data,
@@ -441,6 +522,11 @@ where
     }
 }
 
+/// Combinator for creating an tween event.
+///
+/// Event will be emitted at the last position for provided length.
+///
+/// Position is not mutated because the operation is not relative.
 pub fn event_for<Data>(
     length: Duration,
     event_data: Data,
@@ -455,9 +541,15 @@ where
             TimeSpan::try_from(start..end).unwrap(),
             TweenEventData::with_data(event_data),
         ));
+        *pos = end;
     }
 }
 
+/// Combinator for creating an tween event.
+///
+/// Event will be emitted every frame at the provided span.
+///
+/// Position is not mutated because the operation is not relative.
 pub fn event_exact<S, Data>(
     span: S,
     event_data: Data,
@@ -475,18 +567,21 @@ where
     }
 }
 
+/// Shift the position forward by provided duration
 pub fn forward(
     by: Duration,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |_, pos| *pos += by
 }
 
+/// Shift the position backward by provided duration
 pub fn backward(
     by: Duration,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |_, pos| *pos = pos.saturating_sub(by)
 }
 
+/// Set the position to the provided duration
 pub fn go(to: Duration) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |_, pos| *pos = to
 }

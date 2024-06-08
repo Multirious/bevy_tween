@@ -6,8 +6,7 @@
 
 # `bevy_tween`
 
-A fully ECS-based [Bevy](https://github.com/bevyengine/bevy) animation library.
-Focuses mainly on tweening but being decoupled and flexible and so can do much more.
+An ECS-based [Bevy](https://github.com/bevyengine/bevy) procedural and asset animation library.
 
 This is a young plugin and APIs are to be fleshed out.
 Breaking changes are to be expected!
@@ -15,22 +14,57 @@ Breaking changes are to be expected!
 See changelog [here](CHANGELOG.md).
 
 ## Features
-- ECS-based animation data and system with flexible and modular APIs powered by Bevy.
-  Use anything you want to use. Remove anything you don't want. Extends anything that's not there.
-- Tween anything, from anywhere.
-  - Colors, sprite sheet frames, positions, you define it!
-  - Components, assets, resources, you implement it!
-- Interpolate with anything
-  - Robert Penner's easing functions
-  - Closure
-  - Or implement one your self!
-- Animate at any complexity
-- Events at arbitary time (with custom data).
-- Timer
+- **Extensible**: Everything is components and systems with a sprinkle of dependency injection.
+- **Ergonomic and user-friendly API**: API are designed to be concise, expressive, and simple to use.
+  <details>
+  <summary>Example</summary>
+
+  ```rust
+  let sprite_id = commands.spawn(SpriteBundle { ... }).id();
+  let sprite = sprite_id.into_target();
+  commands.animation()
+      .insert(tween(
+          Duration::from_secs(1),
+          EaseFunction::Linear,
+          sprite.with(translation(pos0, pos1))
+      ));
+  ```
+
+  </details>
+
+- **Modular API and animation**: Combinator framework allows you to build composite animations through abstracting basic animations.
+  <details>
+  <summary>Example</summary>
+  
+  ```rust
+  fn my_animation(
+      target: TargetComponent,
+      duration: Duration
+  ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
+      parallel((
+          tween(duration, EaseFunction::QuadraticOut, target.with(translation(...))),
+          tween(duration, EaseFunction::QuadraticOut, target.with(rotation(...))),
+      ))
+  }
+
+  let sprite_id = commands.spawn(Sprite { ... }).id();
+  let sprite = sprite_id.into_target();
+  commands.animation().insert(my_animation(sprite, Duration::from_secs(1)))
+  ```
+
+  </details>
+- **Flexible**: Supports many kind of animation due to its extensibility and modularity.
+  - Tween anything from anywhere, built-in or custom system.
+  - Interpolate with any curve, built-in or custom system.
+  - Anything as long as they're time controlled.
+- **Parallelism**: Since a tween or an animation primitive is one component and one system, they have great chances for system parallelism and increase in performance.
+- **Rich timer control**:
   - Looping
   - Fastforward or Rewind
   - Skip backward or forward
   - Jumping to anywhen
+
+See [demos](#Demos)
 
 Goals:
 - [x] Flexible 🎉
@@ -68,24 +102,17 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   and reduce duplication.
   - Custom tweens, targets, and interpolators
   - Custom interpolations
-  - Custom tweeners
 - Users of this crate are free to decide if they want to only use generic,
   only trait object, or even both for tweening! They both came with their pros
   and cons which will be explained in the documentation.
-- Flexibility at the cost of verbosity. APIs can be more verbose than the mentioned
-  crates *without* extra shortcut and helpers.
 
 ## Feature gates
-- `"default_tweener"`, enabled by default.<br/>
-  Tween for a range of time. 
 - `"bevy_asset"`, enabled by default.<br/>
   enable `"bevy/bevy_asset"`, add tweening systems for asset.
 - `"bevy_render"`, enabled by default.<br/>
   enable `"bevy/bevy_render"`, add nothing but required by the `"bevy_sprite"` feature.
 - `"bevy_sprite"`, enabled by default.<br/>
   enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite.
-
-
 
 ## Bevy Version Support
 

@@ -1,14 +1,10 @@
-//! All examples in this crate will be using the default tweener implementation
-//! which requires the feature "default_tweener" and it is enabled by default.
-//!
 //! # Getting started
 //!
-//! [`DefaultTweenPlugins`] provide most the stuff
-//! you will need.
+//! [`DefaultTweenPlugins`] provide most the stuff you will need.
 //! Add the plugin to your app:
 //! ```no_run
 //! use bevy::prelude::*;
-//! use bevy_tween::*;
+//! use bevy_tween::prelude::*;
 //!
 //! fn main() {
 //!     App::default()
@@ -17,86 +13,252 @@
 //! }
 //! ```
 //!
-//! # Tween and Tweener
+//! # Usages
 //!
-//! Tweener is a made up word to describe an entity that handles the current
-//! actual playback timing for any tweens that it's responsible for. It can be
-//! understand as a tween runtime or a tween player.
+//! ## Creating animation
 //!
-//! Tween is your animation parameters that declares:
-//! - "**What**" to interpolate, such as [`TargetComponent`], [`TargetAsset`], and
-//!   [`TargetResource`].
-//! - "**How**" to interpolate, such as [`interpolate::Translation`] and
-//!   [`interpolate::SpriteColor`]. And they're used with something like [`EaseFunction`]
-//! - "**When**" to interpolate such as [`TimeSpan`].
-//!
-//! # Multi-entities architecture
-//!
-//! This crate will uses multiple entities to provide most of the flexiblity.
-//! Generally implemented by using child-parent hierarchy. The exact
-//! details is specific to a tweener/tween implementation.
-//!
-//! See [tweener structure](tweener#entity-structure).
-//!
-//! # Examples
-//!
-//! ## Custom interpolator quick example
-//!
-//! See ["Your own interpolator"](crate::interpolate#your-own-interpolator).
-//! See ["Registering systems"](crate::tween#registering-systems).
-//!
+//! Let say we have this sprite:
 //! ```no_run
-//! use bevy::prelude::*;
-//! use bevy_tween::prelude::*;
-//!
-//! #[derive(Component)]
-//! struct Foo {
-//!     a: f32,
-//!     b: f32,
-//! }
-//!
-//! struct InterpolateFooA {
-//!     start: f32,
-//!     end: f32,
-//! }
-//!
-//! impl Interpolator for InterpolateFooA {
-//!     type Item = Foo;
-//!
-//!     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//!         item.a = self.start.lerp(self.end, value);
-//!     }
-//! }
-//!
-//! struct InterpolateFooB {
-//!     start: f32,
-//!     end: f32,
-//! }
-//!
-//! impl Interpolator for InterpolateFooB {
-//!     type Item = Foo;
-//!
-//!     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-//!         item.b = self.start.lerp(self.end, value);
-//!     }
-//! }
-//!
-//! fn main() {
-//!     App::new().add_tween_systems((
-//!         bevy_tween::component_tween_system::<BoxedInterpolator<Foo>>(),
-//!         bevy_tween::component_tween_system::<InterpolateFooA>(),
-//!         bevy_tween::component_tween_system::<InterpolateFooB>(),
-//!     ));
-//! }
+#![doc = utils::doc_test_boilerplate!()]
+//! let mut sprite_commands = commands.spawn(SpriteBundle {
+//!     sprite: Sprite {
+//!         custom_size: Some(Vec2::new(50., 50.)),
+//!         ..Default::default()
+//!     },
+//!     ..Default::default()
+//! });
 //! ```
 //!
-//! ## Usages
+//! Now we want to animate it, maybe with one simple tween animation.
+//!
+//! ### `insert_tween_here` method
+//! We can do this:
+//! ```no_run
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{interpolate::sprite_color, combinator::tween};
+//!
+//! let sprite = sprite_commands.id().into_target();
+//! sprite_commands.animation().insert_tween_here(
+//!     Duration::from_secs(1),
+//!     EaseFunction::QuadraticOut,
+//!     sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!     // Since this argument accepts a bundle, you can add additional tween to this like so:
+//!     // (
+//!     //     sprite.with(sprite_color(Color::WHITE, Color::RED)),
+//!     //     sprite.with(something_something(...)),
+//!     // )
+//! );
+//! ```
+//! This insert everything directly into your entity.
+//! Use this if you wish to keep your entity
+//! structure simple (no children) and doesn't need complicated animation.
+//!
+//! ### Combinator framework
+//!
+//! Now what if we want to chain animations?
+//!
+//! This crate provide a way to create animation using combinator framework.
+//! So we can just:
+//! ```no_run
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{
+//!     interpolate::sprite_color,
+//!     combinator::{tween, sequence}
+//! };
+//!
+//! let sprite = sprite_commands.id().into_target();
+//! sprite_commands.animation().insert(sequence((
+//!     tween(
+//!         Duration::from_secs(1),
+//!         EaseFunction::QuadraticOut,
+//!         sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!     ),
+//!     tween(
+//!         Duration::from_secs(1),
+//!         EaseFunction::QuadraticIn,
+//!         sprite.with(sprite_color(Color::RED, Color::WHITE))
+//!     ),
+//! )));
+//! ```
+//! This adds one [`TimeRunner`] to your entity and 2 tween entities as the child.
+//!
+//! ### State
+//!
+//! There's a little bit of boilerplate we can improve.
+//! Currently we've specified `Color::RED` 2 times because we want our tween to
+//! continue from previous value.
+//!
+//! We can use state for this:
+//! ```no_run
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{
+//!     interpolate::sprite_color_to,
+//!     combinator::{tween, sequence}
+//! };
+//!
+//! let sprite = sprite_commands.id().into_target();
+//! let mut sprite_color = sprite.state(Color::WHITE); // We want the intial color to be white
+//! sprite_commands.animation().insert(sequence((
+//!     tween(
+//!         Duration::from_secs(1),
+//!         EaseFunction::QuadraticOut,
+//!         // Switch the constructor to the relative variant
+//!         sprite_color.with(sprite_color_to(Color::RED))
+//!     ),
+//!     tween(
+//!         Duration::from_secs(1),
+//!         EaseFunction::QuadraticIn,
+//!         sprite_color.with(sprite_color_to(Color::WHITE))
+//!     ),
+//! )));
+//! ```
+//! Looks good!
+//!
+//! ### Repeating
+//!
+//! If we want to repeat our animation to so we can do:
+//! ```no_run
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{
+//!     interpolate::sprite_color_to,
+//!     combinator::{tween, sequence}
+//! };
+//!
+//! let sprite = sprite_commands.id().into_target();
+//! let mut sprite_color = sprite.state(Color::WHITE);
+//! sprite_commands.animation()
+//!     .repeat(Repeat::Infinitely) // Add repeat
+//!     .insert(sequence((
+//!         tween(
+//!             Duration::from_secs(1),
+//!             EaseFunction::QuadraticOut,
+//!             sprite_color.with(sprite_color_to(Color::RED))
+//!         ),
+//!         tween(
+//!             Duration::from_secs(1),
+//!             EaseFunction::QuadraticIn,
+//!             sprite_color.with(sprite_color_to(Color::WHITE))
+//!         ),
+//!     )));
+//! ```
+//!
+//! ### Custom combinator
+//!
+//! What if you want to abstract animation?
+//! - To manage large animation code
+//! - To reuse animation code
+//! - Custom combinators
+//!
+//! Combinator framework got you covered!:
+//! ```no_run
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{
+//!     interpolate::sprite_color_to,
+//!     combinator::{AnimationCommands, TargetState, tween, sequence},
+//!     tween::TargetComponent,
+//! };
+//!
+//! // Create new combinator
+//! fn my_animation(
+//!     // You can use `TargetComponent` if you doesn't use state.
+//!     target_sprite_color: &mut TargetState<TargetComponent, Color>,
+//!     duration: Duration
+//! ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
+//!     sequence((
+//!         tween(
+//!             duration,
+//!             EaseFunction::QuadraticOut,
+//!             target_sprite_color.with(sprite_color_to(Color::RED))
+//!         ),
+//!         tween(
+//!             duration,
+//!             EaseFunction::QuadraticIn,
+//!             target_sprite_color.with(sprite_color_to(Color::WHITE))
+//!         ),
+//!     ))
+//! }
+//!
+//! let sprite = sprite_commands.id().into_target();
+//! let mut sprite_color = sprite.state(Color::WHITE);
+//! sprite_commands.animation()
+//!     .repeat(Repeat::Infinitely)
+//!     .insert(my_animation(&mut sprite_color, Duration::from_secs(1)));
+//! ```
+//!
+//! ## Custom interpolator
+//!
+//! See these documentations for more details:
+//! - ["Your own interpolator"](crate::interpolate#your-own-interpolator).
+//! - ["Registering systems"](crate::tween#registering-systems).
+//!
+//! This example shows how to create your own inteprolator.
+//!
+//! <details>
+//! <summary>
+//!
+//! `interpolator` example
+//!
+//! </summary>
+//!
+//! ```no_run
+#![doc = include_str!("../examples/interpolator.rs")]
+//! ```
+//!
+//! </details>
+//!
+//! ## Entity structure
+//!
+//! This example shows what's actually going on under the hood within this crate's API.
+//!
+//! <details>
+//! <summary>
+//!
+//! `entity_structure` example
+//!
+//! </summary>
 //!
 //! Run `cargo run --example entity_structure` to see this in action.
 //! ```no_run
 #![doc = include_str!("../examples/entity_structure.rs")]
 //! ```
-//! 
+//!
+//! </details>
+//!
 //! [`Tween`]: tween::Tween
 //! [`TweenDyn`]: tween::Tween
 //! [`Interpolator`]: interpolate::Interpolator
@@ -176,7 +338,6 @@ pub use tween::tween_event_taking_system;
 /// - [`interpolate::DefaultInterpolatorsPlugin`]
 /// - [`interpolate::DefaultDynInterpolatorsPlugin`]
 /// - [`interpolation::EaseFunctionPlugin`]
-/// - [`tweener::TweenerPlugin`] if `"default_tweener"` feature is enabled.
 pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
@@ -257,6 +418,10 @@ pub enum TweenSystemSet {
     /// - [`tween::component_tween_system`]
     /// - [`tween::resource_tween_system`]
     /// - [`tween::asset_tween_system`]
+    ///
+    /// Events is not necessary related to tweening but their code is still working in the same area.
+    /// - [`tween::tween_event_system`]
+    /// - [`tween::tween_event_taking_system`]
     ApplyTween,
 }
 

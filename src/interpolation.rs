@@ -861,8 +861,8 @@ impl Interpolation for EaseClosure {
 }
 
 /// This system will automatically sample in each entities with a
-/// [`TweenProgress`] component then insert [`TweenInterpolationValue`].
-/// Remove [`TweenInterpolationValue`] if [`TweenProgress`] is removed.
+/// [`TimeSpanProgress`] component then insert [`TweenInterpolationValue`].
+/// Remove [`TweenInterpolationValue`] if [`TimeSpanProgress`] is removed.
 #[allow(clippy::type_complexity)]
 pub fn sample_interpolations_system<I>(
     mut commands: Commands,
