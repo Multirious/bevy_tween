@@ -295,20 +295,6 @@ where
     pub fn new(interpolator: I) -> Self {
         Tween::new_target(T::default(), interpolator)
     }
-
-    /// Convert the current generic interpolator into a dynamic one.
-    pub fn with_interpolator_boxed(
-        self,
-    ) -> Tween<T, Box<dyn Interpolator<Item = I::Item>>> {
-        let Tween {
-            target,
-            interpolator,
-        } = self;
-        Tween {
-            target,
-            interpolator: Box::new(interpolator),
-        }
-    }
 }
 
 impl<T, Item> Tween<T, Box<dyn Interpolator<Item = Item>>>
