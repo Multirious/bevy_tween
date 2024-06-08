@@ -86,6 +86,6 @@ fn despawn_finished_circle(
     mut time_runner_ended_reader: EventReader<TimeRunnerEnded>,
 ) {
     for t in time_runner_ended_reader.read() {
-        commands.entity(t.time_runner).despawn();
+        commands.entity(t.time_runner).despawn_recursive();
     }
 }
