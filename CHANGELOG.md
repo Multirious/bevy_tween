@@ -1,5 +1,56 @@
 # Changelog
 
+## Unreleased
+
+### Migration guide
+This update contains a complete API revamp which the new 
+documentation can be read at crate root and should cover all or at least most usecases from the previous API.
+
+All timing types is moved to `bevy_time_runner` including some changes. 
+- Repeat
+- RepeatStyle
+- SpanTweener -> TimeRunner
+- AnimationDirection -> TimeDirection
+- SpanTweenerEnded -> TimeRunnerEnded
+- And some more less used types...
+
+If you have any questions, you can create a discussion in the GitHub repository or message in Bevy's Discord server!
+
+### Breaking changes
+- Move span_tweener and tween_timer types to bevy_time_runner
+- Remove tween_timer module and all types in it. Some types can be found in bevy_time_runner
+- Remove span_tween module and all types in it
+- Remove span_tween feature flag
+- All systems update argument type to the ones in bevy_time_runner
+- Update library to use types from bevy_time_runner
+- Remove TweenSystemSet::TickTween 
+- Remove TweenSystemSet::Tweener
+- Replace TargetComponent::Tweener* with TargetComponent::Marker. Update default accordingly
+- Remove all types, method, and function related to tweener. Most is renamed and move to bevy_time_runner
+
+### Fixes
+- Fix tween systems error will flood the console
+
+### Changes
+- Update readme
+- Update docs
+- Improve lib docs
+- Fix getting started code example. You're suppose to use `bevy_tween::prelude::*` not `bevy_tween::*`!
+- Add curve text art to EaseFunction
+- Implements combinator
+- Implements state
+- New animation builder and traits
+- Add function constructor for interpolators
+- Add IntoTarget trait
+- pub use bevy_time_runner
+- TweenCorePlugin adds TimeRunnerPlugin automatically if not exists
+- Remove deprecated systems and types
+- Add build.rs file to actually make CHANNEL_*  cfg flag works
+- Update all examples to account for new changes
+- Add rustc_version to build dependencies
+- Remove span_tween example
+- Turn off format_code_in_doc_comments rust fmt config
+
 ## v0.4.0 - 2024-04-08
 
 ### Changes
