@@ -16,7 +16,9 @@ mod state {
 
     /// Generic target and state
     pub struct TargetState<T, V> {
+        /// The target type
         pub target: T,
+        /// The target's value or property
         pub value: V,
     }
 
@@ -30,11 +32,13 @@ mod state {
             TargetState { target, value }
         }
 
+        /// Change the value
         pub fn set_value(&mut self, new_value: V) -> &mut Self {
             self.value = new_value;
             self
         }
 
+        /// Change the target
         pub fn set_target(&mut self, new_target: T) -> &mut Self {
             self.target = new_target;
             self
