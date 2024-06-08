@@ -14,6 +14,8 @@ use bevy::prelude::*;
 use crate::{tween::TweenInterpolationValue, TweenSystemSet};
 use bevy_time_runner::TimeSpanProgress;
 
+#[cfg(feature = "bevy_lookup_curve")]
+pub mod bevy_lookup_curve;
 mod ease_functions;
 
 /// A trait for implementing interpolation algorithms.

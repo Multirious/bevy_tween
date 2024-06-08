@@ -270,6 +270,8 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 mod utils;
 
+#[cfg(feature = "bevy_lookup_curve")]
+pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
 pub mod interpolate;
@@ -333,12 +335,16 @@ pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        PluginGroupBuilder::start::<DefaultTweenPlugins>()
+        #[allow(clippy::let_and_return)]
+        let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin)
-            .add(tween::DefaultTweenEventsPlugin)
+            .add(tween::DefaultTweenEventsPlugin);
+        #[cfg(feature = "bevy_lookup_curve")]
+        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+        group
     }
 }
 

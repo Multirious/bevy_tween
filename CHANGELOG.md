@@ -32,6 +32,7 @@ If you have any questions, you can create a discussion in the GitHub repository 
 - Fix tween systems error will flood the console
 
 ### Changes
+- Interpolation implementation for bevy_lookup_curve
 - Update readme
 - Update docs
 - Improve lib docs
