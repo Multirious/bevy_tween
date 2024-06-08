@@ -1,4 +1,14 @@
-/// Interpolation types support for [`bevy_lookup_curve`](::bevy_lookup_curve)
+//! Interpolation types support for [`bevy_lookup_curve`](::bevy_lookup_curve)
+//!
+//! **Plugins**:
+//! - [`BevyLookupCurveInterpolationPlugin`]
+//!
+//! **Components**:
+//! - [`LookupCurveCache`]
+//!
+//! **Systems**:
+//! - [`sample_lookup_curve_system`]
+
 use super::*;
 use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 use bevy::utils::HashSet;
