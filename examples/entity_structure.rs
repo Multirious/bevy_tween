@@ -3,7 +3,7 @@ use bevy_tween::interpolate::{AngleZ, Translation};
 use bevy_tween::prelude::*;
 use bevy_tween::{
     bevy_time_runner::{TimeRunner, TimeSpan},
-    tween::TargetComponent,
+    tween::{AnimationTarget, TargetComponent},
 };
 
 fn main() {

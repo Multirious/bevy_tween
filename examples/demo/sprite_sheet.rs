@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::prelude::*;
+use bevy_tween::{prelude::*, tween::AnimationTarget};
 
 mod interpolate {
     use bevy::prelude::*;

@@ -8,6 +8,7 @@ use bevy_tween::{
     bevy_time_runner::TimeRunner,
     interpolate::{scale, sprite_color, translation},
     prelude::*,
+    tween::AnimationTarget,
 };
 
 fn main() {

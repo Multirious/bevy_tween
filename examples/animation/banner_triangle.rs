@@ -5,7 +5,7 @@ use bevy_tween::{
     combinator::{parallel, tween_exact, AnimationCommands},
     interpolate::{angle_z, translation},
     prelude::*,
-    tween::TargetComponent,
+    tween::{AnimationTarget, TargetComponent},
 };
 
 fn main() {

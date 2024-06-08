@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
+    tween::AnimationTarget,
 };
 
 fn main() {
