@@ -219,7 +219,7 @@
 //!     .repeat(Repeat::Infinitely)
 //!     .insert(my_animation(&mut sprite_color, Duration::from_secs(1)));
 //! ```
-//! There are more combinators you can use. Check them out in the [`combinator`] moduel
+//! There are more combinators you can use. Check them out in the [`combinator`] module.
 //!
 //! ## Animator as a child
 //! You can spawn animator as a child if you want
@@ -271,7 +271,7 @@
 //!     tween::AnimationTarget,
 //! };
 //!
-//! let sprite = AnimationTarget.into_target() // which returns TargetComponent::Marker;
+//! let sprite = AnimationTarget.into_target(); // which returns TargetComponent::Marker
 //! sprite_commands.insert(AnimationTarget);
 //! sprite_commands.animation().insert_tween_here(
 //!     Duration::from_secs(1),
@@ -321,6 +321,7 @@
 //!
 //! [`TimeRunner`]: bevy_time_runner::TimeRunner
 //! [`Tween`]: tween::Tween
+//! [`AnimationTarget`]: tween::AnimationTarget
 #![allow(clippy::needless_doctest_main)]
 #![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
 #![warn(missing_docs)]
