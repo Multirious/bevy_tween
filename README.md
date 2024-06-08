@@ -113,6 +113,8 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
   enable `"bevy/bevy_render"`, add nothing but required by the `"bevy_sprite"` feature.
 - `"bevy_sprite"`, enabled by default.<br/>
   enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite.
+- `"bevy_lookup_curve"`.<br/>
+  Add interpolation implementation using [`bevy_lookup_curve`](https://github.com/villor/bevy_lookup_curve)
 
 ## Bevy Version Support
 
