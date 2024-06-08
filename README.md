@@ -56,7 +56,7 @@ See changelog [here](CHANGELOG.md).
 - **Flexible**: Supports many kind of animation due to its extensibility and modularity.
   - Tween anything from anywhere, built-in or custom system.
   - Interpolate with any curve, built-in or custom system.
-  - Anything as long as they're time controlled.
+  - *Literally anything* as long as they're time controlled.
 - **Parallelism**: Since a tween or an animation primitive is one component and one system, they have great chances for system parallelism and increase in performance.
 - **Rich timer control**:
   - Looping
@@ -119,7 +119,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 
 |`bevy`|`bevy_tween`|
 |------|------------|
-|0.13  |0.2–0.4     |
+|0.13  |0.2–0.5     |
 
 ## Credits
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)

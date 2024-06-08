@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.5.0 - 2024-06-09
 
 ### Breaking changes
 - Move span_tweener and tween_timer types to `bevy_time_runner`
