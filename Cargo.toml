@@ -27,6 +27,9 @@ bevy-inspector-egui = "0.23"
 bevy = { version = "0.13.0", default-features = false, features = [ "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
 rand = "0.8.5"
 
+[build-dependencies]
+rustc_version = "0.4.0"
+
 [features]
 default = [
   "bevy_asset",
