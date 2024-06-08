@@ -643,15 +643,18 @@ mod sealed {
     macro_rules! impl_parallel {
         ($($i:tt $t:ident)+) => {
             impl< $($t: ParallelSealed,)+ > ParallelSealed for ($($t,)*) {
-                fn call(self, a: &mut AnimationCommands, pos: &mut Duration) {
-                    let mut furthest = *pos;
+                fn call(self, a: &mut AnimationCommands, main_pos: &mut Duration) {
+                    let mut furthest = *main_pos;
+                    let mut pos = *main_pos;
                     $(
-                        self.$i.call(a, pos);
-                        if *pos > furthest {
-                            furthest = *pos;
+                        self.$i.call(a, &mut pos);
+                        if pos > furthest {
+                            furthest = pos;
                         }
+                        #[allow(unused)]
+                        {pos = *main_pos;}
                     )*
-                    *pos = furthest;
+                    *main_pos = furthest;
                 }
             }
         }
