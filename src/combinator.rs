@@ -15,13 +15,23 @@ mod state {
     use bevy::prelude::*;
 
     pub struct TargetState<T, V> {
-        target: T,
-        value: V,
+        pub target: T,
+        pub value: V,
     }
 
     impl<T, V> TargetState<T, V> {
         pub fn new(target: T, value: V) -> Self {
             TargetState { target, value }
+        }
+
+        pub fn set_value(&mut self, new_value: V) -> &mut Self {
+            self.value = new_value;
+            self
+        }
+
+        pub fn set_target(&mut self, new_target: T) -> &mut Self {
+            self.target = new_target;
+            self
         }
     }
 
