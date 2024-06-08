@@ -219,6 +219,66 @@
 //!     .repeat(Repeat::Infinitely)
 //!     .insert(my_animation(&mut sprite_color, Duration::from_secs(1)));
 //! ```
+//! There are more combinators you can use. Check them out in the [`combinator`] moduel
+//!
+//! ## Animator as a child
+//! You can spawn animator as a child if you want
+//! ```
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{
+//!     interpolate::sprite_color,
+//!     combinator::{tween, sequence}
+//! };
+//!
+//! let sprite = sprite_commands.id().into_target();
+//! sprite_commands.with_children(|c| {
+//!     c.animation().insert(sequence((
+//!         tween(
+//!             Duration::from_secs(1),
+//!             EaseFunction::QuadraticOut,
+//!             sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!         ),
+//!         tween(
+//!             Duration::from_secs(1),
+//!             EaseFunction::QuadraticIn,
+//!             sprite.with(sprite_color(Color::RED, Color::WHITE))
+//!         ),
+//!     )));
+//! });
+//! ```
+//!
+//! ## [`AnimationTarget`]
+//! [`AnimationTarget`] can be used for automatic target searching.
+//! ```no_run
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{
+//!     interpolate::sprite_color,
+//!     combinator::tween,
+//!     tween::AnimationTarget,
+//! };
+//!
+//! let sprite = AnimationTarget.into_target() // which returns TargetComponent::Marker;
+//! sprite_commands.insert(AnimationTarget);
+//! sprite_commands.animation().insert_tween_here(
+//!     Duration::from_secs(1),
+//!     EaseFunction::QuadraticOut,
+//!     sprite.with(sprite_color(Color::WHITE, Color::RED))
+//! );
+//! ```
 //!
 //! ## Custom interpolator
 //!

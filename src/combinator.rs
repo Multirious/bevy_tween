@@ -1,4 +1,4 @@
-//! Combinators for tweens using this crate's default tweener
+//! Combinator framework
 
 use std::time::Duration;
 
