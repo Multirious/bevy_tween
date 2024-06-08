@@ -878,11 +878,17 @@ dependencies = [
 
 [[package]]
 name = "bevy_time_runner"
-version = "0.1.0"
-source = "git+https://github.com/Multirious/bevy_time_runner#2c8f4132522554faee1707bdfb4c9db7ce0aa604"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "91eeb6a0718c504e9eeacfefee72ede13b892903bfe58e843311ea452fdec7d3"
 dependencies = [
- "bevy",
+ "bevy_app",
+ "bevy_ecs",
  "bevy_eventlistener",
+ "bevy_hierarchy",
+ "bevy_reflect",
+ "bevy_time",
+ "rustc_version",
 ]
 
 [[package]]
