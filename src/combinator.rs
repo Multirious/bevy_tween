@@ -268,13 +268,13 @@ impl<'a> AnimationBuilder<'a> {
     }
 
     /// Get the inner building [`TimeRunner`]
-    pub fn time_runner(&self) -> Option<&TimeRunner> {
-        self.time_runner.as_ref()
+    pub fn time_runner(&self) -> &Option<TimeRunner> {
+        &self.time_runner
     }
 
     /// Get the inner building [`TimeRunner`] mutably
-    pub fn time_runner_mut(&mut self) -> Option<&mut TimeRunner> {
-        self.time_runner.as_mut()
+    pub fn time_runner_mut(&mut self) -> &mut Option<TimeRunner> {
+        &mut self.time_runner
     }
 
     /// Configure [`TimeRunner`]'s [`Repeat`]
