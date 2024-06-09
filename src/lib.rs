@@ -223,7 +223,7 @@
 //!
 //! ## Animator as a child
 //! You can spawn animator as a child if you want
-//! ```
+//! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -252,6 +252,39 @@
 //!         ),
 //!     )));
 //! });
+//! ```
+//!
+//! ## Orphaned Animator
+//! An animator does not required to be a child or inside your target entity.
+//! You can spawn them anywhere in the world if needed.
+//! ```no_run
+#![doc = utils::doc_test_boilerplate!()]
+//! # let mut sprite_commands = commands.spawn(SpriteBundle {
+//! #     sprite: Sprite {
+//! #         custom_size: Some(Vec2::new(50., 50.)),
+//! #         ..Default::default()
+//! #     },
+//! #     ..Default::default()
+//! # });
+//! use bevy_tween::{
+//!     interpolate::sprite_color,
+//!     combinator::{tween, sequence}
+//! };
+//!
+//! let sprite = sprite_commands.id().into_target();
+//! // use `.animation()` on commands directly to spawn a new entity
+//! commands.animation().insert(sequence((
+//!     tween(
+//!         Duration::from_secs(1),
+//!         EaseFunction::QuadraticOut,
+//!         sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!     ),
+//!     tween(
+//!         Duration::from_secs(1),
+//!         EaseFunction::QuadraticIn,
+//!         sprite.with(sprite_color(Color::RED, Color::WHITE))
+//!     ),
+//! )));
 //! ```
 //!
 //! ## [`AnimationTarget`]
