@@ -26,6 +26,7 @@ All timing types is moved to `bevy_time_runner` including some changes.
 - Fix tween systems error will flood the console
 
 ### Changes
+- Supports `bevy_eventlistener` #16
 - Interpolation implementation for bevy_lookup_curve
 - Update readme
 - Update docs
