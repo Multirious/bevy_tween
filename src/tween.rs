@@ -328,7 +328,7 @@ where
 /// Convenient alias for [`Tween`] that [`TargetComponent`] with generic [`Interpolator`].
 pub type ComponentTween<I> = Tween<TargetComponent, I>;
 
-/// Convenient alias for [`Tween`] that [`TargetComponent`] with boxed dyanmic [`Interpolator`].
+/// Convenient alias for [`Tween`] that [`TargetComponent`] with boxed dynamic [`Interpolator`].
 pub type ComponentDynTween<C> =
     Tween<TargetComponent, Box<dyn Interpolator<Item = C>>>;
 
@@ -509,7 +509,7 @@ impl TargetResource {
 #[cfg(feature = "bevy_asset")]
 pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
 
-/// Convenient alias for [`Tween`] that [`TargetAsset`] with dyanmic [`Interpolator`].
+/// Convenient alias for [`Tween`] that [`TargetAsset`] with dynamic [`Interpolator`].
 #[cfg(feature = "bevy_asset")]
 pub type AssetDynTween<A> =
     Tween<TargetAsset<A>, Box<dyn Interpolator<Item = A>>>;
@@ -685,7 +685,7 @@ impl Plugin for DefaultTweenEventsPlugin {
 ///
 /// ## Using custom data
 ///
-/// You have to regsiter [`tween_event_system`] or [`tween_event_taking_system`]
+/// You have to register [`tween_event_system`] or [`tween_event_taking_system`]
 /// before using custom data with [`TweenEvent<Data>`]. And add your custom event.
 /// Check [`DefaultTweenEventsPlugin`] for built-in events.
 /// ```no_run
