@@ -223,7 +223,7 @@ impl<'a> AnimationBuilderExt for EntityCommands<'a> {
     fn animation(&mut self) -> AnimationBuilder<'_> {
         AnimationBuilder {
             entity_commands: self.reborrow(),
-            time_runner: TimeRunner::default(),
+            time_runner: None,
             custom_length: None,
         }
     }
@@ -236,7 +236,7 @@ impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
         let entity_commands = self.spawn_empty();
         AnimationBuilder {
             entity_commands,
-            time_runner: TimeRunner::default(),
+            time_runner: None,
             custom_length: None,
         }
     }
@@ -249,7 +249,7 @@ impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
         let entity_commands = self.spawn_empty();
         AnimationBuilder {
             entity_commands,
-            time_runner: TimeRunner::default(),
+            time_runner: None,
             custom_length: None,
         }
     }
@@ -258,19 +258,35 @@ impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
 /// Configure [`TimeRunner`] through a builder API and add animation entities
 pub struct AnimationBuilder<'a> {
     entity_commands: EntityCommands<'a>,
-    time_runner: TimeRunner,
+    time_runner: Option<TimeRunner>,
     custom_length: Option<Duration>,
 }
 impl<'a> AnimationBuilder<'a> {
+    /// Get the inner [`EntityCommands`]
+    pub fn entity_commands(&mut self) -> &mut EntityCommands<'a> {
+        &mut self.entity_commands
+    }
+
+    /// Get the inner building [`TimeRunner`]
+    pub fn time_runner(&self) -> Option<&TimeRunner> {
+        self.time_runner.as_ref()
+    }
+
+    /// Get the inner building [`TimeRunner`] mutably
+    pub fn time_runner_mut(&mut self) -> Option<&mut TimeRunner> {
+        self.time_runner.as_mut()
+    }
+
     /// Configure [`TimeRunner`]'s [`Repeat`]
     pub fn repeat(mut self, repeat: Repeat) -> Self {
-        match self.time_runner.repeat() {
+        let time_runner =
+            self.time_runner.get_or_insert_with(TimeRunner::default);
+        match time_runner.repeat() {
             Some((_, repeat_style)) => {
-                self.time_runner.set_repeat(Some((repeat, repeat_style)));
+                time_runner.set_repeat(Some((repeat, repeat_style)));
             }
             None => {
-                self.time_runner
-                    .set_repeat(Some((repeat, RepeatStyle::default())));
+                time_runner.set_repeat(Some((repeat, RepeatStyle::default())));
             }
         }
         self
@@ -278,12 +294,14 @@ impl<'a> AnimationBuilder<'a> {
 
     /// Configure [`TimeRunner`]'s [`RepeatStyle`]
     pub fn repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
-        match self.time_runner.repeat() {
+        let time_runner =
+            self.time_runner.get_or_insert_with(TimeRunner::default);
+        match time_runner.repeat() {
             Some((repeat, _)) => {
-                self.time_runner.set_repeat(Some((repeat, repeat_style)));
+                time_runner.set_repeat(Some((repeat, repeat_style)));
             }
             None => {
-                self.time_runner
+                time_runner
                     .set_repeat(Some((Repeat::Infinitely, repeat_style)));
             }
         }
@@ -292,7 +310,9 @@ impl<'a> AnimationBuilder<'a> {
 
     /// Configure [`TimeRunner`]'s `paused`
     pub fn paused(mut self, paused: bool) -> Self {
-        self.time_runner.set_paused(paused);
+        self.time_runner
+            .get_or_insert_with(TimeRunner::default)
+            .set_paused(paused);
         self
     }
 
@@ -314,7 +334,7 @@ impl<'a> AnimationBuilder<'a> {
     {
         let AnimationBuilder {
             mut entity_commands,
-            mut time_runner,
+            time_runner,
             custom_length,
         } = self;
         let mut dur = Duration::ZERO;
@@ -322,6 +342,7 @@ impl<'a> AnimationBuilder<'a> {
             let mut a = AnimationCommands::new(c);
             animation(&mut a, &mut dur);
         });
+        let mut time_runner = time_runner.unwrap_or_default();
         match custom_length {
             Some(length) => {
                 time_runner.set_length(length);
@@ -350,9 +371,10 @@ impl<'a> AnimationBuilder<'a> {
     {
         let AnimationBuilder {
             mut entity_commands,
-            mut time_runner,
+            time_runner,
             custom_length,
         } = self;
+        let mut time_runner = time_runner.unwrap_or_default();
         match custom_length {
             Some(length) => {
                 time_runner.set_length(length);
