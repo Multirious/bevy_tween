@@ -95,7 +95,7 @@ where
 /// implementor.
 ///
 /// Currently only used for registering systems
-/// and being object-safe for dyanmic interpolator.
+/// and being object-safe for dynamic interpolator.
 ///
 /// See [module-level documentation](self) for more info.
 pub trait Interpolator: Send + Sync + 'static {
