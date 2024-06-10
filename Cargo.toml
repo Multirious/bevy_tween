@@ -18,14 +18,14 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.13.0", default-features = false }
-bevy_time_runner = { version = "0.1.4", default-features = false, features = ["bevy_app", "bevy_reflect"] }
-bevy_lookup_curve = { version = "0.2.1", optional = true }
+bevy = { version = "0.14.0-rc.2", default-features = false }
+bevy_time_runner = { git = "https://github.com/Multirious/bevy_time_runner" , branch = "bevy-0.14.0-rc.2", default-features = false, features = ["bevy_app", "bevy_reflect"] }
+# bevy_lookup_curve = { version = "0.2.1", optional = true }
 
 [dev-dependencies]
-bevy-inspector-egui = "0.23"
-bevy_eventlistener = { version = "0.7.0" }
-bevy = { version = "0.13.0", default-features = false, features = [ "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
+# bevy-inspector-egui = "0.23"
+# bevy_eventlistener = { version = "0.7.0" }
+bevy = { version = "0.14.0-rc.2", default-features = false, features = [ "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
 rand = "0.8.5"
 
 [build-dependencies]
@@ -36,7 +36,7 @@ default = [
   "bevy_asset",
   "bevy_render",
   "bevy_sprite",
-  "bevy_eventlistener"
+  # "bevy_eventlistener"
 ]
 
 # Adds tweening systems for asset
@@ -46,9 +46,9 @@ bevy_render = [ "bevy/bevy_render"]
 # Add some built-in interpolator related to sprite
 bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
 # Add entity-targeted events with bevy_eventlistener
-bevy_eventlistener = [ "bevy_time_runner/bevy_eventlistener" ]
+# bevy_eventlistener = [ "bevy_time_runner/bevy_eventlistener" ]
 # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
-bevy_lookup_curve = [ "dep:bevy_lookup_curve" ]
+# bevy_lookup_curve = [ "dep:bevy_lookup_curve" ]
 
 [package.metadata.docs.rs]
 all-features = true
