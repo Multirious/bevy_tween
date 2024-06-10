@@ -536,7 +536,7 @@ impl BevyTweenRegisterSystems for App {
         tween_systems: impl IntoSystemConfigs<M>,
     ) -> &mut Self {
         let app_resource = self
-            .world
+            .world()
             .get_resource::<TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
         self.add_systems(
