@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use bevy_eventlistener::prelude::*;
 use bevy_tween::{
-    bevy_time_runner::TimeRunnerEnded, combinator::forward, prelude::*,
+    bevy_time_runner::TimeRunnerEnded,
+    combinator::{event, forward, sequence},
+    prelude::*,
 };
 
 fn main() {
@@ -25,4 +27,18 @@ fn setup(mut commands: Commands) {
         .animation()
         .repeat(Repeat::times(5))
         .insert(forward(Duration::from_secs_f32(0.5)));
+
+    commands
+        .spawn(On::<TweenEvent<&'static str>>::run(
+            |listener: Listener<TweenEvent<&'static str>>| {
+                println!("{}", listener.data);
+            },
+        ))
+        .animation()
+        .insert(sequence((
+            forward(Duration::from_secs_f32(3.)),
+            event("event"),
+            forward(Duration::from_secs_f32(0.5)),
+            event("listener"),
+        )));
 }

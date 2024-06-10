@@ -45,7 +45,21 @@ pub struct TweenEventPlugin<Data>
 where
     Data: Send + Sync + 'static + Clone,
 {
+    #[cfg(feature = "bevy_eventlistener")]
+    event_listener: bool,
     marker: PhantomData<Data>,
+}
+
+impl<Data> TweenEventPlugin<Data>
+where
+    Data: Send + Sync + 'static + Clone,
+{
+    /// Include [`EventListenerPlugin`] with this tween event
+    #[cfg(feature = "bevy_eventlistener")]
+    pub fn with_event_listener(mut self) -> Self {
+        self.event_listener = true;
+        self
+    }
 }
 
 impl<Data> Plugin for TweenEventPlugin<Data>
@@ -63,6 +77,10 @@ where
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
         .add_event::<TweenEvent<Data>>();
+        #[cfg(feature = "bevy_eventlistener")]
+        if self.event_listener {
+            app.add_plugins(EventListenerPlugin::<TweenEvent<Data>>::default());
+        }
     }
 }
 
@@ -101,10 +119,19 @@ pub struct DefaultTweenEventPlugins;
 impl DefaultTweenEventPlugins {
     pub(crate) fn plugins(
     ) -> (TweenEventPlugin<()>, TweenEventPlugin<&'static str>) {
-        (
+        #[allow(clippy::let_and_return)]
+        #[cfg(feature = "bevy_eventlistener")]
+        let o = (
+            TweenEventPlugin::<()>::default().with_event_listener(),
+            TweenEventPlugin::<&'static str>::default().with_event_listener(),
+        );
+        #[allow(clippy::let_and_return)]
+        #[cfg(not(feature = "bevy_eventlistener"))]
+        let o = (
             TweenEventPlugin::<()>::default(),
             TweenEventPlugin::<&'static str>::default(),
-        )
+        );
+        o
     }
 }
 
@@ -164,12 +191,14 @@ pub struct TweenEvent<Data = ()> {
 
 #[cfg(feature = "bevy_eventlistener")]
 impl<Data> EntityEvent for TweenEvent<Data>
-where Data: Clone + Send + Sync + 'static
+where
+    Data: Clone + Send + Sync + 'static,
 {
     fn target(&self) -> Entity {
         self.entity
     }
-    fn can_bubble(&self) -> bool {
+
+    fn can_bubble(&self) -> bool {
         true
     }
 }
