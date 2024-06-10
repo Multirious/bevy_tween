@@ -73,8 +73,6 @@ use std::sync::Arc;
 
 use bevy::prelude::*;
 
-#[cfg(feature = "bevy_sprite")]
-use crate::utils::color_lerp;
 use crate::{tween, BevyTweenRegisterSystems};
 
 /// Alias for an `Interpolator` as a boxed trait object.
@@ -487,7 +485,7 @@ impl Interpolator for SpriteColor {
     type Item = Sprite;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        item.color = color_lerp(self.start, self.end, value)
+        item.color = self.start.mix(&self.end, value);
     }
 }
 
@@ -528,7 +526,7 @@ impl Interpolator for ColorMaterial {
     type Item = bevy::sprite::ColorMaterial;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        item.color = color_lerp(self.start, self.end, value);
+        item.color = self.start.mix(&self.end, value);
     }
 }
 
