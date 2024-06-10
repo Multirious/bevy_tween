@@ -3,7 +3,6 @@ use bevy::{
     ecs::{query::QueryEntityError, schedule::SystemConfigs},
     utils::{HashMap, HashSet},
 };
-use bevy_time_runner::TimeSpanProgress;
 use std::any::type_name;
 
 /// Alias for [`apply_component_tween_system`] and may contains more systems
@@ -431,68 +430,4 @@ where
     A: Asset,
 {
     apply_asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
-}
-
-/// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
-/// and [`TweenEventData`] exist in the same entity and data is `Some`,
-/// cloning the data.
-#[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data>(
-    q_tween_event_data: Query<
-        (
-            Entity,
-            &TweenEventData<Data>,
-            &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
-        Without<SkipTween>,
-    >,
-    mut event_writer: EventWriter<TweenEvent<Data>>,
-) where
-    Data: Clone + Send + Sync + 'static,
-{
-    q_tween_event_data.iter().for_each(
-        |(entity, event_data, progress, interpolation_value)| {
-            if let Some(data) = event_data.0.as_ref() {
-                event_writer.send(TweenEvent {
-                    data: data.clone(),
-                    progress: *progress,
-                    interpolation_value: interpolation_value.map(|v| v.0),
-                    entity,
-                });
-            }
-        },
-    );
-}
-
-/// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
-/// and [`TweenEventData`] exist in the same entity and data is `Some`,
-/// taking the data and leaves the value `None`.
-#[allow(clippy::type_complexity)]
-pub fn tween_event_taking_system<Data>(
-    mut q_tween_event_data: Query<
-        (
-            Entity,
-            &mut TweenEventData<Data>,
-            &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
-        Without<SkipTween>,
-    >,
-    mut event_writer: EventWriter<TweenEvent<Data>>,
-) where
-    Data: Send + Sync + 'static,
-{
-    q_tween_event_data.iter_mut().for_each(
-        |(entity, mut event_data, progress, interpolation_value)| {
-            if let Some(data) = event_data.0.take() {
-                event_writer.send(TweenEvent {
-                    data,
-                    progress: *progress,
-                    interpolation_value: interpolation_value.map(|v| v.0),
-                    entity,
-                });
-            }
-        },
-    );
 }
