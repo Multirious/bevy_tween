@@ -31,6 +31,9 @@
 use std::marker::PhantomData;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
+
+#[cfg(feature = "bevy_eventlistener")]
+use bevy_eventlistener::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 
 use crate::tween::{SkipTween, TweenInterpolationValue};
@@ -155,8 +158,20 @@ pub struct TweenEvent<Data = ()> {
     pub progress: TimeSpanProgress,
     /// Sampled value of an interpolation.
     pub interpolation_value: Option<f32>,
-    /// The entity
+    /// The entity that emitted the event
     pub entity: Entity,
+}
+
+#[cfg(feature = "bevy_eventlistener")]
+impl<Data> EntityEvent for TweenEvent<Data>
+where Data: Clone + Send + Sync + 'static
+{
+    fn target(&self) -> Entity {
+        self.entity
+    }
+    fn can_bubble(&self) -> bool {
+        true
+    }
 }
 
 /// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
