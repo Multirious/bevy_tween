@@ -2,24 +2,15 @@
 //!
 //! # Tween
 //!
-//! **Plugins**:
-//! - [`DefaultTweenEventsPlugin`]
-//!
 //! **Components**:
 //! - [`Tween<T, I>`]
 //! - [`SkipTween`]
 //! - [`TweenInterpolationValue`]
-//! - [`TweenEventData`]
-//!
-//! **Events**:
-//! - [`TweenEvent`]
 //!
 //! **Systems**
 //! - [`component_tween_system`]
 //! - [`resource_tween_system`]
 //! - [`asset_tween_system`]
-//! - [`tween_event_system`]
-//! - [`tween_event_taking_system`]
 //!
 //! **Targets**:
 //! - [`TargetComponent`]
@@ -221,11 +212,9 @@
 //! [`DefaultDynInterpolatorsPlugin`]: crate::interpolate::DefaultDynInterpolatorsPlugin
 
 use bevy::prelude::*;
-use bevy_time_runner::TimeSpanProgress;
 
 use crate::combinator::TargetState;
 use crate::interpolate::Interpolator;
-use crate::{utils, BevyTweenRegisterSystems};
 
 mod systems;
 #[cfg(feature = "bevy_asset")]
@@ -240,7 +229,6 @@ pub use systems::{
     apply_resource_tween_system, resource_dyn_tween_system,
     resource_tween_system,
 };
-pub use systems::{tween_event_system, tween_event_taking_system};
 
 /// Skip a tween from tweening.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
@@ -248,7 +236,7 @@ pub use systems::{tween_event_system, tween_event_taking_system};
 pub struct SkipTween;
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
-/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`].
+/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`](bevy_time_runner::TimeSpanProgress).
 /// See [`sample_interpolations_system`]
 ///
 /// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
@@ -639,147 +627,6 @@ impl<A: Asset, const N: usize> From<&[Handle<A>; N]> for TargetAsset<A> {
     }
 }
 
-/// Default event and systems:
-/// - [`tween_event_system::<()>`], [`TweenEvent<()>`]
-/// - [`tween_event_system::<&'static str>`], [`TweenEvent<&'static str>`]
-pub struct DefaultTweenEventsPlugin;
-
-impl Plugin for DefaultTweenEventsPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_tween_systems(systems::tween_event_system::<()>)
-            .add_event::<TweenEvent>()
-            .add_tween_systems(systems::tween_event_system::<&'static str>)
-            .add_event::<TweenEvent<&'static str>>();
-    }
-}
-
-/// Fires [`TweenEvent`] whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity.
-///
-/// # Examples
-///
-/// ```
-#[doc = utils::doc_test_boilerplate!()]
-/// use bevy_tween::bevy_time_runner::{TimeRunner, TimeSpan};
-///
-/// commands
-///     .spawn((TimeRunner::new(Duration::from_secs(3))))
-///     .with_children(|c| {
-///         // The event will be fired once at the second 1.
-///         c.spawn((
-///             TimeSpan::try_from(
-///                 Duration::from_secs(1)..=Duration::from_secs(1),
-///             ).unwrap(),
-///             TweenEventData::new(),
-///         ));
-///
-///         // The event will be fired repetitively every frame
-///         // between the second 2 and 3.
-///         c.spawn((
-///             TimeSpan::try_from(
-///                 Duration::from_secs(2)..Duration::from_secs(3),
-///             ).unwrap(),
-///             TweenEventData::new(),
-///         ));
-///     });
-/// ```
-///
-/// ## Using custom data
-///
-/// You have to register [`tween_event_system`] or [`tween_event_taking_system`]
-/// before using custom data with [`TweenEvent<Data>`]. And add your custom event.
-/// Check [`DefaultTweenEventsPlugin`] for built-in events.
-/// ```no_run
-/// use bevy::prelude::*;
-/// use bevy_tween::prelude::*;
-/// use bevy_tween::tween_event_system;
-///
-/// #[derive(Clone)]
-/// enum MyTweenData {
-///     Idle,
-///     Fly,
-/// }
-///
-/// fn main() {
-///     App::new()
-///         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
-///         .add_tween_systems(tween_event_system::<MyTweenData>)
-///         .add_event::<TweenEvent<MyTweenData>>()
-///         .run();
-/// }
-/// ```
-/// ```
-#[doc = utils::doc_test_boilerplate!()]
-/// # #[derive(Clone)]
-/// # enum MyTweenData {
-/// #     Idle,
-/// #     Fly,
-/// # }
-/// # use bevy_tween::bevy_time_runner::{TimeRunner, TimeSpan};
-/// commands
-///     .spawn(TimeRunner::new(Duration::from_secs(5)))
-///     .with_children(|c| {
-///
-///         // The `TweenEvent<MyTweenData>` event will be fired once at the second 2.
-///         c.spawn((
-///             TimeSpan::try_from(
-///                 Duration::from_secs(2)..=Duration::from_secs(2),
-///             ).unwrap(),
-///             TweenEventData::with_data(MyTweenData::Idle),
-///         ));
-///
-///         // The `TweenEvent<MyTweenData>` event will be fired once at the second 3.
-///         c.spawn((
-///             TimeSpan::try_from(
-///                 Duration::from_secs(2)..=Duration::from_secs(2),
-///             ).unwrap(),
-///             TweenEventData::with_data(MyTweenData::Fly),
-///         ));
-///     });
-/// ```
-#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
-#[reflect(Component)]
-pub struct TweenEventData<Data = ()>(pub Option<Data>)
-where
-    Data: Send + Sync + 'static;
-
-impl<Data: Send + Sync + 'static> TweenEventData<Data> {
-    /// Create new [`TweenEventData`] with custom user data.
-    pub fn with_data(data: Data) -> Self {
-        TweenEventData(Some(data))
-    }
-}
-
-impl TweenEventData<()> {
-    /// Create new [`TweenEventData`] with no custom user data, simply `Some(())`.
-    pub fn new() -> Self {
-        TweenEventData(Some(()))
-    }
-}
-
-impl<Data> TweenEventData<Data>
-where
-    Data: Send + Sync + 'static,
-{
-    /// Create new [`TweenEventData`] with `None` value.
-    pub fn none() -> Self {
-        TweenEventData(None)
-    }
-}
-
-/// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
-/// by [`tween_event_system`] or [`tween_event_taking_system`].
-#[derive(Debug, Clone, PartialEq, Event, Reflect)]
-pub struct TweenEvent<Data = ()> {
-    /// Custom user data
-    pub data: Data,
-    /// Progress percentage of the tween
-    pub progress: TimeSpanProgress,
-    /// Sampled value of an interpolation.
-    pub interpolation_value: Option<f32>,
-    /// The entity
-    pub entity: Entity,
-}
-
 /// Trait for type to convert into a target type.
 pub trait IntoTarget {
     /// The target type
@@ -900,4 +747,82 @@ impl<A: Asset> IntoTarget for &Vec<Handle<A>> {
     fn into_target(self) -> Self::Target {
         TargetAsset::assets(self.iter().cloned())
     }
+}
+
+#[deprecated(
+    since = "0.6.0",
+    note = "use `bevy_tween::tween_event::TweenEvent` instead"
+)]
+#[allow(missing_docs)]
+#[doc(hidden)]
+pub type TweenEvent<Data> = crate::tween_event::TweenEvent<Data>;
+
+#[deprecated(
+    since = "0.6.0",
+    note = "use `bevy_tween::tween_event::TweenEventData` instead"
+)]
+#[allow(missing_docs)]
+#[doc(hidden)]
+pub type TweenEventData<Data> = crate::tween_event::TweenEventData<Data>;
+
+#[deprecated(
+    since = "0.6.0",
+    note = "use `bevy_tween::tween_event::DefaultTweenEventPlugins` instead"
+)]
+#[allow(missing_docs)]
+#[doc(hidden)]
+pub type DefaultTweenEventsPlugin =
+    crate::tween_event::DefaultTweenEventPlugins;
+
+#[deprecated(
+    since = "0.6.0",
+    note = "use `bevy_tween::tween_event::tween_event_system` instead or `TweenEventPlugin` if you're registering custom tween event"
+)]
+#[allow(missing_docs)]
+#[doc(hidden)]
+#[allow(deprecated)]
+#[allow(clippy::type_complexity)]
+pub fn tween_event_system<Data>(
+    q_tween_event_data: Query<
+        (
+            Entity,
+            &TweenEventData<Data>,
+            &bevy_time_runner::TimeSpanProgress,
+            Option<&TweenInterpolationValue>,
+        ),
+        Without<SkipTween>,
+    >,
+    event_writer: EventWriter<TweenEvent<Data>>,
+) where
+    Data: Clone + Send + Sync + 'static,
+{
+    crate::tween_event::tween_event_system(q_tween_event_data, event_writer)
+}
+
+#[deprecated(
+    since = "0.6.0",
+    note = "use `bevy_tween::tween_event::tween_event_taking_system` instead or `TweenEventTakingPlugin` if you're registering custom tween event"
+)]
+#[allow(missing_docs)]
+#[doc(hidden)]
+#[allow(deprecated)]
+#[allow(clippy::type_complexity)]
+pub fn tween_event_taking_system<Data>(
+    q_tween_event_data: Query<
+        (
+            Entity,
+            &mut TweenEventData<Data>,
+            &bevy_time_runner::TimeSpanProgress,
+            Option<&TweenInterpolationValue>,
+        ),
+        Without<SkipTween>,
+    >,
+    event_writer: EventWriter<TweenEvent<Data>>,
+) where
+    Data: Send + Sync + 'static,
+{
+    crate::tween_event::tween_event_taking_system(
+        q_tween_event_data,
+        event_writer,
+    )
 }

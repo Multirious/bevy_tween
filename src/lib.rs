@@ -371,6 +371,7 @@ pub use bevy_time_runner;
 pub mod interpolate;
 pub mod interpolation;
 pub mod tween;
+pub mod tween_event;
 
 pub mod combinator;
 
@@ -385,7 +386,8 @@ pub mod prelude {
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
-    pub use crate::tween::{IntoTarget, TweenEvent, TweenEventData};
+    pub use crate::tween::IntoTarget;
+    pub use crate::tween_event::{TweenEvent, TweenEventData};
 
     #[cfg(feature = "bevy_asset")]
     pub use crate::tween::AssetDynTween;
@@ -413,8 +415,8 @@ pub use tween::component_tween_system;
 pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
 
-pub use tween::tween_event_system;
-pub use tween::tween_event_taking_system;
+pub use tween_event::tween_event_system;
+pub use tween_event::tween_event_taking_system;
 
 /// Default plugins for using crate.
 ///
@@ -423,17 +425,22 @@ pub use tween::tween_event_taking_system;
 /// - [`interpolate::DefaultInterpolatorsPlugin`]
 /// - [`interpolate::DefaultDynInterpolatorsPlugin`]
 /// - [`interpolation::EaseFunctionPlugin`]
+/// - [`tween_event::DefaultTweenEventPlugins`]
 pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
+        let default_tween_event_plugins =
+            tween_event::DefaultTweenEventPlugins::plugins();
         #[allow(clippy::let_and_return)]
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
             .add(interpolation::EaseFunctionPlugin)
-            .add(tween::DefaultTweenEventsPlugin);
+            // waiting for add_group method in 0.14
+            .add(default_tween_event_plugins.0)
+            .add(default_tween_event_plugins.1);
         #[cfg(feature = "bevy_lookup_curve")]
         let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
         group
