@@ -13,6 +13,8 @@ use bevy::prelude::*;
 
 use crate::{tween::TweenInterpolationValue, TweenSystemSet};
 use bevy_time_runner::TimeSpanProgress;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "bevy_lookup_curve")]
 pub mod bevy_lookup_curve;
@@ -59,6 +61,7 @@ impl Plugin for EaseFunctionPlugin {
 #[allow(missing_docs)]
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub enum EaseFunction {
     #[default]
     /// ```txt
