@@ -491,6 +491,10 @@ impl Plugin for TweenCorePlugin {
         .register_type::<tween::AnimationTarget>()
         .register_type::<tween::TweenInterpolationValue>();
     }
+
+    fn cleanup(&self, app: &mut App) {
+        app.world.remove_resource::<TweenAppResource>();
+    }
 }
 
 /// Enum of SystemSet in this crate.
