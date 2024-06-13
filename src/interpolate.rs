@@ -73,15 +73,19 @@ mod blanket_impl;
 #[cfg(feature = "bevy_sprite")]
 mod sprite;
 mod transform;
+#[cfg(feature = "bevy_ui")]
+mod ui;
 
 pub use transform::*;
 
 #[cfg(feature = "bevy_sprite")]
 pub use sprite::*;
 
-use bevy::prelude::*;
+#[cfg(feature = "bevy_ui")]
+pub use ui::*;
 
 use crate::{tween, BevyTweenRegisterSystems};
+use bevy::prelude::*;
 
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
@@ -198,8 +202,8 @@ pub trait Interpolator: Send + Sync + 'static {
 /// - [`Rotation`]
 /// - [`Scale`]
 /// - [`AngleZ`]
-/// - [`SpriteColor`] if `"bevy_sprite"` feature is enabled.
-/// - [`ColorMaterial`] if `"bevy_sprite"` feature is enabled.
+/// - [`SpriteColor`] and [`ColorMaterial`](sprite::ColorMaterial) if `"bevy_sprite"` feature is enabled.
+/// - [`BackgroundColor`](ui::BackgroundColor) and [`BorderColor`](ui::BorderColor) if `"bevy_ui"` feature is enabled.
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
     /// # Panics
@@ -223,9 +227,19 @@ impl Plugin for DefaultInterpolatorsPlugin {
         app.add_tween_systems(tween::component_tween_system::<SpriteColor>())
             .register_type::<tween::ComponentTween<SpriteColor>>();
 
+        #[cfg(feature = "bevy_ui")]
+        app.add_tween_systems((
+            tween::component_tween_system::<ui::BackgroundColor>(),
+            tween::component_tween_system::<ui::BorderColor>(),
+        ))
+        .register_type::<tween::ComponentTween<ui::BackgroundColor>>()
+        .register_type::<tween::ComponentTween<ui::BorderColor>>();
+
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
-        app.add_tween_systems(tween::asset_tween_system::<sprite::ColorMaterial>())
-            .register_type::<tween::AssetTween<sprite::ColorMaterial>>();
+        app.add_tween_systems(
+            tween::asset_tween_system::<sprite::ColorMaterial>(),
+        )
+        .register_type::<tween::AssetTween<sprite::ColorMaterial>>();
     }
 }
 
@@ -235,6 +249,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
 /// - [`Transform`] component.
 /// - [`Sprite`] component if `"bevy_sprite"` feature is enabled.
 /// - [`ColorMaterial`] asset if `"bevy_sprite"` feature is enabled.
+/// - [`BackgroundColor`] and [`BorderColor`] components if `"bevy_ui"` feature is enabled.
 ///
 /// [`ColorMaterial`]: bevy::sprite::ColorMaterial
 pub struct DefaultDynInterpolatorsPlugin;
@@ -253,6 +268,16 @@ impl Plugin for DefaultDynInterpolatorsPlugin {
         app.add_tween_systems(tween::component_tween_system::<
             BoxedInterpolator<Sprite>,
         >());
+
+        #[cfg(feature = "bevy_ui")]
+        app.add_tween_systems((
+            tween::component_tween_system::<
+                BoxedInterpolator<bevy::prelude::BackgroundColor>,
+            >(),
+            tween::component_tween_system::<
+                BoxedInterpolator<bevy::prelude::BorderColor>,
+            >(),
+        ));
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
         app.add_tween_systems(tween::asset_tween_system::<

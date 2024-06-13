@@ -1,8 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+
+- Add interpolators for some UI components when using the `bevy_ui` feature.
+    - `BackgroundColor` and `BorderColor`
+
 ## v0.5.0 - 2024-06-09
 
 ### Breaking changes
+
 - Move span_tweener and tween_timer types to `bevy_time_runner`
 - Remove `tween_timer` module and all types in it. Some types can be found in `bevy_time_runner`
 - Remove `span_tween` module and all types in it
@@ -13,7 +21,8 @@
 - Update library to use types from `bevy_time_runner`
 - Remove all types, method, and function related to tweener. Most is renamed and move to `bevy_time_runner`
 
-All timing types is moved to `bevy_time_runner` including some changes. 
+All timing types is moved to `bevy_time_runner` including some changes.
+
 - `Repeat`
 - `RepeatStyle`
 - `SpanTweener` is replaced with `TimeRunner`
@@ -23,9 +32,11 @@ All timing types is moved to `bevy_time_runner` including some changes.
 - ...And some more
 
 ### Fixes
+
 - Fix tween systems error will flood the console
 
 ### Changes
+
 - Supports `bevy_eventlistener` #16 by musjj
 - Interpolation implementation for bevy_lookup_curve
 - Update readme
@@ -41,7 +52,7 @@ All timing types is moved to `bevy_time_runner` including some changes.
 - pub use bevy_time_runner
 - `TweenCorePlugin` adds `TimeRunnerPlugin` automatically if not exists
 - Remove deprecated systems and types
-- Add build.rs file to actually make CHANNEL_NIGHTLY  cfg flag works
+- Add build.rs file to actually make CHANNEL_NIGHTLY cfg flag works
 - Update all examples to account for new changes
 - Add rustc_version to build dependencies
 - Remove span_tween example
@@ -50,6 +61,7 @@ All timing types is moved to `bevy_time_runner` including some changes.
 ## v0.4.0 - 2024-04-08
 
 ### Changes
+
 - Add `SpanTweensBuilder::add` trait
 - Add `SpanTweenPreset` trait
 - Update examples to use the preset APIs.
@@ -59,11 +71,13 @@ All timing types is moved to `bevy_time_runner` including some changes.
 - Add "Your contributions" section to README.md
 
 ## v0.3.1 - 2024-04-04
+
 - Fix README.md
 
 ## v0.3.0 - 2024-04-03
 
 ### Breaking Changes
+
 - Remove unnecessary generics from `TargetComponent` and `TargetResource`
 - Add `app_resource: TweenAppResource` field to `TweenCorePlugin`
 - All plugins and APIs that uses `PostUpdate` schedule is changed to use schedule from
@@ -71,7 +85,7 @@ All timing types is moved to `bevy_time_runner` including some changes.
 - Delegate `span_tweener_system()`'s ticking responsibility to `tick_span_tweener_system()`
 - Remove `Eq` and `Hash` derives from `SpanTweener`, `Elasped`, and `TweenTimer`
 - Remove `new()` from `Elasped`
-- Remove `state: TweenState` field from SpanTweenBundle 
+- Remove `state: TweenState` field from SpanTweenBundle
 - Remove `TweenState`
 - Remove `TweenTarget` impl from `TargetComponent`, `TargetResource` and, `TargetAsset`
 - Change `component_tween_system_full`, `resource_tween_system_full`, and `asset_tween_system_full`
@@ -86,6 +100,7 @@ All timing types is moved to `bevy_time_runner` including some changes.
 - Change `Repeat` to use `i32` instead of `usize` and update their corresponding methods.
 
 ### Changes
+
 - Add `TweenAppResource`
 - Add `DefaultTweenEventsPlugin`
 - Add `TweenEventData`
@@ -116,11 +131,13 @@ All timing types is moved to `bevy_time_runner` including some changes.
 - Improves `span_tweener_system` code to account to new `TweenTimer::tick()` behavior
 
 ### Fixes
+
 - Fixed missing `AngleZ` tween system in `DefaultInterpolatorsPlugin`
 
 ### Deprecates
-- Deprecate `QuickSpanTweenBundle` 
-- Deprecate `span_tween::span_tween()` 
+
+- Deprecate `QuickSpanTweenBundle`
+- Deprecate `span_tween::span_tween()`
 - Deprecate `ChildSpanTweenBuilder`
 - Deprecate `ChildSpanTweenBuilderExt`
 - Deprecate `WorldChildSpanTweenBuilder`

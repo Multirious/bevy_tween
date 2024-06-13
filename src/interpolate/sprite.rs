@@ -2,7 +2,6 @@ use crate::interpolate::Interpolator;
 use crate::utils::color_lerp;
 use bevy::prelude::*;
 
-// #[cfg(feature = "bevy_sprite")]
 // type ReflectInterpolatorSprite = ReflectInterpolator<Sprite>;
 
 /// [`Interpolator`] for [`Sprite`]'s color
@@ -38,7 +37,6 @@ pub fn sprite_color_to(to: Color) -> impl Fn(&mut Color) -> SpriteColor {
     }
 }
 
-// #[cfg(feature = "bevy_sprite")]
 // type ReflectInterpolatorColorMaterial =
 //     ReflectInterpolator<bevy::sprite::ColorMaterial>;
 
