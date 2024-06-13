@@ -46,9 +46,9 @@ default = [
 bevy_asset = ["bevy/bevy_asset"]
 # Adds nothing just yet but required by the "bevy_sprite" feature.
 bevy_render = ["bevy/bevy_render"]
-# Add some built-in interpolator related to sprite
+# Add some built-in interpolators related to sprite
 bevy_sprite = ["bevy/bevy_sprite", "bevy_render"]
-# Adds some built-in interpolator related to ui
+# Adds some built-in interpolators related to ui
 bevy_ui = ["bevy/bevy_ui"]
 # Add entity-targeted events with bevy_eventlistener
 bevy_eventlistener = ["dep:bevy_eventlistener", "bevy_time_runner/bevy_eventlistener"]
