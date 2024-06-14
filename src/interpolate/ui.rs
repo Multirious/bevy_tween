@@ -19,12 +19,12 @@ impl Interpolator for BackgroundColor {
     }
 }
 
-/// Constructor for [`BackgroundColor`]
+/// Constructor for [`BackgroundColor`](crate::interpolate::BackgroundColor)
 pub fn background_color(start: Color, end: Color) -> BackgroundColor {
     BackgroundColor { start, end }
 }
 
-/// Constructor for [`BackgroundColor`] that's relative to previous value using currying.
+/// Constructor for [`BackgroundColor`](crate::interpolate::BackgroundColor) that's relative to previous value using currying.
 pub fn background_color_to(
     to: Color,
 ) -> impl Fn(&mut Color) -> BackgroundColor {
@@ -53,12 +53,12 @@ impl Interpolator for BorderColor {
     }
 }
 
-/// Constructor for [`BorderColor`]
+/// Constructor for [`BorderColor`](crate::interpolate::BorderColor)
 pub fn border_color(start: Color, end: Color) -> BorderColor {
     BorderColor { start, end }
 }
 
-/// Constructor for [`BorderColor`] that's relative to previous value using currying.
+/// Constructor for [`BorderColor`](crate::interpolate::BorderColor) that's relative to previous value using currying.
 pub fn border_color_to(to: Color) -> impl Fn(&mut Color) -> BorderColor {
     move |state| {
         let start = *state;

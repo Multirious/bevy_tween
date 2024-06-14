@@ -58,12 +58,12 @@ impl Interpolator for ColorMaterial {
     }
 }
 
-/// Constructor for [`ColorMaterial`]
+/// Constructor for [`ColorMaterial`](crate::interpolate::ColorMaterial)
 pub fn color_material(start: Color, end: Color) -> ColorMaterial {
     ColorMaterial { start, end }
 }
 
-/// Constructor for [`ColorMaterial`] that's relative to previous value using currying.
+/// Constructor for [`ColorMaterial`](crate::interpolate::ColorMaterial) that's relative to previous value using currying.
 pub fn color_material_to(to: Color) -> impl Fn(&mut Color) -> ColorMaterial {
     move |state| {
         let start = *state;

@@ -202,8 +202,8 @@ pub trait Interpolator: Send + Sync + 'static {
 /// - [`Rotation`]
 /// - [`Scale`]
 /// - [`AngleZ`]
-/// - [`SpriteColor`] and [`ColorMaterial`](sprite::ColorMaterial) if `"bevy_sprite"` feature is enabled.
-/// - [`BackgroundColor`](ui::BackgroundColor) and [`BorderColor`](ui::BorderColor) if `"bevy_ui"` feature is enabled.
+/// - [`SpriteColor`] and [`ColorMaterial`] if `"bevy_sprite"` feature is enabled.
+/// - [`BackgroundColor`] and [`BorderColor`] if `"bevy_ui"` feature is enabled.
 pub struct DefaultInterpolatorsPlugin;
 impl Plugin for DefaultInterpolatorsPlugin {
     /// # Panics
