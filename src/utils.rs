@@ -2,7 +2,7 @@
 #![allow(unused)]
 use bevy::prelude::*;
 
-#[cfg(feature = "bevy_render")]
+#[cfg(any(feature = "bevy_render", feature = "bevy_ui"))]
 pub fn color_lerp(start: Color, end: Color, v: f32) -> Color {
     let Color::Rgba {
         red: start_red,

@@ -3,14 +3,14 @@ name = "bevy_tween"
 description = "Flexible tweening plugin library for Bevy"
 version = "0.5.0"
 edition = "2021"
-authors = [ "Multirious" ]
-license = "MIT OR Apache-2.0" 
+authors = ["Multirious"]
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/Multirious/bevy_tween"
 homepage = "https://github.com/Multirious/bevy_tween"
 documentation = "https://docs.rs/bevy_tween"
 readme = "README.md"
-keywords = [ "bevy", "tween", "tweening", "easing", "animation" ]
-categories = [ "game-development" ]
+keywords = ["bevy", "tween", "tweening", "easing", "animation"]
+categories = ["game-development"]
 
 [workspace]
 resolver = "2"
@@ -27,7 +27,7 @@ serde = { version = "1", optional = true, features = ["derive"] }
 [dev-dependencies]
 bevy-inspector-egui = "0.23"
 bevy_eventlistener = { version = "0.7.0" }
-bevy = { version = "0.13.0", default-features = false, features = [ "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
+bevy = { version = "0.13.0", default-features = false, features = ["bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png"] }
 rand = "0.8.5"
 
 [build-dependencies]
@@ -35,24 +35,27 @@ rustc_version = "0.4.0"
 
 [features]
 default = [
-  "bevy_asset",
-  "bevy_render",
-  "bevy_sprite",
-  "bevy_eventlistener"
+    "bevy_asset",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_eventlistener",
+    "bevy_ui",
 ]
 
 # Adds tweening systems for asset
-bevy_asset = [ "bevy/bevy_asset" ]
+bevy_asset = ["bevy/bevy_asset"]
 # Adds nothing just yet but required by the "bevy_sprite" feature.
-bevy_render = [ "bevy/bevy_render"]
-# Add some built-in interpolator related to sprite
-bevy_sprite = [ "bevy/bevy_sprite", "bevy_render" ]
+bevy_render = ["bevy/bevy_render"]
+# Add some built-in interpolators related to sprite
+bevy_sprite = ["bevy/bevy_sprite", "bevy_render"]
+# Adds some built-in interpolators related to ui
+bevy_ui = ["bevy/bevy_ui"]
 # Add entity-targeted events with bevy_eventlistener
-bevy_eventlistener = [ "dep:bevy_eventlistener", "bevy_time_runner/bevy_eventlistener" ]
+bevy_eventlistener = ["dep:bevy_eventlistener", "bevy_time_runner/bevy_eventlistener"]
 # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
-bevy_lookup_curve = [ "dep:bevy_lookup_curve" ]
+bevy_lookup_curve = ["dep:bevy_lookup_curve"]
 # Derive Serialize and Deserialize for some types
-serde = [ "dep:serde" ]
+serde = ["dep:serde"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -61,69 +64,69 @@ all-features = true
 name = "banner_bounce"
 path = "examples/animation/banner_bounce.rs"
 required-features = [
-  "bevy_sprite",
-  "bevy_asset",
+    "bevy_sprite",
+    "bevy_asset",
 ]
 
 [[example]]
 name = "banner_triangle"
 path = "examples/animation/banner_triangle.rs"
 required-features = [
-  "bevy_sprite",
-  "bevy_asset",
+    "bevy_sprite",
+    "bevy_asset",
 ]
 
 [[example]]
 name = "thumbnail_triangle"
 path = "examples/animation/thumbnail_triangle.rs"
 required-features = [
-  "bevy_sprite",
+    "bevy_sprite",
 ]
 
 [[example]]
 name = "follow"
 path = "examples/demo/follow.rs"
 required-features = [
-  "bevy_sprite",
-  "bevy_asset",
+    "bevy_sprite",
+    "bevy_asset",
 ]
 
 [[example]]
 name = "click"
 path = "examples/demo/click.rs"
 required-features = [
-  "bevy_sprite",
-  "bevy_asset",
+    "bevy_sprite",
+    "bevy_asset",
 ]
 
 [[example]]
 name = "hold"
 path = "examples/demo/hold.rs"
 required-features = [
-  "bevy_sprite",
-  "bevy_asset",
+    "bevy_sprite",
+    "bevy_asset",
 ]
 
 [[example]]
 name = "event"
 path = "examples/demo/event.rs"
 required-features = [
-  "bevy_sprite",
-  "bevy_asset",
+    "bevy_sprite",
+    "bevy_asset",
 ]
 
 [[example]]
 name = "entity_event"
 path = "examples/demo/entity_event.rs"
 required-features = [
-  "bevy_eventlistener"
+    "bevy_eventlistener"
 ]
 
 [[example]]
 name = "sprite_sheet"
 path = "examples/demo/sprite_sheet.rs"
 required-features = [
-  "bevy_sprite",
+    "bevy_sprite",
 ]
 
 [[example]]
@@ -134,6 +137,6 @@ path = "examples/entity_structure.rs"
 name = "bevy_lookup_curve"
 path = "examples/bevy_lookup_curve.rs"
 required-features = [
-  "bevy_sprite",
-  "bevy_lookup_curve",
+    "bevy_sprite",
+    "bevy_lookup_curve",
 ]
