@@ -4,8 +4,11 @@
 
 ### Changes
 
-- Add interpolators for some UI components when using the `bevy_ui` feature.
+- Add interpolators for some UI components when using the `bevy_ui` feature. ([#33](https://github.com/Multirious/bevy_tween/pull/33))
     - `BackgroundColor` and `BorderColor`
+- Add optional feature for `serde`. ([#31](https://github.com/Multirious/bevy_tween/pull/31))
+    - Derive `Serialize` and `Deserialize` for `EaseFunction`
+- Clean up `TweenAppResource` after the app runs. ([#28](https://github.com/Multirious/bevy_tween/pull/28))
 
 ## v0.5.0 - 2024-06-09
 
