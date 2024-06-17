@@ -1,114 +1,61 @@
 use super::*;
 use bevy::{
-    ecs::{query::QueryEntityError, schedule::SystemConfigs},
-    utils::{HashMap, HashSet},
+    ecs::{schedule::SystemConfigs, system::SystemParam},
+    utils::HashSet,
 };
 use std::any::type_name;
 
-/// Alias for [`apply_component_tween_system`] and may contains more systems
-/// in the future.
+/// Register [`apply_component_tween_system`] with trait [`Interpolator`]
 pub fn component_tween_system<I>() -> SystemConfigs
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component,
 {
-    apply_component_tween_system::<I>.into_configs()
+    apply_component_tween_system::<I, Query<&mut I::Item>, f32, _>(
+        |target, interpolator, q_component, value| {
+            let mut target_component =
+                if let Ok(target_component) = q_component.get_mut(target) {
+                    target_component
+                } else {
+                    return;
+                };
+
+            interpolator.interpolate(&mut target_component, *value);
+        },
+    )
+    .into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
-///
-/// The system uses generic with the trait [`Interpolator`] for you to quickly
-/// make your interpolators work. The trait is only necessary to be used with
-/// this built-in system.
-///
-/// # Examples
-///
-/// ```no_run
-/// use bevy::prelude::*;
-/// use bevy_tween::prelude::*;
-///
-/// #[derive(Component)]
-/// struct Size(f32);
-///
-/// struct InterpolateSize {
-///     start: f32,
-///     end: f32,
-/// }
-///
-/// impl Interpolator for InterpolateSize {
-///     type Item = Size;
-///
-///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-///         item.0 = self.start.lerp(self.end, value);
-///     }
-/// }
-///
-/// fn main() {
-///     let mut app = App::new();
-///
-///     // You might want to use `bevy_tween::component_tween_system` instead.
-///
-///     // Generic interpolator:
-///     app.add_tween_systems(
-///         bevy_tween::tween::apply_component_tween_system::<InterpolateSize>,
-///     );
-///
-///     // Dynamic interpolator:
-///     app.add_tween_systems(
-///         bevy_tween::tween::apply_component_tween_system::<
-///             BoxedInterpolator<Size>,
-///         >,
-///     );
-/// }
-/// ```
 #[allow(clippy::type_complexity)]
-pub fn apply_component_tween_system<I>(
-    q_animation_target: Query<(Option<&Parent>, Has<AnimationTarget>)>,
-    q_tween: Query<
-        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
+pub fn apply_component_tween_system<I, P, V, F>(
+    interpolate: F,
+) -> impl Fn(
+    Query<(Option<&Parent>, Has<AnimationTarget>)>,
+    Query<
+        (Entity, &Tween<TargetComponent, I>, &CurveValue<V>),
         Without<SkipTween>,
     >,
-    mut q_component: Query<&mut I::Item>,
-    mut last_entity_error: Local<HashMap<Entity, QueryEntityError>>,
-    mut last_search_error: Local<HashSet<Entity>>,
-) where
-    I: Interpolator + Send + Sync + 'static,
-    I::Item: Component,
+    Local<HashSet<Entity>>,
+    P::Item<'_, '_>,
+)
+where
+    I: Send + Sync + 'static,
+    P: SystemParam,
+    V: Send + Sync + 'static,
+    F: Fn(Entity, &I, &mut P::Item<'_, '_>, &V),
 {
-    let mut entity_error = HashMap::new();
-    let mut search_error = HashSet::new();
-    q_tween
+    move |q_animation_target, q_tween, mut last_search_error, mut param| {
+        // let mut entity_error = HashMap::new();
+        let mut search_error = HashSet::new();
+        q_tween
         .iter()
-        .for_each(|(entity, tween, ease_value)| match &tween.target {
+        .for_each(|(entity, tween, curve_value)| match &tween.target {
             TargetComponent::Entities(e) => {
                 e.iter().for_each(|target| {
-                    let mut target_component =
-                        match q_component.get_mut(*target) {
-                            Ok(target_component) => target_component,
-                            Err(e) => {
-                                if last_entity_error
-                                    .get(target)
-                                    .map(|old_e| old_e != &e)
-                                    .unwrap_or(true)
-                                    && entity_error
-                                        .get(target)
-                                        .map(|old_e| old_e != &e)
-                                        .unwrap_or(true)
-                                {
-                                    error!(
-                                        "{} attempted to tween {} component but got query error: {e}",
-                                        type_name::<I>(),
-                                        type_name::<I::Item>()
-                                    );
-                                }
-                                entity_error.insert(*target, e);
-                                return;
-                            }
-                        };
-                    tween
-                        .interpolator
-                        .interpolate(&mut target_component, ease_value.0);
+                    interpolate(*target, &tween.interpolator, &mut param, &curve_value.0);
+
                 });
             }
             _ => {
@@ -149,35 +96,37 @@ pub fn apply_component_tween_system<I>(
                     _ => unreachable!(),
                 };
 
-                let mut target_component = match q_component.get_mut(target) {
-                    Ok(target_component) => target_component,
-                    Err(e) => {
-                        if last_entity_error
-                            .get(&target)
-                            .map(|old_e| old_e != &e)
-                            .unwrap_or(true)
-                            && entity_error
-                                .get(&target)
-                                .map(|old_e| old_e != &e)
-                                .unwrap_or(true)
-                        {
-                            error!(
-                                "{} attempted to tween {} component but got query error: {e}",
-                                type_name::<I>(),
-                                type_name::<I::Item>()
-                            );
-                        }
-                        entity_error.insert(target, e);
-                        return;
-                    }
-                };
-                tween
-                    .interpolator
-                    .interpolate(&mut target_component, ease_value.0);
+                interpolate(target, &tween.interpolator, &mut param, &curve_value.0);
+                // let mut target_component = match q_component.get_mut(target) {
+                //     Ok(target_component) => target_component,
+                //     Err(e) => {
+                //         if last_entity_error
+                //             .get(&target)
+                //             .map(|old_e| old_e != &e)
+                //             .unwrap_or(true)
+                //             && entity_error
+                //                 .get(&target)
+                //                 .map(|old_e| old_e != &e)
+                //                 .unwrap_or(true)
+                //         {
+                //             error!(
+                //                 "{} attempted to tween {} component but got query error: {e}",
+                //                 type_name::<I>(),
+                //                 type_name::<I::Item>()
+                //             );
+                //         }
+                //         entity_error.insert(target, e);
+                //         return;
+                //     }
+                // };
+                // tween
+                //     .interpolator
+                //     .interpolate(&mut target_component, ease_value.0);
             }
         });
-    *last_entity_error = entity_error;
-    *last_search_error = search_error;
+        // *last_entity_error = entity_error;
+        *last_search_error = search_error;
+    }
 }
 
 /// System alias for [`component_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
@@ -188,8 +137,9 @@ pub fn component_dyn_tween_system<C>() -> SystemConfigs
 where
     C: Component,
 {
-    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>>
-        .into_configs()
+    // apply_component_tween_system::<Box<dyn Interpolator<Item = C>>>
+    //     .into_configs()
+    todo!()
 }
 
 /// Alias for [`apply_resource_tween_system`] and may contains more systems
@@ -254,7 +204,7 @@ where
 #[allow(clippy::type_complexity)]
 pub fn apply_resource_tween_system<I>(
     q_tween: Query<
-        (&Tween<TargetResource, I>, &TweenInterpolationValue),
+        (&Tween<TargetResource, I>, &CurveValue),
         Without<SkipTween>,
     >,
     resource: Option<ResMut<I::Item>>,
@@ -353,7 +303,7 @@ where
 #[allow(clippy::type_complexity)]
 pub fn apply_asset_tween_system<I>(
     q_tween: Query<
-        (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue),
+        (&Tween<TargetAsset<I::Item>, I>, &CurveValue),
         Without<SkipTween>,
     >,
     asset: Option<ResMut<Assets<I::Item>>>,

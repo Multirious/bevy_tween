@@ -11,7 +11,7 @@
 
 use bevy::prelude::*;
 
-use crate::{tween::TweenInterpolationValue, TweenSystemSet};
+use crate::{tween::CurveValue, TweenSystemSet};
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -885,13 +885,11 @@ pub fn sample_interpolations_system<I>(
         }
         let value = interpolator.sample(progress.now_percentage.clamp(0., 1.));
 
-        commands
-            .entity(entity)
-            .insert(TweenInterpolationValue(value));
+        commands.entity(entity).insert(CurveValue(value));
     });
     removed.read().for_each(|entity| {
         if let Some(mut entity) = commands.get_entity(entity) {
-            entity.remove::<TweenInterpolationValue>();
+            entity.remove::<CurveValue>();
         }
     });
 }

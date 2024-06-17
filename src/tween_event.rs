@@ -36,7 +36,7 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 use bevy_eventlistener::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 
-use crate::tween::{SkipTween, TweenInterpolationValue};
+use crate::tween::{CurveValue, SkipTween};
 
 /// Plugin for simple generic event that fires at a specific time span
 /// See [`TweenEventTakingPlugin`] if your custom data is not [`Clone`].
@@ -184,6 +184,7 @@ pub struct TweenEvent<Data = ()> {
     /// Progress of the event
     pub progress: TimeSpanProgress,
     /// Sampled value of an interpolation.
+    #[deprecated(since = "0.6.0", note = "Query CurveValue<V> instead.")]
     pub interpolation_value: Option<f32>,
     /// The entity that emitted the event
     pub entity: Entity,
@@ -207,13 +208,14 @@ where
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// cloning the data.
 #[allow(clippy::type_complexity)]
+#[allow(deprecated)]
 pub fn tween_event_system<Data>(
     q_tween_event_data: Query<
         (
             Entity,
             &TweenEventData<Data>,
             &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
+            Option<&CurveValue>,
         ),
         Without<SkipTween>,
     >,
@@ -239,13 +241,14 @@ pub fn tween_event_system<Data>(
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// taking the data and leaves the value `None`.
 #[allow(clippy::type_complexity)]
+#[allow(deprecated)]
 pub fn tween_event_taking_system<Data>(
     mut q_tween_event_data: Query<
         (
             Entity,
             &mut TweenEventData<Data>,
             &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
+            Option<&CurveValue>,
         ),
         Without<SkipTween>,
     >,

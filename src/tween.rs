@@ -245,7 +245,13 @@ pub struct SkipTween;
 /// [`EaseClosure`]: crate::interpolation::EaseClosure
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
-pub struct TweenInterpolationValue(pub f32);
+pub struct CurveValue<V = f32>(pub V)
+where
+    V: Send + Sync + 'static;
+
+#[deprecated(since = "0.6.0", note = "Use `CurveValue` instead")]
+#[doc(hidden)]
+pub type TweenInterpolationValue = CurveValue<f32>;
 
 /// Containing `target` and `interpolator`
 #[derive(

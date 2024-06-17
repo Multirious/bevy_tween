@@ -496,7 +496,7 @@ impl Plugin for TweenCorePlugin {
         )
         .insert_resource(self.app_resource.clone())
         .register_type::<tween::AnimationTarget>()
-        .register_type::<tween::TweenInterpolationValue>();
+        .register_type::<tween::CurveValue>();
     }
 
     fn cleanup(&self, app: &mut App) {
