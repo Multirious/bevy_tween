@@ -368,8 +368,8 @@ mod utils;
 pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
+pub mod curve;
 pub mod interpolate;
-pub mod interpolation;
 pub mod tween;
 pub mod tween_event;
 
@@ -379,8 +379,8 @@ pub mod combinator;
 pub mod prelude {
     pub use std::time::Duration;
 
+    pub use crate::curve::EaseFunction;
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
-    pub use crate::interpolation::EaseFunction;
 
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
@@ -437,12 +437,13 @@ impl PluginGroup for DefaultTweenPlugins {
             .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
-            .add(interpolation::EaseFunctionPlugin)
+            .add(curve::EaseFunctionPlugin)
             // waiting for add_group method in 0.14
             .add(default_tween_event_plugins.0)
             .add(default_tween_event_plugins.1);
         #[cfg(feature = "bevy_lookup_curve")]
-        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+        let group = group
+            .add(curve::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
         group
     }
 }
