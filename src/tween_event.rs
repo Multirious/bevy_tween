@@ -36,7 +36,8 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 use bevy_eventlistener::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 
-use crate::tween::{SkipTween, TweenInterpolationValue};
+use crate::curve::TweenInterpolationValue;
+use crate::tween::SkipTween;
 
 /// Plugin for simple generic event that fires at a specific time span
 /// See [`TweenEventTakingPlugin`] if your custom data is not [`Clone`].

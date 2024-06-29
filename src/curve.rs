@@ -11,7 +11,7 @@
 
 use bevy::prelude::*;
 
-use crate::{tween::TweenInterpolationValue, TweenSystemSet};
+use crate::TweenSystemSet;
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -20,6 +20,17 @@ use serde::{Deserialize, Serialize};
 pub mod bevy_lookup_curve;
 mod ease_functions;
 
+/// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
+/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`](bevy_time_runner::TimeSpanProgress).
+/// See [`sample_interpolations_system`]
+///
+/// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
+/// [`Interpolation`]: crate::interpolation::Interpolation
+/// [`EaseFunction`]: crate::interpolation::EaseFunction
+/// [`EaseClosure`]: crate::interpolation::EaseClosure
+#[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
+#[reflect(Component)] // might want to use sparseset but i'm not sure yet
+pub struct TweenInterpolationValue(pub f32);
 /// A trait for implementing interpolation algorithms.
 ///
 /// Currently only used for registering [`sample_interpolations_system`].

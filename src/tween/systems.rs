@@ -1,4 +1,5 @@
 use super::*;
+use crate::curve::TweenInterpolationValue;
 use bevy::{
     ecs::{query::QueryEntityError, schedule::SystemConfigs},
     utils::{HashMap, HashSet},

@@ -235,18 +235,6 @@ pub use systems::{
 #[reflect(Component)]
 pub struct SkipTween;
 
-/// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
-/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`](bevy_time_runner::TimeSpanProgress).
-/// See [`sample_interpolations_system`]
-///
-/// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
-/// [`Interpolation`]: crate::interpolation::Interpolation
-/// [`EaseFunction`]: crate::interpolation::EaseFunction
-/// [`EaseClosure`]: crate::interpolation::EaseClosure
-#[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
-#[reflect(Component)] // might want to use sparseset but i'm not sure yet
-pub struct TweenInterpolationValue(pub f32);
-
 /// Containing `target` and `interpolator`
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
@@ -788,7 +776,7 @@ pub fn tween_event_system<Data>(
             Entity,
             &TweenEventData<Data>,
             &bevy_time_runner::TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
+            Option<&crate::curve::TweenInterpolationValue>,
         ),
         Without<SkipTween>,
     >,
@@ -813,7 +801,7 @@ pub fn tween_event_taking_system<Data>(
             Entity,
             &mut TweenEventData<Data>,
             &bevy_time_runner::TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
+            Option<&crate::curve::TweenInterpolationValue>,
         ),
         Without<SkipTween>,
     >,
