@@ -488,10 +488,7 @@ impl Plugin for TweenCorePlugin {
         }
         app.configure_sets(
             self.app_resource.schedule,
-            (
-                TweenSystemSet::UpdateInterpolationValue,
-                TweenSystemSet::ApplyTween,
-            )
+            (TweenSystemSet::UpdateCurveValue, TweenSystemSet::ApplyTween)
                 .chain()
                 .after(bevy_time_runner::TimeRunnerSet::Progress),
         )
@@ -512,7 +509,7 @@ pub enum TweenSystemSet {
     /// This set is for systems that responsible for updating any
     /// [`tween::CurveValue`] such as
     /// [`interpolation::sample_interpolations_system`].
-    UpdateInterpolationValue,
+    UpdateCurveValue,
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
     /// as these systems:
