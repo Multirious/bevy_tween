@@ -31,15 +31,6 @@ mod ease_functions;
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
 pub struct CurveValue<V = f32>(pub V);
-/// A trait for implementing interpolation algorithms.
-///
-/// Currently only used for registering [`sample_interpolations_system`].
-pub trait Interpolation {
-    /// Sample a value from this algorithm.
-    /// Input should be between 0–1 and returns value that should be
-    /// between 0–1
-    fn sample(&self, v: f32) -> f32;
-}
 
 /// Plugin for [`EaseFunction`]
 pub struct EaseFunctionPlugin;
@@ -57,8 +48,7 @@ impl Plugin for EaseFunctionPlugin {
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
             app_resource.schedule,
-            sample_interpolations_system::<EaseFunction>
-                .in_set(TweenSystemSet::UpdateCurveValue),
+            ease_function_system.in_set(TweenSystemSet::UpdateCurveValue),
         )
         .register_type::<EaseFunction>();
     }
@@ -820,12 +810,6 @@ impl EaseFunction {
     }
 }
 
-impl Interpolation for EaseFunction {
-    fn sample(&self, v: f32) -> f32 {
-        self.sample(v)
-    }
-}
-
 /// Plugin for [`EaseClosure`]. In case you want to use custom an ease
 /// function. Since most people likely wouldn't use this type, this plugin is
 /// not with [`DefaultTweenPlugins`] to reduce unused system.
@@ -845,8 +829,7 @@ impl Plugin for EaseClosurePlugin {
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
             app_resource.schedule,
-            sample_interpolations_system::<EaseClosure>
-                .in_set(TweenSystemSet::UpdateCurveValue),
+            ease_closure_system.in_set(TweenSystemSet::UpdateCurveValue),
         );
     }
 }
@@ -870,31 +853,44 @@ impl Default for EaseClosure {
     }
 }
 
-impl Interpolation for EaseClosure {
-    fn sample(&self, v: f32) -> f32 {
-        self.0(v)
-    }
-}
-
-/// This system will automatically sample in each entities with a
-/// [`TimeSpanProgress`] component then insert [`CurveValue`].
-/// Remove [`CurveValue`] if [`TimeSpanProgress`] is removed.
 #[allow(clippy::type_complexity)]
-pub fn sample_interpolations_system<I>(
+pub fn ease_function_system(
     mut commands: Commands,
     query: Query<
-        (Entity, &I, &TimeSpanProgress),
-        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+        (Entity, &EaseFunction, &TimeSpanProgress),
+        Or<(Changed<EaseFunction>, Changed<TimeSpanProgress>)>,
     >,
     mut removed: RemovedComponents<TimeSpanProgress>,
-) where
-    I: Interpolation + Component,
-{
-    query.iter().for_each(|(entity, interpolator, progress)| {
+) {
+    query.iter().for_each(|(entity, ease_function, progress)| {
         if progress.now_percentage.is_nan() {
             return;
         }
-        let value = interpolator.sample(progress.now_percentage.clamp(0., 1.));
+        let value = ease_function.sample(progress.now_percentage.clamp(0., 1.));
+
+        commands.entity(entity).insert(CurveValue(value));
+    });
+    removed.read().for_each(|entity| {
+        if let Some(mut entity) = commands.get_entity(entity) {
+            entity.remove::<CurveValue>();
+        }
+    });
+}
+
+#[allow(clippy::type_complexity)]
+pub fn ease_closure_system(
+    mut commands: Commands,
+    query: Query<
+        (Entity, &EaseClosure, &TimeSpanProgress),
+        Or<(Changed<EaseClosure>, Changed<TimeSpanProgress>)>,
+    >,
+    mut removed: RemovedComponents<TimeSpanProgress>,
+) {
+    query.iter().for_each(|(entity, ease_closure, progress)| {
+        if progress.now_percentage.is_nan() {
+            return;
+        }
+        let value = ease_closure.0(progress.now_percentage.clamp(0., 1.));
 
         commands.entity(entity).insert(CurveValue(value));
     });
