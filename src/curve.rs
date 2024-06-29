@@ -48,7 +48,14 @@ impl Plugin for EaseFunctionPlugin {
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
             app_resource.schedule,
-            ease_function_system.in_set(TweenSystemSet::UpdateCurveValue),
+            (
+                a_to_b_ease_function_system::<f32>(|&a, &b, &v| a.lerp(b, v)),
+                a_to_b_ease_function_system::<Vec2>(|&a, &b, &v| a.lerp(b, v)),
+                a_to_b_ease_function_system::<Vec3>(|&a, &b, &v| a.lerp(b, v)),
+                a_to_b_ease_function_system::<Quat>(|&a, &b, &v| a.slerp(b, v)),
+                a_to_b_ease_function_system::<Color>(|&a, b, &v| a.mix(b, v)),
+            )
+                .in_set(TweenSystemSet::UpdateCurveValue),
         )
         .register_type::<EaseFunction>();
     }
@@ -853,28 +860,45 @@ impl Default for EaseClosure {
     }
 }
 
+#[derive(Component)]
+pub struct AToB<V, C> {
+    pub a: V,
+    pub b: V,
+    pub curve: C,
+}
+
 #[allow(clippy::type_complexity)]
-pub fn ease_function_system(
-    mut commands: Commands,
-    query: Query<
-        (Entity, &EaseFunction, &TimeSpanProgress),
+pub fn a_to_b_ease_function_system<V>(
+    f: impl Send + Sync + 'static + Fn(&V, &V, &f32) -> V,
+) -> impl Fn(
+    Commands,
+    Query<
+        (Entity, &AToB<V, EaseFunction>, &TimeSpanProgress),
         Or<(Changed<EaseFunction>, Changed<TimeSpanProgress>)>,
     >,
-    mut removed: RemovedComponents<TimeSpanProgress>,
-) {
-    query.iter().for_each(|(entity, ease_function, progress)| {
-        if progress.now_percentage.is_nan() {
-            return;
-        }
-        let value = ease_function.sample(progress.now_percentage.clamp(0., 1.));
+    RemovedComponents<TimeSpanProgress>,
+)
+where
+    V: Send + Sync + 'static,
+{
+    move |mut commands, query, mut removed| {
+        query.iter().for_each(|(entity, a_to_b, progress)| {
+            if progress.now_percentage.is_nan() {
+                return;
+            }
+            let value =
+                a_to_b.curve.sample(progress.now_percentage.clamp(0., 1.));
 
-        commands.entity(entity).insert(CurveValue(value));
-    });
-    removed.read().for_each(|entity| {
-        if let Some(mut entity) = commands.get_entity(entity) {
-            entity.remove::<CurveValue>();
-        }
-    });
+            commands
+                .entity(entity)
+                .insert(CurveValue(f(&a_to_b.a, &a_to_b.b, &value)));
+        });
+        removed.read().for_each(|entity| {
+            if let Some(mut entity) = commands.get_entity(entity) {
+                entity.remove::<CurveValue<V>>();
+            }
+        });
+    }
 }
 
 #[allow(clippy::type_complexity)]
