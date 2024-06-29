@@ -30,7 +30,7 @@ mod ease_functions;
 /// [`EaseClosure`]: crate::interpolation::EaseClosure
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
-pub struct CurveValue(pub f32);
+pub struct CurveValue<V = f32>(pub V);
 /// A trait for implementing interpolation algorithms.
 ///
 /// Currently only used for registering [`sample_interpolations_system`].
