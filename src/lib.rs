@@ -500,7 +500,7 @@ impl Plugin for TweenCorePlugin {
     }
 
     fn cleanup(&self, app: &mut App) {
-        app.world.remove_resource::<TweenAppResource>();
+        app.world_mut().remove_resource::<TweenAppResource>();
     }
 }
 

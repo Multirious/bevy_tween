@@ -68,7 +68,7 @@ where
 {
     fn build(&self, app: &mut App) {
         let app_resource = app
-            .world
+            .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
@@ -99,7 +99,7 @@ where
 {
     fn build(&self, app: &mut App) {
         let app_resource = app
-            .world
+            .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
