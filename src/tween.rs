@@ -308,7 +308,8 @@ pub type ComponentDynTween<C> =
     Tween<TargetComponent, Box<dyn Interpolator<Item = C>>>;
 
 /// Tell the tween what component of what entity to tween.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub enum TargetComponent {
     /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
     #[non_exhaustive]
@@ -440,7 +441,8 @@ pub type ResourceDynTween<R> =
     Tween<TargetResource, Box<dyn Interpolator<Item = R>>>;
 
 /// Tell the tween what resource to tween.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub struct TargetResource;
 
 impl TargetResource {
@@ -491,7 +493,8 @@ pub type AssetDynTween<A> =
 
 /// Tell the tween what asset of what type to tween.
 #[cfg(feature = "bevy_asset")]
-#[derive(Debug, PartialEq, Eq, Hash, Reflect)]
+#[derive(Debug, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
 pub enum TargetAsset<A: Asset>
 where
     A: Asset,
