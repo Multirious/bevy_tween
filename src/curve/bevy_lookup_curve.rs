@@ -85,14 +85,12 @@ pub fn sample_lookup_curve_system(
                 None => curve.lookup(progress.now_percentage.clamp(0., 1.)),
             };
 
-            commands
-                .entity(entity)
-                .insert(TweenInterpolationValue(value));
+            commands.entity(entity).insert(CurveValue(value));
         });
 
     removed.read().for_each(|entity| {
         if let Some(mut entity) = commands.get_entity(entity) {
-            entity.remove::<TweenInterpolationValue>();
+            entity.remove::<CurveValue>();
         }
     });
     *last_handle_error = handle_error;

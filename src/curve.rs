@@ -30,7 +30,7 @@ mod ease_functions;
 /// [`EaseClosure`]: crate::interpolation::EaseClosure
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
-pub struct TweenInterpolationValue(pub f32);
+pub struct CurveValue(pub f32);
 /// A trait for implementing interpolation algorithms.
 ///
 /// Currently only used for registering [`sample_interpolations_system`].
@@ -877,8 +877,8 @@ impl Interpolation for EaseClosure {
 }
 
 /// This system will automatically sample in each entities with a
-/// [`TimeSpanProgress`] component then insert [`TweenInterpolationValue`].
-/// Remove [`TweenInterpolationValue`] if [`TimeSpanProgress`] is removed.
+/// [`TimeSpanProgress`] component then insert [`CurveValue`].
+/// Remove [`CurveValue`] if [`TimeSpanProgress`] is removed.
 #[allow(clippy::type_complexity)]
 pub fn sample_interpolations_system<I>(
     mut commands: Commands,
@@ -896,13 +896,11 @@ pub fn sample_interpolations_system<I>(
         }
         let value = interpolator.sample(progress.now_percentage.clamp(0., 1.));
 
-        commands
-            .entity(entity)
-            .insert(TweenInterpolationValue(value));
+        commands.entity(entity).insert(CurveValue(value));
     });
     removed.read().for_each(|entity| {
         if let Some(mut entity) = commands.get_entity(entity) {
-            entity.remove::<TweenInterpolationValue>();
+            entity.remove::<CurveValue>();
         }
     });
 }

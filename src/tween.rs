@@ -5,7 +5,6 @@
 //! **Components**:
 //! - [`Tween<T, I>`]
 //! - [`SkipTween`]
-//! - [`TweenInterpolationValue`]
 //!
 //! **Systems**
 //! - [`component_tween_system`]
@@ -776,7 +775,7 @@ pub fn tween_event_system<Data>(
             Entity,
             &TweenEventData<Data>,
             &bevy_time_runner::TimeSpanProgress,
-            Option<&crate::curve::TweenInterpolationValue>,
+            Option<&crate::curve::CurveValue>,
         ),
         Without<SkipTween>,
     >,
@@ -801,7 +800,7 @@ pub fn tween_event_taking_system<Data>(
             Entity,
             &mut TweenEventData<Data>,
             &bevy_time_runner::TimeSpanProgress,
-            Option<&crate::curve::TweenInterpolationValue>,
+            Option<&crate::curve::CurveValue>,
         ),
         Without<SkipTween>,
     >,

@@ -36,7 +36,7 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 use bevy_eventlistener::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 
-use crate::curve::TweenInterpolationValue;
+use crate::curve::CurveValue;
 use crate::tween::SkipTween;
 
 /// Plugin for simple generic event that fires at a specific time span
@@ -214,7 +214,7 @@ pub fn tween_event_system<Data>(
             Entity,
             &TweenEventData<Data>,
             &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
+            Option<&CurveValue>,
         ),
         Without<SkipTween>,
     >,
@@ -246,7 +246,7 @@ pub fn tween_event_taking_system<Data>(
             Entity,
             &mut TweenEventData<Data>,
             &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
+            Option<&CurveValue>,
         ),
         Without<SkipTween>,
     >,

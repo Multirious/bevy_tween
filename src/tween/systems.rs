@@ -1,5 +1,5 @@
 use super::*;
-use crate::curve::TweenInterpolationValue;
+use crate::curve::CurveValue;
 use bevy::{
     ecs::{query::QueryEntityError, schedule::SystemConfigs},
     utils::{HashMap, HashSet},
@@ -17,7 +17,7 @@ where
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
-/// value provided by [`TweenInterpolationValue`] component.
+/// value provided by [`CurveValue`] component.
 ///
 /// The system uses generic with the trait [`Interpolator`] for you to quickly
 /// make your interpolators work. The trait is only necessary to be used with
@@ -67,7 +67,7 @@ where
 pub fn apply_component_tween_system<I>(
     q_animation_target: Query<(Option<&Parent>, Has<AnimationTarget>)>,
     q_tween: Query<
-        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
+        (Entity, &Tween<TargetComponent, I>, &CurveValue),
         Without<SkipTween>,
     >,
     mut q_component: Query<&mut I::Item>,
@@ -204,7 +204,7 @@ where
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
-/// value provided by [`TweenInterpolationValue`] component.
+/// value provided by [`CurveValue`] component.
 ///
 /// The system uses generic with the trait [`Interpolator`] for you to quickly
 /// make your interpolators work. The trait is only necessary to be used with
@@ -255,7 +255,7 @@ where
 #[allow(clippy::type_complexity)]
 pub fn apply_resource_tween_system<I>(
     q_tween: Query<
-        (&Tween<TargetResource, I>, &TweenInterpolationValue),
+        (&Tween<TargetResource, I>, &CurveValue),
         Without<SkipTween>,
     >,
     resource: Option<ResMut<I::Item>>,
@@ -304,7 +304,7 @@ where
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
-/// value provided by [`TweenInterpolationValue`] component.
+/// value provided by [`CurveValue`] component.
 ///
 /// The system uses generic with the trait [`Interpolator`] for you to quickly
 /// make your interpolators work. The trait is only necessary to be used with
@@ -354,7 +354,7 @@ where
 #[allow(clippy::type_complexity)]
 pub fn apply_asset_tween_system<I>(
     q_tween: Query<
-        (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue),
+        (&Tween<TargetAsset<I::Item>, I>, &CurveValue),
         Without<SkipTween>,
     >,
     asset: Option<ResMut<Assets<I::Item>>>,

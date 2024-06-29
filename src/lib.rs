@@ -497,7 +497,7 @@ impl Plugin for TweenCorePlugin {
         )
         .insert_resource(self.app_resource.clone())
         .register_type::<tween::AnimationTarget>()
-        .register_type::<curve::TweenInterpolationValue>();
+        .register_type::<curve::CurveValue>();
     }
 
     fn cleanup(&self, app: &mut App) {
@@ -510,7 +510,7 @@ impl Plugin for TweenCorePlugin {
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
     /// This set is for systems that responsible for updating any
-    /// [`tween::TweenInterpolationValue`] such as
+    /// [`tween::CurveValue`] such as
     /// [`interpolation::sample_interpolations_system`].
     UpdateInterpolationValue,
     /// This set is for systems that responsible for actually executing any
