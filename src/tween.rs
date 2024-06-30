@@ -215,20 +215,6 @@ use bevy::prelude::*;
 use crate::combinator::TargetState;
 use crate::interpolate::Interpolator;
 
-mod systems;
-#[cfg(feature = "bevy_asset")]
-pub use systems::{
-    apply_asset_tween_system, asset_dyn_tween_system, asset_tween_system,
-};
-pub use systems::{
-    apply_component_tween_system, component_dyn_tween_system,
-    component_tween_system,
-};
-pub use systems::{
-    apply_resource_tween_system, resource_dyn_tween_system,
-    resource_tween_system,
-};
-
 /// Skip a tween from tweening.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
