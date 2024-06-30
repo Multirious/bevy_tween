@@ -313,9 +313,6 @@ pub type ComponentDynTween<C> =
 pub enum TargetComponent {
     /// The target is not yet selected or resolved.
     None,
-    /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
-    #[non_exhaustive]
-    Marker,
     /// Target this entity.
     Entity(Entity),
     /// Target these entities.
@@ -323,11 +320,6 @@ pub enum TargetComponent {
 }
 
 impl TargetComponent {
-    /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
-    pub fn marker() -> TargetComponent {
-        TargetComponent::Marker
-    }
-
     /// Target this entity.
     pub fn entity(entity: Entity) -> TargetComponent {
         TargetComponent::Entity(entity)
@@ -374,7 +366,7 @@ impl TargetComponent {
 
 impl Default for TargetComponent {
     fn default() -> Self {
-        TargetComponent::marker()
+        TargetComponent::None
     }
 }
 
@@ -419,12 +411,6 @@ impl<const N: usize> From<&[Entity; N]> for TargetComponent {
         TargetComponent::entities(value.iter().copied())
     }
 }
-
-/// [`ComponentTween`]'s system will navigate up the parent chain
-/// for this marker component while using [`TargetComponent::Marker`].
-#[derive(Debug, Component, Reflect)]
-#[reflect(Component)]
-pub struct AnimationTarget;
 
 impl<I> ComponentTween<I>
 where
@@ -676,14 +662,6 @@ impl IntoTarget for &Vec<Entity> {
 
     fn into_target(self) -> Self::Target {
         TargetComponent::entities(self.iter().copied())
-    }
-}
-
-impl IntoTarget for AnimationTarget {
-    type Target = TargetComponent;
-
-    fn into_target(self) -> Self::Target {
-        TargetComponent::marker()
     }
 }
 
