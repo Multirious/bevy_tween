@@ -6,6 +6,7 @@ mod sprite;
 #[cfg(feature = "bevy_sprite")]
 pub use sprite::*;
 
+pub mod plugin;
 pub mod system;
 
 pub trait Setter<Item, Value>: Send + Sync + 'static {
