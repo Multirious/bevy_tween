@@ -368,6 +368,7 @@ mod utils;
 pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
+pub mod animation_target;
 pub mod curve;
 pub mod interpolate;
 pub mod setter;
