@@ -56,7 +56,7 @@ mod sprite {
     fn plugin(app: &mut App) {
         app.add_systems(
             Update,
-            super::set_component_from_curve_value_system::<SpriteColor, _, _>,
+            super::apply_component_tween_system::<SpriteColor, _, _>,
         );
     }
 
@@ -71,8 +71,12 @@ mod sprite {
     }
 }
 
-use crate::{curve::CurveValue, tween::TargetComponent};
-use bevy::prelude::*;
+use crate::{
+    curve::CurveValue,
+    tween::{TargetComponent, TargetResource},
+};
+use bevy::{ecs::query::QueryEntityError, prelude::*, utils::HashMap};
+use std::any::type_name;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
@@ -85,24 +89,53 @@ pub trait Setter<Item, Value>: Send + Sync + 'static {
     fn set(&self, item: &mut Item, value: &Value);
 }
 
-pub fn set_component_from_curve_value_system<S, C, V>(
-    q_setter: Query<
+pub fn apply_component_tween_system<S, C, V>(
+    q_tween: Query<
         (Entity, &TargetComponent, &S, &CurveValue<V>),
         Without<SkipSetter>,
     >,
     mut q_component: Query<&mut C>,
+    mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
 ) where
     S: Setter<C, V> + Component,
-    V: Send + Sync + 'static,
     C: Component,
+    V: Send + Sync + 'static,
 {
-    q_setter
-        .iter()
-        .for_each(|(_, target_data, setter, curve_value)| match target_data {
+    let mut query_entity_errors = HashMap::new();
+    q_tween.iter().for_each(
+        |(tween_entity, target_data, setter, curve_value)| match target_data {
             TargetComponent::Entity(e) => match q_component.get_mut(*e) {
                 Ok(mut component) => setter.set(&mut component, &curve_value.0),
-                _ => unimplemented!(),
+                Err(query_error) => {
+                    if last_entity_errors
+                        .get(&tween_entity)
+                        .map(|last_error| last_error != &query_error)
+                        .unwrap_or(true)
+                        && query_entity_errors
+                            .get(&tween_entity)
+                            .map(|last_error| last_error != &query_error)
+                            .unwrap_or(true)
+                    {
+                        error!(
+                            "{} attempted to mutate {} but got error: {}",
+                            type_name::<S>(),
+                            type_name::<C>(),
+                            query_error
+                        );
+                    }
+                    query_entity_errors.insert(tween_entity, query_error);
+                }
             },
-            _ => unimplemented!(),
-        });
+            TargetComponent::Entities(e) => {
+                let mut iter = q_component.iter_many_mut(e);
+                while let Some(mut component) = iter.fetch_next() {
+                    setter.set(&mut component, &curve_value.0);
+                }
+            }
+            TargetComponent::None => {}
+            TargetComponent::Marker => panic!("remove this variant later"),
+        },
+    );
+    *last_entity_errors = query_entity_errors;
+}
 }
