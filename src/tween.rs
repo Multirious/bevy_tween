@@ -213,85 +213,11 @@
 use bevy::prelude::*;
 
 use crate::combinator::TargetState;
-use crate::interpolate::Interpolator;
 
 /// Skip a tween from tweening.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
 pub struct SkipTween;
-
-/// Containing `target` and `interpolator`
-#[derive(
-    Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
-)]
-#[reflect(Component)]
-pub struct Tween<T, I> {
-    #[allow(missing_docs)]
-    pub target: T,
-    #[allow(missing_docs)]
-    pub interpolator: I,
-}
-impl<T, I> Tween<T, I>
-where
-    I: Interpolator,
-{
-    /// Create a new [`Tween`] with a target and an interpolator.
-    pub fn new_target<G>(target: G, interpolator: I) -> Self
-    where
-        G: Into<T>,
-    {
-        Tween {
-            interpolator,
-            target: target.into(),
-        }
-    }
-}
-
-impl<T, I> Tween<T, I>
-where
-    T: Default,
-    I: Interpolator,
-{
-    /// Create a new [`Tween`] with the default target and an interpolator.
-    pub fn new(interpolator: I) -> Self {
-        Tween::new_target(T::default(), interpolator)
-    }
-}
-
-impl<T, Item> Tween<T, Box<dyn Interpolator<Item = Item>>>
-where
-    Item: 'static,
-{
-    /// Create a new [`Tween`] with a target and an interpolator that will be boxed internally.
-    pub fn new_target_boxed<G, I>(target: G, interpolator: I) -> Self
-    where
-        G: Into<T>,
-        I: Interpolator<Item = Item>,
-    {
-        Self::new_target(target, Box::new(interpolator))
-    }
-}
-
-impl<T, Item> Tween<T, Box<dyn Interpolator<Item = Item>>>
-where
-    T: Default,
-    Item: 'static,
-{
-    /// Create a new [`Tween`] with the default target and an interpolator that will be boxed internally.
-    pub fn new_boxed<I>(interpolator: I) -> Self
-    where
-        I: Interpolator<Item = Item>,
-    {
-        Self::new(Box::new(interpolator))
-    }
-}
-
-/// Convenient alias for [`Tween`] that [`TargetComponent`] with generic [`Interpolator`].
-pub type ComponentTween<I> = Tween<TargetComponent, I>;
-
-/// Convenient alias for [`Tween`] that [`TargetComponent`] with boxed dynamic [`Interpolator`].
-pub type ComponentDynTween<C> =
-    Tween<TargetComponent, Box<dyn Interpolator<Item = C>>>;
 
 /// Tell the tween what component of what entity to tween.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
@@ -324,30 +250,30 @@ impl TargetComponent {
         TargetState::new(self.clone(), value)
     }
 
-    /// Create a new tween with the supplied interpolator out of this target.
-    pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
-        Tween {
-            target: self.clone(),
-            interpolator,
-        }
-    }
+    // /// Create a new tween with the supplied interpolator out of this target.
+    // pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
+    //     Tween {
+    //         target: self.clone(),
+    //         interpolator,
+    //     }
+    // }
 
-    /// Create a new tween with the supplied closure out of this target.
-    pub fn with_closure<F, C>(
-        &self,
-        closure: F,
-    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
-    where
-        F: Fn(&mut C, f32) + Send + Sync + 'static,
-        C: Component,
-    {
-        let closure = crate::interpolate::closure(closure);
-        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
-        Tween {
-            target: self.clone(),
-            interpolator,
-        }
-    }
+    // /// Create a new tween with the supplied closure out of this target.
+    // pub fn with_closure<F, C>(
+    //     &self,
+    //     closure: F,
+    // ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    // where
+    //     F: Fn(&mut C, f32) + Send + Sync + 'static,
+    //     C: Component,
+    // {
+    //     let closure = crate::interpolate::closure(closure);
+    //     let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+    //     Tween {
+    //         target: self.clone(),
+    //         interpolator,
+    //     }
+    // }
 }
 
 impl Default for TargetComponent {
@@ -398,22 +324,6 @@ impl<const N: usize> From<&[Entity; N]> for TargetComponent {
     }
 }
 
-impl<I> ComponentTween<I>
-where
-    I: Interpolator,
-    I::Item: Component,
-{
-}
-
-impl<C> ComponentDynTween<C> where C: Component {}
-
-/// Convenient alias for [`Tween`] that [`TargetResource`] with generic [`Interpolator`].
-pub type ResourceTween<I> = Tween<TargetResource, I>;
-
-/// Convenient alias for [`Tween`] that [`TargetResource`] with dyanmic [`Interpolator`].
-pub type ResourceDynTween<R> =
-    Tween<TargetResource, Box<dyn Interpolator<Item = R>>>;
-
 /// Tell the tween what resource to tween.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
@@ -430,40 +340,31 @@ impl TargetResource {
         TargetState::new(self.clone(), value)
     }
 
-    /// Create a new tween with the supplied interpolator out of this target.
-    pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
-        Tween {
-            target: self.clone(),
-            interpolator,
-        }
-    }
+    // /// Create a new tween with the supplied interpolator out of this target.
+    // pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
+    //     Tween {
+    //         target: self.clone(),
+    //         interpolator,
+    //     }
+    // }
 
-    /// Create a new tween with the supplied closure out of this target.
-    pub fn with_closure<F, C>(
-        &self,
-        closure: F,
-    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
-    where
-        F: Fn(&mut C, f32) + Send + Sync + 'static,
-        C: Component,
-    {
-        let closure = crate::interpolate::closure(closure);
-        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
-        Tween {
-            target: self.clone(),
-            interpolator,
-        }
-    }
+    // /// Create a new tween with the supplied closure out of this target.
+    // pub fn with_closure<F, C>(
+    //     &self,
+    //     closure: F,
+    // ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    // where
+    //     F: Fn(&mut C, f32) + Send + Sync + 'static,
+    //     C: Component,
+    // {
+    //     let closure = crate::interpolate::closure(closure);
+    //     let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+    //     Tween {
+    //         target: self.clone(),
+    //         interpolator,
+    //     }
+    // }
 }
-
-/// Convenient alias for [`Tween`] that [`TargetAsset`] with generic [`Interpolator`].
-#[cfg(feature = "bevy_asset")]
-pub type AssetTween<I> = Tween<TargetAsset<<I as Interpolator>::Item>, I>;
-
-/// Convenient alias for [`Tween`] that [`TargetAsset`] with dynamic [`Interpolator`].
-#[cfg(feature = "bevy_asset")]
-pub type AssetDynTween<A> =
-    Tween<TargetAsset<A>, Box<dyn Interpolator<Item = A>>>;
 
 /// Tell the tween what asset of what type to tween.
 #[cfg(feature = "bevy_asset")]
@@ -501,30 +402,30 @@ impl<A: Asset> TargetAsset<A> {
         TargetState::new(self.clone(), value)
     }
 
-    /// Create a new tween with the supplied interpolator out of this target.
-    pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
-        Tween {
-            target: self.clone(),
-            interpolator,
-        }
-    }
+    // /// Create a new tween with the supplied interpolator out of this target.
+    // pub fn with<I>(&self, interpolator: I) -> Tween<Self, I> {
+    //     Tween {
+    //         target: self.clone(),
+    //         interpolator,
+    //     }
+    // }
 
-    /// Create a new tween with the supplied closure out of this target.
-    pub fn with_closure<F, C>(
-        &self,
-        closure: F,
-    ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
-    where
-        F: Fn(&mut C, f32) + Send + Sync + 'static,
-        C: Component,
-    {
-        let closure = crate::interpolate::closure(closure);
-        let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
-        Tween {
-            target: self.clone(),
-            interpolator,
-        }
-    }
+    // /// Create a new tween with the supplied closure out of this target.
+    // pub fn with_closure<F, C>(
+    //     &self,
+    //     closure: F,
+    // ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
+    // where
+    //     F: Fn(&mut C, f32) + Send + Sync + 'static,
+    //     C: Component,
+    // {
+    //     let closure = crate::interpolate::closure(closure);
+    //     let interpolator: Box<dyn Interpolator<Item = C>> = Box::new(closure);
+    //     Tween {
+    //         target: self.clone(),
+    //         interpolator,
+    //     }
+    // }
 }
 
 #[cfg(feature = "bevy_asset")]
