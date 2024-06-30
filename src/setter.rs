@@ -73,7 +73,7 @@ mod sprite {
 
 use crate::{
     curve::CurveValue,
-    tween::{TargetAsset, TargetComponent, TargetResource},
+    tween::{SkipTween, TargetAsset, TargetComponent, TargetResource},
 };
 use bevy::{
     ecs::query::QueryEntityError,
@@ -81,10 +81,6 @@ use bevy::{
     utils::{HashMap, HashSet},
 };
 use std::any::type_name;
-
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
-#[reflect(Component)]
-pub struct SkipSetter;
 
 #[cfg(feature = "bevy_sprite")]
 pub use sprite::*;
@@ -96,7 +92,7 @@ pub trait Setter<Item, Value>: Send + Sync + 'static {
 pub fn apply_component_tween_system<S, C, V>(
     q_tween: Query<
         (Entity, &TargetComponent, &S, &CurveValue<V>),
-        Without<SkipSetter>,
+        Without<SkipTween>,
     >,
     mut q_component: Query<&mut C>,
     mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
@@ -146,7 +142,7 @@ pub fn apply_component_tween_system<S, C, V>(
 pub fn apply_resource_tween_system<S, R, V>(
     q_tween: Query<
         (&S, &CurveValue<V>),
-        (With<TargetResource>, Without<SkipSetter>),
+        (With<TargetResource>, Without<SkipTween>),
     >,
     resource: Option<ResMut<R>>,
     mut last_error: Local<bool>,
@@ -172,7 +168,7 @@ pub fn apply_resource_tween_system<S, R, V>(
 }
 
 pub fn apply_asset_tween_system<S, A, V>(
-    q_tween: Query<(&S, &TargetAsset<A>, &CurveValue<V>), Without<SkipSetter>>,
+    q_tween: Query<(&S, &TargetAsset<A>, &CurveValue<V>), Without<SkipTween>>,
     asset: Option<ResMut<Assets<A>>>,
     mut last_resource_error: Local<bool>,
     mut last_asset_errors: Local<HashSet<AssetId<A>>>,
@@ -242,7 +238,7 @@ pub fn apply_asset_tween_system<S, A, V>(
 pub fn apply_handle_component_tween_system<S, A, V>(
     q_tween: Query<
         (Entity, &S, &TargetComponent, &CurveValue<V>),
-        Without<SkipSetter>,
+        Without<SkipTween>,
     >,
     q_handle: Query<&Handle<A>>,
     asset: Option<ResMut<Assets<A>>>,
