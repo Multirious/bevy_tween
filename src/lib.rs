@@ -368,12 +368,12 @@ mod crate_utils;
 pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
-pub mod animation_target;
 pub mod curve;
 pub mod interpolate;
 pub mod setter;
 pub mod tween;
 pub mod tween_event;
+pub mod utils;
 
 pub mod combinator;
 

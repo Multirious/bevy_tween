@@ -1,3 +1,5 @@
+//! Resolve TargetComponet by searching up the parent for a marker
+
 use bevy::{prelude::*, utils::HashSet};
 
 use crate::{tween::TargetComponent, TweenSystemSet};
