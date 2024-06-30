@@ -512,6 +512,7 @@ pub enum TweenSystemSet {
     /// [`tween::CurveValue`] such as
     /// [`interpolation::sample_interpolations_system`].
     UpdateCurveValue,
+    ResolveTarget,
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
     /// as these systems:
