@@ -1,6 +1,6 @@
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::tween::TargetComponent;
+use crate::{tween::TargetComponent, TweenSystemSet};
 
 #[derive(Debug, Component, Reflect)]
 #[reflect(Component)]
@@ -10,6 +10,25 @@ pub struct AnimationTarget;
 #[reflect(Component)]
 #[non_exhaustive]
 pub struct AnimationTargetResolver;
+
+#[derive(Debug, Default)]
+pub struct AnimationTargetPlugin;
+
+impl Plugin for AnimationTargetPlugin {
+    fn build(&self, app: &mut App) {
+        let app_resource = app
+            .world()
+            .get_resource::<crate::TweenAppResource>()
+            .expect("`TweenAppResource` resource doesn't exist");
+        app.add_systems(
+            app_resource.schedule,
+            resolve_animation_target_system
+                .in_set(TweenSystemSet::ResolveTarget),
+        )
+        .register_type::<AnimationTarget>()
+        .register_type::<AnimationTargetResolver>();
+    }
+}
 
 pub fn resolve_animation_target_system(
     mut q_target: Query<
