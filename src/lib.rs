@@ -490,7 +490,11 @@ impl Plugin for TweenCorePlugin {
         }
         app.configure_sets(
             self.app_resource.schedule,
-            (TweenSystemSet::UpdateCurveValue, TweenSystemSet::ApplyTween)
+            (
+                TweenSystemSet::UpdateCurveValue,
+                TweenSystemSet::ResolveTarget,
+                TweenSystemSet::ApplyTween,
+            )
                 .chain()
                 .after(bevy_time_runner::TimeRunnerSet::Progress),
         )
