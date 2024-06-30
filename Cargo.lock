@@ -807,7 +807,7 @@ dependencies = [
 [[package]]
 name = "bevy_time_runner"
 version = "0.1.4"
-source = "git+https://github.com/Multirious/bevy_time_runner?branch=bevy-0.14.0-rc.2#9c2689c64fc0802f4ff160dcff30ea779f332714"
+source = "git+https://github.com/Multirious/bevy_time_runner?branch=prep-bevy-0.14#2c5bbcbc89a9cd4a4b585da760356988f0389211"
 dependencies = [
  "bevy_app",
  "bevy_ecs",
