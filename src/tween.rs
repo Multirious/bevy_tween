@@ -311,6 +311,8 @@ pub type ComponentDynTween<C> =
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub enum TargetComponent {
+    /// The target is not yet selected or resolved.
+    None,
     /// Navigate up the parent chain for entity with [`AnimationTarget`] marker component
     #[non_exhaustive]
     Marker,
@@ -499,6 +501,8 @@ pub enum TargetAsset<A: Asset>
 where
     A: Asset,
 {
+    /// The target is not yet selected or resolved.
+    None,
     /// Target this asset
     Asset(Handle<A>),
     /// Target these assets
@@ -555,6 +559,7 @@ impl<A: Asset> TargetAsset<A> {
 impl<A: Asset> Clone for TargetAsset<A> {
     fn clone(&self) -> Self {
         match self {
+            TargetAsset::None => TargetAsset::None,
             TargetAsset::Asset(handle) => TargetAsset::Asset(handle.clone()),
             TargetAsset::Assets(v) => TargetAsset::Assets(v.clone()),
         }

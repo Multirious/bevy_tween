@@ -147,6 +147,7 @@ pub fn apply_component_tween_system<I>(
                         }
                     }
                     TargetComponent::Entity(e) => *e,
+                    TargetComponent::None => return,
                     _ => unreachable!(),
                 };
 
@@ -380,6 +381,7 @@ pub fn apply_asset_tween_system<I>(
     q_tween
         .iter()
         .for_each(|(tween, ease_value)| match &tween.target {
+            TargetAsset::None => {},
             TargetAsset::Asset(a) => {
                 let Some(asset) = asset.get_mut(a) else {
                     if !last_asset_error.contains(&a.id())
