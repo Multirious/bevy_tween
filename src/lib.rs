@@ -19,7 +19,7 @@
 //!
 //! Let say we have this sprite:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! let mut sprite_commands = commands.spawn(SpriteBundle {
 //!     sprite: Sprite {
 //!         custom_size: Some(Vec2::new(50., 50.)),
@@ -34,7 +34,7 @@
 //! ### `insert_tween_here` method
 //! We can do this:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -67,7 +67,7 @@
 //! This crate provide a way to create animation using combinator framework.
 //! So we can just:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -104,7 +104,7 @@
 //!
 //! We can use state for this:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -139,7 +139,7 @@
 //!
 //! If we want to repeat our animation to so we can do:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -179,7 +179,7 @@
 //!
 //! Combinator framework got you covered!:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -224,7 +224,7 @@
 //! ## Animator as a child
 //! You can spawn animator as a child if you want
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -258,7 +258,7 @@
 //! An animator does not required to be a child or inside your target entity.
 //! You can spawn them anywhere in the world if needed.
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -290,7 +290,7 @@
 //! ## [`AnimationTarget`]
 //! [`AnimationTarget`] can be used for automatic target searching.
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -362,7 +362,7 @@
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
-mod utils;
+mod crate_utils;
 
 #[cfg(feature = "bevy_lookup_curve")]
 pub use bevy_lookup_curve;
