@@ -21,7 +21,7 @@ impl Plugin for BevyLookupCurveInterpolationPlugin {
         let app_resource = app
             .world
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be inserted to world");
+            .expect("`TweenAppResource` doesn't exist");
         app.add_systems(
             app_resource.schedule,
             (

@@ -45,7 +45,7 @@ impl Plugin for EaseFunctionPlugin {
         let app_resource = app
             .world()
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
             app_resource.schedule,
             (
@@ -833,7 +833,7 @@ impl Plugin for EaseClosurePlugin {
         let app_resource = app
             .world()
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
             app_resource.schedule,
             ease_closure_system.in_set(TweenSystemSet::UpdateCurveValue),
