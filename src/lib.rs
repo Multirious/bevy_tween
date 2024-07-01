@@ -390,34 +390,34 @@ pub mod prelude {
     pub use crate::tween::IntoTarget;
     pub use crate::tween_event::{TweenEvent, TweenEventData};
 
-    #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetDynTween;
-    #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetTween;
+    // #[cfg(feature = "bevy_asset")]
+    // pub use crate::tween::AssetDynTween;
+    // #[cfg(feature = "bevy_asset")]
+    // pub use crate::tween::AssetTween;
 
-    pub use crate::tween::ComponentDynTween;
-    pub use crate::tween::ComponentTween;
+    // pub use crate::tween::ComponentDynTween;
+    // pub use crate::tween::ComponentTween;
 
-    pub use crate::tween::ResourceDynTween;
-    pub use crate::tween::ResourceTween;
+    // pub use crate::tween::ResourceDynTween;
+    // pub use crate::tween::ResourceTween;
 
     pub use crate::BevyTweenRegisterSystems;
     pub use crate::DefaultTweenPlugins;
 }
 
-#[cfg(feature = "bevy_asset")]
-pub use tween::asset_dyn_tween_system;
-#[cfg(feature = "bevy_asset")]
-pub use tween::asset_tween_system;
-#[cfg(feature = "bevy_asset")]
-pub use tween::component_dyn_tween_system;
-pub use tween::component_tween_system;
+// #[cfg(feature = "bevy_asset")]
+// pub use tween::asset_dyn_tween_system;
+// #[cfg(feature = "bevy_asset")]
+// pub use tween::asset_tween_system;
+// #[cfg(feature = "bevy_asset")]
+// pub use tween::component_dyn_tween_system;
+// pub use tween::component_tween_system;
 
-pub use tween::resource_dyn_tween_system;
-pub use tween::resource_tween_system;
+// pub use tween::resource_dyn_tween_system;
+// pub use tween::resource_tween_system;
 
-pub use tween_event::tween_event_system;
-pub use tween_event::tween_event_taking_system;
+// pub use tween_event::tween_event_system;
+// pub use tween_event::tween_event_taking_system;
 
 /// Default plugins for using crate.
 ///
