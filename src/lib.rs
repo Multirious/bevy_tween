@@ -498,7 +498,6 @@ impl Plugin for TweenCorePlugin {
                 .after(bevy_time_runner::TimeRunnerSet::Progress),
         )
         .insert_resource(self.app_resource.clone())
-        .register_type::<tween::AnimationTarget>()
         .register_type::<curve::CurveValue>();
     }
 
