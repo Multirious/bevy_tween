@@ -25,6 +25,7 @@ pub fn apply_component_tween_system<S, C, V>(
     let mut query_entity_errors = HashMap::new();
     q_tween.iter().for_each(
         |(tween_entity, target_data, setter, curve_value)| match target_data {
+            TargetComponent::None => {}
             TargetComponent::Entity(e) => match q_component.get_mut(*e) {
                 Ok(mut component) => setter.set(&mut component, &curve_value.0),
                 Err(query_error) => {
@@ -53,8 +54,6 @@ pub fn apply_component_tween_system<S, C, V>(
                     setter.set(&mut component, &curve_value.0);
                 }
             }
-            TargetComponent::None => {}
-            TargetComponent::Marker => panic!("remove this variant later"),
         },
     );
     *last_entity_errors = query_entity_errors;
@@ -189,7 +188,6 @@ pub fn apply_handle_component_tween_system<S, A, V>(
         .iter()
         .for_each(|(tween_entity, setter, target, curve_value)| match &target {
             TargetComponent::None => {},
-            TargetComponent::Marker => panic!("remove this variant later"),
             TargetComponent::Entity(entity) => match q_handle.get(*entity) {
                 Ok(handle) => {
                     let Some(asset) = asset.get_mut(handle) else {
