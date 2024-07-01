@@ -90,6 +90,26 @@ tween_system_plugin! {
     handle_component, HandleComponentTweenPlugin, <S, A, V>, apply_handle_component_tween_system, Asset;
 }
 
+fn register_items(app: &mut App) {
+    use super::items::*;
+
+    app.register_type::<Translation>()
+        .register_type::<Rotation>()
+        .register_type::<Scale>()
+        .register_type::<AngleZ>();
+
+    #[cfg(feature = "bevy_sprite")]
+    app.register_type::<SpriteColor>()
+        .register_type::<ColorMaterial>();
+
+    #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+    app.register_type::<Scale>().register_type::<AngleZ>();
+
+    #[cfg(feature = "bevy_ui")]
+    app.register_type::<BackgroundColor>()
+        .register_type::<BorderColor>();
+}
+
 #[derive(Debug)]
 pub struct DefaultTweenSystemPlugins;
 impl PluginGroup for DefaultTweenSystemPlugins {
@@ -98,21 +118,26 @@ impl PluginGroup for DefaultTweenSystemPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         use super::items::*;
 
-        let mut pg = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
-        let pg = pg.add(component::<Translation, _, _>());
-        let pg = pg.add(component::<Rotation, _, _>());
-        let pg = pg.add(component::<Scale, _, _>());
-        let pg = pg.add(component::<AngleZ, _, _>());
+        let p = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
+        let p = p.add(register_items);
+        let p = p
+            .add(component::<Translation, _, _>())
+            .add(component::<Rotation, _, _>())
+            .add(component::<Scale, _, _>())
+            .add(component::<AngleZ, _, _>());
+
         #[cfg(feature = "bevy_sprite")]
-        let pg = pg.add(component::<SpriteColor, _, _>());
+        let p = p.add(component::<SpriteColor, _, _>());
+
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
-        let pg = pg.add(asset::<ColorMaterial, _, _>());
-        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
-        let pg = pg.add(handle_component::<ColorMaterial, _, _>());
+        let p = p
+            .add(asset::<ColorMaterial, _, _>())
+            .add(handle_component::<ColorMaterial, _, _>());
+
         #[cfg(feature = "bevy_ui")]
-        let pg = pg.add(component::<BackgroundColor, _, _>());
-        #[cfg(feature = "bevy_ui")]
-        let pg = pg.add(component::<BorderColor, _, _>());
-        pg
+        let p = p
+            .add(component::<BackgroundColor, _, _>()) // nuh uh rustfmt
+            .add(component::<BorderColor, _, _>());
+        p
     }
 }
