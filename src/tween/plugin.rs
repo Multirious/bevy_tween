@@ -12,7 +12,7 @@ use bevy::{
 };
 use std::marker::PhantomData;
 
-macro_rules! tween_plugin {
+macro_rules! tween_system_plugin {
     (
         $(
             $(#[$attr:meta])*
@@ -83,7 +83,7 @@ macro_rules! tween_plugin {
     };
 }
 
-tween_plugin! {
+tween_system_plugin! {
     component, ComponentTweenPlugin, <S, C, V>, apply_component_tween_system, Component;
     resource, ResourceTweenPlugin, <S, R, V>, apply_resource_tween_system, Resource;
     asset, AssetTweenPlugin, <S, A, V>, apply_asset_tween_system, Asset;
@@ -91,11 +91,11 @@ tween_plugin! {
 }
 
 #[derive(Debug)]
-pub struct DefaultTweenPlugins;
-impl PluginGroup for DefaultTweenPlugins {
+pub struct DefaultTweenSystemPlugins;
+impl PluginGroup for DefaultTweenSystemPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         #[allow(clippy::let_and_return)]
-        let pg = PluginGroupBuilder::start::<DefaultTweenPlugins>()
+        let pg = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>()
             .add(component::<super::SpriteColor, _, _>())
             .add(asset::<super::sprite::ColorMaterial, _, _>())
             .add(handle_component::<super::sprite::ColorMaterial, _, _>());
