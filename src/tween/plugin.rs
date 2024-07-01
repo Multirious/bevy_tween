@@ -111,14 +111,14 @@ fn register_items(app: &mut App) {
 }
 
 #[derive(Debug)]
-pub struct DefaultTweenSystemPlugins;
-impl PluginGroup for DefaultTweenSystemPlugins {
+pub struct DefaultTweenItemPlugin;
+impl PluginGroup for DefaultTweenItemPlugin {
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
         use super::items::*;
 
-        let p = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
+        let p = PluginGroupBuilder::start::<DefaultTweenItemPlugin>();
         let p = p.add(register_items);
         let p = p
             .add(component::<Translation, _, _>())
