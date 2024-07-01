@@ -99,12 +99,20 @@ impl PluginGroup for DefaultTweenSystemPlugins {
         use super::setter::*;
 
         let mut pg = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
+        let pg = pg.add(component::<Translation, _, _>());
+        let pg = pg.add(component::<Rotation, _, _>());
+        let pg = pg.add(component::<Scale, _, _>());
+        let pg = pg.add(component::<AngleZ, _, _>());
         #[cfg(feature = "bevy_sprite")]
         let pg = pg.add(component::<SpriteColor, _, _>());
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
         let pg = pg.add(asset::<ColorMaterial, _, _>());
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
         let pg = pg.add(handle_component::<ColorMaterial, _, _>());
+        #[cfg(feature = "bevy_ui")]
+        let pg = pg.add(component::<BackgroundColor, _, _>());
+        #[cfg(feature = "bevy_ui")]
+        let pg = pg.add(component::<BorderColor, _, _>());
         pg
     }
 }

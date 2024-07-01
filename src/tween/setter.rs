@@ -1,13 +1,19 @@
+use bevy::ecs::component::Component;
 use std::marker::PhantomData;
 
 mod blanket_impl;
 
 #[cfg(feature = "bevy_sprite")]
 mod sprite;
+mod transform;
+#[cfg(feature = "bevy_ui")]
+mod ui;
 
-use bevy::ecs::component::Component;
 #[cfg(feature = "bevy_sprite")]
 pub use sprite::*;
+pub use transform::*;
+#[cfg(feature = "bevy_ui")]
+pub use ui::*;
 
 pub trait Set<Item, Value>: Send + Sync + 'static {
     fn set(&self, item: &mut Item, value: &Value);
