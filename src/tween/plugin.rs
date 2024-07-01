@@ -93,12 +93,18 @@ tween_system_plugin! {
 #[derive(Debug)]
 pub struct DefaultTweenSystemPlugins;
 impl PluginGroup for DefaultTweenSystemPlugins {
+    #[allow(unused)]
+    #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        #[allow(clippy::let_and_return)]
-        let pg = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>()
-            .add(component::<super::SpriteColor, _, _>())
-            .add(asset::<super::sprite::ColorMaterial, _, _>())
-            .add(handle_component::<super::sprite::ColorMaterial, _, _>());
+        use super::setter::*;
+
+        let mut pg = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
+        #[cfg(feature = "bevy_sprite")]
+        let pg = pg.add(component::<SpriteColor, _, _>());
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+        let pg = pg.add(asset::<ColorMaterial, _, _>());
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+        let pg = pg.add(handle_component::<ColorMaterial, _, _>());
         pg
     }
 }

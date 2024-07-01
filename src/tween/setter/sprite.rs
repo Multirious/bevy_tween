@@ -11,10 +11,12 @@ impl Setter<Sprite, Color> for SpriteColor {
     }
 }
 
+#[cfg(feature = "bevy_asset")]
 #[derive(Debug, Default, Clone, PartialEq, Component, Reflect)]
 #[reflect(Component)]
 pub struct ColorMaterial;
 
+#[cfg(feature = "bevy_asset")]
 impl Setter<bevy::prelude::ColorMaterial, Color> for ColorMaterial {
     fn set(&self, item: &mut bevy::prelude::ColorMaterial, value: &Color) {
         item.color = *value;
