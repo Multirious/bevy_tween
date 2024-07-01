@@ -215,12 +215,12 @@ use std::marker::PhantomData;
 
 use crate::combinator::TargetState;
 
+mod items;
 mod plugin;
-mod setter;
 mod system;
 
+pub use items::*;
 pub use plugin::*;
-pub use setter::*;
 pub use system::*;
 
 pub trait Set<Item, Value>: Send + Sync + 'static {

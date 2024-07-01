@@ -96,7 +96,7 @@ impl PluginGroup for DefaultTweenSystemPlugins {
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        use super::setter::*;
+        use super::items::*;
 
         let mut pg = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
         let pg = pg.add(component::<Translation, _, _>());
