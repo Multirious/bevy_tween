@@ -369,7 +369,7 @@ pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
 pub mod curve;
-pub mod interpolate;
+// pub mod interpolate;
 pub mod tween;
 pub mod tween_event;
 pub mod utils;
@@ -381,7 +381,7 @@ pub mod prelude {
     pub use std::time::Duration;
 
     pub use crate::curve::EaseFunction;
-    pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
+    // pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
 
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
