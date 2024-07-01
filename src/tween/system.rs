@@ -1,4 +1,4 @@
-use super::Setter;
+use super::{Set, Setter};
 use crate::{
     curve::CurveValue,
     tween::{SkipTween, TargetAsset, TargetComponent, TargetResource},
@@ -12,13 +12,13 @@ use std::any::type_name;
 
 pub fn apply_component_tween_system<S, C, V>(
     q_tween: Query<
-        (Entity, &TargetComponent, &S, &CurveValue<V>),
+        (Entity, &TargetComponent, &Setter<S, C, V>, &CurveValue<V>),
         Without<SkipTween>,
     >,
     mut q_component: Query<&mut C>,
     mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
 ) where
-    S: Setter<C, V> + Component,
+    S: Set<C, V>,
     C: Component,
     V: Send + Sync + 'static,
 {
@@ -27,7 +27,9 @@ pub fn apply_component_tween_system<S, C, V>(
         |(tween_entity, target_data, setter, curve_value)| match target_data {
             TargetComponent::None => {}
             TargetComponent::Entity(e) => match q_component.get_mut(*e) {
-                Ok(mut component) => setter.set(&mut component, &curve_value.0),
+                Ok(mut component) => {
+                    setter.0.set(&mut component, &curve_value.0)
+                }
                 Err(query_error) => {
                     if last_entity_errors
                         .get(&tween_entity)
@@ -51,7 +53,7 @@ pub fn apply_component_tween_system<S, C, V>(
             TargetComponent::Entities(e) => {
                 let mut iter = q_component.iter_many_mut(e);
                 while let Some(mut component) = iter.fetch_next() {
-                    setter.set(&mut component, &curve_value.0);
+                    setter.0.set(&mut component, &curve_value.0);
                 }
             }
         },
@@ -61,13 +63,13 @@ pub fn apply_component_tween_system<S, C, V>(
 
 pub fn apply_resource_tween_system<S, R, V>(
     q_tween: Query<
-        (&S, &CurveValue<V>),
+        (&Setter<S, R, V>, &CurveValue<V>),
         (With<TargetResource>, Without<SkipTween>),
     >,
     resource: Option<ResMut<R>>,
     mut last_error: Local<bool>,
 ) where
-    S: Setter<R, V> + Component,
+    S: Set<R, V>,
     R: Resource,
     V: Send + Sync + 'static,
 {
@@ -83,17 +85,20 @@ pub fn apply_resource_tween_system<S, R, V>(
     };
     *last_error = false;
     q_tween.iter().for_each(|(setter, curve_value)| {
-        setter.set(&mut resource, &curve_value.0);
+        setter.0.set(&mut resource, &curve_value.0);
     })
 }
 
 pub fn apply_asset_tween_system<S, A, V>(
-    q_tween: Query<(&S, &TargetAsset<A>, &CurveValue<V>), Without<SkipTween>>,
+    q_tween: Query<
+        (&Setter<S, A, V>, &TargetAsset<A>, &CurveValue<V>),
+        Without<SkipTween>,
+    >,
     asset: Option<ResMut<Assets<A>>>,
     mut last_resource_error: Local<bool>,
     mut last_asset_errors: Local<HashSet<AssetId<A>>>,
 ) where
-    S: Setter<A, V> + Component,
+    S: Set<A, V>,
     A: Asset,
     V: Send + Sync + 'static,
 {
@@ -129,7 +134,7 @@ pub fn apply_asset_tween_system<S, A, V>(
                     asset_errors.insert(handle.id());
                     return;
                 };
-                setter.set(asset, &curve_value.0);
+                setter.0.set(asset, &curve_value.0);
             }
             TargetAsset::Assets(handles) => {
                 for handle in handles {
@@ -147,7 +152,7 @@ pub fn apply_asset_tween_system<S, A, V>(
                     asset_errors.insert(handle.id());
                     return;
                 };
-                setter.set(asset, &curve_value.0);
+                setter.0.set(asset, &curve_value.0);
                 }
             }
         });
@@ -157,7 +162,7 @@ pub fn apply_asset_tween_system<S, A, V>(
 
 pub fn apply_handle_component_tween_system<S, A, V>(
     q_tween: Query<
-        (Entity, &S, &TargetComponent, &CurveValue<V>),
+        (Entity, &Setter<S, A, V>, &TargetComponent, &CurveValue<V>),
         Without<SkipTween>,
     >,
     q_handle: Query<&Handle<A>>,
@@ -166,7 +171,7 @@ pub fn apply_handle_component_tween_system<S, A, V>(
     mut last_asset_errors: Local<HashSet<AssetId<A>>>,
     mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
 ) where
-    S: Setter<A, V> + Component,
+    S: Set<A, V>,
     A: Asset,
     V: Send + Sync + 'static,
 {
@@ -204,7 +209,7 @@ pub fn apply_handle_component_tween_system<S, A, V>(
                         asset_errors.insert(handle.id());
                         return;
                     };
-                    setter.set(asset, &curve_value.0);
+                    setter.0.set(asset, &curve_value.0);
                 },
                 Err(query_error) => {
                     if last_entity_errors
@@ -243,7 +248,7 @@ pub fn apply_handle_component_tween_system<S, A, V>(
                         asset_errors.insert(handle.id());
                         return;
                     };
-                    setter.set(asset, &curve_value.0);
+                    setter.0.set(asset, &curve_value.0);
                 }
             }
         } );

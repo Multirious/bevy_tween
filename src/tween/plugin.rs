@@ -4,7 +4,7 @@ use super::system::{
     apply_asset_tween_system, apply_component_tween_system,
     apply_handle_component_tween_system, apply_resource_tween_system,
 };
-use super::Setter;
+use super::Set;
 use crate::{TweenAppResource, TweenSystemSet};
 use bevy::{
     app::{PluginGroup, PluginGroupBuilder},
@@ -18,7 +18,7 @@ macro_rules! tween_system_plugin {
             $(#[$attr:meta])*
             $short_name:ident,
             $plugin_name:ident,
-            <$g_setter:ident, $g_item:ident, $g_value:ident>,
+            <$g_set:ident, $g_item:ident, $g_value:ident>,
             $system_name:ident,
             $item_trait:ident;
         )*
@@ -27,19 +27,19 @@ macro_rules! tween_system_plugin {
             $(#[$attr])*
             #[doc = concat!("Registers [`", stringify!($system_name), "`](super::", stringify!($system_name), ")")]
             #[derive(Debug)]
-            pub struct $plugin_name<$g_setter, $g_item, $g_value>
+            pub struct $plugin_name<$g_set, $g_item, $g_value>
             where
-                $g_setter: Setter<$g_item, $g_value> + Component,
+                $g_set: Set<$g_item, $g_value>,
                 $g_item: $item_trait,
                 $g_value: Send + Sync + 'static,
             {
-                marker: PhantomData<($g_setter, $g_item, $g_value)>,
+                marker: PhantomData<($g_set, $g_item, $g_value)>,
             }
 
-            impl<$g_setter, $g_item, $g_value> Plugin
-                for $plugin_name<$g_setter, $g_item, $g_value>
+            impl<$g_set, $g_item, $g_value> Plugin
+                for $plugin_name<$g_set, $g_item, $g_value>
             where
-                $g_setter: Setter<$g_item, $g_value> + Component,
+                $g_set: Set<$g_item, $g_value>,
                 $g_item: $item_trait,
                 $g_value: Send + Sync + 'static,
             {
@@ -50,16 +50,16 @@ macro_rules! tween_system_plugin {
                         .expect("`TweenAppResource` resource doesn't exist");
                     app.add_systems(
                         app_resource.schedule,
-                        $system_name::<$g_setter, $g_item, $g_value>
+                        $system_name::<$g_set, $g_item, $g_value>
                             .in_set(TweenSystemSet::ApplyTween),
                     );
                 }
             }
 
-            impl<$g_setter, $g_item, $g_value> Default
-                for $plugin_name<$g_setter, $g_item, $g_value>
+            impl<$g_set, $g_item, $g_value> Default
+                for $plugin_name<$g_set, $g_item, $g_value>
             where
-                $g_setter: Setter<$g_item, $g_value> + Component,
+                $g_set: Set<$g_item, $g_value>,
                 $g_item: $item_trait,
                 $g_value: Send + Sync + 'static,
             {
@@ -71,9 +71,9 @@ macro_rules! tween_system_plugin {
             }
 
             #[doc = concat!("`", stringify!($plugin_name), "::default()`")]
-            pub fn $short_name<$g_setter, $g_item, $g_value>() -> $plugin_name<$g_setter, $g_item, $g_value>
+            pub fn $short_name<$g_set, $g_item, $g_value>() -> $plugin_name<$g_set, $g_item, $g_value>
             where
-                $g_setter: Setter<$g_item, $g_value> + Component,
+                $g_set: Set<$g_item, $g_value>,
                 $g_item: $item_trait,
                 $g_value: Send + Sync + 'static,
             {
