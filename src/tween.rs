@@ -214,6 +214,14 @@ use bevy::prelude::*;
 
 use crate::combinator::TargetState;
 
+mod plugin;
+mod setter;
+mod system;
+
+pub use plugin::*;
+pub use setter::*;
+pub use system::*;
+
 /// Skip a tween from tweening.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
