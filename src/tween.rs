@@ -218,27 +218,6 @@ mod system;
 pub use plugin::*;
 pub use system::*;
 
-pub trait Set: Send + Sync + 'static {
-    type Item;
-    type Value;
-    fn set(&self, item: &mut Self::Item, value: &Self::Value);
-}
-
-#[derive(Component, Reflect)]
-#[reflect(Component)]
-pub struct Setter<S>(pub S)
-where
-    S: Set;
-
-impl<S> Setter<S>
-where
-    S: Set,
-{
-    fn new(set: S) -> Setter<S> {
-        Setter(set)
-    }
-}
-
 /// Skip a tween from tweening.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
 #[reflect(Component)]
