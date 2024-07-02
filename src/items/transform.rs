@@ -1,7 +1,7 @@
 use super::Set;
 use bevy::prelude::*;
 
-#[derive(Debug, Default, Clone, PartialEq, Component, Reflect)]
+#[derive(Debug, Default, Clone, PartialEq, Reflect)]
 pub struct Translation;
 impl Set for Translation {
     type Item = Transform;
