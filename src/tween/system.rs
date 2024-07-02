@@ -1,7 +1,8 @@
 use super::{Set, Setter};
 use crate::{
     curve::CurveValue,
-    tween::{SkipTween, TargetAsset, TargetComponent, TargetResource},
+    targets::{TargetAsset, TargetComponent, TargetResource},
+    tween::SkipTween,
 };
 use bevy::{
     ecs::query::QueryEntityError,

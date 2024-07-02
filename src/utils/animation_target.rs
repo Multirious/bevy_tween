@@ -2,7 +2,7 @@
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{tween::TargetComponent, TweenSystemSet};
+use crate::{targets::TargetComponent, TweenSystemSet};
 
 #[derive(Debug, Component, Reflect)]
 #[reflect(Component)]

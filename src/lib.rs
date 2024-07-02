@@ -371,6 +371,7 @@ pub use bevy_time_runner;
 pub mod curve;
 // pub mod interpolate;
 pub mod items;
+pub mod targets;
 pub mod tween;
 pub mod tween_event;
 pub mod utils;
@@ -388,7 +389,7 @@ pub mod prelude {
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
-    pub use crate::tween::IntoTarget;
+    pub use crate::targets::IntoTarget;
     pub use crate::tween_event::{TweenEvent, TweenEventData};
 
     // #[cfg(feature = "bevy_asset")]
