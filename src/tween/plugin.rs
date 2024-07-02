@@ -4,7 +4,7 @@ use super::system::{
     apply_asset_tween_system, apply_component_tween_system,
     apply_handle_component_tween_system, apply_resource_tween_system,
 };
-use super::{Set, Setter};
+use crate::items::{Set, Setter};
 use crate::{TweenAppResource, TweenSystemSet};
 use bevy::{
     app::{PluginGroup, PluginGroupBuilder},

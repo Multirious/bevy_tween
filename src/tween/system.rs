@@ -1,4 +1,4 @@
-use super::{Set, Setter};
+use crate::items::{Set, Setter};
 use crate::{
     curve::CurveValue,
     targets::{TargetAsset, TargetComponent, TargetResource},
