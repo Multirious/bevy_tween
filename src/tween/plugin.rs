@@ -88,14 +88,14 @@ tween_system_plugin! {
 }
 
 #[derive(Debug)]
-pub struct DefaultTweenItemPlugins;
-impl PluginGroup for DefaultTweenItemPlugins {
+pub struct DefaultTweenSystemPlugins;
+impl PluginGroup for DefaultTweenSystemPlugins {
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
         use crate::items::*;
 
-        let p = PluginGroupBuilder::start::<DefaultTweenItemPlugins>();
+        let p = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
         let p = p
             .add(component::<Translation>())
             .add(component::<Rotation>())
