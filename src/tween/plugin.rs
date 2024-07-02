@@ -87,27 +87,6 @@ tween_system_plugin! {
     handle_component, HandleComponentTweenPlugin, apply_handle_component_tween_system, Asset;
 }
 
-fn register_items(app: &mut App) {
-    use crate::items::*;
-
-    app.register_type::<Setter<Translation>>()
-        .register_type::<Setter<Rotation>>()
-        .register_type::<Setter<Scale>>()
-        .register_type::<Setter<AngleZ>>();
-
-    #[cfg(feature = "bevy_sprite")]
-    app.register_type::<Setter<SpriteColor>>()
-        .register_type::<Setter<ColorMaterial>>();
-
-    #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
-    app.register_type::<Setter<Scale>>()
-        .register_type::<Setter<AngleZ>>();
-
-    #[cfg(feature = "bevy_ui")]
-    app.register_type::<Setter<BackgroundColor>>()
-        .register_type::<Setter<BorderColor>>();
-}
-
 #[derive(Debug)]
 pub struct DefaultTweenItemPlugins;
 impl PluginGroup for DefaultTweenItemPlugins {
@@ -117,25 +96,41 @@ impl PluginGroup for DefaultTweenItemPlugins {
         use crate::items::*;
 
         let p = PluginGroupBuilder::start::<DefaultTweenItemPlugins>();
-        let p = p.add(register_items);
         let p = p
             .add(component::<Translation>())
             .add(component::<Rotation>())
             .add(component::<Scale>())
-            .add(component::<AngleZ>());
+            .add(component::<AngleZ>())
+            .add(|a: &mut App| {
+                a.register_type::<Setter<Translation>>()
+                    .register_type::<Setter<Rotation>>()
+                    .register_type::<Setter<Scale>>()
+                    .register_type::<Setter<AngleZ>>();
+            });
 
         #[cfg(feature = "bevy_sprite")]
-        let p = p.add(component::<SpriteColor>());
+        let p = p
+            .add(component::<SpriteColor>()) // mm
+            .add(|a: &mut App| {
+                a.register_type::<Setter<SpriteColor>>();
+            });
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
         let p = p
             .add(asset::<ColorMaterial>())
-            .add(handle_component::<ColorMaterial>());
+            .add(handle_component::<ColorMaterial>())
+            .add(|a: &mut App| {
+                a.register_type::<Setter<ColorMaterial>>();
+            });
 
         #[cfg(feature = "bevy_ui")]
         let p = p
-            .add(component::<BackgroundColor>()) // nuh uh rustfmt
-            .add(component::<BorderColor>());
+            .add(component::<BackgroundColor>())
+            .add(component::<BorderColor>())
+            .add(|a: &mut App| {
+                a.register_type::<Setter<BackgroundColor>>()
+                    .register_type::<Setter<BorderColor>>();
+            });
         p
     }
 }
