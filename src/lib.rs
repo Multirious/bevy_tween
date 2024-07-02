@@ -438,8 +438,7 @@ impl PluginGroup for DefaultTweenPlugins {
         #[allow(clippy::let_and_return)]
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
-            .add(interpolate::DefaultInterpolatorsPlugin)
-            .add(interpolate::DefaultDynInterpolatorsPlugin)
+            .add_group(tween::DefaultTweenSystemPlugins)
             .add(curve::EaseFunctionPlugin)
             // waiting for add_group method in 0.14
             .add(default_tween_event_plugins.0)
