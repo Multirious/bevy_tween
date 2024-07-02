@@ -5,8 +5,11 @@ use bevy::prelude::*;
 #[reflect(Component)]
 pub struct SpriteColor;
 
-impl Set<Sprite, Color> for SpriteColor {
-    fn set(&self, item: &mut Sprite, value: &Color) {
+impl Set for SpriteColor {
+    type Item = Sprite;
+    type Value = Color;
+
+    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
         item.color = *value;
     }
 }
@@ -17,8 +20,11 @@ impl Set<Sprite, Color> for SpriteColor {
 pub struct ColorMaterial;
 
 #[cfg(feature = "bevy_asset")]
-impl Set<bevy::prelude::ColorMaterial, Color> for ColorMaterial {
-    fn set(&self, item: &mut bevy::prelude::ColorMaterial, value: &Color) {
+impl Set for ColorMaterial {
+    type Item = bevy::prelude::ColorMaterial;
+    type Value = Color;
+
+    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
         item.color = *value;
     }
 }

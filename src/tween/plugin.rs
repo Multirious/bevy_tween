@@ -18,7 +18,6 @@ macro_rules! tween_system_plugin {
             $(#[$attr:meta])*
             $short_name:ident,
             $plugin_name:ident,
-            <$g_set:ident, $g_item:ident, $g_value:ident>,
             $system_name:ident,
             $item_trait:ident;
         )*
@@ -27,21 +26,20 @@ macro_rules! tween_system_plugin {
             $(#[$attr])*
             #[doc = concat!("Registers [`", stringify!($system_name), "`](super::", stringify!($system_name), ")")]
             #[derive(Debug)]
-            pub struct $plugin_name<$g_set, $g_item, $g_value>
+            pub struct $plugin_name<S>
             where
-                $g_set: Set<$g_item, $g_value>,
-                $g_item: $item_trait,
-                $g_value: Send + Sync + 'static,
+                S: Set,
+                S::Item: $item_trait,
+                S::Value: Send + Sync + 'static,
             {
-                marker: PhantomData<($g_set, $g_item, $g_value)>,
+                marker: PhantomData<S>,
             }
 
-            impl<$g_set, $g_item, $g_value> Plugin
-                for $plugin_name<$g_set, $g_item, $g_value>
+            impl<S> Plugin for $plugin_name<S>
             where
-                $g_set: Set<$g_item, $g_value>,
-                $g_item: $item_trait,
-                $g_value: Send + Sync + 'static,
+                S: Set,
+                S::Item: $item_trait,
+                S::Value: Send + Sync + 'static,
             {
                 fn build(&self, app: &mut App) {
                     let app_resource = app
@@ -50,18 +48,17 @@ macro_rules! tween_system_plugin {
                         .expect("`TweenAppResource` resource doesn't exist");
                     app.add_systems(
                         app_resource.schedule,
-                        $system_name::<$g_set, $g_item, $g_value>
+                        $system_name::<S>
                             .in_set(TweenSystemSet::ApplyTween),
                     );
                 }
             }
 
-            impl<$g_set, $g_item, $g_value> Default
-                for $plugin_name<$g_set, $g_item, $g_value>
+            impl<S> Default for $plugin_name<S>
             where
-                $g_set: Set<$g_item, $g_value>,
-                $g_item: $item_trait,
-                $g_value: Send + Sync + 'static,
+                S: Set,
+                S::Item: $item_trait,
+                S::Value: Send + Sync + 'static,
             {
                 fn default() -> Self {
                     $plugin_name {
@@ -71,11 +68,11 @@ macro_rules! tween_system_plugin {
             }
 
             #[doc = concat!("`", stringify!($plugin_name), "::default()`")]
-            pub fn $short_name<$g_set, $g_item, $g_value>() -> $plugin_name<$g_set, $g_item, $g_value>
+            pub fn $short_name<S>() -> $plugin_name<S>
             where
-                $g_set: Set<$g_item, $g_value>,
-                $g_item: $item_trait,
-                $g_value: Send + Sync + 'static,
+                S: Set,
+                S::Item: $item_trait,
+                S::Value: Send + Sync + 'static,
             {
                 $plugin_name::default()
             }
@@ -84,10 +81,10 @@ macro_rules! tween_system_plugin {
 }
 
 tween_system_plugin! {
-    component, ComponentTweenPlugin, <S, C, V>, apply_component_tween_system, Component;
-    resource, ResourceTweenPlugin, <S, R, V>, apply_resource_tween_system, Resource;
-    asset, AssetTweenPlugin, <S, A, V>, apply_asset_tween_system, Asset;
-    handle_component, HandleComponentTweenPlugin, <S, A, V>, apply_handle_component_tween_system, Asset;
+    component, ComponentTweenPlugin, apply_component_tween_system, Component;
+    resource, ResourceTweenPlugin, apply_resource_tween_system, Resource;
+    asset, AssetTweenPlugin, apply_asset_tween_system, Asset;
+    handle_component, HandleComponentTweenPlugin, apply_handle_component_tween_system, Asset;
 }
 
 fn register_items(app: &mut App) {
@@ -121,23 +118,23 @@ impl PluginGroup for DefaultTweenItemPlugins {
         let p = PluginGroupBuilder::start::<DefaultTweenItemPlugins>();
         let p = p.add(register_items);
         let p = p
-            .add(component::<Translation, _, _>())
-            .add(component::<Rotation, _, _>())
-            .add(component::<Scale, _, _>())
-            .add(component::<AngleZ, _, _>());
+            .add(component::<Translation>())
+            .add(component::<Rotation>())
+            .add(component::<Scale>())
+            .add(component::<AngleZ>());
 
         #[cfg(feature = "bevy_sprite")]
-        let p = p.add(component::<SpriteColor, _, _>());
+        let p = p.add(component::<SpriteColor>());
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
         let p = p
-            .add(asset::<ColorMaterial, _, _>())
-            .add(handle_component::<ColorMaterial, _, _>());
+            .add(asset::<ColorMaterial>())
+            .add(handle_component::<ColorMaterial>());
 
         #[cfg(feature = "bevy_ui")]
         let p = p
-            .add(component::<BackgroundColor, _, _>()) // nuh uh rustfmt
-            .add(component::<BorderColor, _, _>());
+            .add(component::<BackgroundColor>()) // nuh uh rustfmt
+            .add(component::<BorderColor>());
         p
     }
 }

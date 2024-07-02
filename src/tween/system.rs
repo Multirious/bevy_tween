@@ -11,17 +11,17 @@ use bevy::{
 };
 use std::any::type_name;
 
-pub fn apply_component_tween_system<S, C, V>(
+pub fn apply_component_tween_system<S>(
     q_tween: Query<
-        (Entity, &TargetComponent, &Setter<S, C, V>, &CurveValue<V>),
+        (Entity, &TargetComponent, &Setter<S>, &CurveValue<S::Value>),
         Without<SkipTween>,
     >,
-    mut q_component: Query<&mut C>,
+    mut q_component: Query<&mut S::Item>,
     mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
 ) where
-    S: Set<C, V>,
-    C: Component,
-    V: Send + Sync + 'static,
+    S: Set,
+    S::Item: Component,
+    S::Value: Send + Sync + 'static,
 {
     let mut query_entity_errors = HashMap::new();
     q_tween.iter().for_each(
@@ -44,7 +44,7 @@ pub fn apply_component_tween_system<S, C, V>(
                         error!(
                             "{} attempted to mutate {} but got error: {}",
                             type_name::<S>(),
-                            type_name::<C>(),
+                            type_name::<S::Item>(),
                             query_error
                         );
                     }
@@ -62,17 +62,17 @@ pub fn apply_component_tween_system<S, C, V>(
     *last_entity_errors = query_entity_errors;
 }
 
-pub fn apply_resource_tween_system<S, R, V>(
+pub fn apply_resource_tween_system<S>(
     q_tween: Query<
-        (&Setter<S, R, V>, &CurveValue<V>),
+        (&Setter<S>, &CurveValue<S::Value>),
         (With<TargetResource>, Without<SkipTween>),
     >,
-    resource: Option<ResMut<R>>,
+    resource: Option<ResMut<S::Item>>,
     mut last_error: Local<bool>,
 ) where
-    S: Set<R, V>,
-    R: Resource,
-    V: Send + Sync + 'static,
+    S: Set,
+    S::Item: Resource,
+    S::Value: Send + Sync + 'static,
 {
     let Some(mut resource) = resource else {
         if !*last_error {
@@ -90,18 +90,18 @@ pub fn apply_resource_tween_system<S, R, V>(
     })
 }
 
-pub fn apply_asset_tween_system<S, A, V>(
+pub fn apply_asset_tween_system<S>(
     q_tween: Query<
-        (&Setter<S, A, V>, &TargetAsset<A>, &CurveValue<V>),
+        (&Setter<S>, &TargetAsset<S::Item>, &CurveValue<S::Value>),
         Without<SkipTween>,
     >,
-    asset: Option<ResMut<Assets<A>>>,
+    asset: Option<ResMut<Assets<S::Item>>>,
     mut last_resource_error: Local<bool>,
-    mut last_asset_errors: Local<HashSet<AssetId<A>>>,
+    mut last_asset_errors: Local<HashSet<AssetId<S::Item>>>,
 ) where
-    S: Set<A, V>,
-    A: Asset,
-    V: Send + Sync + 'static,
+    S: Set,
+    S::Item: Asset,
+    S::Value: Send + Sync + 'static,
 {
     let mut asset_errors = HashSet::new();
 
@@ -128,7 +128,7 @@ pub fn apply_asset_tween_system<S, A, V>(
                         error!(
                             "{} attempted to tween {} asset {} but it does not exists",
                             type_name::<S>(),
-                            type_name::<A>(),
+                            type_name::<S::Item>(),
                             handle.id()
                         );
                     }
@@ -146,7 +146,7 @@ pub fn apply_asset_tween_system<S, A, V>(
                         error!(
                             "{} attempted to tween {} asset {} but it does not exists",
                             type_name::<S>(),
-                            type_name::<A>(),
+                            type_name::<S::Item>(),
                             handle.id()
                         );
                     }
@@ -161,20 +161,20 @@ pub fn apply_asset_tween_system<S, A, V>(
     *last_asset_errors = asset_errors;
 }
 
-pub fn apply_handle_component_tween_system<S, A, V>(
+pub fn apply_handle_component_tween_system<S>(
     q_tween: Query<
-        (Entity, &Setter<S, A, V>, &TargetComponent, &CurveValue<V>),
+        (Entity, &Setter<S>, &TargetComponent, &CurveValue<S::Value>),
         Without<SkipTween>,
     >,
-    q_handle: Query<&Handle<A>>,
-    asset: Option<ResMut<Assets<A>>>,
+    q_handle: Query<&Handle<S::Item>>,
+    asset: Option<ResMut<Assets<S::Item>>>,
     mut last_resource_error: Local<bool>,
-    mut last_asset_errors: Local<HashSet<AssetId<A>>>,
+    mut last_asset_errors: Local<HashSet<AssetId<S::Item>>>,
     mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
 ) where
-    S: Set<A, V>,
-    A: Asset,
-    V: Send + Sync + 'static,
+    S: Set,
+    S::Item: Asset,
+    S::Value: Send + Sync + 'static,
 {
     let mut asset_errors = HashSet::new();
     let mut query_entity_errors = HashMap::new();
@@ -203,7 +203,7 @@ pub fn apply_handle_component_tween_system<S, A, V>(
                             error!(
                                 "{} attempted to tween {} asset {} but it does not exists",
                                 type_name::<S>(),
-                                type_name::<A>(),
+                                type_name::<S::Item>(),
                                 handle.id()
                             );
                         }
@@ -225,7 +225,7 @@ pub fn apply_handle_component_tween_system<S, A, V>(
                         error!(
                             "{} attempted to query for Handle<{}> but got error: {}",
                             type_name::<S>(),
-                            type_name::<A>(),
+                            type_name::<S::Item>(),
                             query_error
                         );
                     }
@@ -242,7 +242,7 @@ pub fn apply_handle_component_tween_system<S, A, V>(
                             error!(
                                 "{} attempted to tween {} asset {} but it does not exists",
                                 type_name::<S>(),
-                                type_name::<A>(),
+                                type_name::<S::Item>(),
                                 handle.id()
                             );
                         }
