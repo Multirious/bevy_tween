@@ -223,8 +223,12 @@ pub trait Set<Item, Value>: Send + Sync + 'static {
     fn set(&self, item: &mut Item, value: &Value);
 }
 
-#[derive(Component)]
-pub struct Setter<S, Item, Value>(pub S, PhantomData<(Item, Value)>)
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct Setter<S, Item, Value>(
+    pub S,
+    #[reflect(ignore)] PhantomData<(Item, Value)>,
+)
 where
     S: Set<Item, Value>;
 
