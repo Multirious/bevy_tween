@@ -4,7 +4,7 @@ use super::system::{
     apply_asset_tween_system, apply_component_tween_system,
     apply_handle_component_tween_system, apply_resource_tween_system,
 };
-use super::Set;
+use super::{Set, Setter};
 use crate::{TweenAppResource, TweenSystemSet};
 use bevy::{
     app::{PluginGroup, PluginGroupBuilder},
@@ -90,21 +90,22 @@ tween_system_plugin! {
 fn register_items(app: &mut App) {
     use crate::items::*;
 
-    app.register_type::<Translation>()
-        .register_type::<Rotation>()
-        .register_type::<Scale>()
-        .register_type::<AngleZ>();
+    app.register_type::<Setter<Translation>>()
+        .register_type::<Setter<Rotation>>()
+        .register_type::<Setter<Scale>>()
+        .register_type::<Setter<AngleZ>>();
 
     #[cfg(feature = "bevy_sprite")]
-    app.register_type::<SpriteColor>()
-        .register_type::<ColorMaterial>();
+    app.register_type::<Setter<SpriteColor>>()
+        .register_type::<Setter<ColorMaterial>>();
 
     #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
-    app.register_type::<Scale>().register_type::<AngleZ>();
+    app.register_type::<Setter<Scale>>()
+        .register_type::<Setter<AngleZ>>();
 
     #[cfg(feature = "bevy_ui")]
-    app.register_type::<BackgroundColor>()
-        .register_type::<BorderColor>();
+    app.register_type::<Setter<BackgroundColor>>()
+        .register_type::<Setter<BorderColor>>();
 }
 
 #[derive(Debug)]
