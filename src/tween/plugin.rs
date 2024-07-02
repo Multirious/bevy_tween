@@ -91,7 +91,7 @@ tween_system_plugin! {
 }
 
 fn register_items(app: &mut App) {
-    use super::items::*;
+    use crate::items::*;
 
     app.register_type::<Translation>()
         .register_type::<Rotation>()
@@ -116,7 +116,7 @@ impl PluginGroup for DefaultTweenItemPlugins {
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        use super::items::*;
+        use crate::items::*;
 
         let p = PluginGroupBuilder::start::<DefaultTweenItemPlugins>();
         let p = p.add(register_items);

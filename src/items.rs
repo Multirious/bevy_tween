@@ -1,4 +1,4 @@
-use super::Set;
+use crate::tween::Set;
 
 mod blanket_impl;
 
