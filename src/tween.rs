@@ -211,7 +211,6 @@
 //! [`DefaultDynInterpolatorsPlugin`]: crate::interpolate::DefaultDynInterpolatorsPlugin
 
 use bevy::prelude::*;
-use std::marker::PhantomData;
 
 mod plugin;
 mod system;
@@ -219,25 +218,24 @@ mod system;
 pub use plugin::*;
 pub use system::*;
 
-pub trait Set<Item, Value>: Send + Sync + 'static {
-    fn set(&self, item: &mut Item, value: &Value);
+pub trait Set: Send + Sync + 'static {
+    type Item;
+    type Value;
+    fn set(&self, item: &mut Self::Item, value: &Self::Value);
 }
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
-pub struct Setter<S, Item, Value>(
-    pub S,
-    #[reflect(ignore)] PhantomData<(Item, Value)>,
-)
+pub struct Setter<S>(pub S)
 where
-    S: Set<Item, Value>;
+    S: Set;
 
-impl<S, Item, Value> Setter<S, Item, Value>
+impl<S> Setter<S>
 where
-    S: Set<Item, Value>,
+    S: Set,
 {
-    fn new(set: S) -> Setter<S, Item, Value> {
-        Setter(set, PhantomData)
+    fn new(set: S) -> Setter<S> {
+        Setter(set)
     }
 }
 
