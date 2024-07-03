@@ -116,31 +116,23 @@ where
 /// - `TweenEventPlugin::<&'static str>::default()`
 pub struct DefaultTweenEventPlugins;
 
-impl DefaultTweenEventPlugins {
-    pub(crate) fn plugins(
-    ) -> (TweenEventPlugin<()>, TweenEventPlugin<&'static str>) {
-        #[allow(clippy::let_and_return)]
-        #[cfg(feature = "bevy_eventlistener")]
-        let o = (
-            TweenEventPlugin::<()>::default().with_event_listener(),
-            TweenEventPlugin::<&'static str>::default().with_event_listener(),
-        );
-        #[allow(clippy::let_and_return)]
-        #[cfg(not(feature = "bevy_eventlistener"))]
-        let o = (
-            TweenEventPlugin::<()>::default(),
-            TweenEventPlugin::<&'static str>::default(),
-        );
-        o
-    }
-}
-
 impl PluginGroup for DefaultTweenEventPlugins {
+    #[allow(unused)]
+    #[allow(clippy::let_and_return)]
     fn build(self) -> PluginGroupBuilder {
-        let plugins = Self::plugins();
-        PluginGroupBuilder::start::<DefaultTweenEventPlugins>()
-            .add(plugins.0)
-            .add(plugins.1)
+        let p = PluginGroupBuilder::start::<DefaultTweenEventPlugins>();
+        #[cfg(not(feature = "bevy_eventlistener"))]
+        let p = p
+            .add(TweenEventPlugin::<()>::default())
+            .add(TweenEventPlugin::<&'static str>::default());
+        #[cfg(feature = "bevy_eventlistener")]
+        let p = p
+            .add(TweenEventPlugin::<()>::default().with_event_listener())
+            .add(
+                TweenEventPlugin::<&'static str>::default()
+                    .with_event_listener(),
+            );
+        p
     }
 }
 
