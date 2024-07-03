@@ -4,13 +4,32 @@
 //! Check out [`DefaultTweenSystemPlugins`].
 //!
 //! When you have any components/assets/resources you want to tween,
-//! you create a type implementing [`Setter`] and register them to the related plugin:
+//! you create a type implementing [`Set`] and register them to the related plugin:
 //! - [`ComponentTweenPlugin`] ([`component`])
 //! - [`ResourceTweenPlugin`] ([`resource`])
 //! - [`AssetTweenPlugin`] ([`asset`])
 //! - [`HandleComponentTweenPlugin`] ([`handle_component`])
 //!
+//! ```
+//! # use bevy::prelude::*;
+//! # let mut app = App::new();
+//! # #[derive(Component)]
+//! # struct MyComponent;
+//! # struct MySetter;
+//! # impl bevy_tween::items::Set for MySetter {
+//! #     type Item = ();
+//! #     type Value = ();
+//! #     fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+//! #         unimplemented!()
+//! #     }
+//! # }
+//! app.add_plugins(
+//!     bevy_tween::tween::component::<MySetter>(),
+//! );
+//! ```
+//!
 //! If these aren't enough for your uses, you can always create a custom system.
+//! [`Set`] is currently being used for only registering with these plugin and supports trait-object.
 //!
 //! # How it works
 //!
@@ -18,7 +37,7 @@
 //! together in a pipeline to create a flexible and extendable animation system.
 //!
 //! A single entity should have the components "Timing", "Curve", "Target", and "Setter" for input.
-//! Then the systems will take these components and execute the tweening.
+//! Then the systems will take these components and does the tweening.
 //! This crate will usually call this entity a "Tween entity".
 //!
 //! The system pipeline:
@@ -47,7 +66,7 @@
 //! - [`asset_tween_system`]
 //! - [`handle_component_tween_system`]
 //!
-//! [`Setter`]: crate::items::Setter
+//! [`Set`]: crate::items::Set
 //! [`TimeSpan`]: bevy_time_runner::TimeSpan
 //! [`TimeSpanProgress`]: bevy_time_runner::TimeSpanProgress
 //! [`CurveValue`]: crate::CurveValue
