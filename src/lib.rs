@@ -528,35 +528,3 @@ pub enum TweenSystemSet {
     /// - [`tween::tween_event_taking_system`]
     ApplyTween,
 }
-
-/// Helper trait to add systems by this crate to your app and avoid mistake
-/// from forgetting to use the intended schedule and set.
-pub trait BevyTweenRegisterSystems {
-    /// Register tween systems
-    fn add_tween_systems<M>(
-        &mut self,
-        tween_systems: impl IntoSystemConfigs<M>,
-    ) -> &mut Self;
-}
-
-impl BevyTweenRegisterSystems for App {
-    /// Register tween systems in schedule configured in [`TweenAppResource`]
-    /// in set [`TweenSystemSet::ApplyTween`]
-    ///
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
-    fn add_tween_systems<M>(
-        &mut self,
-        tween_systems: impl IntoSystemConfigs<M>,
-    ) -> &mut Self {
-        let app_resource = self
-            .world()
-            .get_resource::<TweenAppResource>()
-            .expect("`TweenAppResource` resource doesn't exist");
-        self.add_systems(
-            app_resource.schedule,
-            tween_systems.in_set(TweenSystemSet::ApplyTween),
-        )
-    }
-}
