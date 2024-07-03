@@ -1,30 +1,15 @@
-use super::Set;
+use super::{impl_simple_setter, Set};
 use bevy::prelude::*;
 
-#[derive(Debug, Default, Clone, PartialEq, Component, Reflect)]
-#[reflect(Component)]
-pub struct SpriteColor;
-
-impl Set for SpriteColor {
-    type Item = Sprite;
-    type Value = Color;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    SpriteColor,
+    |item: &mut Sprite, value: &Color| {
         item.color = *value;
     }
 }
-
-#[cfg(feature = "bevy_asset")]
-#[derive(Debug, Default, Clone, PartialEq, Component, Reflect)]
-#[reflect(Component)]
-pub struct ColorMaterial;
-
-#[cfg(feature = "bevy_asset")]
-impl Set for ColorMaterial {
-    type Item = bevy::prelude::ColorMaterial;
-    type Value = Color;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    ColorMaterial,
+    |item: &mut bevy::prelude::ColorMaterial, value: &Color| {
         item.color = *value;
     }
 }

@@ -1,46 +1,27 @@
-use super::Set;
+use super::{impl_simple_setter, Set};
 use bevy::prelude::*;
 
-#[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct Translation;
-impl Set for Translation {
-    type Item = Transform;
-    type Value = Vec3;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    Translation,
+    |item: &mut Transform, value: &Vec3| {
         item.translation = *value;
     }
 }
-
-#[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct Rotation;
-impl Set for Rotation {
-    type Item = Transform;
-    type Value = Quat;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    Rotation,
+    |item: &mut Transform, value: &Quat| {
         item.rotation = *value;
     }
 }
-
-#[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct Scale;
-impl Set for Scale {
-    type Item = Transform;
-    type Value = Vec3;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    Scale,
+    |item: &mut Transform, value: &Vec3| {
         item.scale = *value;
     }
 }
-
-#[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct AngleZ;
-impl Set for AngleZ {
-    type Item = Transform;
-    type Value = f32;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    AngleZ,
+    |item: &mut Transform, value: &f32| {
         item.rotation = Quat::from_rotation_z(*value);
     }
 }

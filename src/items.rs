@@ -3,6 +3,28 @@ use bevy::{
     reflect::Reflect,
 };
 
+macro_rules! impl_simple_setter {
+    (
+        $(#[$attr:meta])*
+        $setter:ident,
+        |$item_arg:ident: &mut $item_ty:path, $value_arg:ident: & $value_ty:path| $expr:block
+    ) => {
+        $(#[$attr])*
+        #[derive(Debug, Clone, Copy, Reflect)]
+        pub struct $setter;
+
+        impl Set for $setter {
+            type Item = $item_ty;
+            type Value = $value_ty;
+
+            fn set(&self, $item_arg: &mut Self::Item, $value_arg: &Self::Value) {
+                $expr
+            }
+        }
+    }
+}
+use impl_simple_setter;
+
 mod blanket_impl;
 
 // mod reflect;

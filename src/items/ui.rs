@@ -1,25 +1,15 @@
-use super::Set;
+use super::{impl_simple_setter, Set};
 use bevy::prelude::*;
 
-#[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct BackgroundColor;
-impl Set for BackgroundColor {
-    type Item = bevy::prelude::BackgroundColor;
-    type Value = Color;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    BackgroundColor,
+    |item: &mut bevy::prelude::BackgroundColor, value: &Color| {
         item.0 = *value;
     }
 }
-
-#[derive(Debug, Default, Clone, PartialEq, Reflect)]
-pub struct BorderColor;
-
-impl Set for BorderColor {
-    type Item = bevy::prelude::BorderColor;
-    type Value = Color;
-
-    fn set(&self, item: &mut Self::Item, value: &Self::Value) {
+impl_simple_setter! {
+    BorderColor,
+    |item: &mut bevy::prelude::BorderColor, value: &Color| {
         item.0 = *value;
     }
 }
