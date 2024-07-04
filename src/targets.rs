@@ -223,7 +223,7 @@ impl<A: Asset> Clone for TargetAsset<A> {
 #[cfg(feature = "bevy_asset")]
 impl<A: Asset> Default for TargetAsset<A> {
     fn default() -> Self {
-        TargetAsset::Asset(Default::default())
+        TargetAsset::None
     }
 }
 
