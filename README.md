@@ -6,7 +6,7 @@
 
 # `bevy_tween`
 
-An ECS-based [Bevy](https://github.com/bevyengine/bevy) procedural and asset animation library.
+[Bevy](https://github.com/bevyengine/bevy) procedural and keyframe animation library.
 
 This is a young plugin and APIs are to be fleshed out.
 Breaking changes are to be expected!
@@ -14,8 +14,9 @@ Breaking changes are to be expected!
 See changelog [here](CHANGELOG.md).
 
 ## Features
-- **Ergonomic and user-friendly API**: API are designed to be concise, expressive, and simple to use.
-  Animation can be built using the combinator framework.
+- **Ergonomic and user-friendly API**: You can always spawn the animator manually but this crate provide
+  APIs that abstracted over the boilerplate process.
+  Animation can be built using the builder with function combinators.
   <details>
   <summary>Example</summary>
 
@@ -48,16 +49,17 @@ See changelog [here](CHANGELOG.md).
   ```
 
   </details>
-- **Flexible and Extensible**: Everything is components and systems with a sprinkle of dependency injection.
+- **Flexible and Extensible**: This crate is built on top of [`bevy_time_runner`](https://github.com/Multirious/bevy_time_runner)
+  which mean we can extend this crate by adding *any* components and systems.
   - Tween anything from anywhere, built-in or custom system.
   - Interpolate with any curve, built-in or custom system.
-  - *Literally anything* as long as they're time controlled.
+  - Anything else.
 
-- **Parallelism**: Since a tween or an animation primitive is one component and one system,
-  they have great chances for system parallelism and increase in performance.
+- **Parallelism**: Tweens are typed and can be query over by their typed system
+  which increase chances for system parallelism.
 - **Rich timer control**:
   - Looping
-  - Fastforward or Rewind
+  - Time scaling
   - Skip backward or forward
   - Jumping to anywhen
 
