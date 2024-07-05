@@ -14,8 +14,8 @@ Breaking changes are to be expected!
 See changelog [here](CHANGELOG.md).
 
 ## Features
-- **Extensible**: Everything is components and systems with a sprinkle of dependency injection.
 - **Ergonomic and user-friendly API**: API are designed to be concise, expressive, and simple to use.
+  Animation can be built using the combinator framework.
   <details>
   <summary>Example</summary>
 
@@ -30,12 +30,7 @@ See changelog [here](CHANGELOG.md).
       ));
   ```
 
-  </details>
-
-- **Modular API and animation**: Combinator framework allows you to build composite animations through abstracting basic animations.
-  <details>
-  <summary>Example</summary>
-  
+  You can also abstract animation!
   ```rust
   fn my_animation(
       target: TargetComponent,
@@ -53,11 +48,13 @@ See changelog [here](CHANGELOG.md).
   ```
 
   </details>
-- **Flexible**: Supports many kind of animation due to its extensibility and modularity.
+- **Flexible and Extensible**: Everything is components and systems with a sprinkle of dependency injection.
   - Tween anything from anywhere, built-in or custom system.
   - Interpolate with any curve, built-in or custom system.
   - *Literally anything* as long as they're time controlled.
-- **Parallelism**: Since a tween or an animation primitive is one component and one system, they have great chances for system parallelism and increase in performance.
+
+- **Parallelism**: Since a tween or an animation primitive is one component and one system,
+  they have great chances for system parallelism and increase in performance.
 - **Rich timer control**:
   - Looping
   - Fastforward or Rewind
@@ -75,7 +72,7 @@ Goals:
        this crate absolutely has the capability to work on any complex animations.
        The editor will aid in such jobs.
   - Real-time display at any point in time in the animation.
-  - Editing path from point A to point B with arbitary curve using `splines`.
+  - Editing path from point A to point B with arbitary curve.
 
 ## Differences
 The main motivation for this tweening crate is that the previous
@@ -93,29 +90,30 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
     be freely accessed.
   - Makes a very extendable system, thanks Bevy's ECS!
   - It's possible to have multiple `Interpolator` (or `Lens` if you came from `bevy_tweening`)
-    tweening the same component/asset/resource because of the multi-entities architecture and
+    tweening the same component/asset/resource because of the design of this crate and
     so it is not limited by '1 component type per entitiy'.
 - Advanced timer. This crate has custom timer implementation.
 - Dependency injection. Systems communicate through various specific components,
   allowing you to extends the behavior to your needs by supplying those components
   and reduce duplication.
-  - Custom tweens, targets, and interpolators
-  - Custom interpolations
 - Users of this crate are free to decide if they want to only use generic,
-  only trait object, or even both for tweening! They both came with their pros
-  and cons which will be explained in the documentation.
+  only trait object, or even both for tweening, or even something else entirely.
 
 ## Feature gates
-- `"bevy_asset"`, enabled by default.<br/>
-  enable `"bevy/bevy_asset"`, add tweening systems for asset.
-- `"bevy_render"`, enabled by default.<br/>
-  enable `"bevy/bevy_render"`, add nothing but required by the `"bevy_sprite"` feature.
-- `"bevy_sprite"`, enabled by default.<br/>
-  enable `"bevy/bevy_sprite"`, add some built-in interpolator related to sprite.
-- `"bevy_eventlistener"`.<br/>
-  enable `"bevy_time_runner/bevy_eventlistener"`, entity-targeted events with bevy_eventlistener
-- `"bevy_lookup_curve"`.<br/>
-  Add interpolation implementation using [`bevy_lookup_curve`](https://github.com/villor/bevy_lookup_curve)
+- Defaults
+  - `bevy_asset`<br/>
+     Add tweening systems for asset.
+  - `bevy_render`<br/>
+    Currently add nothing but required by the `bevy_sprite` feature.
+  - `bevy_sprite`<br/>
+    Add some built-in interpolators related to sprite.
+  - `bevy_ui`<br/>
+    Add some built-in interpolators related to ui.
+  - `bevy_eventlistener`<br/>
+    Add entity-targeted events with bevy_eventlistener.
+- Optional
+  - `bevy_lookup_curve`.<br/>
+    Adds interpolation implementation using [`bevy_lookup_curve`](https://github.com/villor/bevy_lookup_curve).
 
 ## Bevy Version Support
 
