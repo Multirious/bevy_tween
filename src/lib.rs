@@ -433,16 +433,12 @@ pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        let default_tween_event_plugins =
-            tween_event::DefaultTweenEventPlugins::plugins();
         #[allow(clippy::let_and_return)]
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
             .add_group(tween::DefaultTweenSystemPlugins)
             .add(curve::EaseFunctionPlugin)
-            // waiting for add_group method in 0.14
-            .add(default_tween_event_plugins.0)
-            .add(default_tween_event_plugins.1);
+            .add_group(tween_event::DefaultTweenEventPlugins);
         #[cfg(feature = "bevy_lookup_curve")]
         let group = group
             .add(curve::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);

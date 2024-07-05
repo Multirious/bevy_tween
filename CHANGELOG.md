@@ -9,6 +9,14 @@
 - Add optional feature for `serde`. ([#31](https://github.com/Multirious/bevy_tween/pull/31))
     - Derive `Serialize` and `Deserialize` for `EaseFunction`
 - Clean up `TweenAppResource` after the app runs. ([#28](https://github.com/Multirious/bevy_tween/pull/28))
+- Update animation builder ([#36](https://github.com/Multirious/bevy_tween/pull/36))
+    - Add `.entity_commands()` getter
+    - Add `.time_runner()` getter
+    - Add `.time_runner_mut()` getter
+    - Add `skipped` method
+    - Add `disabled` method
+    - Add `time_scale` method
+    - Add `direction` method
 
 ## v0.5.0 - 2024-06-09
 
