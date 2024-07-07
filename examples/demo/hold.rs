@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::{
-    color::palettes::css::{PINK, WHITE},
+    color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
     window::PrimaryWindow,
 };
@@ -43,6 +43,10 @@ fn secs(secs: f32) -> Duration {
     Duration::from_secs_f32(secs)
 }
 
+fn into_color<T: Into<bevy::color::Srgba>>(color: T) -> Color {
+    Color::Srgba(color.into())
+}
+
 fn main() {
     App::new()
         .add_plugins((
@@ -81,7 +85,7 @@ fn setup(
             SpriteBundle {
                 texture: asset_server.load("big_x.png"),
                 sprite: Sprite {
-                    color: PINK.into(),
+                    color: into_color(DEEP_PINK),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -98,7 +102,10 @@ fn setup(
             EaseFunction::QuarticIn,
             (
                 effect_intensity(0., 1.),
-                big_x.with(sprite_color(PINK.into(), WHITE.into())),
+                big_x.with(sprite_color(
+                    into_color(DEEP_PINK),
+                    into_color(WHITE),
+                )),
             ),
         );
     commands

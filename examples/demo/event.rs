@@ -1,5 +1,5 @@
 use bevy::{
-    color::palettes::css::{PINK, WHITE},
+    color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
 };
 use bevy_tween::{
@@ -17,6 +17,10 @@ fn main() {
 
 fn secs(secs: f32) -> Duration {
     Duration::from_secs_f32(secs)
+}
+
+fn into_color<T: Into<bevy::color::Srgba>>(color: T) -> Color {
+    Color::Srgba(color.into())
 }
 
 #[derive(Resource)]
@@ -125,8 +129,8 @@ fn effect_system(
                             effect_pos.trail - Vec3::new(100., 0., 0.),
                         )),
                         entity.with(sprite_color(
-                            WHITE.into(),
-                            PINK.with_alpha(0.).into(),
+                            into_color(WHITE),
+                            into_color(DEEP_PINK.with_alpha(0.)),
                         )),
                     ),
                 );
@@ -155,8 +159,8 @@ fn effect_system(
                             Vec3::new(3., 3., 0.),
                         )),
                         entity.with(sprite_color(
-                            WHITE.with_alpha(0.5).into(),
-                            PINK.with_alpha(0.).into(),
+                            into_color(WHITE.with_alpha(0.5)),
+                            into_color(DEEP_PINK.with_alpha(0.)),
                         )),
                     ),
                 );
@@ -183,8 +187,8 @@ fn effect_system(
                             Vec3::new(15., 15., 0.),
                         )),
                         entity.with(sprite_color(
-                            WHITE.with_alpha(1.).into(),
-                            PINK.with_alpha(0.).into(),
+                            into_color(WHITE.with_alpha(1.)),
+                            into_color(DEEP_PINK.with_alpha(0.)),
                         )),
                     ),
                 );
