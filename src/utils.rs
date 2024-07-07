@@ -54,7 +54,7 @@ macro_rules! doc_app_test_boilerplate {
     () => {
         "\
         # use bevy_tween::prelude::*;
-        # use bevy::ecs::system::CommandQueue;
+        # use bevy::ecs::world::CommandQueue;
         # use bevy::prelude::*;
         #
         # let mut app = App::new();
@@ -71,7 +71,7 @@ macro_rules! doc_test_boilerplate {
     () => {
         "\
         # use bevy_tween::prelude::*;
-        # use bevy::ecs::system::CommandQueue;
+        # use bevy::ecs::world::CommandQueue;
         # use bevy::prelude::*;
         #
         # let world = World::default();
