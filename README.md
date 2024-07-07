@@ -15,7 +15,7 @@ See changelog [here](CHANGELOG.md).
 
 ## Features
 - **Ergonomic and user-friendly API**: You can always spawn the animator manually but this crate provide
-  APIs that abstracted over the boilerplate process.
+  APIs that abstracted over most boilerplate code.
   Animation can be built using the builder with function combinators.
   <details>
   <summary>Example</summary>
