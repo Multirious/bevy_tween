@@ -22,11 +22,10 @@ bevy = { version = "0.14.0", default-features = false }
 bevy_time_runner = { version = "0.2.0", default-features = false, features = ["bevy_app", "bevy_reflect"] }
 serde = { version = "1", optional = true, features = ["derive"] }
 bevy_eventlistener = { version = "0.8.0", optional = true }
-# waiting for 0.14:
-# bevy_lookup_curve = { version = "0.2.1", optional = true }
+bevy_lookup_curve = { version = "0.3.0", optional = true }
 
 [dev-dependencies]
-# bevy-inspector-egui = "0.23"
+bevy-inspector-egui = "0.25.0"
 bevy_eventlistener = { version = "0.8.0" }
 bevy = { version = "0.14.0", default-features = false, features = [ "bevy_asset", "bevy_render", "bevy_sprite", "tonemapping_luts", "png" ] }
 rand = "0.8.5"
@@ -53,9 +52,8 @@ bevy_sprite = ["bevy/bevy_sprite", "bevy_render"]
 bevy_ui = ["bevy/bevy_ui"]
 # Add entity-targeted events with bevy_eventlistener
 bevy_eventlistener = ["dep:bevy_eventlistener", "bevy_time_runner/bevy_eventlistener"]
-# waiting for 0.14:
-# # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
-# bevy_lookup_curve = ["dep:bevy_lookup_curve"]
+# Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
+bevy_lookup_curve = ["dep:bevy_lookup_curve"]
 # Derive Serialize and Deserialize for some types
 serde = ["dep:serde"]
 
