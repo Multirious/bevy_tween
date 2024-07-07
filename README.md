@@ -121,6 +121,7 @@ or [`bevy_easings`](https://github.com/vleue/bevy_easings):
 
 |`bevy`|`bevy_tween`|
 |------|------------|
+|0.14  |0.6         |
 |0.13  |0.2–0.5     |
 
 ## Credits
