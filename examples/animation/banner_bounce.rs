@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::{
+    color::{Srgba, palettes::css::WHITE},
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
     window,
@@ -62,12 +63,12 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // ========================================================================
 
-    let dot_color = Color::WHITE.with_a(0.2);
-    let white_color = Color::WHITE * 2.;
+    let dot_color: Color = WHITE.with_alpha(0.2).into();
+    let white_color: Color = (WHITE * 2.).into();
     let text_pop_scale = 1.2;
 
-    let blue_glow = Color::rgb(103. / 255., 163. / 255., 217. / 255.) * 5.;
-    let pink_glow = Color::rgb(248. / 255., 183. / 255., 205. / 255.) * 5.;
+    let blue_glow: Color = (Srgba::rgb_u8(103, 163, 217) * 5.).into();
+    let pink_glow: Color = (Srgba::rgb_u8(248, 183, 205) * 5.).into();
 
     let cornering_tween_offset = 200. * SCALE;
     let destinated_cornering_left = Vec3::new(-300., -100., 0.) * SCALE;
@@ -252,7 +253,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                     secs(10.)..secs(12.),
                     EaseFunction::QuinticIn,
                     bevy_tween_text_color
-                        .with(sprite_color_to(white_color.with_a(0.0))),
+                        .with(sprite_color_to(white_color.with_alpha(0.0))),
                 ),
                 tween_exact(
                     secs(11.)..secs(12.),
@@ -344,7 +345,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
 type InterpolateSpriteAlpha = Box<dyn Interpolator<Item = Sprite>>;
 fn sprite_alpha(start: f32, end: f32) -> InterpolateSpriteAlpha {
     Box::new(interpolate::closure(move |sprite: &mut Sprite, value| {
-        sprite.color = sprite.color.with_a(start.lerp(end, value));
+        sprite.color = sprite.color.with_alpha(start.lerp(end, value));
     }))
 }
 

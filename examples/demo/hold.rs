@@ -1,6 +1,10 @@
 use std::f32::consts::PI;
 
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{
+    color::palettes::css::{PINK, WHITE},
+    prelude::*,
+    window::PrimaryWindow,
+};
 use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
 
@@ -77,7 +81,7 @@ fn setup(
             SpriteBundle {
                 texture: asset_server.load("big_x.png"),
                 sprite: Sprite {
-                    color: Color::PINK,
+                    color: PINK.into(),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -94,7 +98,7 @@ fn setup(
             EaseFunction::QuarticIn,
             (
                 effect_intensity(0., 1.),
-                big_x.with(sprite_color(Color::PINK, Color::WHITE)),
+                big_x.with(sprite_color(PINK.into(), WHITE.into())),
             ),
         );
     commands

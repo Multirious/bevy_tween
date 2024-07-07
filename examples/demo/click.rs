@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::css::{PINK, WHITE},
+    prelude::*,
+};
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
     tween::AnimationTarget,
@@ -75,7 +78,7 @@ fn click_spawn_circle(
                     tween(
                         secs(1.),
                         EaseFunction::Linear,
-                        circle.with(sprite_color(Color::WHITE, Color::PINK)),
+                        circle.with(sprite_color(WHITE.into(), PINK.into())),
                     ),
                 )));
         }

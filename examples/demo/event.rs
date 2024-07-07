@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::css::{PINK, WHITE},
+    prelude::*,
+};
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
     tween::AnimationTarget,
@@ -122,8 +125,8 @@ fn effect_system(
                             effect_pos.trail - Vec3::new(100., 0., 0.),
                         )),
                         entity.with(sprite_color(
-                            Color::WHITE,
-                            Color::PINK.with_a(0.),
+                            WHITE.into(),
+                            PINK.with_alpha(0.).into(),
                         )),
                     ),
                 );
@@ -152,8 +155,8 @@ fn effect_system(
                             Vec3::new(3., 3., 0.),
                         )),
                         entity.with(sprite_color(
-                            Color::WHITE.with_a(0.5),
-                            Color::PINK.with_a(0.),
+                            WHITE.with_alpha(0.5).into(),
+                            PINK.with_alpha(0.).into(),
                         )),
                     ),
                 );
@@ -180,8 +183,8 @@ fn effect_system(
                             Vec3::new(15., 15., 0.),
                         )),
                         entity.with(sprite_color(
-                            Color::WHITE.with_a(1.),
-                            Color::PINK.with_a(0.),
+                            WHITE.with_alpha(1.).into(),
+                            PINK.with_alpha(0.).into(),
                         )),
                     ),
                 );

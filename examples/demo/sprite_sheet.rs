@@ -52,15 +52,18 @@ fn setup(
     use interpolate::atlas_index;
     let texture = asset_server.load("pink_fire_ball.png");
     let layout =
-        TextureAtlasLayout::from_grid(Vec2::new(32., 32.), 16, 1, None, None);
+        TextureAtlasLayout::from_grid(UVec2::new(32, 32), 16, 1, None, None);
     let len = layout.len();
     let atlas_layout = texture_atlas_layouts.add(layout);
     let sprite = AnimationTarget.into_target();
     commands
         .spawn((
-            SpriteSheetBundle {
+            TextureAtlas {
+                layout: atlas_layout,
+                ..Default::default()
+            },
+            SpriteBundle {
                 texture,
-                atlas: atlas_layout.into(),
                 transform: Transform::IDENTITY.with_scale(Vec3::splat(15.)),
                 ..Default::default()
             },
