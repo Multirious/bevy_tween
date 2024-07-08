@@ -1,22 +1,26 @@
 # Changelog
 
-## Unreleased
+## v0.6.0 - 2024-7-7
 
 ### Changes
 
+- Update `bevy` to `0.14`
 - Add interpolators for some UI components when using the `bevy_ui` feature. ([#33](https://github.com/Multirious/bevy_tween/pull/33))
-    - `BackgroundColor` and `BorderColor`
+  - `BackgroundColor`
+  - `BorderColor`
 - Add optional feature for `serde`. ([#31](https://github.com/Multirious/bevy_tween/pull/31))
-    - Derive `Serialize` and `Deserialize` for `EaseFunction`
+  - Derive `Serialize` and `Deserialize` for `EaseFunction`
 - Clean up `TweenAppResource` after the app runs. ([#28](https://github.com/Multirious/bevy_tween/pull/28))
 - Update animation builder ([#36](https://github.com/Multirious/bevy_tween/pull/36))
-    - Add `.entity_commands()` getter
-    - Add `.time_runner()` getter
-    - Add `.time_runner_mut()` getter
-    - Add `skipped` method
-    - Add `disabled` method
-    - Add `time_scale` method
-    - Add `direction` method
+  - Add `entity_commands()` getter
+  - Add `time_runner()` getter
+  - Add `time_runner_mut()` getter
+  - Add `skipped()` method
+  - Add `disabled()` method
+  - Add `time_scale()` method
+  - Add `direction()` method
+- Optimize crate size (11 MB to 0.488 MB)
+  - Remove one 9.8 MB gif file
 
 ## v0.5.0 - 2024-06-09
 

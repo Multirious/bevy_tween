@@ -1,5 +1,4 @@
 use crate::prelude::Interpolator;
-use crate::utils::color_lerp;
 use bevy::prelude::*;
 
 /// [`Interpolator`] for Bevy's [`BackgroundColor`](bevy::prelude::BackgroundColor) used in UIs.
@@ -15,7 +14,7 @@ impl Interpolator for BackgroundColor {
     type Item = bevy::prelude::BackgroundColor;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        item.0 = color_lerp(self.start, self.end, value)
+        item.0 = self.start.mix(&self.end, value)
     }
 }
 
@@ -49,7 +48,7 @@ impl Interpolator for BorderColor {
     type Item = bevy::prelude::BorderColor;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32) {
-        item.0 = color_lerp(self.start, self.end, value)
+        item.0 = self.start.mix(&self.end, value)
     }
 }
 

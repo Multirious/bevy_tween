@@ -41,7 +41,7 @@ impl Plugin for EaseFunctionPlugin {
     /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         let app_resource = app
-            .world
+            .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
@@ -829,7 +829,7 @@ impl Plugin for EaseClosurePlugin {
     /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         let app_resource = app
-            .world
+            .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
