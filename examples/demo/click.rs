@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::css::{DEEP_PINK, WHITE},
+    prelude::*,
+};
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
     tween::AnimationTarget,
@@ -75,7 +78,10 @@ fn click_spawn_circle(
                     tween(
                         secs(1.),
                         EaseFunction::Linear,
-                        circle.with(sprite_color(Color::WHITE, Color::PINK)),
+                        circle.with(sprite_color(
+                            into_color(WHITE),
+                            into_color(DEEP_PINK),
+                        )),
                     ),
                 )));
         }
@@ -89,4 +95,8 @@ fn despawn_finished_circle(
     for t in time_runner_ended_reader.read() {
         commands.entity(t.time_runner).despawn_recursive();
     }
+}
+
+fn into_color<T: Into<bevy::color::Srgba>>(color: T) -> Color {
+    Color::Srgba(color.into())
 }

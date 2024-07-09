@@ -19,7 +19,7 @@ pub struct BevyLookupCurveInterpolationPlugin;
 impl Plugin for BevyLookupCurveInterpolationPlugin {
     fn build(&self, app: &mut App) {
         let app_resource = app
-            .world
+            .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` doesn't exist");
         app.add_systems(

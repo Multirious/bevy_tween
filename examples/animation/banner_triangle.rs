@@ -32,11 +32,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let triangle_image = asset_server.load("big_triangle.png");
     // colors by https://color-hex.org/color-palettes/189
     let colors = [
-        Color::rgb_u8(0, 128, 191),
-        Color::rgb_u8(0, 172, 223),
-        Color::rgb_u8(85, 208, 255),
-        Color::rgb_u8(124, 232, 255),
-        Color::rgb_u8(204, 249, 255),
+        Color::srgb_u8(0, 128, 191),
+        Color::srgb_u8(0, 172, 223),
+        Color::srgb_u8(85, 208, 255),
+        Color::srgb_u8(124, 232, 255),
+        Color::srgb_u8(204, 249, 255),
     ];
 
     let mut spawn_triangle = |color, z| {
@@ -89,7 +89,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(SpriteBundle {
         sprite: Sprite {
             custom_size: Some(Vec2::new(250., 250.)),
-            color: Color::rgb_u8(43, 44, 47),
+            color: Color::srgb_u8(43, 44, 47),
             ..Default::default()
         },
         transform: Transform::from_xyz(0., 0., 1.),

@@ -35,6 +35,7 @@
 //! We can do this:
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -48,10 +49,10 @@
 //! sprite_commands.animation().insert_tween_here(
 //!     Duration::from_secs(1),
 //!     EaseFunction::QuadraticOut,
-//!     sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!     sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!     // Since this argument accepts a bundle, you can add additional tween to this like so:
 //!     // (
-//!     //     sprite.with(sprite_color(Color::WHITE, Color::RED)),
+//!     //     sprite.with(sprite_color(WHITE.into(), RED.into())),
 //!     //     sprite.with(something_something(...)),
 //!     // )
 //! );
@@ -68,6 +69,7 @@
 //! So we can just:
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -85,12 +87,12 @@
 //!     tween(
 //!         Duration::from_secs(1),
 //!         EaseFunction::QuadraticOut,
-//!         sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!         sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!     ),
 //!     tween(
 //!         Duration::from_secs(1),
 //!         EaseFunction::QuadraticIn,
-//!         sprite.with(sprite_color(Color::RED, Color::WHITE))
+//!         sprite.with(sprite_color(RED.into(), WHITE.into()))
 //!     ),
 //! )));
 //! ```
@@ -99,12 +101,13 @@
 //! ### State
 //!
 //! There's a little bit of boilerplate we can improve.
-//! Currently we've specified `Color::RED` 2 times because we want our tween to
+//! Currently we've specified `RED.into()` 2 times because we want our tween to
 //! continue from previous value.
 //!
 //! We can use state for this:
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -118,18 +121,18 @@
 //! };
 //!
 //! let sprite = sprite_commands.id().into_target();
-//! let mut sprite_color = sprite.state(Color::WHITE); // We want the intial color to be white
+//! let mut sprite_color = sprite.state(WHITE.into()); // We want the intial color to be white
 //! sprite_commands.animation().insert(sequence((
 //!     tween(
 //!         Duration::from_secs(1),
 //!         EaseFunction::QuadraticOut,
 //!         // Switch the constructor to the relative variant
-//!         sprite_color.with(sprite_color_to(Color::RED))
+//!         sprite_color.with(sprite_color_to(RED.into()))
 //!     ),
 //!     tween(
 //!         Duration::from_secs(1),
 //!         EaseFunction::QuadraticIn,
-//!         sprite_color.with(sprite_color_to(Color::WHITE))
+//!         sprite_color.with(sprite_color_to(WHITE.into()))
 //!     ),
 //! )));
 //! ```
@@ -140,6 +143,7 @@
 //! If we want to repeat our animation to so we can do:
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -153,19 +157,19 @@
 //! };
 //!
 //! let sprite = sprite_commands.id().into_target();
-//! let mut sprite_color = sprite.state(Color::WHITE);
+//! let mut sprite_color = sprite.state(WHITE.into());
 //! sprite_commands.animation()
 //!     .repeat(Repeat::Infinitely) // Add repeat
 //!     .insert(sequence((
 //!         tween(
 //!             Duration::from_secs(1),
 //!             EaseFunction::QuadraticOut,
-//!             sprite_color.with(sprite_color_to(Color::RED))
+//!             sprite_color.with(sprite_color_to(RED.into()))
 //!         ),
 //!         tween(
 //!             Duration::from_secs(1),
 //!             EaseFunction::QuadraticIn,
-//!             sprite_color.with(sprite_color_to(Color::WHITE))
+//!             sprite_color.with(sprite_color_to(WHITE.into()))
 //!         ),
 //!     )));
 //! ```
@@ -180,6 +184,7 @@
 //! Combinator framework got you covered!:
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -203,18 +208,18 @@
 //!         tween(
 //!             duration,
 //!             EaseFunction::QuadraticOut,
-//!             target_sprite_color.with(sprite_color_to(Color::RED))
+//!             target_sprite_color.with(sprite_color_to(RED.into()))
 //!         ),
 //!         tween(
 //!             duration,
 //!             EaseFunction::QuadraticIn,
-//!             target_sprite_color.with(sprite_color_to(Color::WHITE))
+//!             target_sprite_color.with(sprite_color_to(WHITE.into()))
 //!         ),
 //!     ))
 //! }
 //!
 //! let sprite = sprite_commands.id().into_target();
-//! let mut sprite_color = sprite.state(Color::WHITE);
+//! let mut sprite_color = sprite.state(WHITE.into());
 //! sprite_commands.animation()
 //!     .repeat(Repeat::Infinitely)
 //!     .insert(my_animation(&mut sprite_color, Duration::from_secs(1)));
@@ -225,6 +230,7 @@
 //! You can spawn animator as a child if you want
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -243,12 +249,12 @@
 //!         tween(
 //!             Duration::from_secs(1),
 //!             EaseFunction::QuadraticOut,
-//!             sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!             sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!         ),
 //!         tween(
 //!             Duration::from_secs(1),
 //!             EaseFunction::QuadraticIn,
-//!             sprite.with(sprite_color(Color::RED, Color::WHITE))
+//!             sprite.with(sprite_color(RED.into(), WHITE.into()))
 //!         ),
 //!     )));
 //! });
@@ -259,6 +265,7 @@
 //! You can spawn them anywhere in the world if needed.
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -277,12 +284,12 @@
 //!     tween(
 //!         Duration::from_secs(1),
 //!         EaseFunction::QuadraticOut,
-//!         sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!         sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!     ),
 //!     tween(
 //!         Duration::from_secs(1),
 //!         EaseFunction::QuadraticIn,
-//!         sprite.with(sprite_color(Color::RED, Color::WHITE))
+//!         sprite.with(sprite_color(RED.into(), WHITE.into()))
 //!     ),
 //! )));
 //! ```
@@ -291,6 +298,7 @@
 //! [`AnimationTarget`] can be used for automatic target searching.
 //! ```no_run
 #![doc = crate_utils::doc_test_boilerplate!()]
+//! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -309,7 +317,7 @@
 //! sprite_commands.animation().insert_tween_here(
 //!     Duration::from_secs(1),
 //!     EaseFunction::QuadraticOut,
-//!     sprite.with(sprite_color(Color::WHITE, Color::RED))
+//!     sprite.with(sprite_color(WHITE.into(), RED.into()))
 //! );
 //! ```
 //!

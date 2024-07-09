@@ -37,11 +37,11 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // colors by https://color-hex.org/color-palettes/189
     let colors = [
-        Color::rgb_u8(0, 128, 191),
-        Color::rgb_u8(0, 172, 223),
-        Color::rgb_u8(85, 208, 255),
-        Color::rgb_u8(124, 232, 255),
-        Color::rgb_u8(204, 249, 255),
+        Color::srgb_u8(0, 128, 191),
+        Color::srgb_u8(0, 172, 223),
+        Color::srgb_u8(85, 208, 255),
+        Color::srgb_u8(124, 232, 255),
+        Color::srgb_u8(204, 249, 255),
     ];
     let mut spawn_triangle = |color, z| {
         commands

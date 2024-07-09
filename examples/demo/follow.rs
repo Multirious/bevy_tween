@@ -2,7 +2,10 @@ mod utils;
 
 use std::f32::consts::TAU;
 
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::css::{DEEP_PINK, WHITE},
+    prelude::*,
+};
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_tween::{
     bevy_time_runner::TimeRunner,
@@ -157,8 +160,15 @@ fn jeb_follows_cursor(
                         jeb_transform.translation,
                         Vec3::new(coord.x, coord.y, 0.),
                     )),
-                    jeb.with(sprite_color(Color::WHITE, Color::PINK)),
+                    jeb.with(sprite_color(
+                        into_color(WHITE),
+                        into_color(DEEP_PINK),
+                    )),
                 ),
             );
     }
+}
+
+fn into_color<T: Into<bevy::color::Srgba>>(color: T) -> Color {
+    Color::Srgba(color.into())
 }
