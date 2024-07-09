@@ -74,7 +74,8 @@ impl Default for EaseClosure {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct AToB<V, C> {
     pub a: V,
     pub b: V,

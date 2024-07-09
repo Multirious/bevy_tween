@@ -4,12 +4,35 @@ use bevy::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::f32::consts::{PI, TAU};
+use std::{
+    f32::consts::{PI, TAU},
+    marker::PhantomData,
+};
 
 /// Plugin for [`EaseFunction`]
-pub struct EaseFunctionPlugin;
+pub struct EaseFunctionAToBPlugin<V, F> {
+    marker: PhantomData<V>,
+    f: F,
+}
 
-impl Plugin for EaseFunctionPlugin {
+impl<V, F> EaseFunctionAToBPlugin<V, F>
+where
+    V: Send + Sync + 'static,
+    F: Send + Sync + 'static + Fn(&V, &V, f32) -> V + Copy,
+{
+    pub fn new(f: F) -> EaseFunctionAToBPlugin<V, F> {
+        EaseFunctionAToBPlugin {
+            marker: PhantomData,
+            f,
+        }
+    }
+}
+
+impl<V, F> Plugin for EaseFunctionAToBPlugin<V, F>
+where
+    V: Send + Sync + 'static,
+    F: Send + Sync + 'static + Fn(&V, &V, f32) -> V + Copy,
+{
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
@@ -22,16 +45,9 @@ impl Plugin for EaseFunctionPlugin {
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
             app_resource.schedule,
-            (
-                ease_function_a_to_b_system::<f32>(|&a, &b, &v| a.lerp(b, v)),
-                ease_function_a_to_b_system::<Vec2>(|&a, &b, &v| a.lerp(b, v)),
-                ease_function_a_to_b_system::<Vec3>(|&a, &b, &v| a.lerp(b, v)),
-                ease_function_a_to_b_system::<Quat>(|&a, &b, &v| a.slerp(b, v)),
-                ease_function_a_to_b_system::<Color>(|&a, b, &v| a.mix(b, v)),
-            )
+            ease_function_a_to_b_system::<V>(self.f)
                 .in_set(TweenSystemSet::UpdateCurveValue),
-        )
-        .register_type::<EaseFunction>();
+        );
     }
 }
 
@@ -792,7 +808,7 @@ impl EaseFunction {
 
 #[allow(clippy::type_complexity)]
 pub fn ease_function_a_to_b_system<V>(
-    f: impl Send + Sync + 'static + Fn(&V, &V, &f32) -> V,
+    f: impl Send + Sync + 'static + Fn(&V, &V, f32) -> V,
 ) -> impl Fn(
     Commands,
     Query<
@@ -813,7 +829,7 @@ where
 
             commands
                 .entity(entity)
-                .insert(CurveValue(f(&a_to_b.a, &a_to_b.b, &value)));
+                .insert(CurveValue(f(&a_to_b.a, &a_to_b.b, value)));
         });
         removed.read().for_each(|entity| {
             if let Some(mut entity) = commands.get_entity(entity) {

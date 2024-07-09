@@ -445,7 +445,21 @@ impl PluginGroup for DefaultTweenPlugins {
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
             .add_group(tween::DefaultTweenSystemPlugins)
-            .add(curve::EaseFunctionPlugin)
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &f32, b: &f32, v: f32| a.lerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Vec2, b: &Vec2, v: f32| a.lerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Vec3, b: &Vec3, v: f32| a.lerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Quat, b: &Quat, v: f32| a.slerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Color, b: &Color, v: f32| a.mix(b, v),
+            ))
             .add_group(tween_event::DefaultTweenEventPlugins);
         #[cfg(feature = "bevy_lookup_curve")]
         let group = group
