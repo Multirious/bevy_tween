@@ -49,11 +49,11 @@ impl Plugin for EaseFunctionPlugin {
         app.add_systems(
             app_resource.schedule,
             (
-                a_to_b_ease_function_system::<f32>(|&a, &b, &v| a.lerp(b, v)),
-                a_to_b_ease_function_system::<Vec2>(|&a, &b, &v| a.lerp(b, v)),
-                a_to_b_ease_function_system::<Vec3>(|&a, &b, &v| a.lerp(b, v)),
-                a_to_b_ease_function_system::<Quat>(|&a, &b, &v| a.slerp(b, v)),
-                a_to_b_ease_function_system::<Color>(|&a, b, &v| a.mix(b, v)),
+                ease_function_a_to_b_system::<f32>(|&a, &b, &v| a.lerp(b, v)),
+                ease_function_a_to_b_system::<Vec2>(|&a, &b, &v| a.lerp(b, v)),
+                ease_function_a_to_b_system::<Vec3>(|&a, &b, &v| a.lerp(b, v)),
+                ease_function_a_to_b_system::<Quat>(|&a, &b, &v| a.slerp(b, v)),
+                ease_function_a_to_b_system::<Color>(|&a, b, &v| a.mix(b, v)),
             )
                 .in_set(TweenSystemSet::UpdateCurveValue),
         )
@@ -868,7 +868,7 @@ pub struct AToB<V, C> {
 }
 
 #[allow(clippy::type_complexity)]
-pub fn a_to_b_ease_function_system<V>(
+pub fn ease_function_a_to_b_system<V>(
     f: impl Send + Sync + 'static + Fn(&V, &V, &f32) -> V,
 ) -> impl Fn(
     Commands,
