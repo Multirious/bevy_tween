@@ -411,7 +411,7 @@ pub mod prelude {
     // pub use crate::tween::ResourceDynTween;
     // pub use crate::tween::ResourceTween;
 
-    pub use crate::BevyTweenRegisterSystems;
+    // pub use crate::BevyTweenRegisterSystems;
     pub use crate::DefaultTweenPlugins;
 }
 
