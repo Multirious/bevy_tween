@@ -886,8 +886,7 @@ where
             if progress.now_percentage.is_nan() {
                 return;
             }
-            let value =
-                a_to_b.curve.sample(progress.now_percentage.clamp(0., 1.));
+            let value = a_to_b.curve.sample(progress.now_percentage);
 
             commands
                 .entity(entity)
