@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "bevy_lookup_curve")]
 pub mod bevy_lookup_curve;
-mod ease_functions;
+mod ease_function;
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
 /// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`](bevy_time_runner::TimeSpanProgress).
@@ -779,7 +779,7 @@ pub enum EaseFunction {
 impl EaseFunction {
     /// Sample a value from this ease function.
     pub fn sample(&self, v: f32) -> f32 {
-        use ease_functions::*;
+        use ease_function::*;
         use EaseFunction::*;
         match self {
             Linear => linear(v),
@@ -856,7 +856,7 @@ impl EaseClosure {
 
 impl Default for EaseClosure {
     fn default() -> Self {
-        EaseClosure::new(ease_functions::linear)
+        EaseClosure::new(ease_function::linear)
     }
 }
 
