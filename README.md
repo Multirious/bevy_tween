@@ -79,7 +79,7 @@ Goals:
 ## Differences and how it works
 This crate chose a different approach to storing tween data/input to solve flexibility issues present in
 [`bevy_tweening`](https://github.com/djeedai/bevy_tweening) or [`bevy_easings`](https://github.com/vleue/bevy_easings),
-like difficultty tweening in parallel or sequence of multiple types.
+like difficulty tweening in parallel or sequence of multiple types.
 
 This approach offers:
 - As mentioned above, capability to tween in parallel, sequence, or overlapping of any types.
