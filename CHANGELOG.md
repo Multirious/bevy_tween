@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+
+- Add public `new()` constructor for `AnimationBuilder`
+
 ## v0.6.0 - 2024-7-7
 
 ### Changes
