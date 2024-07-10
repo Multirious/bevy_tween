@@ -76,30 +76,22 @@ Goals:
   - Real-time display at any point in time in the animation.
   - Editing path from point A to point B with arbitary curve.
 
-## Differences
-The main motivation for this tweening crate is that the previous
-existing tweening crates is not flexible enough and so the main goal is to solve it.
+## Differences and how it works
+This crate chose a different approach to storing tween data/input to solve flexibility issues present in
+[`bevy_tweening`](https://github.com/djeedai/bevy_tweening) or [`bevy_easings`](https://github.com/vleue/bevy_easings),
+like difficulty tweening in parallel or sequence of multiple types.
 
-Differences to [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
-or [`bevy_easings`](https://github.com/vleue/bevy_easings):
-- Tweening is not tied to a certain entity. You can create an entity specifically
-  for tweening any where in the world.
-- Complex animations, such as sequential or parallel tweening, are solved using
-  child-parent hierarchy:
-  - Solved the issue of modifying animation at runtime presents in the previous
-    crates.
-  - Everything exists in the ECS world with no hidden structure, everything can
-    be freely accessed.
-  - Makes a very extendable system, thanks Bevy's ECS!
-  - It's possible to have multiple `Interpolator` (or `Lens` if you came from `bevy_tweening`)
-    tweening the same component/asset/resource because of the design of this crate and
-    so it is not limited by '1 component type per entitiy'.
-- Advanced timer. This crate has custom timer implementation.
-- Dependency injection. Systems communicate through various specific components,
-  allowing you to extends the behavior to your needs by supplying those components
-  and reduce duplication.
-- Users of this crate are free to decide if they want to only use generic,
-  only trait object, or even both for tweening, or even something else entirely.
+This approach offers:
+- As mentioned above, capability to tween in parallel, sequence, or overlapping of any types.
+- Extendability. And not just for tweening. For example, this crate adds a custom event
+  plugin that can emit arbitrary events anytime in the animation by just building off the same system.
+
+How it works:
+1. By building on top of [`bevy_time_runner`](https://github.com/Multirious/bevy_time_runner), an animator is a tree of entities.
+2. The parent is [`TimeRunner`](https://docs.rs/bevy_time_runner/latest/bevy_time_runner/struct.TimeRunner.html).
+  This entity handles all the timing and progress of its children.
+3. The children can be any combination of any components, such as tweens by this crate.
+4. Systems are then run in a pipeline, communicating through various dependency-injected components.
 
 ## Feature gates
 - Defaults
