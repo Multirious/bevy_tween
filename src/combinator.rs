@@ -39,43 +39,26 @@ pub trait AnimationBuilderExt {
 
 impl<'a> AnimationBuilderExt for EntityCommands<'a> {
     /// Construct [`AnimationBuilder`] from [`EntityCommands`].
-    /// Use this entity as the animation root.
-    /// Animations will be created as children this entity.
+    /// Use this entity as the animator.
+    /// Tweens will be spawned as children of this entity.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        AnimationBuilder {
-            entity_commands: self.reborrow(),
-            time_runner: None,
-            custom_length: None,
-            skipped: false,
-        }
+        AnimationBuilder::new(self.reborrow())
     }
 }
 
 impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
     /// Construct [`AnimationBuilder`] from [`Commands`].
-    /// This will automatically spawn an entity for animation root.
+    /// This will automatically spawn an entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        let entity_commands = self.spawn_empty();
-        AnimationBuilder {
-            entity_commands,
-            time_runner: None,
-            custom_length: None,
-            skipped: false,
-        }
+        AnimationBuilder::new(self.spawn_empty())
     }
 }
 
 impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
     /// Construct [`AnimationBuilder`] from [`ChildBuilder`].
-    /// This will automatically spawn a child entity for animation root.
+    /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        let entity_commands = self.spawn_empty();
-        AnimationBuilder {
-            entity_commands,
-            time_runner: None,
-            custom_length: None,
-            skipped: false,
-        }
+        AnimationBuilder::new(self.spawn_empty())
     }
 }
 
@@ -87,6 +70,16 @@ pub struct AnimationBuilder<'a> {
     skipped: bool,
 }
 impl<'a> AnimationBuilder<'a> {
+    /// Create new [`AnimationBuilder`]
+    pub fn new(entity_commands: EntityCommands<'a>) -> AnimationBuilder<'a> {
+        AnimationBuilder {
+            entity_commands,
+            time_runner: None,
+            custom_length: None,
+            skipped: false,
+        }
+    }
+
     /// Get the inner [`EntityCommands`]
     pub fn entity_commands(&mut self) -> &mut EntityCommands<'a> {
         &mut self.entity_commands
