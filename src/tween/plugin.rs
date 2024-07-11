@@ -4,7 +4,7 @@ use super::system::{
     apply_asset_tween_system, apply_component_tween_system,
     apply_handle_component_tween_system, apply_resource_tween_system,
 };
-use crate::items::{Set, Setter};
+use crate::items::Set;
 use crate::{TweenAppResource, TweenSystemSet};
 use bevy::{
     app::{PluginGroup, PluginGroupBuilder},
@@ -17,6 +17,7 @@ macro_rules! tween_system_plugin {
         $(
             $(#[$attr:meta])*
             $short_name:ident,
+            $box_short_name:ident,
             $plugin_name:ident,
             $system_name:ident,
             $item_trait:ident;
@@ -76,15 +77,31 @@ macro_rules! tween_system_plugin {
             {
                 $plugin_name::default()
             }
+
+            #[doc = concat!("`", stringify!($plugin_name), "::<Box<dyn Set>>::default()`")]
+            pub fn $box_short_name<I, V>() -> $plugin_name<Box<dyn Set<Item = I, Value = V>>>
+            where
+                I: $item_trait,
+                V: Send + Sync + 'static,
+            {
+                $plugin_name::default()
+            }
         )*
     };
 }
 
 tween_system_plugin! {
-    component, ComponentTweenPlugin, apply_component_tween_system, Component;
-    resource, ResourceTweenPlugin, apply_resource_tween_system, Resource;
-    asset, AssetTweenPlugin, apply_asset_tween_system, Asset;
-    handle_component, HandleComponentTweenPlugin, apply_handle_component_tween_system, Asset;
+    component, component_boxed, ComponentTweenPlugin,
+    apply_component_tween_system, Component;
+
+    resource, resource_boxed, ResourceTweenPlugin,
+    apply_resource_tween_system, Resource;
+
+    asset, asset_boxed, AssetTweenPlugin,
+    apply_asset_tween_system, Asset;
+
+    handle_component, handle_component_boxed, HandleComponentTweenPlugin,
+    apply_handle_component_tween_system, Asset;
 }
 
 #[derive(Debug)]

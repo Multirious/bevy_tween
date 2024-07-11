@@ -53,3 +53,28 @@ pub trait Set: Send + Sync + 'static {
 pub struct Setter<S>(pub S)
 where
     S: Set;
+
+pub type BoxedSetter<I, V> = Setter<Box<dyn Set<Item = I, Value = V>>>;
+
+impl<S> Setter<S>
+where
+    S: Set,
+{
+    pub fn new_boxed(setter: S) -> BoxedSetter<S::Item, S::Value> {
+        Setter(Box::new(setter))
+    }
+}
+
+impl<I, V> BoxedSetter<I, V>
+where
+    I: Send + Sync + 'static,
+    V: Send + Sync + 'static,
+{
+    pub fn new_closure<F>(f: F) -> BoxedSetter<I, V>
+    where
+        F: Fn(&mut I, &V) + Send + Sync + 'static,
+    {
+        let f: Box<dyn Fn(&mut I, &V) + Send + Sync + 'static> = Box::new(f);
+        Setter(Box::new(f))
+    }
+}
