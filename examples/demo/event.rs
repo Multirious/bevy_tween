@@ -3,8 +3,10 @@ use bevy::{
     prelude::*,
 };
 use bevy_tween::{
-    bevy_time_runner::TimeRunnerEnded, builder::*, prelude::*,
-    tween::AnimationTarget,
+    bevy_time_runner::TimeRunnerEnded,
+    builder::{backward, event, event_for, parallel, sequence},
+    items,
+    prelude::*,
 };
 
 fn main() {
@@ -33,7 +35,6 @@ struct EffectPos {
 struct Triangle;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    use interpolate::{angle_z_to, translation_to};
     commands.spawn(Camera2dBundle::default());
 
     let x_left = -300.;
@@ -48,45 +49,53 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mid_angle = start_angle + 540.0_f32.to_radians();
     let end_angle = mid_angle + 180.0_f32.to_radians();
 
-    let triangle = AnimationTarget.into_target();
-    let mut triangle_translation = triangle.state(Vec3::new(x_left, 0., 0.));
+    let mut entity_commands = commands.spawn((
+        Triangle,
+        SpriteBundle {
+            texture: asset_server.load("triangle_filled.png"),
+            ..Default::default()
+        },
+    ));
 
-    let mut triangle_angle_z = triangle.state(start_angle);
+    let triangle = entity_commands.id().into_target();
+    let mut triangle_translation = triangle
+        .set_with(items::Translation)
+        .with_state(Vec3::new(x_left, 0., 0.));
+    let mut triangle_angle_z =
+        triangle.set_with(items::AngleZ).with_state(start_angle);
 
-    commands
-        .spawn((
-            Triangle,
-            SpriteBundle {
-                texture: asset_server.load("triangle_filled.png"),
-                ..Default::default()
-            },
-            AnimationTarget,
-        ))
+    entity_commands
         .animation()
         .repeat(Repeat::Infinitely)
         .add(sequence((
             event("bump"),
-            tween(
-                secs(1.),
-                EaseFunction::ExponentialIn,
-                (
-                    triangle_translation
-                        .with(translation_to(Vec3::new(x_right, 0., 0.))),
-                    triangle_angle_z.with(angle_z_to(mid_angle)),
+            parallel((
+                triangle_translation.tween_to(
+                    Vec3::new(x_right, 0., 0.),
+                    EaseFunction::ExponentialIn,
+                    secs(1.),
                 ),
-            ),
+                triangle_angle_z.tween_to(
+                    mid_angle,
+                    EaseFunction::ExponentialIn,
+                    secs(1.),
+                ),
+            )),
             backward(secs(0.2)),
             event_for(secs(0.2), "small_boom"),
             event("boom"),
-            tween(
-                secs(1.),
-                EaseFunction::CircularOut,
-                (
-                    triangle_translation
-                        .with(translation_to(Vec3::new(x_left, 0., 0.))),
-                    triangle_angle_z.with(angle_z_to(end_angle)),
+            parallel((
+                triangle_translation.tween_to(
+                    Vec3::new(x_left, 0., 0.),
+                    EaseFunction::CircularOut,
+                    secs(1.),
                 ),
-            ),
+                triangle_angle_z.tween_to(
+                    end_angle,
+                    EaseFunction::CircularOut,
+                    secs(1.),
+                ),
+            )),
         )));
 }
 
@@ -100,98 +109,92 @@ fn effect_system(
     q_triangle: Query<&Transform, With<Triangle>>,
     mut event: EventReader<TweenEvent<&'static str>>,
 ) {
-    use interpolate::{scale, sprite_color, translation};
     event.read().for_each(|event| match event.data {
         "bump" => {
-            let entity = AnimationTarget.into_target();
-            commands
-                .spawn((
-                    Effect,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::new(20., 100.)),
-                            ..Default::default()
-                        },
-                        transform: Transform::from_translation(
-                            effect_pos.trail,
-                        ),
+            let mut entity_commands = commands.spawn((
+                Effect,
+                SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(20., 100.)),
                         ..Default::default()
                     },
-                    AnimationTarget,
-                ))
-                .animation()
-                .insert_tween_here(
-                    secs(1.),
+                    transform: Transform::from_translation(effect_pos.trail),
+                    ..Default::default()
+                },
+            ));
+            let entity = entity_commands.id().into_target();
+            let effect_translation = entity.set_with(items::Translation);
+            let effect_color = entity.set_with(items::SpriteColor);
+            entity_commands.animation().add(parallel((
+                effect_translation.tween(
+                    effect_pos.trail,
+                    effect_pos.trail - Vec3::new(100., 0., 0.),
                     EaseFunction::QuinticOut,
-                    (
-                        entity.with(translation(
-                            effect_pos.trail,
-                            effect_pos.trail - Vec3::new(100., 0., 0.),
-                        )),
-                        entity.with(sprite_color(
-                            into_color(WHITE),
-                            into_color(DEEP_PINK.with_alpha(0.)),
-                        )),
-                    ),
-                );
+                    secs(1.),
+                ),
+                effect_color.tween(
+                    into_color(WHITE),
+                    into_color(DEEP_PINK.with_alpha(0.)),
+                    EaseFunction::QuinticOut,
+                    secs(1.),
+                ),
+            )));
         }
         "small_boom" => {
-            let entity = AnimationTarget.into_target();
-            commands
-                .spawn((
-                    Effect,
-                    SpriteBundle {
-                        texture: asset_server.load("circle.png"),
-                        transform: Transform::from_translation(
-                            q_triangle.single().translation,
-                        ),
-                        ..Default::default()
-                    },
-                    AnimationTarget,
-                ))
-                .animation()
-                .insert_tween_here(
-                    secs(0.1),
-                    EaseFunction::Linear,
-                    (
-                        entity.with(scale(
-                            Vec3::new(0.5, 0.5, 0.),
-                            Vec3::new(3., 3., 0.),
-                        )),
-                        entity.with(sprite_color(
-                            into_color(WHITE.with_alpha(0.5)),
-                            into_color(DEEP_PINK.with_alpha(0.)),
-                        )),
+            let mut entity_commands = commands.spawn((
+                Effect,
+                SpriteBundle {
+                    texture: asset_server.load("circle.png"),
+                    transform: Transform::from_translation(
+                        q_triangle.single().translation,
                     ),
-                );
+                    ..Default::default()
+                },
+            ));
+            let entity = entity_commands.id().into_target();
+            let effect_translation = entity.set_with(items::Translation);
+            let effect_color = entity.set_with(items::SpriteColor);
+            entity_commands.animation().add(parallel((
+                effect_translation.tween(
+                    Vec3::new(0.5, 0.5, 0.),
+                    Vec3::new(3., 3., 0.),
+                    EaseFunction::Linear,
+                    secs(0.1),
+                ),
+                effect_color.tween(
+                    into_color(WHITE.with_alpha(0.5)),
+                    into_color(DEEP_PINK.with_alpha(0.)),
+                    EaseFunction::Linear,
+                    secs(0.1),
+                ),
+            )));
         }
         "boom" => {
-            let entity = AnimationTarget.into_target();
-            commands
-                .spawn((
-                    Effect,
-                    SpriteBundle {
-                        texture: asset_server.load("circle.png"),
-                        transform: Transform::from_translation(effect_pos.boom),
-                        ..Default::default()
-                    },
-                    AnimationTarget,
-                ))
-                .animation()
-                .insert_tween_here(
-                    secs(0.5),
+            let mut entity_commands = commands.spawn((
+                Effect,
+                SpriteBundle {
+                    texture: asset_server.load("circle.png"),
+                    transform: Transform::from_translation(effect_pos.boom),
+                    ..Default::default()
+                },
+            ));
+            let entity = entity_commands.id().into_target();
+            let effect_translation = entity.set_with(items::Scale);
+            let effect_color = entity.set_with(items::SpriteColor);
+            entity_commands.animation().add(parallel((
+                effect_translation.tween(
+                    Vec3::new(1., 1., 0.),
+                    Vec3::new(15., 15., 0.),
                     EaseFunction::QuadraticOut,
-                    (
-                        entity.with(scale(
-                            Vec3::new(1., 1., 0.),
-                            Vec3::new(15., 15., 0.),
-                        )),
-                        entity.with(sprite_color(
-                            into_color(WHITE.with_alpha(1.)),
-                            into_color(DEEP_PINK.with_alpha(0.)),
-                        )),
-                    ),
-                );
+                    secs(0.5),
+                ),
+                effect_color.tween(
+                    into_color(WHITE.with_alpha(1.)),
+                    into_color(DEEP_PINK.with_alpha(0.)),
+                    EaseFunction::QuadraticOut,
+                    secs(0.5),
+                ),
+            )));
         }
         _ => {}
     });
