@@ -1,6 +1,6 @@
 use bevy::{prelude::*, time::Stopwatch};
 use bevy_tween::{
-    combinator::{parallel, tween},
+    builder::{parallel, tween},
     prelude::*,
 };
 

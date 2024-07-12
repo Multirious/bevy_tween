@@ -2,7 +2,7 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_tween::{
-    combinator::{parallel, tween_exact, AnimationCommands},
+    builder::{parallel, tween_exact, AnimationCommands},
     interpolate::angle_z,
     prelude::*,
     tween::TargetComponent,

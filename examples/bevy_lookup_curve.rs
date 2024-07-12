@@ -4,7 +4,7 @@ use bevy_tween::{
         editor::LookupCurveEditor, Knot, KnotInterpolation, LookupCurve,
         LookupCurvePlugin,
     },
-    combinator::tween,
+    builder::tween,
     interpolate::translation,
     prelude::*,
     tween::{AnimationTarget, TargetComponent},

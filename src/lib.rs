@@ -384,7 +384,7 @@ pub mod tween;
 pub mod tween_event;
 pub mod utils;
 
-pub mod combinator;
+pub mod builder;
 
 /// Commonly used items
 pub mod prelude {
@@ -395,7 +395,7 @@ pub mod prelude {
 
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
-    pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
+    pub use crate::builder::{AnimationBuilderExt, TransformTargetStateExt};
 
     pub use crate::targets::IntoTarget;
     pub use crate::tween_event::{TweenEvent, TweenEventData};

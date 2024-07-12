@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_eventlistener::prelude::*;
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded,
-    combinator::{event, forward, sequence},
+    builder::{event, forward, sequence},
     prelude::*,
 };
 

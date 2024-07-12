@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_tween::{
-    bevy_time_runner::TimeRunnerEnded, combinator::*, prelude::*,
+    bevy_time_runner::TimeRunnerEnded, builder::*, prelude::*,
     tween::AnimationTarget,
 };
 mod utils;
