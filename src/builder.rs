@@ -8,8 +8,12 @@ use bevy_time_runner::{
 };
 
 mod animation_combinators;
-mod state;
 pub use animation_combinators::*;
+
+mod tween;
+pub use tween::{SetWithExt, TargetSetter, TargetSetterState};
+
+mod state;
 pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
 /// Commands to use within an animation combinator
