@@ -84,7 +84,7 @@ fn setup(mut commands: Commands) {
         .id();
 
     let circle = circle_id.into_target();
-    commands.animation().insert(parallel((
+    commands.animation().add(parallel((
         tween(
             Duration::from_secs(2),
             EaseFunction::Linear,

@@ -26,7 +26,7 @@ fn setup(mut commands: Commands) {
         ))
         .animation()
         .repeat(Repeat::times(5))
-        .insert(forward(Duration::from_secs_f32(0.5)));
+        .add(forward(Duration::from_secs_f32(0.5)));
 
     commands
         .spawn(On::<TweenEvent<&'static str>>::run(
@@ -35,7 +35,7 @@ fn setup(mut commands: Commands) {
             },
         ))
         .animation()
-        .insert(sequence((
+        .add(sequence((
             forward(Duration::from_secs_f32(3.)),
             event("event"),
             forward(Duration::from_secs_f32(0.5)),

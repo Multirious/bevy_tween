@@ -64,7 +64,7 @@ fn click_spawn_circle(
                     AnimationTarget,
                 ))
                 .animation()
-                .insert(parallel((
+                .add(parallel((
                     tween(
                         secs(2.),
                         EaseFunction::ExponentialOut,

@@ -223,7 +223,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert(parallel((
+        .add(parallel((
             (
                 set_value(
                     bevy_tween_text_color.with(sprite_color_to(white_color)),

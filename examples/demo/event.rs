@@ -64,7 +64,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert(sequence((
+        .add(sequence((
             event("bump"),
             tween(
                 secs(1.),

@@ -68,7 +68,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert(parallel((
+        .add(parallel((
             snap_rotate(triangles[4].clone(), secs, 7, 4., ease),
             snap_rotate(triangles[3].clone(), secs, 7, 6., ease),
             snap_rotate(triangles[2].clone(), secs, 7, 8., ease),

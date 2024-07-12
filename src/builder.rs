@@ -167,13 +167,12 @@ impl<'a> AnimationBuilder<'a> {
         self.time_runner.get_or_insert_with(TimeRunner::default)
     }
 
-    /// Add animations from a closure. Animation entities will be subjected
-    /// as a children of this entity.
+    /// Add animations from a closure. Will add as a children of this entity.
     /// [`TimeRunner`]'s length is determined by last `&mut Duration` value unless use
     /// [`Self::length`].
     /// It's also possible to use combinator like [`go`], [`forward`], and [`backward`]
     /// as the last combinator to customize the length.
-    pub fn insert<F>(self, animation: F) -> EntityCommands<'a>
+    pub fn add<F>(self, animation: F) -> EntityCommands<'a>
     where
         F: FnOnce(&mut AnimationCommands, &mut Duration),
     {

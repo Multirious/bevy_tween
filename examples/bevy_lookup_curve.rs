@@ -50,7 +50,7 @@ fn setup(mut commands: Commands, mut curves: ResMut<Assets<LookupCurve>>) {
         .animation()
         .repeat(Repeat::Infinitely)
         .repeat_style(RepeatStyle::PingPong)
-        .insert(tween(
+        .add(tween(
             Duration::from_secs(1),
             (curve.clone(), LookupCurveEditor::new(curve)),
             sprite.with(translation(
