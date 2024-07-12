@@ -7,8 +7,8 @@ use bevy_time_runner::{
     Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
 };
 
-mod animation_combinators;
-pub use animation_combinators::*;
+mod time;
+pub use time::*;
 
 mod tween;
 pub use tween::{SetWithExt, TargetSetter, TargetSetterState};
