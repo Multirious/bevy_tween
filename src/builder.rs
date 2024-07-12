@@ -13,6 +13,9 @@ pub use animation_combinators::*;
 mod tween;
 pub use tween::{SetWithExt, TargetSetter, TargetSetterState};
 
+mod event;
+pub use event::*;
+
 // mod state;
 // pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
