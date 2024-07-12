@@ -8,13 +8,13 @@ use bevy_time_runner::{
 };
 
 mod time;
-pub use time::*;
+pub use time::{backward, forward, go, parallel, sequence, Parallel, Sequence};
 
 mod tween;
 pub use tween::{SetWithExt, TargetSetter, TargetSetterState};
 
 mod event;
-pub use event::*;
+pub use event::{event, event_at, event_exact, event_for};
 
 // mod state;
 // pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
