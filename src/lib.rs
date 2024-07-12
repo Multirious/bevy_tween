@@ -461,9 +461,9 @@ impl PluginGroup for DefaultTweenPlugins {
                 |a: &Color, b: &Color, v: f32| a.mix(b, v),
             ))
             .add_group(tween_event::DefaultTweenEventPlugins);
-        #[cfg(feature = "bevy_lookup_curve")]
-        let group = group
-            .add(curve::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+        // #[cfg(feature = "bevy_lookup_curve")]
+        // let group = group
+        //     .add(curve::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
         group
     }
 }

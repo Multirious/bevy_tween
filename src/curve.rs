@@ -14,8 +14,8 @@ use bevy::prelude::*;
 use crate::TweenSystemSet;
 use bevy_time_runner::TimeSpanProgress;
 
-#[cfg(feature = "bevy_lookup_curve")]
-pub mod bevy_lookup_curve;
+// #[cfg(feature = "bevy_lookup_curve")]
+// pub mod bevy_lookup_curve;
 mod ease_function;
 pub use ease_function::*;
 
