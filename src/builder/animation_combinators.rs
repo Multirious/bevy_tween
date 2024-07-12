@@ -30,52 +30,52 @@ where
     move |b, pos| parallel.call(b, pos)
 }
 
-/// Combinator for creating a basic tween using interpolation and a tween.
-///
-/// Starts from last position and tween for provided `duration`
-///
-/// Position is shifted to this tween's end.
-pub fn tween<I, T>(
-    duration: Duration,
-    interpolation: I,
-    tween: T,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
-where
-    I: Bundle,
-    T: Bundle,
-{
-    move |a, pos| {
-        let start = *pos;
-        let end = start + duration;
-        a.spawn((
-            TimeSpan::try_from(start..end).unwrap(),
-            interpolation,
-            tween,
-        ));
-        *pos = end;
-    }
-}
+// /// Combinator for creating a basic tween using interpolation and a tween.
+// ///
+// /// Starts from last position and tween for provided `duration`
+// ///
+// /// Position is shifted to this tween's end.
+// pub fn tween<I, T>(
+//     duration: Duration,
+//     interpolation: I,
+//     tween: T,
+// ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+// where
+//     I: Bundle,
+//     T: Bundle,
+// {
+//     move |a, pos| {
+//         let start = *pos;
+//         let end = start + duration;
+//         a.spawn((
+//             TimeSpan::try_from(start..end).unwrap(),
+//             interpolation,
+//             tween,
+//         ));
+//         *pos = end;
+//     }
+// }
 
-/// Combinator for creating a basic tween using interpolation and a tween.
-///
-/// Starts and ends at provided span.
-///
-/// Position is not mutated because the operation is not relative.
-pub fn tween_exact<S, I, T>(
-    span: S,
-    interpolation: I,
-    tween: T,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
-where
-    S: TryInto<TimeSpan>,
-    S::Error: std::fmt::Debug,
-    I: Bundle,
-    T: Bundle,
-{
-    move |a, _pos| {
-        a.spawn((span.try_into().unwrap(), interpolation, tween));
-    }
-}
+// /// Combinator for creating a basic tween using interpolation and a tween.
+// ///
+// /// Starts and ends at provided span.
+// ///
+// /// Position is not mutated because the operation is not relative.
+// pub fn tween_exact<S, I, T>(
+//     span: S,
+//     interpolation: I,
+//     tween: T,
+// ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+// where
+//     S: TryInto<TimeSpan>,
+//     S::Error: std::fmt::Debug,
+//     I: Bundle,
+//     T: Bundle,
+// {
+//     move |a, _pos| {
+//         a.spawn((span.try_into().unwrap(), interpolation, tween));
+//     }
+// }
 
 /// Combinator for creating an tween event.
 ///
