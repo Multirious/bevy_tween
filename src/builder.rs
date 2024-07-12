@@ -13,8 +13,8 @@ pub use animation_combinators::*;
 mod tween;
 pub use tween::{SetWithExt, TargetSetter, TargetSetterState};
 
-mod state;
-pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
+// mod state;
+// pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
 /// Commands to use within an animation combinator
 pub struct AnimationCommands<'r, 'a> {
