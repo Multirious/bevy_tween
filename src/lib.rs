@@ -440,11 +440,32 @@ pub mod prelude {
 pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
+    #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        #[allow(clippy::let_and_return)]
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
-            .add_group(set::DefaultSetterPlugins)
+            .add(register_types);
+
+        let group = group
+            .add(set::component::<items::Translation>())
+            .add(set::component::<items::Rotation>())
+            .add(set::component::<items::Scale>())
+            .add(set::component::<items::AngleZ>());
+
+        #[cfg(feature = "bevy_sprite")]
+        let group = group.add(set::component::<items::SpriteColor>());
+
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+        let group = group
+            .add(set::asset::<items::ColorMaterial>())
+            .add(set::handle_component::<items::ColorMaterial>());
+
+        #[cfg(feature = "bevy_ui")]
+        let group = group
+            .add(set::component::<items::BackgroundColor>())
+            .add(set::component::<items::BorderColor>());
+
+        let group = group
             .add(curve::EaseFunctionAToBPlugin::new(
                 |a: &f32, b: &f32, v: f32| a.lerp(*b, v),
             ))
@@ -459,13 +480,54 @@ impl PluginGroup for DefaultTweenPlugins {
             ))
             .add(curve::EaseFunctionAToBPlugin::new(
                 |a: &Color, b: &Color, v: f32| a.mix(b, v),
-            ))
-            .add_group(tween_event::DefaultTweenEventPlugins);
+            ));
         // #[cfg(feature = "bevy_lookup_curve")]
         // let group = group
         //     .add(curve::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+        #[cfg(not(feature = "bevy_eventlistener"))]
+        let group = group
+            .add(tween_event::TweenEventPlugin::<()>::default())
+            .add(tween_event::TweenEventPlugin::<&'static str>::default());
+        #[cfg(feature = "bevy_eventlistener")]
+        let group = group
+            .add(
+                tween_event::TweenEventPlugin::<()>::default()
+                    .with_event_listener(),
+            )
+            .add(
+                tween_event::TweenEventPlugin::<&'static str>::default()
+                    .with_event_listener(),
+            );
         group
     }
+}
+
+fn register_types(a: &mut App) {
+    a.register_type::<items::Translation>()
+        .register_type::<items::Rotation>()
+        .register_type::<items::Scale>()
+        .register_type::<items::AngleZ>();
+    #[cfg(feature = "bevy_sprite")]
+    a.register_type::<items::SpriteColor>();
+    #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+    a.register_type::<items::ColorMaterial>();
+    #[cfg(feature = "bevy_ui")]
+    a.register_type::<items::BackgroundColor>()
+        .register_type::<items::BorderColor>();
+
+    a.register_type::<curve::AToB<f32, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Vec2, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Vec3, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Vec4, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Quat, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Color, curve::EaseFunction>>();
+
+    a.register_type::<tween_event::TweenEventData>()
+        .register_type::<tween_event::TweenEventData<&'static str>>();
+
+    a.register_type::<targets::TargetComponent>()
+        .register_type::<targets::TargetResource>()
+        .register_type::<targets::TargetAsset<ColorMaterial>>();
 }
 
 /// This resource will be used while initializing tween plugin and systems.

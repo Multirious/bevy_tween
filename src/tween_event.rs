@@ -110,31 +110,6 @@ where
     }
 }
 
-/// Default tween event plugins:
-/// - `TweenEventPlugin::<()>::default()`,
-/// - `TweenEventPlugin::<&'static str>::default()`
-pub struct DefaultTweenEventPlugins;
-
-impl PluginGroup for DefaultTweenEventPlugins {
-    #[allow(unused)]
-    #[allow(clippy::let_and_return)]
-    fn build(self) -> PluginGroupBuilder {
-        let p = PluginGroupBuilder::start::<DefaultTweenEventPlugins>();
-        #[cfg(not(feature = "bevy_eventlistener"))]
-        let p = p
-            .add(TweenEventPlugin::<()>::default())
-            .add(TweenEventPlugin::<&'static str>::default());
-        #[cfg(feature = "bevy_eventlistener")]
-        let p = p
-            .add(TweenEventPlugin::<()>::default().with_event_listener())
-            .add(
-                TweenEventPlugin::<&'static str>::default()
-                    .with_event_listener(),
-            );
-        p
-    }
-}
-
 /// Fires [`TweenEvent`] whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity.
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]

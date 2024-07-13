@@ -10,17 +10,16 @@ use std::{
 };
 
 /// Plugin for [`EaseFunction`]
-pub struct EaseFunctionAToBPlugin<V, F> {
+pub struct EaseFunctionAToBPlugin<V> {
     marker: PhantomData<V>,
-    f: F,
+    f: fn(&V, &V, f32) -> V,
 }
 
-impl<V, F> EaseFunctionAToBPlugin<V, F>
+impl<V> EaseFunctionAToBPlugin<V>
 where
     V: Send + Sync + 'static,
-    F: Send + Sync + 'static + Fn(&V, &V, f32) -> V + Copy,
 {
-    pub fn new(f: F) -> EaseFunctionAToBPlugin<V, F> {
+    pub fn new(f: fn(&V, &V, f32) -> V) -> EaseFunctionAToBPlugin<V> {
         EaseFunctionAToBPlugin {
             marker: PhantomData,
             f,
@@ -28,10 +27,9 @@ where
     }
 }
 
-impl<V, F> Plugin for EaseFunctionAToBPlugin<V, F>
+impl<V> Plugin for EaseFunctionAToBPlugin<V>
 where
     V: Send + Sync + 'static,
-    F: Send + Sync + 'static + Fn(&V, &V, f32) -> V + Copy,
 {
     /// # Panics
     ///
