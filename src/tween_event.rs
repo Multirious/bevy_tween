@@ -36,8 +36,7 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 use bevy_eventlistener::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 
-use crate::curve::CurveValue;
-use crate::tween::SkipTween;
+use crate::{set::SetterValue, SkipTween};
 
 /// Plugin for simple generic event that fires at a specific time span
 /// See [`TweenEventTakingPlugin`] if your custom data is not [`Clone`].
@@ -74,8 +73,7 @@ where
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
             app_resource.schedule,
-            (tween_event_system::<Data>)
-                .in_set(crate::TweenSystemSet::ApplyTween),
+            tween_event_system::<Data>.in_set(crate::TweenSystemSet::Apply),
         )
         .add_event::<TweenEvent<Data>>();
         #[cfg(feature = "bevy_eventlistener")]
@@ -105,8 +103,8 @@ where
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
             app_resource.schedule,
-            (tween_event_taking_system::<Data>)
-                .in_set(crate::TweenSystemSet::ApplyTween),
+            tween_event_taking_system::<Data>
+                .in_set(crate::TweenSystemSet::Apply),
         )
         .add_event::<TweenEvent<Data>>();
     }
@@ -206,7 +204,7 @@ pub fn tween_event_system<Data>(
             Entity,
             &TweenEventData<Data>,
             &TimeSpanProgress,
-            Option<&CurveValue>,
+            Option<&SetterValue>,
         ),
         Without<SkipTween>,
     >,
@@ -238,7 +236,7 @@ pub fn tween_event_taking_system<Data>(
             Entity,
             &mut TweenEventData<Data>,
             &TimeSpanProgress,
-            Option<&CurveValue>,
+            Option<&SetterValue>,
         ),
         Without<SkipTween>,
     >,

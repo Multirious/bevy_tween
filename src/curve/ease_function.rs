@@ -1,5 +1,5 @@
-use super::{AToB, CurveValue};
-use crate::TweenSystemSet;
+use super::AToB;
+use crate::{set::SetterValue, TweenSystemSet};
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
@@ -46,7 +46,7 @@ where
         app.add_systems(
             app_resource.schedule,
             ease_function_a_to_b_system::<V>(self.f)
-                .in_set(TweenSystemSet::UpdateCurveValue),
+                .in_set(TweenSystemSet::UpdateSetterValue),
         );
     }
 }
@@ -829,11 +829,11 @@ where
 
             commands
                 .entity(entity)
-                .insert(CurveValue(f(&a_to_b.a, &a_to_b.b, value)));
+                .insert(SetterValue(f(&a_to_b.a, &a_to_b.b, value)));
         });
         removed.read().for_each(|entity| {
             if let Some(mut entity) = commands.get_entity(entity) {
-                entity.remove::<CurveValue<V>>();
+                entity.remove::<SetterValue<V>>();
             }
         });
     }

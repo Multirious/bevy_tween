@@ -379,8 +379,8 @@ pub use bevy_time_runner;
 pub mod curve;
 // pub mod interpolate;
 pub mod items;
+pub mod set;
 pub mod targets;
-pub mod tween;
 pub mod tween_event;
 pub mod utils;
 
@@ -444,7 +444,7 @@ impl PluginGroup for DefaultTweenPlugins {
         #[allow(clippy::let_and_return)]
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
-            .add_group(tween::DefaultTweenSystemPlugins)
+            .add_group(set::DefaultSetterPlugins)
             .add(curve::EaseFunctionAToBPlugin::new(
                 |a: &f32, b: &f32, v: f32| a.lerp(*b, v),
             ))
@@ -509,15 +509,14 @@ impl Plugin for TweenCorePlugin {
         app.configure_sets(
             self.app_resource.schedule,
             (
-                TweenSystemSet::UpdateCurveValue,
+                TweenSystemSet::UpdateSetterValue,
                 TweenSystemSet::ResolveTarget,
-                TweenSystemSet::ApplyTween,
+                TweenSystemSet::Apply,
             )
                 .chain()
                 .after(bevy_time_runner::TimeRunnerSet::Progress),
         )
-        .insert_resource(self.app_resource.clone())
-        .register_type::<curve::CurveValue>();
+        .insert_resource(self.app_resource.clone());
     }
 
     fn cleanup(&self, app: &mut App) {
@@ -532,7 +531,7 @@ pub enum TweenSystemSet {
     /// This set is for systems that responsible for updating any
     /// [`tween::CurveValue`] such as
     /// [`interpolation::sample_interpolations_system`].
-    UpdateCurveValue,
+    UpdateSetterValue,
     ResolveTarget,
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
@@ -544,5 +543,10 @@ pub enum TweenSystemSet {
     /// Events is not necessary related to tweening but their code is still working in the same area.
     /// - [`tween::tween_event_system`]
     /// - [`tween::tween_event_taking_system`]
-    ApplyTween,
+    Apply,
 }
+
+/// Skip a tween from tweening.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
+#[reflect(Component)]
+pub struct SkipTween;

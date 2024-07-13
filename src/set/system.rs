@@ -1,8 +1,7 @@
-use crate::items::{Set, Setter};
+use super::{Set, SetterValue};
 use crate::{
-    curve::CurveValue,
     targets::{TargetAsset, TargetComponent, TargetResource},
-    tween::SkipTween,
+    SkipTween,
 };
 use bevy::{
     ecs::query::QueryEntityError,
@@ -11,26 +10,24 @@ use bevy::{
 };
 use std::any::type_name;
 
-pub fn apply_component_tween_system<S>(
+pub fn set_component_system<S>(
     q_tween: Query<
-        (Entity, &TargetComponent, &Setter<S>, &CurveValue<S::Value>),
+        (Entity, &TargetComponent, &S, &SetterValue<S::Value>),
         Without<SkipTween>,
     >,
     mut q_component: Query<&mut S::Item>,
     mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
 ) where
-    S: Set,
+    S: Set + Component,
     S::Item: Component,
     S::Value: Send + Sync + 'static,
 {
     let mut query_entity_errors = HashMap::new();
     q_tween.iter().for_each(
-        |(tween_entity, target_data, setter, curve_value)| match target_data {
+        |(tween_entity, target_data, setter, set_value)| match target_data {
             TargetComponent::None => {}
             TargetComponent::Entity(e) => match q_component.get_mut(*e) {
-                Ok(mut component) => {
-                    setter.0.set(&mut component, &curve_value.0)
-                }
+                Ok(mut component) => setter.set(&mut component, &set_value.0),
                 Err(query_error) => {
                     if last_entity_errors
                         .get(&tween_entity)
@@ -54,7 +51,7 @@ pub fn apply_component_tween_system<S>(
             TargetComponent::Entities(e) => {
                 let mut iter = q_component.iter_many_mut(e);
                 while let Some(mut component) = iter.fetch_next() {
-                    setter.0.set(&mut component, &curve_value.0);
+                    setter.set(&mut component, &set_value.0);
                 }
             }
         },
@@ -62,15 +59,15 @@ pub fn apply_component_tween_system<S>(
     *last_entity_errors = query_entity_errors;
 }
 
-pub fn apply_resource_tween_system<S>(
+pub fn set_resource_system<S>(
     q_tween: Query<
-        (&Setter<S>, &CurveValue<S::Value>),
+        (&S, &SetterValue<S::Value>),
         (With<TargetResource>, Without<SkipTween>),
     >,
     resource: Option<ResMut<S::Item>>,
     mut last_error: Local<bool>,
 ) where
-    S: Set,
+    S: Set + Component,
     S::Item: Resource,
     S::Value: Send + Sync + 'static,
 {
@@ -85,21 +82,21 @@ pub fn apply_resource_tween_system<S>(
         return;
     };
     *last_error = false;
-    q_tween.iter().for_each(|(setter, curve_value)| {
-        setter.0.set(&mut resource, &curve_value.0);
+    q_tween.iter().for_each(|(setter, set_value)| {
+        setter.set(&mut resource, &set_value.0);
     })
 }
 
-pub fn apply_asset_tween_system<S>(
+pub fn set_asset_system<S>(
     q_tween: Query<
-        (&Setter<S>, &TargetAsset<S::Item>, &CurveValue<S::Value>),
+        (&S, &TargetAsset<S::Item>, &SetterValue<S::Value>),
         Without<SkipTween>,
     >,
     asset: Option<ResMut<Assets<S::Item>>>,
     mut last_resource_error: Local<bool>,
     mut last_asset_errors: Local<HashSet<AssetId<S::Item>>>,
 ) where
-    S: Set,
+    S: Set + Component,
     S::Item: Asset,
     S::Value: Send + Sync + 'static,
 {
@@ -118,7 +115,7 @@ pub fn apply_asset_tween_system<S>(
     *last_resource_error = false;
     q_tween
         .iter()
-        .for_each(|(setter, target, curve_value)| match &target {
+        .for_each(|(setter, target, set_value)| match &target {
             TargetAsset::None => {},
             TargetAsset::Asset(handle) => {
                 let Some(asset) = asset.get_mut(handle) else {
@@ -135,7 +132,7 @@ pub fn apply_asset_tween_system<S>(
                     asset_errors.insert(handle.id());
                     return;
                 };
-                setter.0.set(asset, &curve_value.0);
+                setter.set(asset, &set_value.0);
             }
             TargetAsset::Assets(handles) => {
                 for handle in handles {
@@ -153,7 +150,7 @@ pub fn apply_asset_tween_system<S>(
                     asset_errors.insert(handle.id());
                     return;
                 };
-                setter.0.set(asset, &curve_value.0);
+                setter.set(asset, &set_value.0);
                 }
             }
         });
@@ -161,9 +158,9 @@ pub fn apply_asset_tween_system<S>(
     *last_asset_errors = asset_errors;
 }
 
-pub fn apply_handle_component_tween_system<S>(
+pub fn set_handle_component_system<S>(
     q_tween: Query<
-        (Entity, &Setter<S>, &TargetComponent, &CurveValue<S::Value>),
+        (Entity, &S, &TargetComponent, &SetterValue<S::Value>),
         Without<SkipTween>,
     >,
     q_handle: Query<&Handle<S::Item>>,
@@ -172,7 +169,7 @@ pub fn apply_handle_component_tween_system<S>(
     mut last_asset_errors: Local<HashSet<AssetId<S::Item>>>,
     mut last_entity_errors: Local<HashMap<Entity, QueryEntityError>>,
 ) where
-    S: Set,
+    S: Set + Component,
     S::Item: Asset,
     S::Value: Send + Sync + 'static,
 {
@@ -192,7 +189,7 @@ pub fn apply_handle_component_tween_system<S>(
     *last_resource_error = false;
     q_tween
         .iter()
-        .for_each(|(tween_entity, setter, target, curve_value)| match &target {
+        .for_each(|(tween_entity, setter, target, set_value)| match &target {
             TargetComponent::None => {},
             TargetComponent::Entity(entity) => match q_handle.get(*entity) {
                 Ok(handle) => {
@@ -210,7 +207,7 @@ pub fn apply_handle_component_tween_system<S>(
                         asset_errors.insert(handle.id());
                         return;
                     };
-                    setter.0.set(asset, &curve_value.0);
+                    setter.set(asset, &set_value.0);
                 },
                 Err(query_error) => {
                     if last_entity_errors
@@ -249,7 +246,7 @@ pub fn apply_handle_component_tween_system<S>(
                         asset_errors.insert(handle.id());
                         return;
                     };
-                    setter.0.set(asset, &curve_value.0);
+                    setter.set(asset, &set_value.0);
                 }
             }
         } );

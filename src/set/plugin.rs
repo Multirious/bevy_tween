@@ -1,10 +1,10 @@
 #![allow(missing_docs)]
 
 use super::system::{
-    apply_asset_tween_system, apply_component_tween_system,
-    apply_handle_component_tween_system, apply_resource_tween_system,
+    set_asset_system, set_component_system, set_handle_component_system,
+    set_resource_system,
 };
-use crate::items::Set;
+use super::{BoxedSetter, Set};
 use crate::{TweenAppResource, TweenSystemSet};
 use bevy::{
     app::{PluginGroup, PluginGroupBuilder},
@@ -29,7 +29,7 @@ macro_rules! tween_system_plugin {
             #[derive(Debug)]
             pub struct $plugin_name<S>
             where
-                S: Set,
+                S: Set + Component,
                 S::Item: $item_trait,
                 S::Value: Send + Sync + 'static,
             {
@@ -38,7 +38,7 @@ macro_rules! tween_system_plugin {
 
             impl<S> Plugin for $plugin_name<S>
             where
-                S: Set,
+                S: Set + Component,
                 S::Item: $item_trait,
                 S::Value: Send + Sync + 'static,
             {
@@ -50,14 +50,14 @@ macro_rules! tween_system_plugin {
                     app.add_systems(
                         app_resource.schedule,
                         $system_name::<S>
-                            .in_set(TweenSystemSet::ApplyTween),
+                            .in_set(TweenSystemSet::Apply),
                     );
                 }
             }
 
             impl<S> Default for $plugin_name<S>
             where
-                S: Set,
+                S: Set + Component,
                 S::Item: $item_trait,
                 S::Value: Send + Sync + 'static,
             {
@@ -71,15 +71,15 @@ macro_rules! tween_system_plugin {
             #[doc = concat!("`", stringify!($plugin_name), "::default()`")]
             pub fn $short_name<S>() -> $plugin_name<S>
             where
-                S: Set,
+                S: Set + Component,
                 S::Item: $item_trait,
                 S::Value: Send + Sync + 'static,
             {
                 $plugin_name::default()
             }
 
-            #[doc = concat!("`", stringify!($plugin_name), "::<Box<dyn Set>>::default()`")]
-            pub fn $box_short_name<I, V>() -> $plugin_name<Box<dyn Set<Item = I, Value = V>>>
+            #[doc = concat!("`", stringify!($plugin_name), "::<BoxedSetter<I, V>>::default()`")]
+            pub fn $box_short_name<I, V>() -> $plugin_name<BoxedSetter<I, V>>
             where
                 I: $item_trait,
                 V: Send + Sync + 'static,
@@ -91,45 +91,45 @@ macro_rules! tween_system_plugin {
 }
 
 tween_system_plugin! {
-    component, component_boxed, ComponentTweenPlugin,
-    apply_component_tween_system, Component;
+    component, component_boxed, SetComponentPlugin,
+    set_component_system, Component;
 
-    resource, resource_boxed, ResourceTweenPlugin,
-    apply_resource_tween_system, Resource;
+    resource, resource_boxed, SetResourcePlugin,
+    set_resource_system, Resource;
 
-    asset, asset_boxed, AssetTweenPlugin,
-    apply_asset_tween_system, Asset;
+    asset, asset_boxed, SetAssetPlugin,
+    set_asset_system, Asset;
 
-    handle_component, handle_component_boxed, HandleComponentTweenPlugin,
-    apply_handle_component_tween_system, Asset;
+    handle_component, handle_component_boxed, SetHandleComponentPlugin,
+    set_handle_component_system, Asset;
 }
 
 #[derive(Debug)]
-pub struct DefaultTweenSystemPlugins;
-impl PluginGroup for DefaultTweenSystemPlugins {
+pub struct DefaultSetterPlugins;
+impl PluginGroup for DefaultSetterPlugins {
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
         use crate::items::*;
 
-        let p = PluginGroupBuilder::start::<DefaultTweenSystemPlugins>();
+        let p = PluginGroupBuilder::start::<DefaultSetterPlugins>();
         let p = p
             .add(component::<Translation>())
             .add(component::<Rotation>())
             .add(component::<Scale>())
             .add(component::<AngleZ>())
             .add(|a: &mut App| {
-                a.register_type::<Setter<Translation>>()
-                    .register_type::<Setter<Rotation>>()
-                    .register_type::<Setter<Scale>>()
-                    .register_type::<Setter<AngleZ>>();
+                a.register_type::<Translation>()
+                    .register_type::<Rotation>()
+                    .register_type::<Scale>()
+                    .register_type::<AngleZ>();
             });
 
         #[cfg(feature = "bevy_sprite")]
         let p = p
             .add(component::<SpriteColor>()) // mm
             .add(|a: &mut App| {
-                a.register_type::<Setter<SpriteColor>>();
+                a.register_type::<SpriteColor>();
             });
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
@@ -137,7 +137,7 @@ impl PluginGroup for DefaultTweenSystemPlugins {
             .add(asset::<ColorMaterial>())
             .add(handle_component::<ColorMaterial>())
             .add(|a: &mut App| {
-                a.register_type::<Setter<ColorMaterial>>();
+                a.register_type::<ColorMaterial>();
             });
 
         #[cfg(feature = "bevy_ui")]
@@ -145,8 +145,8 @@ impl PluginGroup for DefaultTweenSystemPlugins {
             .add(component::<BackgroundColor>())
             .add(component::<BorderColor>())
             .add(|a: &mut App| {
-                a.register_type::<Setter<BackgroundColor>>()
-                    .register_type::<Setter<BorderColor>>();
+                a.register_type::<BackgroundColor>()
+                    .register_type::<BorderColor>();
             });
         p
     }

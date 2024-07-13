@@ -3,10 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpan;
 
-use crate::{
-    curve::AToB,
-    items::{Set, Setter},
-};
+use crate::{curve::AToB, set::Set};
 
 use super::AnimationCommands;
 
@@ -47,7 +44,7 @@ pub struct TargetSetter<T, S> {
 impl<T, S> TargetSetter<T, S>
 where
     T: Clone + Bundle,
-    S: Set + Clone,
+    S: Set + Clone + Component,
 {
     pub fn curve<C>(
         &self,
@@ -66,7 +63,7 @@ where
                 TimeSpan::try_from(start_pos..end_pos).unwrap(),
                 target,
                 curve,
-                Setter(setter),
+                setter,
             ));
             *pos = end_pos;
         }
@@ -112,7 +109,7 @@ impl<T, S, V> TargetSetterState<T, S, V>
 where
     T: Clone + Bundle,
     V: Clone + Send + Sync + 'static,
-    S: Set + Clone,
+    S: Set + Clone + Component,
 {
     pub fn tween<C>(
         &mut self,
@@ -139,7 +136,7 @@ where
                     b: end,
                     curve: curve_1d,
                 },
-                Setter(setter),
+                setter,
             ));
             *pos = end_pos;
         }

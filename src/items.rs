@@ -1,7 +1,4 @@
-use bevy::{
-    ecs::{component::Component, reflect::ReflectComponent},
-    reflect::Reflect,
-};
+use crate::set::Set;
 
 macro_rules! impl_simple_setter {
     (
@@ -10,7 +7,7 @@ macro_rules! impl_simple_setter {
         |$item_arg:ident: &mut $item_ty:path, $value_arg:ident: & $value_ty:path| $expr:block
     ) => {
         $(#[$attr])*
-        #[derive(Debug, Clone, Copy, Reflect)]
+        #[derive(Debug, Clone, Copy, Reflect, Component)]
         pub struct $setter;
 
         impl Set for $setter {
@@ -24,8 +21,6 @@ macro_rules! impl_simple_setter {
     }
 }
 use impl_simple_setter;
-
-mod blanket_impl;
 
 // mod reflect;
 
@@ -41,40 +36,3 @@ pub use sprite::*;
 mod ui;
 #[cfg(feature = "bevy_ui")]
 pub use ui::*;
-
-pub trait Set: Send + Sync + 'static {
-    type Item;
-    type Value;
-    fn set(&self, item: &mut Self::Item, value: &Self::Value);
-}
-
-#[derive(Component, Reflect)]
-#[reflect(Component)]
-pub struct Setter<S>(pub S)
-where
-    S: Set;
-
-pub type BoxedSetter<I, V> = Setter<Box<dyn Set<Item = I, Value = V>>>;
-
-impl<S> Setter<S>
-where
-    S: Set,
-{
-    pub fn new_boxed(setter: S) -> BoxedSetter<S::Item, S::Value> {
-        Setter(Box::new(setter))
-    }
-}
-
-impl<I, V> BoxedSetter<I, V>
-where
-    I: Send + Sync + 'static,
-    V: Send + Sync + 'static,
-{
-    pub fn new_closure<F>(f: F) -> BoxedSetter<I, V>
-    where
-        F: Fn(&mut I, &V) + Send + Sync + 'static,
-    {
-        let f: Box<dyn Fn(&mut I, &V) + Send + Sync + 'static> = Box::new(f);
-        Setter(Box::new(f))
-    }
-}
