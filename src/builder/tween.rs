@@ -5,7 +5,7 @@ use bevy_time_runner::TimeSpan;
 
 use crate::{curve::AToB, set::Set};
 
-use super::AnimationCommands;
+use super::{AnimationCommands, BuildAnimation};
 
 pub trait SetWithExt: Sized {
     fn set<S: Set>(&self, setter: S) -> TargetSetter<Self, S>;
@@ -46,26 +46,15 @@ where
     T: Clone + Bundle,
     S: Set + Clone + Component,
 {
-    pub fn curve<C>(
-        &self,
-        duration: Duration,
-        curve: C,
-    ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+    pub fn curve<C>(&self, duration: Duration, curve: C) -> Tween<T, S, C>
     where
         C: Bundle,
     {
-        let setter = self.setter.clone();
-        let target = self.target.clone();
-        move |a, pos| {
-            let start_pos = *pos;
-            let end_pos = start_pos + duration;
-            a.spawn((
-                TimeSpan::try_from(start_pos..end_pos).unwrap(),
-                target,
-                curve,
-                setter,
-            ));
-            *pos = end_pos;
+        Tween {
+            duration,
+            target: self.target.clone(),
+            setter: self.setter.clone(),
+            curve,
         }
     }
 
@@ -75,19 +64,21 @@ where
         end: V,
         duration: Duration,
         curve_1d: C,
-    ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+    ) -> Tween<T, S, AToB<V, C>>
     where
         V: Send + Sync + 'static,
         C: Send + Sync + 'static,
     {
-        self.curve(
+        Tween {
             duration,
-            AToB {
+            target: self.target.clone(),
+            setter: self.setter.clone(),
+            curve: AToB {
                 a: start,
                 b: end,
                 curve: curve_1d,
             },
-        )
+        }
     }
 
     pub fn state<V>(self, value: V) -> TargetSetterState<T, S, V> {
@@ -117,28 +108,21 @@ where
         end: V,
         duration: Duration,
         curve_1d: C,
-    ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+    ) -> Tween<T, S, AToB<V, C>>
     where
         V: Send + Sync + 'static,
         C: Send + Sync + 'static,
     {
         self.state = end.clone();
-        let setter = self.setter.clone();
-        let target = self.target.clone();
-        move |a, pos| {
-            let start_pos = *pos;
-            let end_pos = start_pos + duration;
-            a.spawn((
-                TimeSpan::try_from(start_pos..end_pos).unwrap(),
-                target,
-                AToB {
-                    a: start,
-                    b: end,
-                    curve: curve_1d,
-                },
-                setter,
-            ));
-            *pos = end_pos;
+        Tween {
+            duration,
+            target: self.target.clone(),
+            setter: self.setter.clone(),
+            curve: AToB {
+                a: start,
+                b: end,
+                curve: curve_1d,
+            },
         }
     }
 
@@ -147,7 +131,7 @@ where
         to: V,
         duration: Duration,
         curve: C,
-    ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+    ) -> Tween<T, S, AToB<V, C>>
     where
         V: Send + Sync + 'static,
         C: Send + Sync + 'static,
@@ -162,7 +146,7 @@ where
         with: F,
         duration: Duration,
         curve_1d: C,
-    ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+    ) -> Tween<T, S, AToB<V, C>>
     where
         V: Send + Sync + 'static,
         C: Send + Sync + 'static,
@@ -171,5 +155,31 @@ where
         let start = self.state.clone();
         let end = with(&mut self.state);
         self.tween(start, end, duration, curve_1d)
+    }
+}
+
+pub struct Tween<T: Bundle, S: Set + Bundle, C: Bundle> {
+    duration: Duration,
+    target: T,
+    setter: S,
+    curve: C,
+}
+
+impl<T, S, C> BuildAnimation for Tween<T, S, C>
+where
+    T: Bundle,
+    S: Set + Bundle,
+    C: Bundle,
+{
+    fn build(self, commands: &mut AnimationCommands, position: &mut Duration) {
+        let start = *position;
+        let end = *position + self.duration;
+        commands.spawn((
+            TimeSpan::try_from(start..end).unwrap(),
+            self.target,
+            self.setter,
+            self.curve,
+        ));
+        *position = end;
     }
 }
