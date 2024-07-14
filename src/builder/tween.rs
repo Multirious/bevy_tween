@@ -45,6 +45,7 @@ impl<T, S> TargetSetter<T, S>
 where
     T: Clone + Bundle,
     S: Set + Clone + Component,
+    S::Value: Send + Sync + 'static,
 {
     pub fn curve<C>(&self, duration: Duration, curve: C) -> Tween<T, S, C>
     where
@@ -58,15 +59,14 @@ where
         }
     }
 
-    pub fn tween<V, C>(
+    pub fn tween<C>(
         &self,
-        start: V,
-        end: V,
+        start: S::Value,
+        end: S::Value,
         duration: Duration,
         curve_1d: C,
-    ) -> Tween<T, S, AToB<V, C>>
+    ) -> Tween<T, S, AToB<S::Value, C>>
     where
-        V: Send + Sync + 'static,
         C: Send + Sync + 'static,
     {
         Tween {
@@ -81,7 +81,7 @@ where
         }
     }
 
-    pub fn state<V>(self, value: V) -> TargetSetterState<T, S, V> {
+    pub fn state(self, value: S::Value) -> TargetSetterState<T, S> {
         TargetSetterState {
             target: self.target,
             setter: self.setter,
@@ -90,27 +90,29 @@ where
     }
 }
 
-pub struct TargetSetterState<T, S, V> {
+pub struct TargetSetterState<T, S>
+where
+    S: Set,
+{
     target: T,
     setter: S,
-    state: V,
+    state: S::Value,
 }
 
-impl<T, S, V> TargetSetterState<T, S, V>
+impl<T, S> TargetSetterState<T, S>
 where
     T: Clone + Bundle,
-    V: Clone + Send + Sync + 'static,
     S: Set + Clone + Component,
+    S::Value: Clone + Send + Sync + 'static,
 {
     pub fn tween<C>(
         &mut self,
-        start: V,
-        end: V,
+        start: S::Value,
+        end: S::Value,
         duration: Duration,
         curve_1d: C,
-    ) -> Tween<T, S, AToB<V, C>>
+    ) -> Tween<T, S, AToB<S::Value, C>>
     where
-        V: Send + Sync + 'static,
         C: Send + Sync + 'static,
     {
         self.state = end.clone();
@@ -128,12 +130,11 @@ where
 
     pub fn tween_to<C>(
         &mut self,
-        to: V,
+        to: S::Value,
         duration: Duration,
         curve: C,
-    ) -> Tween<T, S, AToB<V, C>>
+    ) -> Tween<T, S, AToB<S::Value, C>>
     where
-        V: Send + Sync + 'static,
         C: Send + Sync + 'static,
     {
         let start = std::mem::replace(&mut self.state, to.clone());
@@ -146,11 +147,10 @@ where
         with: F,
         duration: Duration,
         curve_1d: C,
-    ) -> Tween<T, S, AToB<V, C>>
+    ) -> Tween<T, S, AToB<S::Value, C>>
     where
-        V: Send + Sync + 'static,
         C: Send + Sync + 'static,
-        F: FnOnce(&mut V) -> V,
+        F: FnOnce(&mut S::Value) -> S::Value,
     {
         let start = self.state.clone();
         let end = with(&mut self.state);
