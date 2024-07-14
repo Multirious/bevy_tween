@@ -48,8 +48,8 @@ where
 {
     pub fn curve<C>(
         &self,
-        curve: C,
         duration: Duration,
+        curve: C,
     ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
     where
         C: Bundle,
@@ -73,20 +73,20 @@ where
         &self,
         start: V,
         end: V,
-        curve_1d: C,
         duration: Duration,
+        curve_1d: C,
     ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
     where
         V: Send + Sync + 'static,
         C: Send + Sync + 'static,
     {
         self.curve(
+            duration,
             AToB {
                 a: start,
                 b: end,
                 curve: curve_1d,
             },
-            duration,
         )
     }
 
@@ -115,8 +115,8 @@ where
         &mut self,
         start: V,
         end: V,
-        curve_1d: C,
         duration: Duration,
+        curve_1d: C,
     ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
     where
         V: Send + Sync + 'static,
@@ -145,8 +145,8 @@ where
     pub fn tween_to<C>(
         &mut self,
         to: V,
-        curve: C,
         duration: Duration,
+        curve: C,
     ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
     where
         V: Send + Sync + 'static,
@@ -154,14 +154,14 @@ where
     {
         let start = std::mem::replace(&mut self.state, to.clone());
         let end = to;
-        self.tween(start, end, curve, duration)
+        self.tween(start, end, duration, curve)
     }
 
     pub fn tween_to_with<C, F>(
         &mut self,
         with: F,
-        curve_1d: C,
         duration: Duration,
+        curve_1d: C,
     ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
     where
         V: Send + Sync + 'static,
@@ -170,6 +170,6 @@ where
     {
         let start = self.state.clone();
         let end = with(&mut self.state);
-        self.tween(start, end, curve_1d, duration)
+        self.tween(start, end, duration, curve_1d)
     }
 }
