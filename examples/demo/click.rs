@@ -60,20 +60,20 @@ fn click_spawn_circle(
                 circle.set(items::Translation).tween(
                     cursor,
                     Vec3::ZERO,
-                    EaseFunction::ExponentialOut,
                     secs(2.),
+                    EaseFunction::ExponentialOut,
                 ),
                 circle.set(items::Scale).tween(
                     Vec3::ONE,
                     Vec3::ZERO,
-                    EaseFunction::BackIn,
                     secs(1.),
+                    EaseFunction::BackIn,
                 ),
                 circle.set(items::SpriteColor).tween(
                     into_color(WHITE),
                     into_color(DEEP_PINK),
-                    EaseFunction::Linear,
                     secs(1.),
+                    EaseFunction::Linear,
                 ),
             )));
         }

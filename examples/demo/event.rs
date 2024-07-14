@@ -71,13 +71,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             parallel((
                 triangle_translation.tween_to(
                     Vec3::new(x_right, 0., 0.),
-                    EaseFunction::ExponentialIn,
                     secs(1.),
+                    EaseFunction::ExponentialIn,
                 ),
                 triangle_angle_z.tween_to(
                     mid_angle,
-                    EaseFunction::ExponentialIn,
                     secs(1.),
+                    EaseFunction::ExponentialIn,
                 ),
             )),
             backward(secs(0.2)),
@@ -86,13 +86,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             parallel((
                 triangle_translation.tween_to(
                     Vec3::new(x_left, 0., 0.),
-                    EaseFunction::CircularOut,
                     secs(1.),
+                    EaseFunction::CircularOut,
                 ),
                 triangle_angle_z.tween_to(
                     end_angle,
-                    EaseFunction::CircularOut,
                     secs(1.),
+                    EaseFunction::CircularOut,
                 ),
             )),
         )));
@@ -128,14 +128,14 @@ fn effect_system(
                 effect_translation.tween(
                     effect_pos.trail,
                     effect_pos.trail - Vec3::new(100., 0., 0.),
-                    EaseFunction::QuinticOut,
                     secs(1.),
+                    EaseFunction::QuinticOut,
                 ),
                 effect_color.tween(
                     into_color(WHITE),
                     into_color(DEEP_PINK.with_alpha(0.)),
-                    EaseFunction::QuinticOut,
                     secs(1.),
+                    EaseFunction::QuinticOut,
                 ),
             )));
         }
@@ -157,14 +157,14 @@ fn effect_system(
                 effect_scale.tween(
                     Vec3::new(0.5, 0.5, 0.),
                     Vec3::new(3., 3., 0.),
-                    EaseFunction::Linear,
                     secs(0.1),
+                    EaseFunction::Linear,
                 ),
                 effect_color.tween(
                     into_color(WHITE.with_alpha(0.5)),
                     into_color(DEEP_PINK.with_alpha(0.)),
-                    EaseFunction::Linear,
                     secs(0.1),
+                    EaseFunction::Linear,
                 ),
             )));
         }
@@ -184,14 +184,14 @@ fn effect_system(
                 effect_translation.tween(
                     Vec3::new(1., 1., 0.),
                     Vec3::new(15., 15., 0.),
-                    EaseFunction::QuadraticOut,
                     secs(0.5),
+                    EaseFunction::QuadraticOut,
                 ),
                 effect_color.tween(
                     into_color(WHITE.with_alpha(1.)),
                     into_color(DEEP_PINK.with_alpha(0.)),
-                    EaseFunction::QuadraticOut,
                     secs(0.5),
+                    EaseFunction::QuadraticOut,
                 ),
             )));
         }
