@@ -16,6 +16,8 @@ pub use tween::{SetWithExt, TargetSetter, TargetSetterState};
 mod event;
 pub use event::{event, event_at, event_exact, event_for};
 
+use crate::{curve::AToB, set::Set};
+
 // mod state;
 // pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
@@ -215,15 +217,20 @@ impl<'a> AnimationBuilder<'a> {
     /// Can be used to create a simple animation quickly.
     /// [`TimeRunner`]'s length is determined by provided `duration` unless use
     /// [`Self::length`]
-    pub fn insert_tween_here<I, T>(
+    pub fn insert_tween_here<T, S, V, C>(
         self,
+        target: T,
+        setter: S,
+        start: V,
+        end: V,
         duration: Duration,
-        interpolation: I,
-        tweens: T,
+        curve_1d: C,
     ) -> EntityCommands<'a>
     where
-        I: Bundle,
         T: Bundle,
+        S: Set + Bundle,
+        V: Send + Sync + 'static,
+        C: Send + Sync + 'static,
     {
         let AnimationBuilder {
             mut entity_commands,
@@ -243,8 +250,13 @@ impl<'a> AnimationBuilder<'a> {
 
         entity_commands.insert((
             TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
-            interpolation,
-            tweens,
+            target,
+            setter,
+            AToB {
+                a: start,
+                b: end,
+                curve: curve_1d,
+            },
             time_runner,
         ));
         if skipped {
