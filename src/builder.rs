@@ -18,6 +18,19 @@ pub use event::{event, event_at, event_exact, event_for};
 
 use crate::{curve::AToB, set::Set};
 
+pub trait BuildAnimation {
+    fn build(self, commands: &mut AnimationCommands, position: &mut Duration);
+}
+
+impl<F> BuildAnimation for F
+where
+    F: FnOnce(&mut AnimationCommands, &mut Duration),
+{
+    fn build(self, commands: &mut AnimationCommands, position: &mut Duration) {
+        self(commands, position)
+    }
+}
+
 // mod state;
 // pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
@@ -184,7 +197,7 @@ impl<'a> AnimationBuilder<'a> {
     #[allow(clippy::should_implement_trait)] // no way people can get confuse this with `Add::add`
     pub fn add<F>(self, animation: F) -> EntityCommands<'a>
     where
-        F: FnOnce(&mut AnimationCommands, &mut Duration),
+        F: BuildAnimation,
     {
         let AnimationBuilder {
             mut entity_commands,
@@ -195,7 +208,7 @@ impl<'a> AnimationBuilder<'a> {
         let mut dur = Duration::ZERO;
         entity_commands.with_children(|c| {
             let mut a = AnimationCommands::new(c);
-            animation(&mut a, &mut dur);
+            animation.build(&mut a, &mut dur);
         });
         let mut time_runner = time_runner.unwrap_or_default();
         match custom_length {
