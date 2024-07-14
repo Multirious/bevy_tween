@@ -8,11 +8,11 @@ use crate::{curve::AToB, set::Set};
 use super::AnimationCommands;
 
 pub trait SetWithExt: Sized {
-    fn set_with<S: Set>(&self, setter: S) -> TargetSetter<Self, S>;
+    fn set<S: Set>(&self, setter: S) -> TargetSetter<Self, S>;
 }
 
 impl SetWithExt for crate::targets::TargetComponent {
-    fn set_with<S>(&self, setter: S) -> TargetSetter<Self, S> {
+    fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
         TargetSetter {
             target: self.clone(),
             setter,
@@ -20,7 +20,7 @@ impl SetWithExt for crate::targets::TargetComponent {
     }
 }
 impl<A: Asset> SetWithExt for crate::targets::TargetAsset<A> {
-    fn set_with<S>(&self, setter: S) -> TargetSetter<Self, S> {
+    fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
         TargetSetter {
             target: self.clone(),
             setter,
@@ -28,7 +28,7 @@ impl<A: Asset> SetWithExt for crate::targets::TargetAsset<A> {
     }
 }
 impl SetWithExt for crate::targets::TargetResource {
-    fn set_with<S>(&self, setter: S) -> TargetSetter<Self, S> {
+    fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
         TargetSetter {
             target: self.clone(),
             setter,
@@ -90,7 +90,7 @@ where
         )
     }
 
-    pub fn with_state<V>(self, value: V) -> TargetSetterState<T, S, V> {
+    pub fn state<V>(self, value: V) -> TargetSetterState<T, S, V> {
         TargetSetterState {
             target: self.target,
             setter: self.setter,

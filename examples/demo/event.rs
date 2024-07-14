@@ -59,10 +59,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let triangle = entity_commands.id().into_target();
     let mut triangle_translation = triangle
-        .set_with(items::Translation)
-        .with_state(Vec3::new(x_left, 0., 0.));
-    let mut triangle_angle_z =
-        triangle.set_with(items::AngleZ).with_state(start_angle);
+        .set(items::Translation)
+        .state(Vec3::new(x_left, 0., 0.));
+    let mut triangle_angle_z = triangle.set(items::AngleZ).state(start_angle);
 
     entity_commands
         .animation()
@@ -123,8 +122,8 @@ fn effect_system(
                 },
             ));
             let entity = entity_commands.id().into_target();
-            let effect_translation = entity.set_with(items::Translation);
-            let effect_color = entity.set_with(items::SpriteColor);
+            let effect_translation = entity.set(items::Translation);
+            let effect_color = entity.set(items::SpriteColor);
             entity_commands.animation().add(parallel((
                 effect_translation.tween(
                     effect_pos.trail,
@@ -152,8 +151,8 @@ fn effect_system(
                 },
             ));
             let entity = entity_commands.id().into_target();
-            let effect_scale = entity.set_with(items::Scale);
-            let effect_color = entity.set_with(items::SpriteColor);
+            let effect_scale = entity.set(items::Scale);
+            let effect_color = entity.set(items::SpriteColor);
             entity_commands.animation().add(parallel((
                 effect_scale.tween(
                     Vec3::new(0.5, 0.5, 0.),
@@ -179,8 +178,8 @@ fn effect_system(
                 },
             ));
             let entity = entity_commands.id().into_target();
-            let effect_translation = entity.set_with(items::Scale);
-            let effect_color = entity.set_with(items::SpriteColor);
+            let effect_translation = entity.set(items::Scale);
+            let effect_color = entity.set(items::SpriteColor);
             entity_commands.animation().add(parallel((
                 effect_translation.tween(
                     Vec3::new(1., 1., 0.),
