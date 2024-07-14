@@ -3,8 +3,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_tween::{
-    bevy_time_runner::TimeRunnerEnded, builder::*, prelude::*,
-    tween::AnimationTarget,
+    bevy_time_runner::TimeRunnerEnded, builder::parallel, items, prelude::*,
 };
 mod utils;
 
@@ -43,47 +42,40 @@ fn click_spawn_circle(
     key: Res<ButtonInput<MouseButton>>,
     asset_server: Res<AssetServer>,
 ) {
-    use interpolate::sprite_color;
     let circle_filled_image = asset_server.load("circle_filled.png");
     if let Some(coord) = coord.0 {
         if key.just_pressed(MouseButton::Left)
             || key.pressed(MouseButton::Right)
         {
-            let start = Vec3::new(coord.x, coord.y, 1.);
-            let end = Vec3::new(0., 0., 0.);
-            let transform = Transform::from_translation(start);
-            let circle = AnimationTarget.into_target();
-            let mut circle_transform = circle.transform_state(transform);
-            commands
-                .spawn((
-                    SpriteBundle {
-                        texture: circle_filled_image,
-                        transform,
-                        ..Default::default()
-                    },
-                    AnimationTarget,
-                ))
-                .animation()
-                .add(parallel((
-                    tween(
-                        secs(2.),
-                        EaseFunction::ExponentialOut,
-                        circle_transform.translation_to(end),
-                    ),
-                    tween(
-                        secs(1.),
-                        EaseFunction::BackIn,
-                        circle_transform.scale_to(Vec3::ZERO),
-                    ),
-                    tween(
-                        secs(1.),
-                        EaseFunction::Linear,
-                        circle.with(sprite_color(
-                            into_color(WHITE),
-                            into_color(DEEP_PINK),
-                        )),
-                    ),
-                )));
+            let cursor = Vec3::new(coord.x, coord.y, 1.);
+
+            let transform = Transform::from_translation(cursor);
+            let mut entity_commands = commands.spawn((SpriteBundle {
+                texture: circle_filled_image,
+                transform,
+                ..Default::default()
+            },));
+            let circle = entity_commands.id().into_target();
+            entity_commands.animation().add(parallel((
+                circle.set(items::Translation).tween(
+                    cursor,
+                    Vec3::ZERO,
+                    EaseFunction::ExponentialOut,
+                    secs(2.),
+                ),
+                circle.set(items::Scale).tween(
+                    Vec3::ONE,
+                    Vec3::ZERO,
+                    EaseFunction::BackIn,
+                    secs(1.),
+                ),
+                circle.set(items::SpriteColor).tween(
+                    into_color(WHITE),
+                    into_color(DEEP_PINK),
+                    EaseFunction::Linear,
+                    secs(1.),
+                ),
+            )));
         }
     }
 }
