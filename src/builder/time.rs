@@ -11,7 +11,7 @@ pub fn sequence<S>(
 where
     S: Sequence,
 {
-    move |b, pos| sequence.call(b, pos)
+    move |b, pos| sequence.build(b, pos)
 }
 
 /// Animations in parallel.
@@ -24,7 +24,7 @@ pub fn parallel<P>(
 where
     P: Parallel,
 {
-    move |b, pos| parallel.call(b, pos)
+    move |b, pos| parallel.build(b, pos)
 }
 
 // /// Combinator for creating a basic tween using interpolation and a tween.
@@ -110,34 +110,35 @@ pub trait Parallel: sealed::ParallelSealed {}
 impl<T> Parallel for T where T: sealed::ParallelSealed {}
 
 mod sealed {
+    use super::super::BuildAnimation;
     use super::*;
 
     pub(super) trait SequenceSealed {
-        fn call(self, a: &mut AnimationCommands, pos: &mut Duration);
+        fn build(self, a: &mut AnimationCommands, pos: &mut Duration);
     }
 
-    impl<T: FnOnce(&mut AnimationCommands, &mut Duration)> SequenceSealed for T {
-        fn call(self, a: &mut AnimationCommands, pos: &mut Duration) {
-            self(a, pos)
+    impl<T: BuildAnimation> SequenceSealed for T {
+        fn build(self, a: &mut AnimationCommands, pos: &mut Duration) {
+            self.build(a, pos)
         }
     }
 
     pub(super) trait ParallelSealed {
-        fn call(self, a: &mut AnimationCommands, pos: &mut Duration);
+        fn build(self, a: &mut AnimationCommands, pos: &mut Duration);
     }
 
-    impl<T: FnOnce(&mut AnimationCommands, &mut Duration)> ParallelSealed for T {
-        fn call(self, a: &mut AnimationCommands, pos: &mut Duration) {
-            self(a, pos)
+    impl<T: BuildAnimation> ParallelSealed for T {
+        fn build(self, a: &mut AnimationCommands, pos: &mut Duration) {
+            self.build(a, pos)
         }
     }
 
     macro_rules! impl_sequence {
         ($($i:tt $t:ident)+) => {
             impl< $($t: SequenceSealed,)+ > SequenceSealed for ($($t,)*) {
-                fn call(self, a: &mut AnimationCommands, pos: &mut Duration) {
+                fn build(self, a: &mut AnimationCommands, pos: &mut Duration) {
                     $(
-                        self.$i.call(a, pos);
+                        self.$i.build(a, pos);
                     )*
                 }
             }
@@ -146,11 +147,11 @@ mod sealed {
     macro_rules! impl_parallel {
         ($($i:tt $t:ident)+) => {
             impl< $($t: ParallelSealed,)+ > ParallelSealed for ($($t,)*) {
-                fn call(self, a: &mut AnimationCommands, main_pos: &mut Duration) {
+                fn build(self, a: &mut AnimationCommands, main_pos: &mut Duration) {
                     let mut furthest = *main_pos;
                     let mut pos = *main_pos;
                     $(
-                        self.$i.call(a, &mut pos);
+                        self.$i.build(a, &mut pos);
                         if pos > furthest {
                             furthest = pos;
                         }
