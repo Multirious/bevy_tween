@@ -179,6 +179,7 @@ impl<'a> AnimationBuilder<'a> {
     /// [`Self::length`].
     /// It's also possible to use combinator like [`go`], [`forward`], and [`backward`]
     /// as the last combinator to customize the length.
+    #[allow(clippy::should_implement_trait)] // no way people can get confuse this with `Add::add`
     pub fn add<F>(self, animation: F) -> EntityCommands<'a>
     where
         F: FnOnce(&mut AnimationCommands, &mut Duration),
