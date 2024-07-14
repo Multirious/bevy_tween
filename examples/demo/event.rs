@@ -152,10 +152,10 @@ fn effect_system(
                 },
             ));
             let entity = entity_commands.id().into_target();
-            let effect_translation = entity.set_with(items::Translation);
+            let effect_scale = entity.set_with(items::Scale);
             let effect_color = entity.set_with(items::SpriteColor);
             entity_commands.animation().add(parallel((
-                effect_translation.tween(
+                effect_scale.tween(
                     Vec3::new(0.5, 0.5, 0.),
                     Vec3::new(3., 3., 0.),
                     EaseFunction::Linear,
