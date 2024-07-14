@@ -11,7 +11,7 @@ mod time;
 pub use time::{backward, forward, go, parallel, sequence, Parallel, Sequence};
 
 mod tween;
-pub use tween::{SetWithExt, TargetSetter, TargetSetterState};
+pub use tween::{TargetSetExt, TargetSetter, TargetSetterState};
 
 mod event;
 pub use event::{event, event_at, event_exact, event_for};

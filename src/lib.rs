@@ -395,7 +395,7 @@ pub mod prelude {
 
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
-    pub use crate::builder::{AnimationBuilderExt, SetWithExt as _};
+    pub use crate::builder::{AnimationBuilderExt, TargetSetExt as _};
 
     pub use crate::targets::IntoTarget;
     pub use crate::tween_event::{TweenEvent, TweenEventData};

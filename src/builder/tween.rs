@@ -7,11 +7,11 @@ use crate::{curve::AToB, set::Set};
 
 use super::{AnimationCommands, BuildAnimation};
 
-pub trait SetWithExt: Sized {
+pub trait TargetSetExt: Sized {
     fn set<S: Set>(&self, setter: S) -> TargetSetter<Self, S>;
 }
 
-impl SetWithExt for crate::targets::TargetComponent {
+impl TargetSetExt for crate::targets::TargetComponent {
     fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
         TargetSetter {
             target: self.clone(),
@@ -19,7 +19,7 @@ impl SetWithExt for crate::targets::TargetComponent {
         }
     }
 }
-impl<A: Asset> SetWithExt for crate::targets::TargetAsset<A> {
+impl<A: Asset> TargetSetExt for crate::targets::TargetAsset<A> {
     fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
         TargetSetter {
             target: self.clone(),
@@ -27,7 +27,7 @@ impl<A: Asset> SetWithExt for crate::targets::TargetAsset<A> {
         }
     }
 }
-impl SetWithExt for crate::targets::TargetResource {
+impl TargetSetExt for crate::targets::TargetResource {
     fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
         TargetSetter {
             target: self.clone(),
