@@ -93,16 +93,16 @@ pub fn go(to: Duration) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |_, pos| *pos = to
 }
 
-/// Tuple of FnOnces in [`sequence()`],
-/// support up to 16 indexes but can be circumvented by nesting tuples.
+/// Tuple of [`BuildAnimation`](super::BuildAnimation) in [`sequence()`],
+/// support up to 16 indexes but can be nested indefinitely.
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 #[allow(private_bounds)]
 pub trait Sequence: sealed::SequenceSealed {}
 impl<T> Sequence for T where T: sealed::SequenceSealed {}
 
-/// Tuple of FnOnces in [`parallel()`],
-/// support up to 16 indexes but can be circumvented by nesting tuples.
+/// Tuple of [`BuildAnimation`](super::BuildAnimation) in [`parallel()`],
+/// support up to 16 indexes but can be nested indefinitely.
 ///
 /// This trait is sealed and not meant to be implemented outside of the current crate.
 #[allow(private_bounds)]
