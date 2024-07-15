@@ -159,10 +159,10 @@ where
 }
 
 pub struct Tween<T: Bundle, S: Set + Bundle, C: Bundle> {
-    duration: Duration,
-    target: T,
-    setter: S,
-    curve: C,
+    pub duration: Duration,
+    pub target: T,
+    pub setter: S,
+    pub curve: C,
 }
 
 impl<T, S, C> BuildAnimation for Tween<T, S, C>
