@@ -64,7 +64,7 @@ where
         start: S::Value,
         end: S::Value,
         duration: Duration,
-        curve_1d: C,
+        ease_curve: C,
     ) -> Tween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
@@ -76,7 +76,7 @@ where
             curve: AToB {
                 a: start,
                 b: end,
-                ease_curve: curve_1d,
+                ease_curve,
             },
         }
     }
@@ -110,7 +110,7 @@ where
         start: S::Value,
         end: S::Value,
         duration: Duration,
-        curve_1d: C,
+        ease_curve: C,
     ) -> Tween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
@@ -123,7 +123,7 @@ where
             curve: AToB {
                 a: start,
                 b: end,
-                ease_curve: curve_1d,
+                ease_curve,
             },
         }
     }
@@ -132,21 +132,21 @@ where
         &mut self,
         to: S::Value,
         duration: Duration,
-        curve: C,
+        ease_curve: C,
     ) -> Tween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
     {
         let start = std::mem::replace(&mut self.state, to.clone());
         let end = to;
-        self.tween(start, end, duration, curve)
+        self.tween(start, end, duration, ease_curve)
     }
 
     pub fn tween_to_with<C, F>(
         &mut self,
         with: F,
         duration: Duration,
-        curve_1d: C,
+        ease_curve: C,
     ) -> Tween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
@@ -154,7 +154,7 @@ where
     {
         let start = self.state.clone();
         let end = with(&mut self.state);
-        self.tween(start, end, duration, curve_1d)
+        self.tween(start, end, duration, ease_curve)
     }
 }
 
