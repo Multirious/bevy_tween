@@ -67,7 +67,7 @@ impl Default for EaseClosure {
 pub struct AToB<V, C> {
     pub a: V,
     pub b: V,
-    pub curve: C,
+    pub ease_curve: C,
 }
 
 #[allow(clippy::type_complexity)]

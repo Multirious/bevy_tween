@@ -237,7 +237,7 @@ impl<'a> AnimationBuilder<'a> {
         start: V,
         end: V,
         duration: Duration,
-        curve_1d: C,
+        ease_curve: C,
     ) -> EntityCommands<'a>
     where
         T: Bundle,
@@ -268,7 +268,7 @@ impl<'a> AnimationBuilder<'a> {
             AToB {
                 a: start,
                 b: end,
-                curve: curve_1d,
+                ease_curve,
             },
             time_runner,
         ));

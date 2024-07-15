@@ -76,7 +76,7 @@ where
             curve: AToB {
                 a: start,
                 b: end,
-                curve: curve_1d,
+                ease_curve: curve_1d,
             },
         }
     }
@@ -123,7 +123,7 @@ where
             curve: AToB {
                 a: start,
                 b: end,
-                curve: curve_1d,
+                ease_curve: curve_1d,
             },
         }
     }
