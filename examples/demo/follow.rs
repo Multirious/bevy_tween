@@ -8,10 +8,7 @@ use bevy::{
 };
 use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_tween::{
-    bevy_time_runner::TimeRunner,
-    interpolate::{scale, sprite_color, translation},
-    prelude::*,
-    tween::AnimationTarget,
+    bevy_time_runner::TimeRunner, builder::parallel, items, prelude::*,
 };
 
 fn main() {
@@ -78,39 +75,39 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn((
             SpriteBundle {
                 texture: asset_server.load("square_filled.png"),
+                sprite: Sprite {
+                    color: into_color(DEEP_PINK),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             Jeb,
-            AnimationTarget,
         ))
         .with_children(|c| {
             // Spawning the marker for an animator that will be responsible
             // for the follow effect
             c.spawn(JebTranslationAnimator);
 
-            let jeb = AnimationTarget.into_target();
-            // Spawning an animator that's responsible for a rotating effect
+            let jeb = c.parent_entity().into_target();
+            // Spawning an animator that's responsible for rotating effect
             c.animation()
                 .repeat(Repeat::Infinitely)
                 .repeat_style(RepeatStyle::PingPong)
-                .insert_tween_here(
+                .insert_tween_here(jeb.set(items::AngleZ).tween(
+                    0.,
+                    TAU,
                     Duration::from_secs(2),
                     EaseFunction::CubicInOut,
-                    jeb.with_closure(|transform: &mut Transform, value| {
-                        let start = 0.;
-                        let end = TAU;
-                        transform.rotation =
-                            Quat::from_rotation_z(start.lerp(end, value));
-                    }),
-                );
+                ));
 
-            // Spawning a Tweener that's responsible for scaling effect
+            // Spawning an animator that's responsible for scaling effect
             // when you launch up the demo.
-            c.animation().insert_tween_here(
+            c.animation().insert_tween_here(jeb.set(items::Scale).tween(
+                Vec3::ZERO,
+                Vec3::ONE,
                 Duration::from_secs(1),
                 EaseFunction::QuinticIn,
-                jeb.with(scale(Vec3::ZERO, Vec3::ONE)),
-            );
+            ));
         });
 }
 
@@ -118,26 +115,27 @@ fn jeb_follows_cursor(
     mut commands: Commands,
     coord: Res<utils::MainCursorWorldCoord>,
     config: Res<Config>,
-    q_jeb: Query<&Transform, With<Jeb>>,
+    q_jeb: Query<(Entity, &Transform), With<Jeb>>,
     q_jeb_translation_animator: Query<
         (Entity, Option<&TimeRunner>),
         With<JebTranslationAnimator>,
     >,
     mut cursor_moved: EventReader<CursorMoved>,
+    mut cursor_prev_stopped: Local<bool>,
 ) {
-    let jeb_transform = q_jeb.single();
-    let (jeb_animator_entity, jeb_time_runner) =
+    let (jeb, jeb_transform) = q_jeb.single();
+    let (jeb_translation_animator, jeb_time_runner) =
         q_jeb_translation_animator.single();
     let Some(coord) = coord.0 else {
         return;
     };
     let update = match config.update_kind {
-        UpdateKind::CursorMoved => cursor_moved.read().next().is_some(),
+        UpdateKind::CursorMoved => cursor_moved.read().last().is_some(),
         UpdateKind::CusorStopped => {
-            let dx = (coord.x - jeb_transform.translation.x).abs();
-            let dy = (coord.x - jeb_transform.translation.x).abs();
-            let is_near_coord = dx < 0.05 && dy < 0.05;
-            cursor_moved.read().next().is_none() && !is_near_coord
+            let cursor_stopped = cursor_moved.read().last().is_none();
+            let update = cursor_stopped && !*cursor_prev_stopped;
+            *cursor_prev_stopped = cursor_stopped;
+            update
         }
         UpdateKind::AnimatorCompleted => match jeb_time_runner {
             Some(jeb_time_runner) => {
@@ -148,24 +146,25 @@ fn jeb_follows_cursor(
         },
     };
     if update {
-        let jeb = AnimationTarget.into_target();
+        let jeb = jeb.into_target();
         commands
-            .entity(jeb_animator_entity)
+            .entity(jeb_translation_animator)
+            .despawn_descendants() // clear previous animation
             .animation()
-            .insert_tween_here(
-                config.tween_duration,
-                config.tween_ease,
-                (
-                    jeb.with(translation(
-                        jeb_transform.translation,
-                        Vec3::new(coord.x, coord.y, 0.),
-                    )),
-                    jeb.with(sprite_color(
-                        into_color(WHITE),
-                        into_color(DEEP_PINK),
-                    )),
+            .add(parallel((
+                jeb.set(items::Translation).tween(
+                    jeb_transform.translation,
+                    Vec3::new(coord.x, coord.y, 0.),
+                    config.tween_duration,
+                    config.tween_ease,
                 ),
-            );
+                jeb.set(items::SpriteColor).tween(
+                    into_color(WHITE),
+                    into_color(DEEP_PINK),
+                    config.tween_duration,
+                    config.tween_ease,
+                ),
+            )));
     }
 }
 
