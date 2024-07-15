@@ -8,13 +8,13 @@ use bevy_time_runner::{
 };
 
 mod time;
-pub use time::{backward, forward, go, parallel, sequence, Parallel, Sequence};
+pub use time::*;
 
 mod tween;
-pub use tween::{TargetSetExt, TargetSetter, TargetSetterState};
+pub use tween::*;
 
 mod event;
-pub use event::{event, event_at, event_exact, event_for};
+pub use event::*;
 
 use crate::{curve::AToB, set::Set};
 
@@ -230,20 +230,15 @@ impl<'a> AnimationBuilder<'a> {
     /// Can be used to create a simple animation quickly.
     /// [`TimeRunner`]'s length is determined by provided `duration` unless use
     /// [`Self::length`]
-    pub fn insert_tween_here<T, S, V, C>(
+    pub fn insert_tween_here<T, S, C>(
         self,
-        target: T,
-        setter: S,
-        start: V,
-        end: V,
-        duration: Duration,
-        ease_curve: C,
+        tween: Tween<T, S, C>,
     ) -> EntityCommands<'a>
     where
         T: Bundle,
         S: Set + Bundle,
-        V: Send + Sync + 'static,
-        C: Send + Sync + 'static,
+        S::Item: Send + Sync + 'static,
+        C: Bundle,
     {
         let AnimationBuilder {
             mut entity_commands,
@@ -257,19 +252,15 @@ impl<'a> AnimationBuilder<'a> {
                 time_runner.set_length(length);
             }
             None => {
-                time_runner.set_length(duration);
+                time_runner.set_length(tween.duration);
             }
         }
 
         entity_commands.insert((
-            TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
-            target,
-            setter,
-            AToB {
-                a: start,
-                b: end,
-                ease_curve,
-            },
+            TimeSpan::try_from(..tween.duration).unwrap(),
+            tween.target,
+            tween.setter,
+            tween.curve,
             time_runner,
         ));
         if skipped {
