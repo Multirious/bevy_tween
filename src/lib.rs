@@ -446,6 +446,8 @@ impl PluginGroup for DefaultTweenPlugins {
             .add(TweenCorePlugin::default())
             .add(register_types);
 
+        let group = group.add(set::SetWorldPlugin);
+
         let group = group
             .add(set::component::<items::Translation>())
             .add(set::component::<items::Rotation>())
