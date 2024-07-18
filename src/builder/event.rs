@@ -1,4 +1,4 @@
-use super::AnimationCommands;
+use super::{AnimationCommands, BuildAnimation};
 use crate::prelude::TweenEventData;
 use bevy_time_runner::TimeSpan;
 use std::time::Duration;
@@ -15,17 +15,13 @@ use std::time::Duration;
 /// or [`TweenEventTakingPlugin`](crate::tween_event::TweenEventTakingPlugin).
 ///
 /// </div>
-pub fn event<Data>(
-    event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+pub fn event<Data>(event_data: Data) -> BuildTweenEvent<Data>
 where
     Data: Send + Sync + 'static,
 {
-    move |a, pos| {
-        a.spawn((
-            TimeSpan::try_from(*pos..=*pos).unwrap(),
-            TweenEventData::with_data(event_data),
-        ));
+    BuildTweenEvent {
+        time: LengthOrSpan::Length(Duration::ZERO),
+        event_data,
     }
 }
 
@@ -41,18 +37,13 @@ where
 /// or [`TweenEventTakingPlugin`](crate::tween_event::TweenEventTakingPlugin).
 ///
 /// </div>
-pub fn event_at<Data>(
-    at: Duration,
-    event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+pub fn event_at<Data>(at: Duration, event_data: Data) -> BuildTweenEvent<Data>
 where
     Data: Send + Sync + 'static,
 {
-    move |a, _pos| {
-        a.spawn((
-            TimeSpan::try_from(at..=at).unwrap(),
-            TweenEventData::with_data(event_data),
-        ));
+    BuildTweenEvent {
+        time: LengthOrSpan::Span(TimeSpan::try_from(at..=at).unwrap()),
+        event_data,
     }
 }
 
@@ -71,18 +62,13 @@ where
 pub fn event_for<Data>(
     length: Duration,
     event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+) -> BuildTweenEvent<Data>
 where
     Data: Send + Sync + 'static,
 {
-    move |a, pos| {
-        let start = *pos;
-        let end = start + length;
-        a.spawn((
-            TimeSpan::try_from(start..end).unwrap(),
-            TweenEventData::with_data(event_data),
-        ));
-        *pos = end;
+    BuildTweenEvent {
+        time: LengthOrSpan::Length(length),
+        event_data,
     }
 }
 
@@ -98,19 +84,42 @@ where
 /// or [`TweenEventTakingPlugin`](crate::tween_event::TweenEventTakingPlugin).
 ///
 /// </div>
-pub fn event_exact<S, Data>(
-    span: S,
-    event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+pub fn event_exact<S, Data>(span: S, event_data: Data) -> BuildTweenEvent<Data>
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    move |a, _pos| {
-        a.spawn((
-            span.try_into().unwrap(),
-            TweenEventData::with_data(event_data),
-        ));
+    BuildTweenEvent {
+        time: LengthOrSpan::Span(span.try_into().unwrap()),
+        event_data,
     }
+}
+
+pub struct BuildTweenEvent<D>
+where
+    D: Send + Sync + 'static,
+{
+    time: LengthOrSpan,
+    event_data: D,
+}
+
+impl<D> BuildAnimation for BuildTweenEvent<D>
+where
+    D: Send + Sync + 'static,
+{
+    fn build(self, commands: &mut AnimationCommands, position: &mut Duration) {
+        let span = match self.time {
+            LengthOrSpan::Length(length) => {
+                TimeSpan::try_from(*position..(*position + length)).unwrap()
+            }
+            LengthOrSpan::Span(span) => span,
+        };
+        commands.spawn((span, TweenEventData::with_data(self.event_data)));
+    }
+}
+
+enum LengthOrSpan {
+    Length(Duration),
+    Span(TimeSpan),
 }

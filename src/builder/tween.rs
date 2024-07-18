@@ -47,11 +47,11 @@ where
     S: Set + Clone + Component,
     S::Value: Send + Sync + 'static,
 {
-    pub fn curve<C>(&self, duration: Duration, curve: C) -> Tween<T, S, C>
+    pub fn curve<C>(&self, duration: Duration, curve: C) -> BuildTween<T, S, C>
     where
         C: Bundle,
     {
-        Tween {
+        BuildTween {
             duration,
             target: self.target.clone(),
             setter: self.setter.clone(),
@@ -65,11 +65,11 @@ where
         end: S::Value,
         duration: Duration,
         ease_curve: C,
-    ) -> Tween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
     {
-        Tween {
+        BuildTween {
             duration,
             target: self.target.clone(),
             setter: self.setter.clone(),
@@ -111,12 +111,12 @@ where
         end: S::Value,
         duration: Duration,
         ease_curve: C,
-    ) -> Tween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
     {
         self.state = end.clone();
-        Tween {
+        BuildTween {
             duration,
             target: self.target.clone(),
             setter: self.setter.clone(),
@@ -133,7 +133,7 @@ where
         to: S::Value,
         duration: Duration,
         ease_curve: C,
-    ) -> Tween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
     {
@@ -147,7 +147,7 @@ where
         with: F,
         duration: Duration,
         ease_curve: C,
-    ) -> Tween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<S::Value, C>>
     where
         C: Send + Sync + 'static,
         F: FnOnce(&mut S::Value) -> S::Value,
@@ -158,14 +158,14 @@ where
     }
 }
 
-pub struct Tween<T: Bundle, S: Set + Bundle, C: Bundle> {
+pub struct BuildTween<T: Bundle, S: Set + Bundle, C: Bundle> {
     pub duration: Duration,
     pub target: T,
     pub setter: S,
     pub curve: C,
 }
 
-impl<T, S, C> BuildAnimation for Tween<T, S, C>
+impl<T, S, C> BuildAnimation for BuildTween<T, S, C>
 where
     T: Bundle,
     S: Set + Bundle,

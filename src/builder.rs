@@ -16,7 +16,7 @@ pub use tween::*;
 mod event;
 pub use event::*;
 
-use crate::{curve::AToB, set::Set};
+use crate::set::Set;
 
 pub trait BuildAnimation {
     fn build(self, commands: &mut AnimationCommands, position: &mut Duration);
@@ -232,7 +232,7 @@ impl<'a> AnimationBuilder<'a> {
     /// [`Self::length`]
     pub fn insert_tween_here<T, S, C>(
         self,
-        tween: Tween<T, S, C>,
+        tween: BuildTween<T, S, C>,
     ) -> EntityCommands<'a>
     where
         T: Bundle,
