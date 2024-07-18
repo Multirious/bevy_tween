@@ -39,8 +39,8 @@ impl TargetSetExt for crate::targets::TargetResource {
     }
 }
 
-#[derive(Bundle)]
-pub struct SetWorldTyped<V>
+#[derive(Bundle, Clone)]
+pub struct SetWorldMarker<V>
 where
     V: Send + Sync + 'static,
 {
@@ -48,19 +48,19 @@ where
     marker: PhantomData<V>,
     pub set_world: SetWorld,
 }
-impl<V> SetWorldTyped<V>
+impl<V> SetWorldMarker<V>
 where
     V: Send + Sync + 'static,
 {
-    pub fn new(set_world: SetWorld) -> SetWorldTyped<V> {
-        SetWorldTyped {
+    pub fn new(set_world: SetWorld) -> SetWorldMarker<V> {
+        SetWorldMarker {
             marker: PhantomData,
             set_world,
         }
     }
 }
 
-impl<V> Set for SetWorldTyped<V>
+impl<V> Set for SetWorldMarker<V>
 where
     V: Send + Sync + 'static,
 {
@@ -75,104 +75,111 @@ where
 }
 
 pub trait TargetSetComponentWorldExt: Sized {
-    fn set_component_world<F, C, V>(
+    fn world_set_component<F, C, V>(
         &self,
         select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
+        F: Send + Sync + 'static + Fn(&mut C, &V),
         C: Component,
-        V: Send + Sync + 'static + Copy;
+        V: Send + Sync + 'static + Clone;
 }
 
 impl TargetSetComponentWorldExt for crate::targets::TargetComponent {
-    fn set_component_world<F, C, V>(
+    fn world_set_component<F, C, V>(
         &self,
-        select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+        set: F,
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
+        F: Send + Sync + 'static + Fn(&mut C, &V),
         C: Component,
-        V: Send + Sync + 'static + Copy,
+        V: Send + Sync + 'static + Clone,
     {
-        self.set(SetWorldTyped::new(SetWorld::component(select_property)))
+        self.set(SetWorldMarker::new(SetWorld::component(set)))
     }
 }
 
 pub trait TargetSetAssetWorldExt<A: Asset>: Sized {
-    fn set_asset_world<F, V>(
+    fn world_set_asset<F, V>(
         &self,
         select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
-        V: Send + Sync + 'static + Copy;
+        F: Send + Sync + 'static + Fn(&mut A, &V),
+        V: Send + Sync + 'static + Clone;
 }
 
 impl<A> TargetSetAssetWorldExt<A> for crate::targets::TargetAsset<A>
 where
     A: Asset,
 {
-    fn set_asset_world<F, V>(
+    fn world_set_asset<F, V>(
         &self,
-        select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+        set: F,
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
-        V: Send + Sync + 'static + Copy,
+        F: Send + Sync + 'static + Fn(&mut A, &V),
+        V: Send + Sync + 'static + Clone,
     {
-        self.set(SetWorldTyped::new(SetWorld::asset(select_property)))
+        self.set(SetWorldMarker::new(SetWorld::asset(set)))
     }
 }
 
 pub trait TargetSetResourceWorldExt: Sized {
-    fn set_resource_world<F, C, V>(
+    fn world_set_resource<F, R, V>(
         &self,
-        select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+        set: F,
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
-        C: Resource,
-        V: Send + Sync + 'static + Copy;
+        F: Send + Sync + 'static + Fn(&mut R, &V),
+        R: Resource,
+        V: Send + Sync + 'static + Clone;
 }
 
 impl TargetSetResourceWorldExt for crate::targets::TargetResource {
-    fn set_resource_world<F, C, V>(
+    fn world_set_resource<F, R, V>(
         &self,
-        select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+        set: F,
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
-        C: Resource,
-        V: Send + Sync + 'static + Copy,
+        F: Send + Sync + 'static + Fn(&mut R, &V),
+        R: Resource,
+        V: Send + Sync + 'static + Clone,
     {
-        self.set(SetWorldTyped::new(SetWorld::resource(select_property)))
+        self.set(SetWorldMarker::new(SetWorld::resource(set)))
     }
 }
 
 pub trait TargetSetHandleComponentWorldExt: Sized {
-    fn set_handle_component_world<F, A, V>(
+    fn world_set_component_handle<FH, FP, C, A, V>(
         &self,
-        select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+        select_handle: FH,
+        set: FP,
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        FH: Send + Sync + 'static + Fn(&C) -> &Handle<A>,
+        FP: Send + Sync + 'static + Fn(&mut A, &V),
+        C: Component,
         A: Asset,
-        V: Send + Sync + 'static + Copy;
+        V: Send + Sync + 'static + Clone;
 }
 
 impl TargetSetHandleComponentWorldExt for crate::targets::TargetComponent {
-    fn set_handle_component_world<F, A, V>(
+    fn world_set_component_handle<FH, FP, C, A, V>(
         &self,
-        select_property: F,
-    ) -> TargetSetter<Self, SetWorldTyped<V>>
+        select_handle: FH,
+        set: FP,
+    ) -> TargetSetter<Self, SetWorldMarker<V>>
     where
-        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        FH: Send + Sync + 'static + Fn(&C) -> &Handle<A>,
+        FP: Send + Sync + 'static + Fn(&mut A, &V),
+        C: Component,
         A: Asset,
-        V: Send + Sync + 'static + Copy,
+        V: Send + Sync + 'static + Clone,
     {
-        self.set(SetWorldTyped::new(SetWorld::handle_component(
-            select_property,
+        self.set(SetWorldMarker::new(SetWorld::component_handle(
+            select_handle,
+            set,
         )))
     }
 }
