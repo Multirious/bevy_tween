@@ -26,11 +26,11 @@ impl Plugin for SetWorldPlugin {
 #[derive(Component)]
 #[allow(clippy::type_complexity)]
 pub struct SetWorld(
-    Option<Box<dyn Fn(Entity, &mut World) + 'static + Send + Sync>>,
+    pub(crate) Option<Box<dyn Fn(Entity, &mut World) + 'static + Send + Sync>>,
 );
 
 impl SetWorld {
-    fn component<F, C, V>(select_property: F) -> SetWorld
+    pub fn component<F, C, V>(select_property: F) -> SetWorld
     where
         F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
         C: Component,
@@ -82,7 +82,7 @@ impl SetWorld {
         })))
     }
 
-    fn asset<F, A, V>(select_property: F) -> SetWorld
+    pub fn asset<F, A, V>(select_property: F) -> SetWorld
     where
         F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
         A: Asset,
@@ -142,7 +142,7 @@ impl SetWorld {
         })))
     }
 
-    fn resource<F, R, V>(select_property: F) -> SetWorld
+    pub fn resource<F, R, V>(select_property: F) -> SetWorld
     where
         F: Send + Sync + 'static + Fn(&mut R) -> &mut V,
         R: Resource,
@@ -168,7 +168,7 @@ impl SetWorld {
         })))
     }
 
-    fn handle_component<F, A, V>(select_property: F) -> SetWorld
+    pub fn handle_component<F, A, V>(select_property: F) -> SetWorld
     where
         F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
         A: Asset,
