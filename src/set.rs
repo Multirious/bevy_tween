@@ -8,6 +8,9 @@ pub use plugin::*;
 mod system;
 pub use system::*;
 
+mod set_world;
+pub use set_world::*;
+
 pub trait Set: Send + Sync + 'static {
     type Item;
     type Value;
