@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 
@@ -23,20 +25,27 @@ impl Plugin for SetWorldPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 #[allow(clippy::type_complexity)]
 pub struct SetWorld(
-    pub(crate) Option<Box<dyn Fn(Entity, &mut World) + 'static + Send + Sync>>,
+    pub(crate) Arc<dyn Fn(Entity, &mut World) + 'static + Send + Sync>,
 );
 
 impl SetWorld {
-    pub fn component<F, C, V>(select_property: F) -> SetWorld
+    pub fn new<F>(setter: F) -> SetWorld
     where
-        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
-        C: Component,
-        V: Send + Sync + 'static + Copy,
+        F: Fn(Entity, &mut World) + 'static + Send + Sync,
     {
-        SetWorld(Some(Box::new(move |tween_entity, world| {
+        SetWorld(Arc::new(setter))
+    }
+
+    pub fn component<F, C, V>(set: F) -> SetWorld
+    where
+        F: Send + Sync + 'static + Fn(&mut C, &V),
+        C: Component,
+        V: Send + Sync + 'static + Clone,
+    {
+        SetWorld::new(move |tween_entity, world| {
             let Some(target_entity) =
                 world.get::<TargetComponent>(tween_entity)
             else {
@@ -50,22 +59,20 @@ impl SetWorld {
                     else {
                         return;
                     };
-                    let value = value.0;
+                    let value = value.0.clone();
 
                     let Some(mut component) = world.get_mut::<C>(*entity)
                     else {
                         return;
                     };
-                    let field = select_property(&mut component);
-
-                    *field = value
+                    set(&mut component, &value);
                 }
                 TargetComponent::Entities(entities) => {
                     let Some(value) = world.get::<SetterValue<V>>(tween_entity)
                     else {
                         return;
                     };
-                    let value = value.0;
+                    let value = value.0.clone();
 
                     let entities = entities.clone();
                     for entity in entities {
@@ -73,22 +80,20 @@ impl SetWorld {
                         else {
                             return;
                         };
-                        let field = select_property(&mut component);
-
-                        *field = value
+                        set(&mut component, &value);
                     }
                 }
             }
-        })))
+        })
     }
 
-    pub fn asset<F, A, V>(select_property: F) -> SetWorld
+    pub fn asset<F, A, V>(set: F) -> SetWorld
     where
-        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        F: Send + Sync + 'static + Fn(&mut A, &V),
         A: Asset,
-        V: Send + Sync + 'static + Copy,
+        V: Send + Sync + 'static + Clone,
     {
-        SetWorld(Some(Box::new(move |tween_entity, world| {
+        SetWorld::new(move |tween_entity, world| {
             let Some(target_asset) = world.get::<TargetAsset<A>>(tween_entity)
             else {
                 return;
@@ -101,7 +106,7 @@ impl SetWorld {
                     else {
                         return;
                     };
-                    let value = value.0;
+                    let value = value.0.clone();
 
                     let handle = handle.clone();
                     let Some(mut assets) =
@@ -112,16 +117,14 @@ impl SetWorld {
                     let Some(asset) = assets.get_mut(&handle) else {
                         return;
                     };
-                    let field = select_property(asset);
-
-                    *field = value
+                    set(asset, &value);
                 }
                 TargetAsset::Assets(handles) => {
                     let Some(value) = world.get::<SetterValue<V>>(tween_entity)
                     else {
                         return;
                     };
-                    let value = value.0;
+                    let value = value.0.clone();
 
                     let handles = handles.clone();
                     let Some(mut assets) =
@@ -133,22 +136,20 @@ impl SetWorld {
                         let Some(asset) = assets.get_mut(&handle) else {
                             return;
                         };
-                        let field = select_property(asset);
-
-                        *field = value
+                        set(asset, &value);
                     }
                 }
             }
-        })))
+        })
     }
 
-    pub fn resource<F, R, V>(select_property: F) -> SetWorld
+    pub fn resource<F, R, V>(set: F) -> SetWorld
     where
-        F: Send + Sync + 'static + Fn(&mut R) -> &mut V,
+        F: Send + Sync + 'static + Fn(&mut R, &V),
         R: Resource,
-        V: Send + Sync + 'static + Copy,
+        V: Send + Sync + 'static + Clone,
     {
-        SetWorld(Some(Box::new(move |tween_entity, world| {
+        SetWorld::new(move |tween_entity, world| {
             let Some(_target_resource) =
                 world.get::<TargetResource>(tween_entity)
             else {
@@ -158,23 +159,27 @@ impl SetWorld {
             let Some(value) = world.get::<SetterValue<V>>(tween_entity) else {
                 return;
             };
-            let value = value.0;
+            let value = value.0.clone();
 
             let Some(mut resource) = world.get_resource_mut::<R>() else {
                 return;
             };
-            let property = select_property(&mut resource);
-            *property = value;
-        })))
+            set(&mut resource, &value);
+        })
     }
 
-    pub fn handle_component<F, A, V>(select_property: F) -> SetWorld
+    pub fn component_handle<FH, FP, C, A, V>(
+        select_handle: FH,
+        set: FP,
+    ) -> SetWorld
     where
-        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        FH: Send + Sync + 'static + Fn(&C) -> &Handle<A>,
+        FP: Send + Sync + 'static + Fn(&mut A, &V),
+        C: Component,
         A: Asset,
-        V: Send + Sync + 'static + Copy,
+        V: Send + Sync + 'static + Clone,
     {
-        SetWorld(Some(Box::new(move |tween_entity, world| {
+        SetWorld::new(move |tween_entity, world| {
             let Some(target_entity) =
                 world.get::<TargetComponent>(tween_entity)
             else {
@@ -188,12 +193,12 @@ impl SetWorld {
                     else {
                         return;
                     };
-                    let value = value.0;
+                    let value = value.0.clone();
 
-                    let Some(handle) = world.get::<Handle<A>>(*entity) else {
+                    let Some(component) = world.get::<C>(*entity) else {
                         return;
                     };
-                    let handle = handle.clone();
+                    let handle = select_handle(component).clone();
 
                     let Some(mut assets_res) =
                         world.get_resource_mut::<Assets<A>>()
@@ -204,24 +209,22 @@ impl SetWorld {
                         return;
                     };
 
-                    let property = select_property(asset);
-
-                    *property = value
+                    set(asset, &value);
                 }
                 TargetComponent::Entities(entities) => {
                     let Some(value) = world.get::<SetterValue<V>>(tween_entity)
                     else {
                         return;
                     };
-                    let value = value.0;
+                    let value = value.0.clone();
 
                     let entities = entities.clone();
                     for entity in entities {
-                        let Some(handle) = world.get::<Handle<A>>(entity)
-                        else {
+                        let Some(component) = world.get::<C>(entity) else {
                             return;
                         };
-                        let handle = handle.clone();
+                        let handle = select_handle(component).clone();
+
                         let Some(mut assets_res) =
                             world.get_resource_mut::<Assets<A>>()
                         else {
@@ -232,13 +235,11 @@ impl SetWorld {
                             return;
                         };
 
-                        let property = select_property(asset);
-
-                        *property = value
+                        set(asset, &value)
                     }
                 }
             }
-        })))
+        })
     }
 }
 
@@ -250,17 +251,10 @@ fn set_world_system(world: &mut World) {
     )>();
     let entities = query.iter(world).collect::<Vec<_>>();
     for entity in entities {
-        let Some(mut set_reflect) = world.get_mut::<SetWorld>(entity) else {
+        let Some(set_reflect) = world.get::<SetWorld>(entity) else {
             return;
         };
-        let Some(set) = set_reflect.0.take() else {
-            return;
-        };
+        let set = set_reflect.0.clone();
         set(entity, world);
-
-        let Some(mut set_reflect) = world.get_mut::<SetWorld>(entity) else {
-            return;
-        };
-        set_reflect.0 = Some(set);
     }
 }
