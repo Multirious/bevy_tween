@@ -1,9 +1,12 @@
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpan;
 
-use crate::{curve::AToB, set::Set};
+use crate::{
+    curve::AToB,
+    set::{Set, SetWorld},
+};
 
 use super::{AnimationCommands, BuildAnimation};
 
@@ -33,6 +36,144 @@ impl TargetSetExt for crate::targets::TargetResource {
             target: self.clone(),
             setter,
         }
+    }
+}
+
+#[derive(Bundle)]
+pub struct SetWorldTyped<V>
+where
+    V: Send + Sync + 'static,
+{
+    #[bundle(ignore)]
+    marker: PhantomData<V>,
+    pub set_world: SetWorld,
+}
+impl<V> SetWorldTyped<V>
+where
+    V: Send + Sync + 'static,
+{
+    pub fn new(set_world: SetWorld) -> SetWorldTyped<V> {
+        SetWorldTyped {
+            marker: PhantomData,
+            set_world,
+        }
+    }
+}
+
+impl<V> Set for SetWorldTyped<V>
+where
+    V: Send + Sync + 'static,
+{
+    type Item = ();
+    type Value = V;
+
+    fn set(&self, _item: &mut Self::Item, _value: &Self::Value) {
+        panic!(
+            "This Set impl is only used for type checking and must not be used for anything else"
+        );
+    }
+}
+
+pub trait TargetSetComponentWorldExt: Sized {
+    fn set_component_world<F, C, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
+        C: Component,
+        V: Send + Sync + 'static + Copy;
+}
+
+impl TargetSetComponentWorldExt for crate::targets::TargetComponent {
+    fn set_component_world<F, C, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
+        C: Component,
+        V: Send + Sync + 'static + Copy,
+    {
+        self.set(SetWorldTyped::new(SetWorld::component(select_property)))
+    }
+}
+
+pub trait TargetSetAssetWorldExt<A: Asset>: Sized {
+    fn set_asset_world<F, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        V: Send + Sync + 'static + Copy;
+}
+
+impl<A> TargetSetAssetWorldExt<A> for crate::targets::TargetAsset<A>
+where
+    A: Asset,
+{
+    fn set_asset_world<F, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        V: Send + Sync + 'static + Copy,
+    {
+        self.set(SetWorldTyped::new(SetWorld::asset(select_property)))
+    }
+}
+
+pub trait TargetSetResourceWorldExt: Sized {
+    fn set_resource_world<F, C, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
+        C: Resource,
+        V: Send + Sync + 'static + Copy;
+}
+
+impl TargetSetResourceWorldExt for crate::targets::TargetResource {
+    fn set_resource_world<F, C, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut C) -> &mut V,
+        C: Resource,
+        V: Send + Sync + 'static + Copy,
+    {
+        self.set(SetWorldTyped::new(SetWorld::resource(select_property)))
+    }
+}
+
+pub trait TargetSetHandleComponentWorldExt: Sized {
+    fn set_handle_component_world<F, A, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        A: Asset,
+        V: Send + Sync + 'static + Copy;
+}
+
+impl TargetSetHandleComponentWorldExt for crate::targets::TargetComponent {
+    fn set_handle_component_world<F, A, V>(
+        &self,
+        select_property: F,
+    ) -> TargetSetter<Self, SetWorldTyped<V>>
+    where
+        F: Send + Sync + 'static + Fn(&mut A) -> &mut V,
+        A: Asset,
+        V: Send + Sync + 'static + Copy,
+    {
+        self.set(SetWorldTyped::new(SetWorld::handle_component(
+            select_property,
+        )))
     }
 }
 
