@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
 use super::Set;
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct BoxedSetter<I, V>(Box<dyn Set<Item = I, Value = V>>);
+#[derive(Component, Clone)]
+pub struct BoxedSetter<I, V>(Arc<dyn Set<Item = I, Value = V>>);
 
 impl<I, V> BoxedSetter<I, V>
 where
@@ -13,7 +15,7 @@ where
     where
         S: Set,
     {
-        BoxedSetter(Box::new(setter))
+        BoxedSetter(Arc::new(setter))
     }
 
     pub fn new_closure<F>(f: F) -> BoxedSetter<I, V>
@@ -21,7 +23,7 @@ where
         F: Fn(&mut I, &V) + Send + Sync + 'static,
     {
         let f: Box<dyn Fn(&mut I, &V) + Send + Sync + 'static> = Box::new(f);
-        BoxedSetter(Box::new(f))
+        BoxedSetter(Arc::new(f))
     }
 }
 
