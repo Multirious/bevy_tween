@@ -44,7 +44,7 @@ pub struct TargetSetter<T, S> {
 impl<T, S> TargetSetter<T, S>
 where
     T: Clone + Bundle,
-    S: Set + Clone + Component,
+    S: Set + Clone + Bundle,
     S::Value: Send + Sync + 'static,
 {
     pub fn curve<C>(&self, duration: Duration, curve: C) -> BuildTween<T, S, C>
@@ -102,7 +102,7 @@ where
 impl<T, S> TargetSetterState<T, S>
 where
     T: Clone + Bundle,
-    S: Set + Clone + Component,
+    S: Set + Clone + Bundle,
     S::Value: Clone + Send + Sync + 'static,
 {
     pub fn tween<C>(
