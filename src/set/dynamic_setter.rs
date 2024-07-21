@@ -10,9 +10,9 @@ use crate::{
 
 use super::SetterValue;
 
-pub struct WorldSetterPlugin;
+pub struct DynamicSetterPlugin;
 
-impl Plugin for WorldSetterPlugin {
+impl Plugin for DynamicSetterPlugin {
     fn build(&self, app: &mut App) {
         let app_resource = app
             .world()
@@ -20,32 +20,32 @@ impl Plugin for WorldSetterPlugin {
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_systems(
             app_resource.schedule,
-            set_world_system.in_set(TweenSystemSet::Apply),
+            dynamic_setter_system.in_set(TweenSystemSet::Apply),
         );
     }
 }
 
 #[derive(Component, Clone)]
 #[allow(clippy::type_complexity)]
-pub struct WorldSetter(
+pub struct DynamicSetter(
     pub(crate) Arc<dyn Fn(Entity, &mut World) + 'static + Send + Sync>,
 );
 
-impl WorldSetter {
-    pub fn new<F>(setter: F) -> WorldSetter
+impl DynamicSetter {
+    pub fn new<F>(setter: F) -> DynamicSetter
     where
         F: Fn(Entity, &mut World) + 'static + Send + Sync,
     {
-        WorldSetter(Arc::new(setter))
+        DynamicSetter(Arc::new(setter))
     }
 
-    pub fn component<F, C, V>(set: F) -> WorldSetter
+    pub fn component<F, C, V>(set: F) -> DynamicSetter
     where
         F: Send + Sync + 'static + Fn(&mut C, &V),
         C: Component,
         V: Send + Sync + 'static + Clone,
     {
-        WorldSetter::new(move |tween_entity, world| {
+        DynamicSetter::new(move |tween_entity, world| {
             let Some(target_entity) =
                 world.get::<TargetComponent>(tween_entity)
             else {
@@ -87,13 +87,13 @@ impl WorldSetter {
         })
     }
 
-    pub fn asset<F, A, V>(set: F) -> WorldSetter
+    pub fn asset<F, A, V>(set: F) -> DynamicSetter
     where
         F: Send + Sync + 'static + Fn(&mut A, &V),
         A: Asset,
         V: Send + Sync + 'static + Clone,
     {
-        WorldSetter::new(move |tween_entity, world| {
+        DynamicSetter::new(move |tween_entity, world| {
             let Some(target_asset) = world.get::<TargetAsset<A>>(tween_entity)
             else {
                 return;
@@ -143,13 +143,13 @@ impl WorldSetter {
         })
     }
 
-    pub fn resource<F, R, V>(set: F) -> WorldSetter
+    pub fn resource<F, R, V>(set: F) -> DynamicSetter
     where
         F: Send + Sync + 'static + Fn(&mut R, &V),
         R: Resource,
         V: Send + Sync + 'static + Clone,
     {
-        WorldSetter::new(move |tween_entity, world| {
+        DynamicSetter::new(move |tween_entity, world| {
             let Some(_target_resource) =
                 world.get::<TargetResource>(tween_entity)
             else {
@@ -171,7 +171,7 @@ impl WorldSetter {
     pub fn component_handle<FH, FP, C, A, V>(
         select_handle: FH,
         set: FP,
-    ) -> WorldSetter
+    ) -> DynamicSetter
     where
         FH: Send + Sync + 'static + Fn(&C) -> &Handle<A>,
         FP: Send + Sync + 'static + Fn(&mut A, &V),
@@ -179,7 +179,7 @@ impl WorldSetter {
         A: Asset,
         V: Send + Sync + 'static + Clone,
     {
-        WorldSetter::new(move |tween_entity, world| {
+        DynamicSetter::new(move |tween_entity, world| {
             let Some(target_entity) =
                 world.get::<TargetComponent>(tween_entity)
             else {
@@ -243,15 +243,15 @@ impl WorldSetter {
     }
 }
 
-fn set_world_system(world: &mut World) {
+fn dynamic_setter_system(world: &mut World) {
     let mut query = world.query_filtered::<Entity, (
-        With<WorldSetter>,
+        With<DynamicSetter>,
         Without<SkipTween>,
         With<TimeSpanProgress>,
     )>();
     let entities = query.iter(world).collect::<Vec<_>>();
     for entity in entities {
-        let Some(set_reflect) = world.get::<WorldSetter>(entity) else {
+        let Some(set_reflect) = world.get::<DynamicSetter>(entity) else {
             return;
         };
         let set = set_reflect.0.clone();

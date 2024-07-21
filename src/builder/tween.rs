@@ -5,7 +5,7 @@ use bevy_time_runner::TimeSpan;
 
 use crate::{
     curve::AToB,
-    set::{Set, WorldSetter},
+    set::{DynamicSetter, Set},
 };
 
 use super::{AnimationCommands, BuildAnimation};
@@ -46,13 +46,13 @@ where
 {
     #[bundle(ignore)]
     marker: PhantomData<V>,
-    pub world_setter: WorldSetter,
+    pub world_setter: DynamicSetter,
 }
 impl<V> WorldSetterMarker<V>
 where
     V: Send + Sync + 'static,
 {
-    pub fn new(world_setter: WorldSetter) -> WorldSetterMarker<V> {
+    pub fn new(world_setter: DynamicSetter) -> WorldSetterMarker<V> {
         WorldSetterMarker {
             marker: PhantomData,
             world_setter,
@@ -95,7 +95,7 @@ impl TargetSetComponentWorldExt for crate::targets::TargetComponent {
         C: Component,
         V: Send + Sync + 'static + Clone,
     {
-        self.set(WorldSetterMarker::new(WorldSetter::component(set)))
+        self.set(WorldSetterMarker::new(DynamicSetter::component(set)))
     }
 }
 
@@ -121,7 +121,7 @@ where
         F: Send + Sync + 'static + Fn(&mut A, &V),
         V: Send + Sync + 'static + Clone,
     {
-        self.set(WorldSetterMarker::new(WorldSetter::asset(set)))
+        self.set(WorldSetterMarker::new(DynamicSetter::asset(set)))
     }
 }
 
@@ -146,7 +146,7 @@ impl TargetSetResourceWorldExt for crate::targets::TargetResource {
         R: Resource,
         V: Send + Sync + 'static + Clone,
     {
-        self.set(WorldSetterMarker::new(WorldSetter::resource(set)))
+        self.set(WorldSetterMarker::new(DynamicSetter::resource(set)))
     }
 }
 
@@ -177,7 +177,7 @@ impl TargetSetHandleComponentWorldExt for crate::targets::TargetComponent {
         A: Asset,
         V: Send + Sync + 'static + Clone,
     {
-        self.set(WorldSetterMarker::new(WorldSetter::component_handle(
+        self.set(WorldSetterMarker::new(DynamicSetter::component_handle(
             select_handle,
             set,
         )))

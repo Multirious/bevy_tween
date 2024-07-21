@@ -8,8 +8,8 @@ pub use plugin::*;
 mod system;
 pub use system::*;
 
-mod world_setter;
-pub use world_setter::*;
+mod dynamic_setter;
+pub use dynamic_setter::*;
 
 mod boxed_setter;
 pub use boxed_setter::*;
