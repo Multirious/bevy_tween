@@ -26,17 +26,20 @@ impl Plugin for DynamicSetterPlugin {
 }
 
 #[derive(Component, Clone)]
+pub struct DynamicSetter(_DynamicSetter);
+
 #[allow(clippy::type_complexity)]
-pub struct DynamicSetter(
-    pub(crate) Arc<dyn Fn(Entity, &mut World) + 'static + Send + Sync>,
-);
+#[derive(Clone)]
+pub(crate) enum _DynamicSetter {
+    Custom(Arc<dyn Fn(Entity, &mut World) + 'static + Send + Sync>),
+}
 
 impl DynamicSetter {
     pub fn new<F>(setter: F) -> DynamicSetter
     where
         F: Fn(Entity, &mut World) + 'static + Send + Sync,
     {
-        DynamicSetter(Arc::new(setter))
+        DynamicSetter(_DynamicSetter::Custom(Arc::new(setter)))
     }
 
     pub fn component<F, C, V>(set: F) -> DynamicSetter
@@ -254,7 +257,11 @@ fn dynamic_setter_system(world: &mut World) {
         let Some(set_reflect) = world.get::<DynamicSetter>(entity) else {
             return;
         };
-        let set = set_reflect.0.clone();
-        set(entity, world);
+        match &set_reflect.0 {
+            _DynamicSetter::Custom(set) => {
+                let set = set.clone();
+                set(entity, world);
+            }
+        }
     }
 }
