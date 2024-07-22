@@ -1,6 +1,6 @@
-use std::{any::TypeId, borrow::Cow, sync::Arc};
+use std::{any::TypeId, sync::Arc};
 
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::ParsedPath};
 use bevy_time_runner::TimeSpanProgress;
 
 use crate::{
@@ -32,9 +32,10 @@ pub struct DynamicSetter(_DynamicSetter);
 #[derive(Clone)]
 pub(crate) enum _DynamicSetter {
     Custom(Arc<dyn Fn(Entity, &mut World) + 'static + Send + Sync>),
-    LerpReflect {
-        property_path: Vec<Cow<'static, str>>,
-        type_id: TypeId,
+    Reflect {
+        path: ParsedPath,
+        component_type: TypeId,
+        setter_value_type: TypeId,
     },
 }
 
@@ -44,6 +45,18 @@ impl DynamicSetter {
         F: Fn(Entity, &mut World) + 'static + Send + Sync,
     {
         DynamicSetter(_DynamicSetter::Custom(Arc::new(setter)))
+    }
+
+    pub fn component_path(
+        path: ParsedPath,
+        component_type: TypeId,
+        setter_value_type: TypeId,
+    ) -> DynamicSetter {
+        DynamicSetter(_DynamicSetter::Reflect {
+            path,
+            component_type,
+            setter_value_type,
+        })
     }
 
     pub fn component<F, C, V>(set: F) -> DynamicSetter
@@ -257,19 +270,87 @@ fn dynamic_setter_system(world: &mut World) {
         With<TimeSpanProgress>,
     )>();
     let entities = query.iter(world).collect::<Vec<_>>();
-    for entity in entities {
-        let Some(set_reflect) = world.get::<DynamicSetter>(entity) else {
+    for tween_entity in entities {
+        let Some(set_reflect) = world.get::<DynamicSetter>(tween_entity) else {
             return;
         };
         match &set_reflect.0 {
             _DynamicSetter::Custom(set) => {
                 let set = set.clone();
-                set(entity, world);
+                set(tween_entity, world);
             }
-            _DynamicSetter::LerpReflect {
-                property_path,
-                type_id,
-            } => {}
+            _DynamicSetter::Reflect {
+                path,
+                component_type,
+                setter_value_type,
+            } => {
+                let Some(target) = world.get::<TargetComponent>(tween_entity)
+                else {
+                    continue;
+                };
+                match target {
+                    TargetComponent::None => continue,
+                    TargetComponent::Entity(target_entity) => {
+                        let Some(type_registry) =
+                            world.get_resource::<AppTypeRegistry>()
+                        else {
+                            continue;
+                        };
+                        let type_registry = type_registry.read();
+                        let Some(component) = type_registry
+                            .get_type_data::<ReflectComponent>(*component_type)
+                        else {
+                            continue;
+                        };
+                        let component = component.clone();
+
+                        let Some(setter_value) = type_registry
+                            .get_type_data::<ReflectComponent>(
+                                *setter_value_type,
+                            )
+                        else {
+                            continue;
+                        };
+                        let setter_value_component = setter_value.clone();
+
+                        drop(type_registry);
+                        let path = path.clone();
+
+                        let Some(tween) = world.get_entity(tween_entity) else {
+                            continue;
+                        };
+                        let Some(setter_value) =
+                            setter_value_component.reflect(tween)
+                        else {
+                            continue;
+                        };
+                        let Ok(setter_value) = setter_value.reflect_path("#0")
+                        else {
+                            continue;
+                        };
+                        let setter_value = setter_value.clone_value();
+
+                        let Some(entity_mut) =
+                            world.get_entity_mut(*target_entity)
+                        else {
+                            continue;
+                        };
+                        let Some(mut component) =
+                            component.reflect_mut(entity_mut)
+                        else {
+                            continue;
+                        };
+                        let Ok(value) = component.reflect_path_mut(&path)
+                        else {
+                            continue;
+                        };
+                        let Ok(()) = value.set(setter_value) else {
+                            continue;
+                        };
+                    }
+                    TargetComponent::Entities(_) => todo!(),
+                }
+            }
         }
     }
 }
