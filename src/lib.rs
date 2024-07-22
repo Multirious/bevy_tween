@@ -544,6 +544,7 @@ fn register_types(a: &mut App) {
         .register_type_data::<bevy::math::DVec2, lerp::ReflectLerp>()
         .register_type_data::<bevy::math::DVec3, lerp::ReflectLerp>()
         .register_type_data::<bevy::math::DVec4, lerp::ReflectLerp>()
+        .register_type_data::<Quat, lerp::ReflectLerp>()
         .register_type_data::<Srgba, lerp::ReflectLerp>()
         .register_type_data::<LinearRgba, lerp::ReflectLerp>()
         .register_type_data::<Hsla, lerp::ReflectLerp>()

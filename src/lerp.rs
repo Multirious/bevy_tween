@@ -3,7 +3,7 @@ use bevy::{
         Color, Hsla, Hsva, Hwba, Laba, Lcha, LinearRgba, Oklaba, Oklcha, Srgba,
         Xyza,
     },
-    math::{DVec2, DVec3, DVec4, Vec2, Vec3, Vec4},
+    math::{DVec2, DVec3, DVec4, Quat, Vec2, Vec3, Vec4},
     reflect::{FromType, Reflect},
 };
 
@@ -68,6 +68,13 @@ impl Lerp for DVec4 {
     fn lerp(&self, to: &Self, t: f32) -> Self {
         let t = t as f64;
         *self * (1. - t) + *to * t
+    }
+}
+
+impl Lerp for Quat {
+    #[inline]
+    fn lerp(&self, to: &Self, t: f32) -> Self {
+        self.slerp(*to, t)
     }
 }
 
