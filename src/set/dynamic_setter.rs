@@ -324,7 +324,7 @@ fn dynamic_setter_system(world: &mut World) {
                         else {
                             continue;
                         };
-                        let Ok(setter_value) = setter_value.reflect_path("#0")
+                        let Ok(setter_value) = setter_value.reflect_path(".0")
                         else {
                             continue;
                         };
@@ -344,7 +344,7 @@ fn dynamic_setter_system(world: &mut World) {
                         else {
                             continue;
                         };
-                        let Ok(()) = value.set(setter_value) else {
+                        let Ok(()) = value.try_apply(&*setter_value) else {
                             continue;
                         };
                     }
