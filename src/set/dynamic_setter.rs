@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{any::TypeId, borrow::Cow, sync::Arc};
 
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
@@ -32,6 +32,10 @@ pub struct DynamicSetter(_DynamicSetter);
 #[derive(Clone)]
 pub(crate) enum _DynamicSetter {
     Custom(Arc<dyn Fn(Entity, &mut World) + 'static + Send + Sync>),
+    LerpReflect {
+        property_path: Vec<Cow<'static, str>>,
+        type_id: TypeId,
+    },
 }
 
 impl DynamicSetter {
@@ -262,6 +266,10 @@ fn dynamic_setter_system(world: &mut World) {
                 let set = set.clone();
                 set(entity, world);
             }
+            _DynamicSetter::LerpReflect {
+                property_path,
+                type_id,
+            } => {}
         }
     }
 }
