@@ -535,6 +535,26 @@ fn register_types(a: &mut App) {
     a.register_type::<targets::TargetComponent>()
         .register_type::<targets::TargetResource>()
         .register_type::<targets::TargetAsset<ColorMaterial>>();
+
+    a.register_type_data::<f32, lerp::ReflectLerp>()
+        .register_type_data::<f64, lerp::ReflectLerp>()
+        .register_type_data::<Vec2, lerp::ReflectLerp>()
+        .register_type_data::<Vec3, lerp::ReflectLerp>()
+        .register_type_data::<Vec4, lerp::ReflectLerp>()
+        .register_type_data::<bevy::math::DVec2, lerp::ReflectLerp>()
+        .register_type_data::<bevy::math::DVec3, lerp::ReflectLerp>()
+        .register_type_data::<bevy::math::DVec4, lerp::ReflectLerp>()
+        .register_type_data::<Srgba, lerp::ReflectLerp>()
+        .register_type_data::<LinearRgba, lerp::ReflectLerp>()
+        .register_type_data::<Hsla, lerp::ReflectLerp>()
+        .register_type_data::<Hsva, lerp::ReflectLerp>()
+        .register_type_data::<Hwba, lerp::ReflectLerp>()
+        .register_type_data::<Laba, lerp::ReflectLerp>()
+        .register_type_data::<Lcha, lerp::ReflectLerp>()
+        .register_type_data::<Oklaba, lerp::ReflectLerp>()
+        .register_type_data::<Oklcha, lerp::ReflectLerp>()
+        .register_type_data::<Xyza, lerp::ReflectLerp>()
+        .register_type_data::<Color, lerp::ReflectLerp>();
 }
 
 /// This resource will be used while initializing tween plugin and systems.
