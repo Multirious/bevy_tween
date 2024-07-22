@@ -379,6 +379,7 @@ pub use bevy_time_runner;
 pub mod curve;
 // pub mod interpolate;
 pub mod items;
+mod lerp;
 pub mod set;
 pub mod targets;
 pub mod tween_event;
