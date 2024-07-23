@@ -1,13 +1,13 @@
 use std::f32::consts::PI;
 
 use bevy::{
-    color::{Srgba, palettes::css::WHITE},
+    color::{palettes::css::WHITE, Srgba},
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
     window,
 };
 use bevy_tween::{
-    combinator::{go, parallel, tween_exact, AnimationCommands},
+    builder::{go, parallel, tween_exact, AnimationCommands},
     prelude::*,
 };
 
@@ -223,7 +223,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .animation()
         .repeat(Repeat::Infinitely)
-        .insert(parallel((
+        .add(parallel((
             (
                 set_value(
                     bevy_tween_text_color.with(sprite_color_to(white_color)),

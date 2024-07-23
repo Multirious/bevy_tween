@@ -19,7 +19,7 @@
 //!
 //! Let say we have this sprite:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! let mut sprite_commands = commands.spawn(SpriteBundle {
 //!     sprite: Sprite {
 //!         custom_size: Some(Vec2::new(50., 50.)),
@@ -34,7 +34,7 @@
 //! ### `insert_tween_here` method
 //! We can do this:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -68,7 +68,7 @@
 //! This crate provide a way to create animation using combinator framework.
 //! So we can just:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -106,7 +106,7 @@
 //!
 //! We can use state for this:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -142,7 +142,7 @@
 //!
 //! If we want to repeat our animation to so we can do:
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -183,8 +183,8 @@
 //!
 //! Combinator framework got you covered!:
 //! ```no_run
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-#![doc = utils::doc_test_boilerplate!()]
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
@@ -229,7 +229,7 @@
 //! ## Animator as a child
 //! You can spawn animator as a child if you want
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -264,7 +264,7 @@
 //! An animator does not required to be a child or inside your target entity.
 //! You can spawn them anywhere in the world if needed.
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -297,7 +297,7 @@
 //! ## [`AnimationTarget`]
 //! [`AnimationTarget`] can be used for automatic target searching.
 //! ```no_run
-#![doc = utils::doc_test_boilerplate!()]
+#![doc = crate_utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
 //! # let mut sprite_commands = commands.spawn(SpriteBundle {
 //! #     sprite: Sprite {
@@ -370,61 +370,67 @@
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
-mod utils;
+mod crate_utils;
 
 #[cfg(feature = "bevy_lookup_curve")]
 pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
-pub mod interpolate;
-pub mod interpolation;
-pub mod tween;
+pub mod curve;
+// pub mod interpolate;
+pub mod items;
+pub mod lerp;
+pub mod set;
+pub mod targets;
 pub mod tween_event;
+pub mod utils;
 
-pub mod combinator;
+pub mod builder;
 
 /// Commonly used items
 pub mod prelude {
     pub use std::time::Duration;
 
-    pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
-    pub use crate::interpolation::EaseFunction;
+    pub use crate::curve::EaseFunction;
+    // pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
 
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
-    pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
+    pub use crate::builder::{
+        AnimationBuilderExt, TargetDynamicSetExt as _, TargetSetExt as _,
+    };
 
-    pub use crate::tween::IntoTarget;
+    pub use crate::targets::IntoTarget;
     pub use crate::tween_event::{TweenEvent, TweenEventData};
 
-    #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetDynTween;
-    #[cfg(feature = "bevy_asset")]
-    pub use crate::tween::AssetTween;
+    // #[cfg(feature = "bevy_asset")]
+    // pub use crate::tween::AssetDynTween;
+    // #[cfg(feature = "bevy_asset")]
+    // pub use crate::tween::AssetTween;
 
-    pub use crate::tween::ComponentDynTween;
-    pub use crate::tween::ComponentTween;
+    // pub use crate::tween::ComponentDynTween;
+    // pub use crate::tween::ComponentTween;
 
-    pub use crate::tween::ResourceDynTween;
-    pub use crate::tween::ResourceTween;
+    // pub use crate::tween::ResourceDynTween;
+    // pub use crate::tween::ResourceTween;
 
-    pub use crate::BevyTweenRegisterSystems;
+    // pub use crate::BevyTweenRegisterSystems;
     pub use crate::DefaultTweenPlugins;
 }
 
-#[cfg(feature = "bevy_asset")]
-pub use tween::asset_dyn_tween_system;
-#[cfg(feature = "bevy_asset")]
-pub use tween::asset_tween_system;
-#[cfg(feature = "bevy_asset")]
-pub use tween::component_dyn_tween_system;
-pub use tween::component_tween_system;
+// #[cfg(feature = "bevy_asset")]
+// pub use tween::asset_dyn_tween_system;
+// #[cfg(feature = "bevy_asset")]
+// pub use tween::asset_tween_system;
+// #[cfg(feature = "bevy_asset")]
+// pub use tween::component_dyn_tween_system;
+// pub use tween::component_tween_system;
 
-pub use tween::resource_dyn_tween_system;
-pub use tween::resource_tween_system;
+// pub use tween::resource_dyn_tween_system;
+// pub use tween::resource_tween_system;
 
-pub use tween_event::tween_event_system;
-pub use tween_event::tween_event_taking_system;
+// pub use tween_event::tween_event_system;
+// pub use tween_event::tween_event_taking_system;
 
 /// Default plugins for using crate.
 ///
@@ -437,18 +443,146 @@ pub use tween_event::tween_event_taking_system;
 pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
+    #[allow(clippy::let_and_return)]
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        #[allow(clippy::let_and_return)]
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin::default())
-            .add(interpolate::DefaultInterpolatorsPlugin)
-            .add(interpolate::DefaultDynInterpolatorsPlugin)
-            .add(interpolation::EaseFunctionPlugin)
-            .add_group(tween_event::DefaultTweenEventPlugins);
-        #[cfg(feature = "bevy_lookup_curve")]
-        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+            .add(register_types);
+
+        let group = group.add(set::DynamicSetterPlugin);
+
+        let group = group
+            .add(set::component::<items::Translation>())
+            .add(set::component::<items::Rotation>())
+            .add(set::component::<items::Scale>())
+            .add(set::component::<items::AngleZ>());
+
+        #[cfg(feature = "bevy_sprite")]
+        let group = group.add(set::component::<items::SpriteColor>());
+
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+        let group = group
+            .add(set::asset::<items::ColorMaterial>())
+            .add(set::handle_component::<items::ColorMaterial>());
+
+        #[cfg(feature = "bevy_ui")]
+        let group = group
+            .add(set::component::<items::BackgroundColor>())
+            .add(set::component::<items::BorderColor>());
+
+        let group = group
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &f32, b: &f32, v: f32| a.lerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Vec2, b: &Vec2, v: f32| a.lerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Vec3, b: &Vec3, v: f32| a.lerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Quat, b: &Quat, v: f32| a.slerp(*b, v),
+            ))
+            .add(curve::EaseFunctionAToBPlugin::new(
+                |a: &Color, b: &Color, v: f32| a.mix(b, v),
+            ));
+        // #[cfg(feature = "bevy_lookup_curve")]
+        // let group = group
+        //     .add(curve::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+        #[cfg(not(feature = "bevy_eventlistener"))]
+        let group = group
+            .add(tween_event::TweenEventPlugin::<()>::default())
+            .add(tween_event::TweenEventPlugin::<&'static str>::default());
+        #[cfg(feature = "bevy_eventlistener")]
+        let group = group
+            .add(
+                tween_event::TweenEventPlugin::<()>::default()
+                    .with_event_listener(),
+            )
+            .add(
+                tween_event::TweenEventPlugin::<&'static str>::default()
+                    .with_event_listener(),
+            );
         group
     }
+}
+
+fn register_types(a: &mut App) {
+    a.register_type::<items::Translation>()
+        .register_type::<items::Rotation>()
+        .register_type::<items::Scale>()
+        .register_type::<items::AngleZ>();
+    #[cfg(feature = "bevy_sprite")]
+    a.register_type::<items::SpriteColor>();
+    #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+    a.register_type::<items::ColorMaterial>();
+    #[cfg(feature = "bevy_ui")]
+    a.register_type::<items::BackgroundColor>()
+        .register_type::<items::BorderColor>();
+
+    a.register_type::<curve::AToB<f32, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Vec2, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Vec3, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Vec4, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Quat, curve::EaseFunction>>()
+        .register_type::<curve::AToB<Color, curve::EaseFunction>>();
+
+    a.register_type::<tween_event::TweenEventData>()
+        .register_type::<tween_event::TweenEventData<&'static str>>();
+
+    a.register_type::<targets::TargetComponent>()
+        .register_type::<targets::TargetResource>()
+        .register_type::<targets::TargetAsset<ColorMaterial>>();
+
+    a.register_type::<set::SetterValue<f32>>()
+        .register_type::<set::SetterValue<f64>>()
+        .register_type::<set::SetterValue<Vec2>>()
+        .register_type::<set::SetterValue<Vec3>>()
+        .register_type::<set::SetterValue<Vec4>>()
+        .register_type::<set::SetterValue<bevy::math::DVec2>>()
+        .register_type::<set::SetterValue<bevy::math::DVec3>>()
+        .register_type::<set::SetterValue<bevy::math::DVec4>>()
+        .register_type::<set::SetterValue<UVec2>>()
+        .register_type::<set::SetterValue<UVec3>>()
+        .register_type::<set::SetterValue<UVec4>>()
+        .register_type::<set::SetterValue<IVec2>>()
+        .register_type::<set::SetterValue<IVec3>>()
+        .register_type::<set::SetterValue<IVec4>>()
+        .register_type::<set::SetterValue<URect>>()
+        .register_type::<set::SetterValue<Rect>>()
+        .register_type::<set::SetterValue<Quat>>()
+        .register_type::<set::SetterValue<Srgba>>()
+        .register_type::<set::SetterValue<LinearRgba>>()
+        .register_type::<set::SetterValue<Hsla>>()
+        .register_type::<set::SetterValue<Hsva>>()
+        .register_type::<set::SetterValue<Hwba>>()
+        .register_type::<set::SetterValue<Laba>>()
+        .register_type::<set::SetterValue<Lcha>>()
+        .register_type::<set::SetterValue<Oklaba>>()
+        .register_type::<set::SetterValue<Oklcha>>()
+        .register_type::<set::SetterValue<Xyza>>()
+        .register_type::<set::SetterValue<Color>>();
+
+    a.register_type_data::<f32, lerp::ReflectLerp>()
+        .register_type_data::<f64, lerp::ReflectLerp>()
+        .register_type_data::<Vec2, lerp::ReflectLerp>()
+        .register_type_data::<Vec3, lerp::ReflectLerp>()
+        .register_type_data::<Vec4, lerp::ReflectLerp>()
+        .register_type_data::<bevy::math::DVec2, lerp::ReflectLerp>()
+        .register_type_data::<bevy::math::DVec3, lerp::ReflectLerp>()
+        .register_type_data::<bevy::math::DVec4, lerp::ReflectLerp>()
+        .register_type_data::<Quat, lerp::ReflectLerp>()
+        .register_type_data::<Srgba, lerp::ReflectLerp>()
+        .register_type_data::<LinearRgba, lerp::ReflectLerp>()
+        .register_type_data::<Hsla, lerp::ReflectLerp>()
+        .register_type_data::<Hsva, lerp::ReflectLerp>()
+        .register_type_data::<Hwba, lerp::ReflectLerp>()
+        .register_type_data::<Laba, lerp::ReflectLerp>()
+        .register_type_data::<Lcha, lerp::ReflectLerp>()
+        .register_type_data::<Oklaba, lerp::ReflectLerp>()
+        .register_type_data::<Oklcha, lerp::ReflectLerp>()
+        .register_type_data::<Xyza, lerp::ReflectLerp>()
+        .register_type_data::<Color, lerp::ReflectLerp>();
 }
 
 /// This resource will be used while initializing tween plugin and systems.
@@ -492,15 +626,14 @@ impl Plugin for TweenCorePlugin {
         app.configure_sets(
             self.app_resource.schedule,
             (
-                TweenSystemSet::UpdateInterpolationValue,
-                TweenSystemSet::ApplyTween,
+                TweenSystemSet::UpdateSetterValue,
+                TweenSystemSet::ResolveTarget,
+                TweenSystemSet::Apply,
             )
                 .chain()
                 .after(bevy_time_runner::TimeRunnerSet::Progress),
         )
-        .insert_resource(self.app_resource.clone())
-        .register_type::<tween::AnimationTarget>()
-        .register_type::<tween::TweenInterpolationValue>();
+        .insert_resource(self.app_resource.clone());
     }
 
     fn cleanup(&self, app: &mut App) {
@@ -513,9 +646,10 @@ impl Plugin for TweenCorePlugin {
 #[derive(Debug, SystemSet, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TweenSystemSet {
     /// This set is for systems that responsible for updating any
-    /// [`tween::TweenInterpolationValue`] such as
+    /// [`tween::CurveValue`] such as
     /// [`interpolation::sample_interpolations_system`].
-    UpdateInterpolationValue,
+    UpdateSetterValue,
+    ResolveTarget,
     /// This set is for systems that responsible for actually executing any
     /// active tween and setting the value to its respective tweening item such
     /// as these systems:
@@ -526,37 +660,10 @@ pub enum TweenSystemSet {
     /// Events is not necessary related to tweening but their code is still working in the same area.
     /// - [`tween::tween_event_system`]
     /// - [`tween::tween_event_taking_system`]
-    ApplyTween,
+    Apply,
 }
 
-/// Helper trait to add systems by this crate to your app and avoid mistake
-/// from forgetting to use the intended schedule and set.
-pub trait BevyTweenRegisterSystems {
-    /// Register tween systems
-    fn add_tween_systems<M>(
-        &mut self,
-        tween_systems: impl IntoSystemConfigs<M>,
-    ) -> &mut Self;
-}
-
-impl BevyTweenRegisterSystems for App {
-    /// Register tween systems in schedule configured in [`TweenAppResource`]
-    /// in set [`TweenSystemSet::ApplyTween`]
-    ///
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
-    fn add_tween_systems<M>(
-        &mut self,
-        tween_systems: impl IntoSystemConfigs<M>,
-    ) -> &mut Self {
-        let app_resource = self
-            .world()
-            .get_resource::<TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
-        self.add_systems(
-            app_resource.schedule,
-            tween_systems.in_set(TweenSystemSet::ApplyTween),
-        )
-    }
-}
+/// Skip a tween from tweening.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component, Reflect)]
+#[reflect(Component)]
+pub struct SkipTween;

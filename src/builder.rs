@@ -7,10 +7,32 @@ use bevy_time_runner::{
     Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
 };
 
-mod animation_combinators;
-mod state;
-pub use animation_combinators::*;
-pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
+mod time;
+pub use time::*;
+
+mod tween;
+pub use tween::*;
+
+mod event;
+pub use event::*;
+
+use crate::set::Set;
+
+pub trait BuildAnimation {
+    fn build(self, commands: &mut AnimationCommands, position: &mut Duration);
+}
+
+impl<F> BuildAnimation for F
+where
+    F: FnOnce(&mut AnimationCommands, &mut Duration),
+{
+    fn build(self, commands: &mut AnimationCommands, position: &mut Duration) {
+        self(commands, position)
+    }
+}
+
+// mod state;
+// pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
 /// Commands to use within an animation combinator
 pub struct AnimationCommands<'r, 'a> {
@@ -167,15 +189,15 @@ impl<'a> AnimationBuilder<'a> {
         self.time_runner.get_or_insert_with(TimeRunner::default)
     }
 
-    /// Add animations from a closure. Animation entities will be subjected
-    /// as a children of this entity.
+    /// Add animations from a closure. Will add as a children of this entity.
     /// [`TimeRunner`]'s length is determined by last `&mut Duration` value unless use
     /// [`Self::length`].
     /// It's also possible to use combinator like [`go`], [`forward`], and [`backward`]
     /// as the last combinator to customize the length.
-    pub fn insert<F>(self, animation: F) -> EntityCommands<'a>
+    #[allow(clippy::should_implement_trait)] // no way people can get confuse this with `Add::add`
+    pub fn add<F>(self, animation: F) -> EntityCommands<'a>
     where
-        F: FnOnce(&mut AnimationCommands, &mut Duration),
+        F: BuildAnimation,
     {
         let AnimationBuilder {
             mut entity_commands,
@@ -186,7 +208,7 @@ impl<'a> AnimationBuilder<'a> {
         let mut dur = Duration::ZERO;
         entity_commands.with_children(|c| {
             let mut a = AnimationCommands::new(c);
-            animation(&mut a, &mut dur);
+            animation.build(&mut a, &mut dur);
         });
         let mut time_runner = time_runner.unwrap_or_default();
         match custom_length {
@@ -208,15 +230,15 @@ impl<'a> AnimationBuilder<'a> {
     /// Can be used to create a simple animation quickly.
     /// [`TimeRunner`]'s length is determined by provided `duration` unless use
     /// [`Self::length`]
-    pub fn insert_tween_here<I, T>(
+    pub fn insert_tween_here<T, S, C>(
         self,
-        duration: Duration,
-        interpolation: I,
-        tweens: T,
+        tween: BuildTween<T, S, C>,
     ) -> EntityCommands<'a>
     where
-        I: Bundle,
         T: Bundle,
+        S: Set + Bundle,
+        S::Item: Send + Sync + 'static,
+        C: Bundle,
     {
         let AnimationBuilder {
             mut entity_commands,
@@ -230,14 +252,15 @@ impl<'a> AnimationBuilder<'a> {
                 time_runner.set_length(length);
             }
             None => {
-                time_runner.set_length(duration);
+                time_runner.set_length(tween.duration);
             }
         }
 
         entity_commands.insert((
-            TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
-            interpolation,
-            tweens,
+            TimeSpan::try_from(..tween.duration).unwrap(),
+            tween.target,
+            tween.setter,
+            tween.curve,
             time_runner,
         ));
         if skipped {
