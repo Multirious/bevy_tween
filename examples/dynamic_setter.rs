@@ -2,6 +2,7 @@ use bevy::{
     color::palettes::css::{DEEP_PINK, WHITE},
     core_pipeline::bloom::BloomSettings,
     prelude::*,
+    reflect::ParsedPath,
     sprite::Mesh2dHandle,
 };
 
@@ -28,10 +29,12 @@ fn main() {
             ),
         )
         .insert_resource(Percentage(0.))
+        .register_type::<AnnulusShape>()
         .run();
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 struct AnnulusShape(Annulus);
 
 #[derive(Resource)]
@@ -84,31 +87,29 @@ fn setup(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
 
     commands.animation().add(parallel((
         TargetResource
-            .world_set_resource(|r: &mut Percentage, v| {
+            .dynamic_set()
+            .resource(|r: &mut Percentage, v| {
                 r.0 = *v;
                 println!("Percentage: {:.1}", v);
             })
             .tween(0., 100., Duration::from_secs(9), EaseFunction::Linear),
-        text.world_set_component(|text: &mut Text, v: &f32| {
-            let v = *v * text.sections.len() as f32;
-            let vfloor = v.floor();
-            let vimax = vfloor as usize;
-            for i in 0..vimax {
-                text.sections[i].style.color.set_alpha(1.);
-            }
-            let a = v - vfloor;
-            if a > 0. {
-                text.sections[vimax].style.color.set_alpha(a);
-            }
-        })
-        .tween(
-            0.,
-            1.,
-            Duration::from_secs(3),
-            EaseFunction::QuadraticOut,
-        ),
+        text.dynamic_set()
+            .component(|text: &mut Text, v: &f32| {
+                let v = *v * text.sections.len() as f32;
+                let vfloor = v.floor();
+                let vimax = vfloor as usize;
+                for i in 0..vimax {
+                    text.sections[i].style.color.set_alpha(1.);
+                }
+                let a = v - vfloor;
+                if a > 0. {
+                    text.sections[vimax].style.color.set_alpha(a);
+                }
+            })
+            .tween(0., 1., Duration::from_secs(3), EaseFunction::QuadraticOut),
         annulus
-            .world_set_component_handle(
+            .dynamic_set()
+            .component_handle(
                 |h: &Handle<ColorMaterial>| h,
                 |c, v| c.color = *v,
             )
@@ -119,7 +120,8 @@ fn setup(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
                 EaseFunction::CubicOut,
             ),
         annulus
-            .world_set_component(|c: &mut AnnulusShape, v: &f32| {
+            .dynamic_set()
+            .component(|c: &mut AnnulusShape, v: &f32| {
                 let base_radius = 300.0_f32;
                 c.0.inner_circle.radius = base_radius - *v;
                 c.0.outer_circle.radius = base_radius + *v;
@@ -128,13 +130,13 @@ fn setup(mut commands: Commands, mut materials: ResMut<Assets<ColorMaterial>>) {
         sequence((
             forward(Duration::from_secs(3)),
             annulus
-                .world_set_component(|c: &mut AnnulusShape, v: &f32| {
-                    let base_radius = 300.0_f32;
-                    c.0.outer_circle.radius = base_radius + v
-                })
+                .dynamic_set()
+                .path::<AnnulusShape, f32>(
+                    ParsedPath::parse(".0.outer_circle.radius").unwrap(),
+                )
                 .tween(
-                    50.,
-                    2000.,
+                    350.,
+                    2300.,
                     Duration::from_secs(3),
                     EaseFunction::CubicIn,
                 ),

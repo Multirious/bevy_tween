@@ -1,175 +1,96 @@
-use std::{marker::PhantomData, time::Duration};
+use std::{any::TypeId, marker::PhantomData, time::Duration};
 
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::ParsedPath};
 use bevy_time_runner::TimeSpan;
 
 use crate::{
     curve::AToB,
-    set::{DynamicSetter, Set},
+    set::{DynamicSetter, Set, SetterValue},
+    targets::{TargetAsset, TargetComponent, TargetResource},
 };
 
 use super::{AnimationCommands, BuildAnimation};
 
-pub trait TargetSetExt: Sized {
-    fn set<S: Set>(&self, setter: S) -> TargetSetter<Self, S>;
+pub trait TargetSetExt<S> {
+    type Builder;
+    fn set(&self, setter: S) -> Self::Builder;
 }
 
-impl TargetSetExt for crate::targets::TargetComponent {
-    fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
+impl<S: Set> TargetSetExt<S> for TargetComponent {
+    type Builder = TargetSetter<Self, S, S::Value>;
+
+    fn set(&self, setter: S) -> Self::Builder {
         TargetSetter {
             target: self.clone(),
             setter,
+            value_marker: PhantomData,
         }
     }
 }
-impl<A: Asset> TargetSetExt for crate::targets::TargetAsset<A> {
-    fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
+impl<A: Asset, S: Set> TargetSetExt<S> for TargetAsset<A> {
+    type Builder = TargetSetter<Self, S, S::Value>;
+
+    fn set(&self, setter: S) -> Self::Builder {
         TargetSetter {
             target: self.clone(),
             setter,
+            value_marker: PhantomData,
         }
     }
 }
-impl TargetSetExt for crate::targets::TargetResource {
-    fn set<S>(&self, setter: S) -> TargetSetter<Self, S> {
+impl<S: Set> TargetSetExt<S> for TargetResource {
+    type Builder = TargetSetter<Self, S, S::Value>;
+
+    fn set(&self, setter: S) -> Self::Builder {
         TargetSetter {
             target: self.clone(),
             setter,
+            value_marker: PhantomData,
         }
     }
 }
 
-#[derive(Bundle, Clone)]
-pub struct WorldSetterMarker<V>
-where
-    V: Send + Sync + 'static,
-{
-    #[bundle(ignore)]
-    marker: PhantomData<V>,
-    pub world_setter: DynamicSetter,
+pub trait TargetDynamicSetExt {
+    type Builder;
+    fn dynamic_set(&self) -> Self::Builder;
 }
-impl<V> WorldSetterMarker<V>
-where
-    V: Send + Sync + 'static,
-{
-    pub fn new(world_setter: DynamicSetter) -> WorldSetterMarker<V> {
-        WorldSetterMarker {
-            marker: PhantomData,
-            world_setter,
+
+impl TargetDynamicSetExt for TargetComponent {
+    type Builder = TargetComponentDynamicSetter;
+
+    fn dynamic_set(&self) -> Self::Builder {
+        TargetComponentDynamicSetter {
+            target: self.clone(),
         }
     }
 }
 
-impl<V> Set for WorldSetterMarker<V>
-where
-    V: Send + Sync + 'static,
-{
-    type Item = ();
-    type Value = V;
-
-    fn set(&self, _item: &mut Self::Item, _value: &Self::Value) {
-        panic!(
-            "This Set impl is only used for type checking and must not be used for anything else"
-        );
-    }
+pub struct TargetComponentDynamicSetter {
+    target: TargetComponent,
 }
 
-pub trait TargetSetComponentWorldExt: Sized {
-    fn world_set_component<F, C, V>(
-        &self,
-        select_property: F,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
-    where
-        F: Send + Sync + 'static + Fn(&mut C, &V),
-        C: Component,
-        V: Send + Sync + 'static + Clone;
-}
-
-impl TargetSetComponentWorldExt for crate::targets::TargetComponent {
-    fn world_set_component<F, C, V>(
+impl TargetComponentDynamicSetter {
+    pub fn component<F, C, V>(
         &self,
         set: F,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
+    ) -> TargetSetter<TargetComponent, DynamicSetter, V>
     where
         F: Send + Sync + 'static + Fn(&mut C, &V),
         C: Component,
         V: Send + Sync + 'static + Clone,
     {
-        self.set(WorldSetterMarker::new(DynamicSetter::component(set)))
+        TargetSetter {
+            target: self.target.clone(),
+            setter: DynamicSetter::component(set),
+            value_marker: PhantomData,
+        }
     }
-}
 
-pub trait TargetSetAssetWorldExt<A: Asset>: Sized {
-    fn world_set_asset<F, V>(
-        &self,
-        select_property: F,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
-    where
-        F: Send + Sync + 'static + Fn(&mut A, &V),
-        V: Send + Sync + 'static + Clone;
-}
-
-impl<A> TargetSetAssetWorldExt<A> for crate::targets::TargetAsset<A>
-where
-    A: Asset,
-{
-    fn world_set_asset<F, V>(
-        &self,
-        set: F,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
-    where
-        F: Send + Sync + 'static + Fn(&mut A, &V),
-        V: Send + Sync + 'static + Clone,
-    {
-        self.set(WorldSetterMarker::new(DynamicSetter::asset(set)))
-    }
-}
-
-pub trait TargetSetResourceWorldExt: Sized {
-    fn world_set_resource<F, R, V>(
-        &self,
-        set: F,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
-    where
-        F: Send + Sync + 'static + Fn(&mut R, &V),
-        R: Resource,
-        V: Send + Sync + 'static + Clone;
-}
-
-impl TargetSetResourceWorldExt for crate::targets::TargetResource {
-    fn world_set_resource<F, R, V>(
-        &self,
-        set: F,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
-    where
-        F: Send + Sync + 'static + Fn(&mut R, &V),
-        R: Resource,
-        V: Send + Sync + 'static + Clone,
-    {
-        self.set(WorldSetterMarker::new(DynamicSetter::resource(set)))
-    }
-}
-
-pub trait TargetSetHandleComponentWorldExt: Sized {
-    fn world_set_component_handle<FH, FP, C, A, V>(
+    pub fn component_handle<FH, FP, C, A, V>(
         &self,
         select_handle: FH,
         set: FP,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
-    where
-        FH: Send + Sync + 'static + Fn(&C) -> &Handle<A>,
-        FP: Send + Sync + 'static + Fn(&mut A, &V),
-        C: Component,
-        A: Asset,
-        V: Send + Sync + 'static + Clone;
-}
-
-impl TargetSetHandleComponentWorldExt for crate::targets::TargetComponent {
-    fn world_set_component_handle<FH, FP, C, A, V>(
-        &self,
-        select_handle: FH,
-        set: FP,
-    ) -> TargetSetter<Self, WorldSetterMarker<V>>
+    ) -> TargetSetter<TargetComponent, DynamicSetter, V>
     where
         FH: Send + Sync + 'static + Fn(&C) -> &Handle<A>,
         FP: Send + Sync + 'static + Fn(&mut A, &V),
@@ -177,23 +98,126 @@ impl TargetSetHandleComponentWorldExt for crate::targets::TargetComponent {
         A: Asset,
         V: Send + Sync + 'static + Clone,
     {
-        self.set(WorldSetterMarker::new(DynamicSetter::component_handle(
-            select_handle,
-            set,
-        )))
+        TargetSetter {
+            target: self.target.clone(),
+            setter: DynamicSetter::component_handle(select_handle, set),
+            value_marker: PhantomData,
+        }
+    }
+
+    pub fn path<C, V>(
+        &self,
+        path: ParsedPath,
+    ) -> TargetSetter<TargetComponent, DynamicSetter, V>
+    where
+        C: Component,
+        V: Send + Sync + 'static + Clone,
+    {
+        self.path_raw(path, TypeId::of::<C>(), TypeId::of::<SetterValue<V>>())
+    }
+
+    pub fn path_raw<V>(
+        &self,
+        path: ParsedPath,
+        component_type_id: TypeId,
+        setter_value_type_id: TypeId,
+    ) -> TargetSetter<TargetComponent, DynamicSetter, V> {
+        TargetSetter {
+            target: self.target.clone(),
+            setter: DynamicSetter::component_path(
+                path,
+                component_type_id,
+                setter_value_type_id,
+            ),
+            value_marker: PhantomData,
+        }
     }
 }
 
-pub struct TargetSetter<T, S> {
+impl<A: Asset> TargetDynamicSetExt for TargetAsset<A> {
+    type Builder = TargetAssetDynamicSetter<A>;
+
+    fn dynamic_set(&self) -> Self::Builder {
+        TargetAssetDynamicSetter {
+            target: self.clone(),
+        }
+    }
+}
+
+pub struct TargetAssetDynamicSetter<A: Asset> {
+    target: TargetAsset<A>,
+}
+
+impl<A: Asset> TargetAssetDynamicSetter<A> {
+    pub fn asset<F, V>(
+        &self,
+        set: F,
+    ) -> TargetSetter<TargetAsset<A>, DynamicSetter, V>
+    where
+        F: Send + Sync + 'static + Fn(&mut A, &V),
+        V: Send + Sync + 'static + Clone,
+    {
+        TargetSetter {
+            target: self.target.clone(),
+            setter: DynamicSetter::asset(set),
+            value_marker: PhantomData,
+        }
+    }
+}
+
+impl TargetDynamicSetExt for TargetResource {
+    type Builder = TargetResourceDynamicSetter;
+
+    fn dynamic_set(&self) -> Self::Builder {
+        TargetResourceDynamicSetter {
+            target: self.clone(),
+        }
+    }
+}
+
+pub struct TargetResourceDynamicSetter {
+    target: TargetResource,
+}
+
+impl TargetResourceDynamicSetter {
+    pub fn resource<F, R, V>(
+        &self,
+        set: F,
+    ) -> TargetSetter<TargetResource, DynamicSetter, V>
+    where
+        F: Send + Sync + 'static + Fn(&mut R, &V),
+        V: Send + Sync + 'static + Clone,
+        R: Resource,
+    {
+        TargetSetter {
+            target: self.target.clone(),
+            setter: DynamicSetter::resource(set),
+            value_marker: PhantomData,
+        }
+    }
+}
+
+pub struct TargetSetter<T, S, V> {
     target: T,
     setter: S,
+    value_marker: PhantomData<V>,
 }
 
-impl<T, S> TargetSetter<T, S>
+impl<T, S, V> TargetSetter<T, S, V> {
+    pub fn new(target: T, setter: S) -> TargetSetter<T, S, V> {
+        TargetSetter {
+            target,
+            setter,
+            value_marker: PhantomData,
+        }
+    }
+}
+
+impl<T, S, V> TargetSetter<T, S, V>
 where
     T: Clone + Bundle,
-    S: Set + Clone + Bundle,
-    S::Value: Send + Sync + 'static,
+    S: Clone + Bundle,
+    V: Send + Sync + 'static,
 {
     pub fn curve<C>(&self, duration: Duration, curve: C) -> BuildTween<T, S, C>
     where
@@ -209,11 +233,11 @@ where
 
     pub fn tween<C>(
         &self,
-        start: S::Value,
-        end: S::Value,
+        start: V,
+        end: V,
         duration: Duration,
         ease_curve: C,
-    ) -> BuildTween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<V, C>>
     where
         C: Send + Sync + 'static,
     {
@@ -229,7 +253,7 @@ where
         }
     }
 
-    pub fn state(self, value: S::Value) -> TargetSetterState<T, S> {
+    pub fn state(self, value: V) -> TargetSetterState<T, S, V> {
         TargetSetterState {
             target: self.target,
             setter: self.setter,
@@ -238,28 +262,25 @@ where
     }
 }
 
-pub struct TargetSetterState<T, S>
-where
-    S: Set,
-{
+pub struct TargetSetterState<T, S, V> {
     target: T,
     setter: S,
-    state: S::Value,
+    state: V,
 }
 
-impl<T, S> TargetSetterState<T, S>
+impl<T, S, V> TargetSetterState<T, S, V>
 where
     T: Clone + Bundle,
-    S: Set + Clone + Bundle,
-    S::Value: Clone + Send + Sync + 'static,
+    S: Clone + Bundle,
+    V: Clone + Send + Sync + 'static,
 {
     pub fn tween<C>(
         &mut self,
-        start: S::Value,
-        end: S::Value,
+        start: V,
+        end: V,
         duration: Duration,
         ease_curve: C,
-    ) -> BuildTween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<V, C>>
     where
         C: Send + Sync + 'static,
     {
@@ -278,10 +299,10 @@ where
 
     pub fn tween_to<C>(
         &mut self,
-        to: S::Value,
+        to: V,
         duration: Duration,
         ease_curve: C,
-    ) -> BuildTween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<V, C>>
     where
         C: Send + Sync + 'static,
     {
@@ -295,10 +316,10 @@ where
         with: F,
         duration: Duration,
         ease_curve: C,
-    ) -> BuildTween<T, S, AToB<S::Value, C>>
+    ) -> BuildTween<T, S, AToB<V, C>>
     where
         C: Send + Sync + 'static,
-        F: FnOnce(&mut S::Value) -> S::Value,
+        F: FnOnce(&mut V) -> V,
     {
         let start = self.state.clone();
         let end = with(&mut self.state);
@@ -306,7 +327,7 @@ where
     }
 }
 
-pub struct BuildTween<T: Bundle, S: Set + Bundle, C: Bundle> {
+pub struct BuildTween<T: Bundle, S: Bundle, C: Bundle> {
     pub duration: Duration,
     pub target: T,
     pub setter: S,
@@ -316,7 +337,7 @@ pub struct BuildTween<T: Bundle, S: Set + Bundle, C: Bundle> {
 impl<T, S, C> BuildAnimation for BuildTween<T, S, C>
 where
     T: Bundle,
-    S: Set + Bundle,
+    S: Bundle,
     C: Bundle,
 {
     fn build(self, commands: &mut AnimationCommands, position: &mut Duration) {

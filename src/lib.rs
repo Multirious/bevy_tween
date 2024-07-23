@@ -397,9 +397,7 @@ pub mod prelude {
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
     pub use crate::builder::{
-        AnimationBuilderExt, TargetSetAssetWorldExt as _,
-        TargetSetComponentWorldExt as _, TargetSetExt as _,
-        TargetSetHandleComponentWorldExt as _, TargetSetResourceWorldExt as _,
+        AnimationBuilderExt, TargetDynamicSetExt as _, TargetSetExt as _,
     };
 
     pub use crate::targets::IntoTarget;
