@@ -88,14 +88,14 @@ where
 /// See [`TweenEventPlugin`] if your custom data is [`Clone`].
 pub struct TweenEventTakingPlugin<Data>
 where
-    Data: Send + Sync + 'static,
+    Data: Clone + Send + Sync + 'static,
 {
     marker: PhantomData<Data>,
 }
 
 impl<Data> Plugin for TweenEventTakingPlugin<Data>
 where
-    Data: Send + Sync + 'static,
+    Data: Clone + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
         let app_resource = app
@@ -200,6 +200,7 @@ where
 /// cloning the data.
 #[allow(clippy::type_complexity)]
 pub fn tween_event_system<Data>(
+    mut commands: Commands,
     q_tween_event_data: Query<
         (
             Entity,
@@ -216,12 +217,14 @@ pub fn tween_event_system<Data>(
     q_tween_event_data.iter().for_each(
         |(entity, event_data, progress, interpolation_value)| {
             if let Some(data) = event_data.0.as_ref() {
-                event_writer.send(TweenEvent {
+                let event = TweenEvent {
                     data: data.clone(),
                     progress: *progress,
                     interpolation_value: interpolation_value.map(|v| v.0),
                     entity,
-                });
+                };
+                event_writer.send(event.clone());
+                commands.trigger_targets(event, entity);
             }
         },
     );
@@ -232,6 +235,7 @@ pub fn tween_event_system<Data>(
 /// taking the data and leaves the value `None`.
 #[allow(clippy::type_complexity)]
 pub fn tween_event_taking_system<Data>(
+    mut commands: Commands,
     mut q_tween_event_data: Query<
         (
             Entity,
@@ -243,17 +247,19 @@ pub fn tween_event_taking_system<Data>(
     >,
     mut event_writer: EventWriter<TweenEvent<Data>>,
 ) where
-    Data: Send + Sync + 'static,
+    Data: Clone + Send + Sync + 'static,
 {
     q_tween_event_data.iter_mut().for_each(
         |(entity, mut event_data, progress, interpolation_value)| {
             if let Some(data) = event_data.0.take() {
-                event_writer.send(TweenEvent {
+                let event = TweenEvent {
                     data,
                     progress: *progress,
                     interpolation_value: interpolation_value.map(|v| v.0),
                     entity,
-                });
+                };
+                event_writer.send(event.clone());
+                commands.trigger_targets(event, entity);
             }
         },
     );
