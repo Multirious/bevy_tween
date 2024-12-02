@@ -112,7 +112,7 @@ impl PluginGroup for DefaultTweenEventPlugins {
 /// Fires [`TweenEvent`] whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity.
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
-pub struct TweenEventData<Data = ()>(Data)
+pub struct TweenEventData<Data = ()>(pub Data)
 where
     Data: Send + Sync + 'static;
 
