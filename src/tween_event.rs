@@ -5,14 +5,12 @@
 //! **Plugins**:
 //! - [`DefaultTweenEventPlugins`]
 //! - [`TweenEventPlugin<Data>`]
-//! - [`TweenEventTakingPlugin<Data>`]
 //!
 //! **Components**:
 //! - [`TweenEventData`]
 //!
 //! **Systems**
 //! - [`tween_event_system`]
-//! - [`tween_event_taking_system`]
 //!
 //! **Events**:
 //! - [`TweenEvent<Data>`]
@@ -23,7 +21,6 @@
 //!
 //! Add this plugin for your custom data.
 //! - [`TweenEventPlugin<Data>`]
-//! - [`TweenEventTakingPlugin<Data>`]
 //!
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
@@ -38,8 +35,7 @@ use bevy_time_runner::TimeSpanProgress;
 
 use crate::tween::{SkipTween, TweenInterpolationValue};
 
-/// Plugin for simple generic event that fires at a specific time span
-/// See [`TweenEventTakingPlugin`] if your custom data is not [`Clone`].
+/// Plugin for simple generic event that fires at a specific time span.
 #[derive(Default)]
 pub struct TweenEventPlugin<Data>
 where
@@ -131,7 +127,7 @@ impl TweenEventData<()> {
 }
 
 /// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
-/// by [`tween_event_system`] or [`tween_event_taking_system`].
+/// by [`tween_event_system`].
 #[derive(Debug, Clone, PartialEq, Event, Reflect)]
 pub struct TweenEvent<Data = ()> {
     /// Custom user data

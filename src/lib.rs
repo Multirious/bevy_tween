@@ -524,7 +524,6 @@ pub enum TweenSystemSet {
     ///
     /// Events is not necessary related to tweening but their code is still working in the same area.
     /// - [`tween::tween_event_system`]
-    /// - [`tween::tween_event_taking_system`]
     ApplyTween,
 }
 
