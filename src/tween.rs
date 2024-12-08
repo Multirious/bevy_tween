@@ -783,6 +783,7 @@ pub type DefaultTweenEventsPlugin =
 #[allow(deprecated)]
 #[allow(clippy::type_complexity)]
 pub fn tween_event_system<Data>(
+    commands: Commands,
     q_tween_event_data: Query<
         (
             Entity,
@@ -796,32 +797,8 @@ pub fn tween_event_system<Data>(
 ) where
     Data: Clone + Send + Sync + 'static,
 {
-    crate::tween_event::tween_event_system(q_tween_event_data, event_writer)
-}
-
-#[deprecated(
-    since = "0.6.0",
-    note = "use `bevy_tween::tween_event::tween_event_taking_system` instead or `TweenEventTakingPlugin` if you're registering custom tween event"
-)]
-#[allow(missing_docs)]
-#[doc(hidden)]
-#[allow(deprecated)]
-#[allow(clippy::type_complexity)]
-pub fn tween_event_taking_system<Data>(
-    q_tween_event_data: Query<
-        (
-            Entity,
-            &mut TweenEventData<Data>,
-            &bevy_time_runner::TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
-        Without<SkipTween>,
-    >,
-    event_writer: EventWriter<TweenEvent<Data>>,
-) where
-    Data: Send + Sync + 'static,
-{
-    crate::tween_event::tween_event_taking_system(
+    crate::tween_event::tween_event_system(
+        commands,
         q_tween_event_data,
         event_writer,
     )
