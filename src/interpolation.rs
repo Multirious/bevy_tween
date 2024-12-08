@@ -53,7 +53,7 @@ impl Plugin for EaseKindPlugin {
 }
 
 /// Curve functions over the [unit interval], commonly used for easing transitions.
-/// 
+///
 /// # Note
 /// This enum is copied directly from [`EaseFunction`] and will be deprecated in future version.
 ///
@@ -167,7 +167,9 @@ impl EaseKind {
             EaseKind::CircularInOut => easing_functions::circular_in_out(t),
             EaseKind::ExponentialIn => easing_functions::exponential_in(t),
             EaseKind::ExponentialOut => easing_functions::exponential_out(t),
-            EaseKind::ExponentialInOut => easing_functions::exponential_in_out(t),
+            EaseKind::ExponentialInOut => {
+                easing_functions::exponential_in_out(t)
+            }
             EaseKind::ElasticIn => easing_functions::elastic_in(t),
             EaseKind::ElasticOut => easing_functions::elastic_out(t),
             EaseKind::ElasticInOut => easing_functions::elastic_in_out(t),
@@ -177,7 +179,9 @@ impl EaseKind {
             EaseKind::BounceIn => easing_functions::bounce_in(t),
             EaseKind::BounceOut => easing_functions::bounce_out(t),
             EaseKind::BounceInOut => easing_functions::bounce_in_out(t),
-            EaseKind::Steps(num_steps) => easing_functions::steps(*num_steps, t),
+            EaseKind::Steps(num_steps) => {
+                easing_functions::steps(*num_steps, t)
+            }
             EaseKind::Elastic(omega) => easing_functions::elastic(*omega, t),
         }
     }
@@ -312,8 +316,8 @@ pub fn sample_interpolations_system<I>(
 
 mod easing_functions {
     use bevy::math::prelude::*;
-    use ops::FloatPow;
     use core::f32::consts::{FRAC_PI_2, FRAC_PI_3, PI};
+    use ops::FloatPow;
 
     #[inline]
     pub(crate) fn linear(t: f32) -> f32 {
@@ -367,7 +371,11 @@ mod easing_functions {
         if t < 0.5 {
             8.0 * t * t * t * t
         } else {
-            1.0 - (-2.0 * t + 2.0) * (-2.0 * t + 2.0) * (-2.0 * t + 2.0) * (-2.0 * t + 2.0) / 2.0
+            1.0 - (-2.0 * t + 2.0)
+                * (-2.0 * t + 2.0)
+                * (-2.0 * t + 2.0)
+                * (-2.0 * t + 2.0)
+                / 2.0
         }
     }
 
@@ -460,26 +468,34 @@ mod easing_functions {
         if t < 0.5 {
             (2.0 * t).squared() * ((c2 + 1.0) * 2.0 * t - c2) / 2.0
         } else {
-            ((2.0 * t - 2.0).squared() * ((c2 + 1.0) * (2.0 * t - 2.0) + c2) + 2.0) / 2.0
+            ((2.0 * t - 2.0).squared() * ((c2 + 1.0) * (2.0 * t - 2.0) + c2)
+                + 2.0)
+                / 2.0
         }
     }
 
     #[inline]
     pub(crate) fn elastic_in(t: f32) -> f32 {
-        -ops::powf(2.0, 10.0 * t - 10.0) * ops::sin((t * 10.0 - 10.75) * 2.0 * FRAC_PI_3)
+        -ops::powf(2.0, 10.0 * t - 10.0)
+            * ops::sin((t * 10.0 - 10.75) * 2.0 * FRAC_PI_3)
     }
     #[inline]
     pub(crate) fn elastic_out(t: f32) -> f32 {
-        ops::powf(2.0, -10.0 * t) * ops::sin((t * 10.0 - 0.75) * 2.0 * FRAC_PI_3) + 1.0
+        ops::powf(2.0, -10.0 * t)
+            * ops::sin((t * 10.0 - 0.75) * 2.0 * FRAC_PI_3)
+            + 1.0
     }
     #[inline]
     pub(crate) fn elastic_in_out(t: f32) -> f32 {
         let c = (2.0 * PI) / 4.5;
 
         if t < 0.5 {
-            -ops::powf(2.0, 20.0 * t - 10.0) * ops::sin((t * 20.0 - 11.125) * c) / 2.0
+            -ops::powf(2.0, 20.0 * t - 10.0) * ops::sin((t * 20.0 - 11.125) * c)
+                / 2.0
         } else {
-            ops::powf(2.0, -20.0 * t + 10.0) * ops::sin((t * 20.0 - 11.125) * c) / 2.0 + 1.0
+            ops::powf(2.0, -20.0 * t + 10.0) * ops::sin((t * 20.0 - 11.125) * c)
+                / 2.0
+                + 1.0
         }
     }
 
@@ -494,7 +510,8 @@ mod easing_functions {
         } else if t < 8.0 / 11.0 {
             (363.0 / 40.0 * t.squared()) - (99.0 / 10.0 * t) + 17.0 / 5.0
         } else if t < 9.0 / 10.0 {
-            (4356.0 / 361.0 * t.squared()) - (35442.0 / 1805.0 * t) + 16061.0 / 1805.0
+            (4356.0 / 361.0 * t.squared()) - (35442.0 / 1805.0 * t)
+                + 16061.0 / 1805.0
         } else {
             (54.0 / 5.0 * t.squared()) - (513.0 / 25.0 * t) + 268.0 / 25.0
         }
@@ -515,6 +532,7 @@ mod easing_functions {
 
     #[inline]
     pub(crate) fn elastic(omega: f32, t: f32) -> f32 {
-        1.0 - (1.0 - t).squared() * (2.0 * ops::sin(omega * t) / omega + ops::cos(omega * t))
+        1.0 - (1.0 - t).squared()
+            * (2.0 * ops::sin(omega * t) / omega + ops::cos(omega * t))
     }
 }

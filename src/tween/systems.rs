@@ -16,7 +16,7 @@ where
 }
 
 /// [`QueryEntityError`] without [`UnsafeWorldCell`] and implemented [`PartialEq`], [`Eq`], and [`Hash`]
-#[derive(Debug,Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum QueryEntityErrorWithoutWorld {
     QueryDoesNotMatch(Entity),
     NoSuchEntity(Entity),
@@ -26,13 +26,18 @@ pub enum QueryEntityErrorWithoutWorld {
 impl From<&QueryEntityError<'_>> for QueryEntityErrorWithoutWorld {
     fn from(x: &QueryEntityError<'_>) -> Self {
         match x {
-            QueryEntityError::QueryDoesNotMatch(e, _) => QueryEntityErrorWithoutWorld::QueryDoesNotMatch(*e),
-            QueryEntityError::NoSuchEntity(e) => QueryEntityErrorWithoutWorld::NoSuchEntity(*e),
-            QueryEntityError::AliasedMutability(e) => QueryEntityErrorWithoutWorld::AliasedMutability(*e),
+            QueryEntityError::QueryDoesNotMatch(e, _) => {
+                QueryEntityErrorWithoutWorld::QueryDoesNotMatch(*e)
+            }
+            QueryEntityError::NoSuchEntity(e) => {
+                QueryEntityErrorWithoutWorld::NoSuchEntity(*e)
+            }
+            QueryEntityError::AliasedMutability(e) => {
+                QueryEntityErrorWithoutWorld::AliasedMutability(*e)
+            }
         }
     }
 }
-
 
 impl<'w> core::error::Error for QueryEntityErrorWithoutWorld {}
 
@@ -40,12 +45,11 @@ impl<'w> core::fmt::Display for QueryEntityErrorWithoutWorld {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match *self {
             Self::QueryDoesNotMatch(entity) => {
-                write!(
-                    f,
-                    "The query does not match the entity {entity}"
-                )
+                write!(f, "The query does not match the entity {entity}")
             }
-            Self::NoSuchEntity(entity) => write!(f, "The entity {entity} does not exist"),
+            Self::NoSuchEntity(entity) => {
+                write!(f, "The entity {entity} does not exist")
+            }
             Self::AliasedMutability(entity) => write!(
                 f,
                 "The entity {entity} was requested mutably more than once"
