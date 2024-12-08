@@ -1,8 +1,8 @@
 use std::f32::consts::PI;
 
 use bevy::{
-    color::{Srgba, palettes::css::WHITE},
-    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
+    color::{palettes::css::WHITE, Srgba},
+    core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
     prelude::*,
     window,
 };
@@ -26,11 +26,11 @@ fn main() {
                     ),
                     enabled_buttons: window::EnabledButtons {
                         maximize: false,
-                        ..Default::default()
+                        ..default()
                     },
-                    ..Default::default()
+                    ..default()
                 }),
-                ..Default::default()
+                ..default()
             }),
             DefaultTweenPlugins,
         ))
@@ -40,15 +40,13 @@ fn main() {
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                ..Default::default()
-            },
-            tonemapping: Tonemapping::TonyMcMapface,
+        Camera2d,
+        Camera {
+            hdr: true,
             ..Default::default()
         },
-        BloomSettings::default(),
+        Tonemapping::TonyMcMapface,
+        Bloom::default(),
     ));
 }
 
@@ -105,26 +103,25 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         let offset_x = -(x_count as f32 * spacing) / 2.;
         let offset_y = -(y_count as f32 * spacing) / 2.;
         commands
-            .spawn(SpatialBundle::INHERITED_IDENTITY)
+            .spawn((Transform::IDENTITY, Visibility::Visible))
             .with_children(|c| {
                 for x in 0..x_count {
                     for y in 0..y_count {
                         let x = x as f32;
                         let y = y as f32;
                         let id = c
-                            .spawn(SpriteBundle {
-                                texture: dot_image.clone(),
-                                transform: Transform::from_xyz(
+                            .spawn((
+                                Sprite {
+                                    image: dot_image.clone(),
+                                    color: dot_color,
+                                    ..default()
+                                },
+                                Transform::from_xyz(
                                     (x * spacing) + offset_x,
                                     (y * spacing) + offset_y,
                                     0.,
                                 ),
-                                sprite: Sprite {
-                                    color: dot_color,
-                                    ..Default::default()
-                                },
-                                ..Default::default()
-                            })
+                            ))
                             .id();
                         dot_grid_children.push(id);
                     }
@@ -134,67 +131,65 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     let dot_grid = dot_grid.into_target();
     let triangle_id = commands
-        .spawn(SpriteBundle {
-            texture: triangle_image,
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: triangle_image,
                 color: pink_glow,
                 ..Default::default()
             },
-            transform: Transform::from_scale(Vec3::ONE * SCALE),
-            ..Default::default()
-        })
+            Transform::from_scale(Vec3::ONE * SCALE),
+        ))
         .id();
     let triangle = triangle_id.into_target();
     let square_id = commands
-        .spawn(SpriteBundle {
-            texture: square_image,
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: square_image,
                 color: blue_glow,
                 ..Default::default()
             },
-            transform: Transform::from_scale(Vec3::ONE * SCALE),
-            ..Default::default()
-        })
+            Transform::from_scale(Vec3::ONE * SCALE),
+        ))
         .id();
     let square = square_id.into_target();
     let bevy_tween_text = commands
-        .spawn(SpriteBundle {
-            texture: bevy_tween_image,
-            transform: Transform::from_scale(Vec3::ONE * SCALE),
-            ..Default::default()
-        })
+        .spawn((
+            Sprite {
+                image: bevy_tween_image,
+                ..default()
+            },
+            Transform::from_scale(Vec3::ONE * SCALE),
+        ))
         .id();
     let bevy_tween_text = bevy_tween_text.into_target();
     let cornering_left = commands
-        .spawn(SpriteBundle {
-            texture: square_filled_image.clone(),
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: square_filled_image.clone(),
                 color: white_color,
-                ..Default::default()
+                ..default()
             },
-            transform: Transform {
+            Transform {
                 translation: cornering_left_tween_start,
                 rotation: Quat::from_rotation_z(PI / 4.),
                 scale: Vec3::ONE * 5. * SCALE,
             },
-            ..Default::default()
-        })
+        ))
         .id();
     let cornering_left = cornering_left.into_target();
     let cornering_right = commands
-        .spawn(SpriteBundle {
-            texture: square_filled_image.clone(),
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: square_filled_image.clone(),
                 color: white_color,
-                ..Default::default()
+                ..default()
             },
-            transform: Transform {
+            Transform {
                 translation: cornering_right_tween_start,
                 rotation: Quat::from_rotation_z(PI / 4.),
                 scale: Vec3::ONE * 5. * SCALE,
             },
-            ..Default::default()
-        })
+        ))
         .id();
     let cornering_right = cornering_right.into_target();
 
