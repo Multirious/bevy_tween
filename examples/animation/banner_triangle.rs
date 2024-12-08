@@ -60,7 +60,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .collect::<Vec<_>>();
 
     let secs = 12.;
-    let ease = EaseFunction::ExponentialInOut;
+    let ease = EaseKind::ExponentialInOut;
 
     commands
         .animation()
@@ -81,7 +81,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .repeat(Repeat::Infinitely)
         .insert_tween_here(
             Duration::from_secs_f32(12. / 7.),
-            EaseFunction::ExponentialInOut,
+            EaseKind::ExponentialInOut,
             dotted_line_target
                 .with(translation(Vec3::ZERO, Vec3::new(30. * 10., 0., 0.))),
         );
@@ -106,7 +106,7 @@ fn snap_rotate(
     dur: f32,
     max: usize,
     rev: f32,
-    ease: EaseFunction,
+    ease: EaseKind,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
         for i in 0..max {

@@ -26,7 +26,7 @@ See changelog [here](CHANGELOG.md).
   commands.animation()
       .insert(tween(
           Duration::from_secs(1),
-          EaseFunction::Linear,
+          EaseKind::Linear,
           sprite.with(translation(pos0, pos1))
       ));
   ```
@@ -38,8 +38,8 @@ See changelog [here](CHANGELOG.md).
       duration: Duration
   ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
       parallel((
-          tween(duration, EaseFunction::QuadraticOut, target.with(translation(...))),
-          tween(duration, EaseFunction::QuadraticOut, target.with(rotation(...))),
+          tween(duration, EaseKind::QuadraticOut, target.with(translation(...))),
+          tween(duration, EaseKind::QuadraticOut, target.with(rotation(...))),
       ))
   }
 

@@ -235,13 +235,13 @@ pub use systems::{
 #[reflect(Component)]
 pub struct SkipTween;
 
-/// Automatically managed by an [`Interpolation`] such as [`EaseFunction`] and
+/// Automatically managed by an [`Interpolation`] such as [`EaseKind`] and
 /// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`](bevy_time_runner::TimeSpanProgress).
 /// See [`sample_interpolations_system`]
 ///
 /// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
 /// [`Interpolation`]: crate::interpolation::Interpolation
-/// [`EaseFunction`]: crate::interpolation::EaseFunction
+/// [`EaseKind`]: crate::interpolation::EaseKind
 /// [`EaseClosure`]: crate::interpolation::EaseClosure
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet

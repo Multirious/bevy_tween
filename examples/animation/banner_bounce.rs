@@ -230,34 +230,34 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ),
                 tween_exact(
                     secs(0.)..secs(5.),
-                    EaseFunction::QuinticOut,
+                    EaseKind::QuinticOut,
                     bevy_tween_text_angle_z.with(angle_z_to(PI * 4.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(9.),
-                    EaseFunction::CircularOut,
+                    EaseKind::CircularOut,
                     bevy_tween_text_scale.with(scale_to(Vec3::ONE * SCALE)),
                 ),
                 tween_exact(
                     secs(11.)..secs(11.5),
-                    EaseFunction::SineOut,
+                    EaseKind::SineOut,
                     bevy_tween_text_scale
                         .with(scale_to(Vec3::ONE * text_pop_scale * SCALE)),
                 ),
                 tween_exact(
                     secs(11.5)..secs(12.),
-                    EaseFunction::SineIn,
+                    EaseKind::SineIn,
                     bevy_tween_text_scale.with(scale_to(Vec3::ZERO * SCALE)),
                 ),
                 tween_exact(
                     secs(10.)..secs(12.),
-                    EaseFunction::QuinticIn,
+                    EaseKind::QuinticIn,
                     bevy_tween_text_color
                         .with(sprite_color_to(white_color.with_alpha(0.0))),
                 ),
                 tween_exact(
                     secs(11.)..secs(12.),
-                    EaseFunction::QuinticIn,
+                    EaseKind::QuinticIn,
                     bevy_tween_text_angle_z.with(angle_z_to(PI * 7.)),
                 ),
             ),
@@ -265,34 +265,34 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 set_value(square_and_triangle_alpha.with(sprite_alpha_to(1.))),
                 tween_exact(
                     secs(0.)..secs(9.),
-                    EaseFunction::CircularOut,
+                    EaseKind::CircularOut,
                     square_and_triangle_scale.with(scale_to(Vec3::ONE * SCALE)),
                 ),
                 tween_exact(
                     secs(4.)..secs(10.),
-                    EaseFunction::ExponentialInOut,
+                    EaseKind::ExponentialInOut,
                     square_and_triangle_alpha.with(sprite_alpha_to(0.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(12.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     triangle_angle_z.with(angle_z_to(-PI * 10.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(12.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     square_angle_z.with(angle_z_to(PI * 10.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(4.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     triangle_translation.with(translation_to(
                         Vec3::new(150., -20., 0.) * SCALE,
                     )),
                 ),
                 tween_exact(
                     secs(0.)..secs(4.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     square_translation.with(translation_to(
                         Vec3::new(-150., 20., 0.) * SCALE,
                     )),
@@ -301,25 +301,25 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             (
                 tween_exact(
                     secs(6.)..secs(6.2),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_left_translation
                         .with(translation_to(destinated_cornering_left)),
                 ),
                 tween_exact(
                     secs(6.)..secs(6.2),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_right_translation
                         .with(translation_to(destinated_cornering_right)),
                 ),
                 tween_exact(
                     secs(9.8)..secs(10.),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_left_translation
                         .with(translation_to(cornering_left_tween_end)),
                 ),
                 tween_exact(
                     secs(9.8)..secs(10.),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_right_translation
                         .with(translation_to(cornering_right_tween_end)),
                 ),
@@ -327,13 +327,13 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             (
                 tween_exact(
                     secs(0.)..secs(5.),
-                    EaseFunction::QuinticOut,
+                    EaseKind::QuinticOut,
                     dot_grid_scale
                         .with(scale_to(Vec3::new(0.4, 0.4, 0.) * SCALE)),
                 ),
                 tween_exact(
                     secs(11.5)..secs(12.),
-                    EaseFunction::QuadraticInOut,
+                    EaseKind::QuadraticInOut,
                     dot_grid_scale
                         .with(scale_to(Vec3::new(0.01, 0.01, 0.) * SCALE)),
                 ),
@@ -361,6 +361,6 @@ fn set_value<B: Bundle>(
     interpolator: B,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
-        tween_exact(*pos..=*pos, EaseFunction::Linear, interpolator)(a, pos)
+        tween_exact(*pos..=*pos, EaseKind::Linear, interpolator)(a, pos)
     }
 }

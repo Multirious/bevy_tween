@@ -73,7 +73,7 @@ fn setup(
         .repeat(Repeat::Infinitely)
         .insert_tween_here(
             Duration::from_secs(1),
-            EaseFunction::Linear,
+            EaseKind::Linear,
             sprite.with(atlas_index(0, len)),
         );
 

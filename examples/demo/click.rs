@@ -67,17 +67,17 @@ fn click_spawn_circle(
                 .insert(parallel((
                     tween(
                         secs(2.),
-                        EaseFunction::ExponentialOut,
+                        EaseKind::ExponentialOut,
                         circle_transform.translation_to(end),
                     ),
                     tween(
                         secs(1.),
-                        EaseFunction::BackIn,
+                        EaseKind::BackIn,
                         circle_transform.scale_to(Vec3::ZERO),
                     ),
                     tween(
                         secs(1.),
-                        EaseFunction::Linear,
+                        EaseKind::Linear,
                         circle.with(sprite_color(
                             into_color(WHITE),
                             into_color(DEEP_PINK),

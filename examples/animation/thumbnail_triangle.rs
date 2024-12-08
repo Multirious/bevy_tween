@@ -21,7 +21,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let bevy_text = asset_server.load("bevy.png");
     let tween_text = asset_server.load("tween.png");
     let triangle_image = asset_server.load("big_triangle.png");
-    let ease = EaseFunction::ExponentialInOut;
+    let ease = EaseKind::ExponentialInOut;
 
     commands.spawn(SpriteBundle {
         texture: bevy_text,
@@ -86,7 +86,7 @@ fn snap_rotate(
     dur: f32,
     max: usize,
     rev: f32,
-    ease: EaseFunction,
+    ease: EaseKind,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
         for i in 0..max {

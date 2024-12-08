@@ -68,7 +68,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             event("bump"),
             tween(
                 secs(1.),
-                EaseFunction::ExponentialIn,
+                EaseKind::ExponentialIn,
                 (
                     triangle_translation
                         .with(translation_to(Vec3::new(x_right, 0., 0.))),
@@ -80,7 +80,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             event("boom"),
             tween(
                 secs(1.),
-                EaseFunction::CircularOut,
+                EaseKind::CircularOut,
                 (
                     triangle_translation
                         .with(translation_to(Vec3::new(x_left, 0., 0.))),
@@ -122,7 +122,7 @@ fn effect_system(
                 .animation()
                 .insert_tween_here(
                     secs(1.),
-                    EaseFunction::QuinticOut,
+                    EaseKind::QuinticOut,
                     (
                         entity.with(translation(
                             effect_pos.trail,
@@ -152,7 +152,7 @@ fn effect_system(
                 .animation()
                 .insert_tween_here(
                     secs(0.1),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     (
                         entity.with(scale(
                             Vec3::new(0.5, 0.5, 0.),
@@ -180,7 +180,7 @@ fn effect_system(
                 .animation()
                 .insert_tween_here(
                     secs(0.5),
-                    EaseFunction::QuadraticOut,
+                    EaseKind::QuadraticOut,
                     (
                         entity.with(scale(
                             Vec3::new(1., 1., 0.),

@@ -48,7 +48,7 @@
 //! let sprite = sprite_commands.id().into_target();
 //! sprite_commands.animation().insert_tween_here(
 //!     Duration::from_secs(1),
-//!     EaseFunction::QuadraticOut,
+//!     EaseKind::QuadraticOut,
 //!     sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!     // Since this argument accepts a bundle, you can add additional tween to this like so:
 //!     // (
@@ -86,12 +86,12 @@
 //! sprite_commands.animation().insert(sequence((
 //!     tween(
 //!         Duration::from_secs(1),
-//!         EaseFunction::QuadraticOut,
+//!         EaseKind::QuadraticOut,
 //!         sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!     ),
 //!     tween(
 //!         Duration::from_secs(1),
-//!         EaseFunction::QuadraticIn,
+//!         EaseKind::QuadraticIn,
 //!         sprite.with(sprite_color(RED.into(), WHITE.into()))
 //!     ),
 //! )));
@@ -125,13 +125,13 @@
 //! sprite_commands.animation().insert(sequence((
 //!     tween(
 //!         Duration::from_secs(1),
-//!         EaseFunction::QuadraticOut,
+//!         EaseKind::QuadraticOut,
 //!         // Switch the constructor to the relative variant
 //!         sprite_color.with(sprite_color_to(RED.into()))
 //!     ),
 //!     tween(
 //!         Duration::from_secs(1),
-//!         EaseFunction::QuadraticIn,
+//!         EaseKind::QuadraticIn,
 //!         sprite_color.with(sprite_color_to(WHITE.into()))
 //!     ),
 //! )));
@@ -163,12 +163,12 @@
 //!     .insert(sequence((
 //!         tween(
 //!             Duration::from_secs(1),
-//!             EaseFunction::QuadraticOut,
+//!             EaseKind::QuadraticOut,
 //!             sprite_color.with(sprite_color_to(RED.into()))
 //!         ),
 //!         tween(
 //!             Duration::from_secs(1),
-//!             EaseFunction::QuadraticIn,
+//!             EaseKind::QuadraticIn,
 //!             sprite_color.with(sprite_color_to(WHITE.into()))
 //!         ),
 //!     )));
@@ -207,12 +207,12 @@
 //!     sequence((
 //!         tween(
 //!             duration,
-//!             EaseFunction::QuadraticOut,
+//!             EaseKind::QuadraticOut,
 //!             target_sprite_color.with(sprite_color_to(RED.into()))
 //!         ),
 //!         tween(
 //!             duration,
-//!             EaseFunction::QuadraticIn,
+//!             EaseKind::QuadraticIn,
 //!             target_sprite_color.with(sprite_color_to(WHITE.into()))
 //!         ),
 //!     ))
@@ -248,12 +248,12 @@
 //!     c.animation().insert(sequence((
 //!         tween(
 //!             Duration::from_secs(1),
-//!             EaseFunction::QuadraticOut,
+//!             EaseKind::QuadraticOut,
 //!             sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!         ),
 //!         tween(
 //!             Duration::from_secs(1),
-//!             EaseFunction::QuadraticIn,
+//!             EaseKind::QuadraticIn,
 //!             sprite.with(sprite_color(RED.into(), WHITE.into()))
 //!         ),
 //!     )));
@@ -283,12 +283,12 @@
 //! commands.animation().insert(sequence((
 //!     tween(
 //!         Duration::from_secs(1),
-//!         EaseFunction::QuadraticOut,
+//!         EaseKind::QuadraticOut,
 //!         sprite.with(sprite_color(WHITE.into(), RED.into()))
 //!     ),
 //!     tween(
 //!         Duration::from_secs(1),
-//!         EaseFunction::QuadraticIn,
+//!         EaseKind::QuadraticIn,
 //!         sprite.with(sprite_color(RED.into(), WHITE.into()))
 //!     ),
 //! )));
@@ -316,7 +316,7 @@
 //! sprite_commands.insert(AnimationTarget);
 //! sprite_commands.animation().insert_tween_here(
 //!     Duration::from_secs(1),
-//!     EaseFunction::QuadraticOut,
+//!     EaseKind::QuadraticOut,
 //!     sprite.with(sprite_color(WHITE.into(), RED.into()))
 //! );
 //! ```
@@ -388,7 +388,7 @@ pub mod prelude {
     pub use std::time::Duration;
 
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
-    pub use crate::interpolation::EaseFunction;
+    pub use crate::interpolation::EaseKind;
 
     pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
 
@@ -432,7 +432,7 @@ pub use tween_event::tween_event_taking_system;
 /// - [`TweenCorePlugin`]
 /// - [`interpolate::DefaultInterpolatorsPlugin`]
 /// - [`interpolate::DefaultDynInterpolatorsPlugin`]
-/// - [`interpolation::EaseFunctionPlugin`]
+/// - [`interpolation::EaseKindPlugin`]
 /// - [`tween_event::DefaultTweenEventPlugins`]
 pub struct DefaultTweenPlugins;
 
@@ -443,7 +443,7 @@ impl PluginGroup for DefaultTweenPlugins {
             .add(TweenCorePlugin::default())
             .add(interpolate::DefaultInterpolatorsPlugin)
             .add(interpolate::DefaultDynInterpolatorsPlugin)
-            .add(interpolation::EaseFunctionPlugin)
+            .add(interpolation::EaseKindPlugin)
             .add_group(tween_event::DefaultTweenEventPlugins);
         #[cfg(feature = "bevy_lookup_curve")]
         let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);

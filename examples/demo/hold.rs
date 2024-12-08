@@ -99,7 +99,7 @@ fn setup(
         .animation()
         .insert_tween_here(
             secs(1.),
-            EaseFunction::QuarticIn,
+            EaseKind::QuarticIn,
             (
                 effect_intensity(0., 1.),
                 big_x.with(sprite_color(
@@ -114,7 +114,7 @@ fn setup(
         .repeat(Repeat::Infinitely)
         .insert_tween_here(
             secs(1.),
-            EaseFunction::Linear,
+            EaseKind::Linear,
             big_x.with(interpolate::angle_z(0., PI * 0.5)),
         );
 }

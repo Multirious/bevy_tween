@@ -87,17 +87,17 @@ fn setup(mut commands: Commands) {
     commands.animation().insert(parallel((
         tween(
             Duration::from_secs(2),
-            EaseFunction::Linear,
+            EaseKind::Linear,
             circle.with(circle_hue(0., 10.)),
         ),
         tween(
             Duration::from_secs(2),
-            EaseFunction::Linear,
+            EaseKind::Linear,
             circle.with(circle_radius(1., 50.)),
         ),
         tween(
             Duration::from_secs(2),
-            EaseFunction::Linear,
+            EaseKind::Linear,
             // Requires [`component_dyn_tween_system`]
             circle.with_closure(|circle: &mut Circle, value| {
                 circle.spikiness = (2.).lerp(4., value);
