@@ -15,6 +15,45 @@ where
     apply_component_tween_system::<I>.into_configs()
 }
 
+/// [`QueryEntityError`] without [`UnsafeWorldCell`] and implemented [`PartialEq`], [`Eq`], and [`Hash`]
+#[derive(Debug,Clone, Copy, PartialEq, Eq, Hash)]
+pub enum QueryEntityErrorWithoutWorld {
+    QueryDoesNotMatch(Entity),
+    NoSuchEntity(Entity),
+    AliasedMutability(Entity),
+}
+
+impl From<&QueryEntityError<'_>> for QueryEntityErrorWithoutWorld {
+    fn from(x: &QueryEntityError<'_>) -> Self {
+        match x {
+            QueryEntityError::QueryDoesNotMatch(e, _) => QueryEntityErrorWithoutWorld::QueryDoesNotMatch(*e),
+            QueryEntityError::NoSuchEntity(e) => QueryEntityErrorWithoutWorld::NoSuchEntity(*e),
+            QueryEntityError::AliasedMutability(e) => QueryEntityErrorWithoutWorld::AliasedMutability(*e),
+        }
+    }
+}
+
+
+impl<'w> core::error::Error for QueryEntityErrorWithoutWorld {}
+
+impl<'w> core::fmt::Display for QueryEntityErrorWithoutWorld {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match *self {
+            Self::QueryDoesNotMatch(entity) => {
+                write!(
+                    f,
+                    "The query does not match the entity {entity}"
+                )
+            }
+            Self::NoSuchEntity(entity) => write!(f, "The entity {entity} does not exist"),
+            Self::AliasedMutability(entity) => write!(
+                f,
+                "The entity {entity} was requested mutably more than once"
+            ),
+        }
+    }
+}
+
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetComponent`] with
 /// value provided by [`TweenInterpolationValue`] component.
 ///
@@ -70,7 +109,7 @@ pub fn apply_component_tween_system<I>(
         Without<SkipTween>,
     >,
     mut q_component: Query<&mut I::Item>,
-    mut last_entity_error: Local<HashMap<Entity, QueryEntityError>>,
+    mut last_entity_error: Local<HashMap<Entity, QueryEntityErrorWithoutWorld>>,
     mut last_search_error: Local<HashSet<Entity>>,
 ) where
     I: Interpolator + Send + Sync + 'static,
@@ -87,13 +126,14 @@ pub fn apply_component_tween_system<I>(
                         match q_component.get_mut(*target) {
                             Ok(target_component) => target_component,
                             Err(e) => {
+                                let e_no_world = QueryEntityErrorWithoutWorld::from(&e);
                                 if last_entity_error
                                     .get(target)
-                                    .map(|old_e| old_e != &e)
+                                    .map(|old_e| old_e != &e_no_world)
                                     .unwrap_or(true)
                                     && entity_error
                                         .get(target)
-                                        .map(|old_e| old_e != &e)
+                                        .map(|old_e| old_e != &e_no_world)
                                         .unwrap_or(true)
                                 {
                                     error!(
@@ -102,7 +142,7 @@ pub fn apply_component_tween_system<I>(
                                         type_name::<I::Item>()
                                     );
                                 }
-                                entity_error.insert(*target, e);
+                                entity_error.insert(*target, e_no_world);
                                 return;
                             }
                         };
@@ -152,13 +192,14 @@ pub fn apply_component_tween_system<I>(
                 let mut target_component = match q_component.get_mut(target) {
                     Ok(target_component) => target_component,
                     Err(e) => {
+                        let e_no_world = QueryEntityErrorWithoutWorld::from(&e);
                         if last_entity_error
                             .get(&target)
-                            .map(|old_e| old_e != &e)
+                            .map(|old_e| old_e != &e_no_world)
                             .unwrap_or(true)
                             && entity_error
                                 .get(&target)
-                                .map(|old_e| old_e != &e)
+                                .map(|old_e| old_e != &e_no_world)
                                 .unwrap_or(true)
                         {
                             error!(
@@ -167,7 +208,7 @@ pub fn apply_component_tween_system<I>(
                                 type_name::<I::Item>()
                             );
                         }
-                        entity_error.insert(target, e);
+                        entity_error.insert(target, e_no_world);
                         return;
                     }
                 };
