@@ -85,8 +85,7 @@ where
 ///
 /// <div class="warning">
 ///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin)
-/// or [`TweenEventTakingPlugin`](crate::tween_event::TweenEventTakingPlugin).
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
 pub fn event<Data>(
@@ -111,8 +110,7 @@ where
 ///
 /// <div class="warning">
 ///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin)
-/// or [`TweenEventTakingPlugin`](crate::tween_event::TweenEventTakingPlugin).
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
 pub fn event_at<Data>(
@@ -138,8 +136,7 @@ where
 ///
 /// <div class="warning">
 ///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin)
-/// or [`TweenEventTakingPlugin`](crate::tween_event::TweenEventTakingPlugin).
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
 pub fn event_for<Data>(
@@ -168,8 +165,7 @@ where
 ///
 /// <div class="warning">
 ///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin)
-/// or [`TweenEventTakingPlugin`](crate::tween_event::TweenEventTakingPlugin).
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
 pub fn event_exact<S, Data>(

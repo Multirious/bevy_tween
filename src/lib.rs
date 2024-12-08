@@ -424,7 +424,6 @@ pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
 
 pub use tween_event::tween_event_system;
-pub use tween_event::tween_event_taking_system;
 
 /// Default plugins for using crate.
 ///
@@ -525,7 +524,6 @@ pub enum TweenSystemSet {
     ///
     /// Events is not necessary related to tweening but their code is still working in the same area.
     /// - [`tween::tween_event_system`]
-    /// - [`tween::tween_event_taking_system`]
     ApplyTween,
 }
 

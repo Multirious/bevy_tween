@@ -5,14 +5,12 @@
 //! **Plugins**:
 //! - [`DefaultTweenEventPlugins`]
 //! - [`TweenEventPlugin<Data>`]
-//! - [`TweenEventTakingPlugin<Data>`]
 //!
 //! **Components**:
 //! - [`TweenEventData`]
 //!
 //! **Systems**
 //! - [`tween_event_system`]
-//! - [`tween_event_taking_system`]
 //!
 //! **Events**:
 //! - [`TweenEvent<Data>`]
@@ -23,7 +21,6 @@
 //!
 //! Add this plugin for your custom data.
 //! - [`TweenEventPlugin<Data>`]
-//! - [`TweenEventTakingPlugin<Data>`]
 //!
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
@@ -36,8 +33,7 @@ use bevy_time_runner::TimeSpanProgress;
 
 use crate::tween::{SkipTween, TweenInterpolationValue};
 
-/// Plugin for simple generic event that fires at a specific time span
-/// See [`TweenEventTakingPlugin`] if your custom data is not [`Clone`].
+/// Plugin for simple generic event that fires at a specific time span.
 #[derive(Default)]
 pub struct TweenEventPlugin<Data>
 where
@@ -64,33 +60,6 @@ where
     }
 }
 
-/// Plugin for simple generic event that fires at a specific time span
-/// See [`TweenEventPlugin`] if your custom data is [`Clone`].
-pub struct TweenEventTakingPlugin<Data>
-where
-    Data: Send + Sync + 'static,
-{
-    marker: PhantomData<Data>,
-}
-
-impl<Data> Plugin for TweenEventTakingPlugin<Data>
-where
-    Data: Send + Sync + 'static,
-{
-    fn build(&self, app: &mut App) {
-        let app_resource = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` resource doesn't exist");
-        app.add_systems(
-            app_resource.schedule,
-            (tween_event_taking_system::<Data>)
-                .in_set(crate::TweenSystemSet::ApplyTween),
-        )
-        .add_event::<TweenEvent<Data>>();
-    }
-}
-
 /// Default tween event plugins:
 /// - `TweenEventPlugin::<()>::default()`,
 /// - `TweenEventPlugin::<&'static str>::default()`
@@ -109,36 +78,26 @@ impl PluginGroup for DefaultTweenEventPlugins {
 /// Fires [`TweenEvent`] whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity.
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
-pub struct TweenEventData<Data = ()>(pub Option<Data>)
+pub struct TweenEventData<Data = ()>(pub Data)
 where
     Data: Send + Sync + 'static;
 
 impl<Data: Send + Sync + 'static> TweenEventData<Data> {
     /// Create new [`TweenEventData`] with custom user data.
     pub fn with_data(data: Data) -> Self {
-        TweenEventData(Some(data))
+        TweenEventData(data)
     }
 }
 
 impl TweenEventData<()> {
-    /// Create new [`TweenEventData`] with no custom user data, simply `Some(())`.
+    /// Create new [`TweenEventData`] with no custom user data, simply `()`.
     pub fn new() -> Self {
-        TweenEventData(Some(()))
-    }
-}
-
-impl<Data> TweenEventData<Data>
-where
-    Data: Send + Sync + 'static,
-{
-    /// Create new [`TweenEventData`] with `None` value.
-    pub fn none() -> Self {
-        TweenEventData(None)
+        TweenEventData(())
     }
 }
 
 /// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
-/// by [`tween_event_system`] or [`tween_event_taking_system`].
+/// by [`tween_event_system`].
 #[derive(Debug, Clone, PartialEq, Event, Reflect)]
 pub struct TweenEvent<Data = ()> {
     /// Custom user data
@@ -156,6 +115,7 @@ pub struct TweenEvent<Data = ()> {
 /// cloning the data.
 #[allow(clippy::type_complexity)]
 pub fn tween_event_system<Data>(
+    mut commands: Commands,
     q_tween_event_data: Query<
         (
             Entity,
@@ -171,46 +131,14 @@ pub fn tween_event_system<Data>(
 {
     q_tween_event_data.iter().for_each(
         |(entity, event_data, progress, interpolation_value)| {
-            if let Some(data) = event_data.0.as_ref() {
-                event_writer.send(TweenEvent {
-                    data: data.clone(),
-                    progress: *progress,
-                    interpolation_value: interpolation_value.map(|v| v.0),
-                    entity,
-                });
-            }
-        },
-    );
-}
-
-/// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
-/// and [`TweenEventData`] exist in the same entity and data is `Some`,
-/// taking the data and leaves the value `None`.
-#[allow(clippy::type_complexity)]
-pub fn tween_event_taking_system<Data>(
-    mut q_tween_event_data: Query<
-        (
-            Entity,
-            &mut TweenEventData<Data>,
-            &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
-        Without<SkipTween>,
-    >,
-    mut event_writer: EventWriter<TweenEvent<Data>>,
-) where
-    Data: Send + Sync + 'static,
-{
-    q_tween_event_data.iter_mut().for_each(
-        |(entity, mut event_data, progress, interpolation_value)| {
-            if let Some(data) = event_data.0.take() {
-                event_writer.send(TweenEvent {
-                    data,
-                    progress: *progress,
-                    interpolation_value: interpolation_value.map(|v| v.0),
-                    entity,
-                });
-            }
+            let event = TweenEvent {
+                data: event_data.0.clone(),
+                progress: *progress,
+                interpolation_value: interpolation_value.map(|v| v.0),
+                entity,
+            };
+            commands.trigger_targets(event.clone(), entity);
+            event_writer.send(event);
         },
     );
 }
