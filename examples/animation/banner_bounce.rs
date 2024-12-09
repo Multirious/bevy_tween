@@ -7,7 +7,7 @@ use bevy::{
     window,
 };
 use bevy_tween::{
-    combinator::{go, parallel, tween_exact, AnimationCommands},
+    combinator::{go, parallel, sequence, tween_exact, AnimationCommands},
     prelude::*,
 };
 
@@ -62,11 +62,17 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     // ========================================================================
 
     let dot_color: Color = WHITE.with_alpha(0.2).into();
-    let white_color: Color = (WHITE * 2.).into();
+    let white_color: Color = (WHITE * 2.).with_alpha(1.).into();
     let text_pop_scale = 1.2;
 
-    let blue_glow: Color = (Srgba::rgb_u8(103, 163, 217) * 5.).into();
-    let pink_glow: Color = (Srgba::rgb_u8(248, 183, 205) * 5.).into();
+    let blue_normal = Srgba::rgb_u8(103, 163, 217);
+    let pink_normal = Srgba::rgb_u8(248, 183, 205);
+    let blue_glow = (blue_normal * 5.).with_alpha(1.);
+    let pink_glow = (pink_normal * 5.).with_alpha(1.);
+    let blue_normal = Color::from(blue_normal);
+    let pink_normal = Color::from(pink_normal);
+    let blue_glow = Color::from(blue_glow);
+    let pink_glow = Color::from(pink_glow);
 
     let cornering_tween_offset = 200. * SCALE;
     let destinated_cornering_left = Vec3::new(-300., -100., 0.) * SCALE;
@@ -203,8 +209,10 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         square_and_triangle.state(Vec3::ZERO * SCALE);
     let mut square_and_triangle_alpha = square_and_triangle.state(1.);
     let mut square_angle_z = square.state(0.);
+    let mut square_color = square.state(blue_glow.with_alpha(0.));
     let mut triangle_angle_z = triangle.state(0.);
     let mut triangle_translation = triangle.state(Vec3::ZERO);
+    let mut triangle_color = triangle.state(pink_glow.with_alpha(0.));
     let mut square_translation = square.state(Vec3::ZERO);
     let mut cornering_right_translation =
         cornering_right.state(cornering_right_tween_start);
@@ -257,11 +265,26 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ),
             ),
             (
-                set_value(square_and_triangle_alpha.with(sprite_alpha_to(1.))),
+                sequence((
+                    // the objects is visible for a split second without this
+                    go(secs(0.1)),
+                    set_value(square_color.with(sprite_color_to(blue_glow))),
+                    set_value(triangle_color.with(sprite_color_to(pink_glow))),
+                )),
                 tween_exact(
                     secs(0.)..secs(9.),
                     EaseKind::CircularOut,
                     square_and_triangle_scale.with(scale_to(Vec3::ONE * SCALE)),
+                ),
+                tween_exact(
+                    secs(4.)..secs(10.),
+                    EaseKind::ExponentialInOut,
+                    square_color.with(sprite_color_to(blue_normal)),
+                ),
+                tween_exact(
+                    secs(4.)..secs(10.),
+                    EaseKind::ExponentialInOut,
+                    triangle_color.with(sprite_color_to(pink_normal)),
                 ),
                 tween_exact(
                     secs(4.)..secs(10.),
