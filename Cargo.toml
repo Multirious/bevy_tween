@@ -57,7 +57,7 @@ bevy_asset = ["bevy/bevy_asset"]
 # Adds nothing just yet but required by the "bevy_sprite" feature.
 bevy_render = ["bevy/bevy_render"]
 # Add some built-in interpolators related to sprite
-bevy_sprite = ["bevy/bevy_sprite", "bevy_render"]
+bevy_sprite = ["bevy/bevy_sprite"]
 # Adds some built-in interpolators related to ui
 bevy_ui = ["bevy/bevy_ui"]
 # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
