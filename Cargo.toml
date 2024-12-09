@@ -126,9 +126,6 @@ required-features = [
 [[example]]
 name = "entity_event"
 path = "examples/demo/entity_event.rs"
-required-features = [
-    "bevy_eventlistener"
-]
 
 [[example]]
 name = "sprite_sheet"
