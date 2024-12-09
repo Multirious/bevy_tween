@@ -61,7 +61,7 @@ bevy_sprite = ["bevy/bevy_sprite"]
 # Adds some built-in interpolators related to ui
 bevy_ui = ["bevy/bevy_ui"]
 # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
-bevy_lookup_curve = ["dep:bevy_lookup_curve"]
+bevy_lookup_curve = ["dep:bevy_lookup_curve", "bevy_asset"]
 # Derive Serialize and Deserialize for some types
 serde = ["dep:serde"]
 
