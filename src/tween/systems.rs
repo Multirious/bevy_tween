@@ -39,9 +39,9 @@ impl From<&QueryEntityError<'_>> for QueryEntityErrorWithoutWorld {
     }
 }
 
-impl<'w> core::error::Error for QueryEntityErrorWithoutWorld {}
+impl core::error::Error for QueryEntityErrorWithoutWorld {}
 
-impl<'w> core::fmt::Display for QueryEntityErrorWithoutWorld {
+impl core::fmt::Display for QueryEntityErrorWithoutWorld {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match *self {
             Self::QueryDoesNotMatch(entity) => {
