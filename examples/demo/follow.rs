@@ -66,19 +66,14 @@ struct Jeb;
 struct JebTranslationAnimator;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((
-        Camera2dBundle {
-            ..Default::default()
-        },
-        utils::MainCamera,
-    ));
+    commands.spawn((Camera2d, utils::MainCamera));
 
     // Spawning the square
     commands
         .spawn((
-            SpriteBundle {
-                texture: asset_server.load("square_filled.png"),
-                ..Default::default()
+            Sprite {
+                image: asset_server.load("square_filled.png"),
+                ..default()
             },
             Jeb,
             AnimationTarget,

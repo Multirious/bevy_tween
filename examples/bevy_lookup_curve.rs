@@ -6,6 +6,7 @@ use bevy_tween::{
     },
     combinator::tween,
     interpolate::translation,
+    interpolation::bevy_lookup_curve::LookupCurveHandle,
     prelude::*,
     tween::{AnimationTarget, TargetComponent},
 };
@@ -33,26 +34,26 @@ fn default_curve() -> LookupCurve {
 }
 
 fn setup(mut commands: Commands, mut curves: ResMut<Assets<LookupCurve>>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
     let curve = curves.add(default_curve());
     let sprite = TargetComponent::marker();
     commands
         .spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(Vec2::new(100., 100.)),
-                    ..Default::default()
-                },
-                ..Default::default()
+            Sprite {
+                custom_size: Some(Vec2::new(100., 100.)),
+                ..default()
             },
             AnimationTarget,
         ))
         .animation()
         .repeat(Repeat::Infinitely)
-        .repeat_style(RepeatStyle::PingPong)
+        .repeat_style(RepeatStyle::WrapAround)
         .insert(tween(
-            Duration::from_secs(1),
-            (curve.clone(), LookupCurveEditor::new(curve)),
+            Duration::from_secs(5),
+            (
+                LookupCurveHandle(curve.clone()),
+                LookupCurveEditor::new(curve),
+            ),
             sprite.with(translation(
                 Vec3::new(-300., -300., 0.),
                 Vec3::new(300., -300., 0.),

@@ -13,16 +13,15 @@ fn main() {
         .run();
 }
 
-fn sprite(start_x: f32, start_y: f32) -> SpriteBundle {
-    SpriteBundle {
-        sprite: Sprite {
+fn sprite(start_x: f32, start_y: f32) -> (Sprite, Transform) {
+    (
+        Sprite {
             custom_size: Some(Vec2::new(50., 50.)),
             color: Color::WHITE,
-            ..Default::default()
+            ..default()
         },
-        transform: Transform::from_xyz(start_x, start_y, 0.),
-        ..Default::default()
-    }
+        Transform::from_xyz(start_x, start_y, 0.),
+    )
 }
 
 /// This show all the possible structure you can use.
@@ -32,7 +31,7 @@ fn sprite(start_x: f32, start_y: f32) -> SpriteBundle {
 /// These will be presented in its most rawest form.
 /// See other examples for better APIs.
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     let angle_start = 0.;
     let angle_end = std::f32::consts::PI * 2.;

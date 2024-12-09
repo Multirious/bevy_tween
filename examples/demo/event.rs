@@ -34,7 +34,7 @@ struct Triangle;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     use interpolate::{angle_z_to, translation_to};
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     let x_left = -300.;
     let x_right = 300.;
@@ -56,9 +56,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Triangle,
-            SpriteBundle {
-                texture: asset_server.load("triangle_filled.png"),
-                ..Default::default()
+            Sprite {
+                image: asset_server.load("triangle_filled.png"),
+                ..default()
             },
             AnimationTarget,
         ))
@@ -107,16 +107,11 @@ fn effect_system(
             commands
                 .spawn((
                     Effect,
-                    SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::new(20., 100.)),
-                            ..Default::default()
-                        },
-                        transform: Transform::from_translation(
-                            effect_pos.trail,
-                        ),
+                    Sprite {
+                        custom_size: Some(Vec2::new(20., 100.)),
                         ..Default::default()
                     },
+                    Transform::from_translation(effect_pos.trail),
                     AnimationTarget,
                 ))
                 .animation()
@@ -140,13 +135,13 @@ fn effect_system(
             commands
                 .spawn((
                     Effect,
-                    SpriteBundle {
-                        texture: asset_server.load("circle.png"),
-                        transform: Transform::from_translation(
-                            q_triangle.single().translation,
-                        ),
-                        ..Default::default()
+                    Sprite {
+                        image: asset_server.load("circle.png"),
+                        ..default()
                     },
+                    Transform::from_translation(
+                        q_triangle.single().translation,
+                    ),
                     AnimationTarget,
                 ))
                 .animation()
@@ -170,11 +165,11 @@ fn effect_system(
             commands
                 .spawn((
                     Effect,
-                    SpriteBundle {
-                        texture: asset_server.load("circle.png"),
-                        transform: Transform::from_translation(effect_pos.boom),
-                        ..Default::default()
+                    Sprite {
+                        image: asset_server.load("circle.png"),
+                        ..default()
                     },
+                    Transform::from_translation(effect_pos.boom),
                     AnimationTarget,
                 ))
                 .animation()

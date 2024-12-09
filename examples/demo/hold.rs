@@ -3,7 +3,8 @@ use std::f32::consts::PI;
 use bevy::{
     color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
-    window::PrimaryWindow,
+    window::{PrimaryWindow, SystemCursorIcon},
+    winit::cursor::CursorIcon,
 };
 use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
@@ -75,20 +76,19 @@ pub struct EffectIntensitiy(f32);
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut window: Query<&mut Window, With<PrimaryWindow>>,
+    window: Query<Entity, With<PrimaryWindow>>,
 ) {
     use interpolate::{effect_intensity, sprite_color};
-    window.single_mut().cursor.icon = CursorIcon::Pointer;
-    commands.spawn(Camera2dBundle::default());
+    commands
+        .entity(window.single())
+        .insert(CursorIcon::System(SystemCursorIcon::Pointer));
+    commands.spawn(Camera2d);
     let big_x = commands
         .spawn((
-            SpriteBundle {
-                texture: asset_server.load("big_x.png"),
-                sprite: Sprite {
-                    color: into_color(DEEP_PINK),
-                    ..Default::default()
-                },
-                ..Default::default()
+            Sprite {
+                image: asset_server.load("big_x.png"),
+                color: into_color(DEEP_PINK),
+                ..default()
             },
             BigX,
         ))
