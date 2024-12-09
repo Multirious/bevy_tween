@@ -54,4 +54,4 @@ jobs:
       run: cargo check --examples -F bevy_lookup_curve
       
     - name: Run tests
-      run: cargo test -F x11
+      run: cargo test -F bevy/x11
