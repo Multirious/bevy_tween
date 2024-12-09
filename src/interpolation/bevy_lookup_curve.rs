@@ -35,22 +35,26 @@ impl Plugin for BevyLookupCurveInterpolationPlugin {
 }
 
 /// Wrapper for [`LookupCache`] to make it a component
-#[derive(Debug, Component, Reflect)]
+#[derive(Clone, Debug, Component, Reflect)]
 #[reflect(Component)]
 pub struct LookupCurveCache(pub LookupCache);
 
-/// Interpolation system for [`Handle<LookupCurve>`]
+/// [`LookupCurve`] handle
+#[derive(Clone, Debug, Component, Reflect)]
+pub struct LookupCurveHandle(pub Handle<LookupCurve>);
+
+/// Interpolation system for [`LookupCurveHandle`]
 #[allow(clippy::type_complexity)]
 pub fn sample_lookup_curve_system(
     mut commands: Commands,
     mut query: Query<
         (
             Entity,
-            &Handle<LookupCurve>,
+            &LookupCurveHandle,
             Option<&mut LookupCurveCache>,
             &TimeSpanProgress,
         ),
-        Or<(Changed<Handle<LookupCurve>>, Changed<TimeSpanProgress>)>,
+        Or<(Changed<LookupCurveHandle>, Changed<TimeSpanProgress>)>,
     >,
     mut removed: RemovedComponents<TimeSpanProgress>,
     lookup_curve: Res<Assets<LookupCurve>>,
@@ -63,6 +67,8 @@ pub fn sample_lookup_curve_system(
             if progress.now_percentage.is_nan() {
                 return;
             }
+
+            let curve = &curve.0;
 
             let Some(curve) = lookup_curve.get(curve) else {
                 if !last_handle_error.contains(&curve.id())
@@ -81,7 +87,6 @@ pub fn sample_lookup_curve_system(
                     progress.now_percentage.clamp(0., 1.),
                     &mut cache.0,
                 ),
-
                 None => curve.lookup(progress.now_percentage.clamp(0., 1.)),
             };
 

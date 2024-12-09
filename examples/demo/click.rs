@@ -29,12 +29,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn((
-        Camera2dBundle {
-            ..Default::default()
-        },
-        utils::MainCamera,
-    ));
+    commands.spawn((Camera2d, utils::MainCamera));
 }
 
 fn click_spawn_circle(
@@ -56,28 +51,28 @@ fn click_spawn_circle(
             let mut circle_transform = circle.transform_state(transform);
             commands
                 .spawn((
-                    SpriteBundle {
-                        texture: circle_filled_image,
-                        transform,
-                        ..Default::default()
+                    Sprite {
+                        image: circle_filled_image,
+                        ..default()
                     },
+                    transform,
                     AnimationTarget,
                 ))
                 .animation()
                 .insert(parallel((
                     tween(
                         secs(2.),
-                        EaseFunction::ExponentialOut,
+                        EaseKind::ExponentialOut,
                         circle_transform.translation_to(end),
                     ),
                     tween(
                         secs(1.),
-                        EaseFunction::BackIn,
+                        EaseKind::BackIn,
                         circle_transform.scale_to(Vec3::ZERO),
                     ),
                     tween(
                         secs(1.),
-                        EaseFunction::Linear,
+                        EaseKind::Linear,
                         circle.with(sprite_color(
                             into_color(WHITE),
                             into_color(DEEP_PINK),

@@ -16,24 +16,28 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     let bevy_text = asset_server.load("bevy.png");
     let tween_text = asset_server.load("tween.png");
     let triangle_image = asset_server.load("big_triangle.png");
-    let ease = EaseFunction::ExponentialInOut;
+    let ease = EaseKind::ExponentialInOut;
 
-    commands.spawn(SpriteBundle {
-        texture: bevy_text,
-        transform: Transform::from_xyz(-300., 0., 0.),
-        ..Default::default()
-    });
+    commands.spawn((
+        Sprite {
+            image: bevy_text,
+            ..default()
+        },
+        Transform::from_xyz(-300., 0., 0.),
+    ));
 
-    commands.spawn(SpriteBundle {
-        texture: tween_text,
-        transform: Transform::from_xyz(340., 10., 0.),
-        ..Default::default()
-    });
+    commands.spawn((
+        Sprite {
+            image: tween_text,
+            ..default()
+        },
+        Transform::from_xyz(340., 10., 0.),
+    ));
 
     // colors by https://color-hex.org/color-palettes/189
     let colors = [
@@ -45,15 +49,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ];
     let mut spawn_triangle = |color, z| {
         commands
-            .spawn((SpriteBundle {
-                sprite: Sprite {
+            .spawn((
+                Sprite {
+                    image: triangle_image.clone(),
                     color,
-                    ..Default::default()
+                    ..default()
                 },
-                transform: Transform::from_xyz(0., 0., z),
-                texture: triangle_image.clone(),
-                ..Default::default()
-            },))
+                Transform::from_xyz(0., 0., z),
+            ))
             .id()
     };
     let triangles = colors
@@ -86,7 +89,7 @@ fn snap_rotate(
     dur: f32,
     max: usize,
     rev: f32,
-    ease: EaseFunction,
+    ease: EaseKind,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
         for i in 0..max {

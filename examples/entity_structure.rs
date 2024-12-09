@@ -13,16 +13,15 @@ fn main() {
         .run();
 }
 
-fn sprite(start_x: f32, start_y: f32) -> SpriteBundle {
-    SpriteBundle {
-        sprite: Sprite {
+fn sprite(start_x: f32, start_y: f32) -> (Sprite, Transform) {
+    (
+        Sprite {
             custom_size: Some(Vec2::new(50., 50.)),
             color: Color::WHITE,
-            ..Default::default()
+            ..default()
         },
-        transform: Transform::from_xyz(start_x, start_y, 0.),
-        ..Default::default()
-    }
+        Transform::from_xyz(start_x, start_y, 0.),
+    )
 }
 
 /// This show all the possible structure you can use.
@@ -32,7 +31,7 @@ fn sprite(start_x: f32, start_y: f32) -> SpriteBundle {
 /// These will be presented in its most rawest form.
 /// See other examples for better APIs.
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     let angle_start = 0.;
     let angle_end = std::f32::consts::PI * 2.;
@@ -50,7 +49,7 @@ fn setup(mut commands: Commands) {
         AnimationTarget,
         TimeRunner::new(Duration::from_secs(5)),
         TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-        EaseFunction::QuadraticInOut,
+        EaseKind::QuadraticInOut,
         ComponentTween::new_target(
             TargetComponent::marker(),
             Translation {
@@ -72,7 +71,7 @@ fn setup(mut commands: Commands) {
     // commands.spawn((sprite(...), AnimationTarget)).animate()
     //     .insert_here(
     //         Duration::from_secs(5),
-    //         EaseFunction::QuadraticOut,
+    //         EaseKind::QuadraticOut,
     //         (
     //             target.with(translation(...)),
     //             target.with(angle_z(...)),
@@ -90,7 +89,7 @@ fn setup(mut commands: Commands) {
         .with_children(|c| {
             c.spawn((
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-                EaseFunction::QuadraticInOut,
+                EaseKind::QuadraticInOut,
                 ComponentTween::new_target(
                     TargetComponent::marker(),
                     Translation {
@@ -114,7 +113,7 @@ fn setup(mut commands: Commands) {
     //     .animate()
     //     .insert(tween(
     //         Duration::from_secs(5),
-    //         EaseFunction::QuadraticOut,
+    //         EaseKind::QuadraticOut,
     //         (
     //             target.with(translation(...)),
     //             target.with(angle_z(...)),
@@ -129,7 +128,7 @@ fn setup(mut commands: Commands) {
             c.spawn((
                 TimeRunner::new(Duration::from_secs(5)),
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-                EaseFunction::QuadraticInOut,
+                EaseKind::QuadraticInOut,
                 ComponentTween::new_target(
                     TargetComponent::marker(),
                     Translation {
@@ -152,7 +151,7 @@ fn setup(mut commands: Commands) {
     // commands.spawn((sprite(...), AnimationTarget)).with_children(|c| {
     //     c.animate().insert_here(
     //         Duration::from_secs(5),
-    //         EaseFunction::QuadraticOut,
+    //         EaseKind::QuadraticOut,
     //         (
     //             target.with(translation(...)),
     //             target.with(angle_z(...))
@@ -169,7 +168,7 @@ fn setup(mut commands: Commands) {
                 .with_children(|c| {
                     c.spawn((
                         TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-                        EaseFunction::QuadraticInOut,
+                        EaseKind::QuadraticInOut,
                         ComponentTween::new_target(
                             TargetComponent::marker(),
                             Translation {
@@ -193,7 +192,7 @@ fn setup(mut commands: Commands) {
     // commands.spawn((sprite(...), AnimationTarget)).with_children(|c| {
     //     c.animate().insert(tween(
     //         Duration::from_secs(5),
-    //         EaseFunction::QuadraticOut,
+    //         EaseKind::QuadraticOut,
     //         (
     //             target.with(translation(...)),
     //             target.with(angle_z(...))
@@ -211,7 +210,7 @@ fn setup(mut commands: Commands) {
         .with_children(|c| {
             c.spawn((
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-                EaseFunction::QuadraticInOut,
+                EaseKind::QuadraticInOut,
                 ComponentTween::new_target(
                     sprite,
                     Translation {
@@ -233,7 +232,7 @@ fn setup(mut commands: Commands) {
     // let target = TargetComponent::entity(sprite);
     // commands.animate().insert(tween(
     //     Duration::from_secs(5),
-    //     EaseFunction::QuadraticOut,
+    //     EaseKind::QuadraticOut,
     //     (
     //         target.with(translation(...)),
     //         target.with(angle_z(...))

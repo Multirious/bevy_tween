@@ -23,12 +23,15 @@ mod interpolate {
     }
 
     impl Interpolator for AtlasIndex {
-        type Item = TextureAtlas;
+        type Item = Sprite;
 
         fn interpolate(&self, item: &mut Self::Item, value: f32) {
+            let Some(texture_atlas) = &mut item.texture_atlas else {
+                return;
+            };
             let start = self.start as f32;
             let end = self.end as f32;
-            item.index = start.lerp(end, value).floor() as usize;
+            texture_atlas.index = start.lerp(end, value).floor() as usize;
         }
     }
 }
@@ -55,27 +58,25 @@ fn setup(
         TextureAtlasLayout::from_grid(UVec2::new(32, 32), 16, 1, None, None);
     let len = layout.len();
     let atlas_layout = texture_atlas_layouts.add(layout);
+
     let sprite = AnimationTarget.into_target();
     commands
         .spawn((
-            TextureAtlas {
-                layout: atlas_layout,
-                ..Default::default()
+            Sprite {
+                image: texture,
+                texture_atlas: Some(TextureAtlas::from(atlas_layout)),
+                ..default()
             },
-            SpriteBundle {
-                texture,
-                transform: Transform::IDENTITY.with_scale(Vec3::splat(15.)),
-                ..Default::default()
-            },
+            Transform::IDENTITY.with_scale(Vec3::splat(15.)),
             AnimationTarget,
         ))
         .animation()
         .repeat(Repeat::Infinitely)
         .insert_tween_here(
             Duration::from_secs(1),
-            EaseFunction::Linear,
+            EaseKind::Linear,
             sprite.with(atlas_index(0, len)),
         );
 
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 }

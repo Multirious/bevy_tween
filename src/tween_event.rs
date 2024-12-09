@@ -29,8 +29,6 @@ use std::marker::PhantomData;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
-#[cfg(feature = "bevy_eventlistener")]
-use bevy_eventlistener::prelude::*;
 use bevy_time_runner::TimeSpanProgress;
 
 use crate::tween::{SkipTween, TweenInterpolationValue};
@@ -41,21 +39,7 @@ pub struct TweenEventPlugin<Data>
 where
     Data: Send + Sync + 'static + Clone,
 {
-    #[cfg(feature = "bevy_eventlistener")]
-    event_listener: bool,
     marker: PhantomData<Data>,
-}
-
-impl<Data> TweenEventPlugin<Data>
-where
-    Data: Send + Sync + 'static + Clone,
-{
-    /// Include [`EventListenerPlugin`] with this tween event
-    #[cfg(feature = "bevy_eventlistener")]
-    pub fn with_event_listener(mut self) -> Self {
-        self.event_listener = true;
-        self
-    }
 }
 
 impl<Data> Plugin for TweenEventPlugin<Data>
@@ -73,10 +57,6 @@ where
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
         .add_event::<TweenEvent<Data>>();
-        #[cfg(feature = "bevy_eventlistener")]
-        if self.event_listener {
-            app.add_plugins(EventListenerPlugin::<TweenEvent<Data>>::default());
-        }
     }
 }
 
@@ -89,19 +69,9 @@ impl PluginGroup for DefaultTweenEventPlugins {
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> PluginGroupBuilder {
-        let p = PluginGroupBuilder::start::<DefaultTweenEventPlugins>();
-        #[cfg(not(feature = "bevy_eventlistener"))]
-        let p = p
+        PluginGroupBuilder::start::<DefaultTweenEventPlugins>()
             .add(TweenEventPlugin::<()>::default())
-            .add(TweenEventPlugin::<&'static str>::default());
-        #[cfg(feature = "bevy_eventlistener")]
-        let p = p
-            .add(TweenEventPlugin::<()>::default().with_event_listener())
-            .add(
-                TweenEventPlugin::<&'static str>::default()
-                    .with_event_listener(),
-            );
-        p
+            .add(TweenEventPlugin::<&'static str>::default())
     }
 }
 
@@ -138,20 +108,6 @@ pub struct TweenEvent<Data = ()> {
     pub interpolation_value: Option<f32>,
     /// The entity that emitted the event
     pub entity: Entity,
-}
-
-#[cfg(feature = "bevy_eventlistener")]
-impl<Data> EntityEvent for TweenEvent<Data>
-where
-    Data: Clone + Send + Sync + 'static,
-{
-    fn target(&self) -> Entity {
-        self.entity
-    }
-
-    fn can_bubble(&self) -> bool {
-        true
-    }
 }
 
 /// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]

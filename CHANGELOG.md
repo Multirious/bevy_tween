@@ -1,12 +1,21 @@
 # Changelog
 
-## Unreleased
+## v0.7.0 - 2024-12-09
 
 ### Changes
 
+- Migrate to bevy 0.15
+  - `LookupCurveHandle` as a replacement for `Handle<LookupCurve>`
+  - Update all examples
+- Update README.md
 - Add public `new()` constructor for `AnimationBuilder`
+- Update Cargo.toml dependnecies
+- Replace bevy_eventlistener with observer ([#44](https://github.com/Multirious/bevy_tween/pull/44))
+- Remove `tween_event_taking_system`, `TweenEventTakingPlugin`, and inner option inside `TweenEvent` ([#44](https://github.com/Multirious/bevy_tween/pull/44))
+- `entity_event` is now a example for tween event and observers
+- Change EaseFunction to EaseKind which is a direct copy from `bevy_math::curve::EaseFunction` and will be deprecated in favour of `bevy_math::curve::EaseFunction`
 
-## v0.6.0 - 2024-7-7
+## v0.6.0 - 2024-7-07
 
 ### Changes
 

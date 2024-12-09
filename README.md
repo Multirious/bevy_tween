@@ -14,9 +14,9 @@ Breaking changes are to be expected!
 See changelog [here](CHANGELOG.md).
 
 ## Features
-- **Ergonomic and user-friendly API**: You can always spawn the animator manually but this crate provide
-  APIs that abstracted over most boilerplate code.
-  Animation can be built using the builder with function combinators.
+- **Ergonomic and user-friendly API**: This crate provides functional animation
+  framework, inspired by [nom](https://crates.io/crates/nom) and other functional
+  languages, which allows for declarative animation.
   <details>
   <summary>Example</summary>
 
@@ -26,20 +26,20 @@ See changelog [here](CHANGELOG.md).
   commands.animation()
       .insert(tween(
           Duration::from_secs(1),
-          EaseFunction::Linear,
+          EaseKind::Linear,
           sprite.with(translation(pos0, pos1))
       ));
   ```
 
-  You can also abstract animation!
+  Many functional techniques are available such as decoupling and composition.
   ```rust
   fn my_animation(
       target: TargetComponent,
       duration: Duration
   ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
       parallel((
-          tween(duration, EaseFunction::QuadraticOut, target.with(translation(...))),
-          tween(duration, EaseFunction::QuadraticOut, target.with(rotation(...))),
+          tween(duration, EaseKind::QuadraticOut, target.with(translation(...))),
+          tween(duration, EaseKind::QuadraticOut, target.with(rotation(...))),
       ))
   }
 
@@ -103,8 +103,6 @@ How it works:
     Add some built-in interpolators related to sprite.
   - `bevy_ui`<br/>
     Add some built-in interpolators related to ui.
-  - `bevy_eventlistener`<br/>
-    Add entity-targeted events with bevy_eventlistener.
 - Optional
   - `bevy_lookup_curve`.<br/>
     Adds interpolation implementation using [`bevy_lookup_curve`](https://github.com/villor/bevy_lookup_curve).
@@ -113,23 +111,24 @@ How it works:
 
 |`bevy`|`bevy_tween`|
 |------|------------|
+|0.15  |0.7         |
 |0.14  |0.6         |
 |0.13  |0.2–0.5     |
 
 ## Credits
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)
 
-  The first crate I discovered and tried to do tweening with in Bevy.
-  Their method of `Lens` is great and so it's present in this crate.
-  Now called `Interpolator`. Usages may be similar but is
-  implemented differently.
+  The first crate that I've learned and improve this crate upon.
 
 - [`godot`](https://github.com/godotengine/godot)
 
-  Godot's tween make it simple to animate something which is the
-  inspiration for this crate. The multi-entity architecture is mainly inspired by
-  Godot's node child-parent hierarchy system and that most of the engine APIs
-  utilizes this to define behavior.
+  There are one common pattern in Godot to uses Node as composition interface
+  which inspired how [`bevy_time_runner`](https://github.com/Multirious/bevy_time_runner) works.
+
+- [`nom`](https://crates.io/crates/nom)
+
+  `nom` provides function parser combinator framework that inspried this crate's
+  animation framework.
 
 ## Contributions
 

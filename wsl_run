@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Helper script to test the library on WSL
+
+# Move the build target to current directory so it can find the asset
+cp $1 .
+
+# Run the executable
+./"$(basename $1)"
+
+echo "Don't forget to remove the executable before pushing!" 

@@ -1,13 +1,13 @@
 use std::f32::consts::PI;
 
 use bevy::{
-    color::{Srgba, palettes::css::WHITE},
-    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
+    color::{palettes::css::WHITE, Srgba},
+    core_pipeline::{bloom::Bloom, tonemapping::Tonemapping},
     prelude::*,
     window,
 };
 use bevy_tween::{
-    combinator::{go, parallel, tween_exact, AnimationCommands},
+    combinator::{go, parallel, sequence, tween_exact, AnimationCommands},
     prelude::*,
 };
 
@@ -26,11 +26,11 @@ fn main() {
                     ),
                     enabled_buttons: window::EnabledButtons {
                         maximize: false,
-                        ..Default::default()
+                        ..default()
                     },
-                    ..Default::default()
+                    ..default()
                 }),
-                ..Default::default()
+                ..default()
             }),
             DefaultTweenPlugins,
         ))
@@ -40,15 +40,13 @@ fn main() {
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                ..Default::default()
-            },
-            tonemapping: Tonemapping::TonyMcMapface,
+        Camera2d,
+        Camera {
+            hdr: true,
             ..Default::default()
         },
-        BloomSettings::default(),
+        Tonemapping::TonyMcMapface,
+        Bloom::default(),
     ));
 }
 
@@ -64,11 +62,17 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     // ========================================================================
 
     let dot_color: Color = WHITE.with_alpha(0.2).into();
-    let white_color: Color = (WHITE * 2.).into();
+    let white_color: Color = (WHITE * 2.).with_alpha(1.).into();
     let text_pop_scale = 1.2;
 
-    let blue_glow: Color = (Srgba::rgb_u8(103, 163, 217) * 5.).into();
-    let pink_glow: Color = (Srgba::rgb_u8(248, 183, 205) * 5.).into();
+    let blue_normal = Srgba::rgb_u8(103, 163, 217);
+    let pink_normal = Srgba::rgb_u8(248, 183, 205);
+    let blue_glow = (blue_normal * 5.).with_alpha(1.);
+    let pink_glow = (pink_normal * 5.).with_alpha(1.);
+    let blue_normal = Color::from(blue_normal);
+    let pink_normal = Color::from(pink_normal);
+    let blue_glow = Color::from(blue_glow);
+    let pink_glow = Color::from(pink_glow);
 
     let cornering_tween_offset = 200. * SCALE;
     let destinated_cornering_left = Vec3::new(-300., -100., 0.) * SCALE;
@@ -105,26 +109,25 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         let offset_x = -(x_count as f32 * spacing) / 2.;
         let offset_y = -(y_count as f32 * spacing) / 2.;
         commands
-            .spawn(SpatialBundle::INHERITED_IDENTITY)
+            .spawn((Transform::IDENTITY, Visibility::Visible))
             .with_children(|c| {
                 for x in 0..x_count {
                     for y in 0..y_count {
                         let x = x as f32;
                         let y = y as f32;
                         let id = c
-                            .spawn(SpriteBundle {
-                                texture: dot_image.clone(),
-                                transform: Transform::from_xyz(
+                            .spawn((
+                                Sprite {
+                                    image: dot_image.clone(),
+                                    color: dot_color,
+                                    ..default()
+                                },
+                                Transform::from_xyz(
                                     (x * spacing) + offset_x,
                                     (y * spacing) + offset_y,
                                     0.,
                                 ),
-                                sprite: Sprite {
-                                    color: dot_color,
-                                    ..Default::default()
-                                },
-                                ..Default::default()
-                            })
+                            ))
                             .id();
                         dot_grid_children.push(id);
                     }
@@ -134,67 +137,65 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     let dot_grid = dot_grid.into_target();
     let triangle_id = commands
-        .spawn(SpriteBundle {
-            texture: triangle_image,
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: triangle_image,
                 color: pink_glow,
                 ..Default::default()
             },
-            transform: Transform::from_scale(Vec3::ONE * SCALE),
-            ..Default::default()
-        })
+            Transform::from_scale(Vec3::ONE * SCALE),
+        ))
         .id();
     let triangle = triangle_id.into_target();
     let square_id = commands
-        .spawn(SpriteBundle {
-            texture: square_image,
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: square_image,
                 color: blue_glow,
                 ..Default::default()
             },
-            transform: Transform::from_scale(Vec3::ONE * SCALE),
-            ..Default::default()
-        })
+            Transform::from_scale(Vec3::ONE * SCALE),
+        ))
         .id();
     let square = square_id.into_target();
     let bevy_tween_text = commands
-        .spawn(SpriteBundle {
-            texture: bevy_tween_image,
-            transform: Transform::from_scale(Vec3::ONE * SCALE),
-            ..Default::default()
-        })
+        .spawn((
+            Sprite {
+                image: bevy_tween_image,
+                ..default()
+            },
+            Transform::from_scale(Vec3::ONE * SCALE),
+        ))
         .id();
     let bevy_tween_text = bevy_tween_text.into_target();
     let cornering_left = commands
-        .spawn(SpriteBundle {
-            texture: square_filled_image.clone(),
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: square_filled_image.clone(),
                 color: white_color,
-                ..Default::default()
+                ..default()
             },
-            transform: Transform {
+            Transform {
                 translation: cornering_left_tween_start,
                 rotation: Quat::from_rotation_z(PI / 4.),
                 scale: Vec3::ONE * 5. * SCALE,
             },
-            ..Default::default()
-        })
+        ))
         .id();
     let cornering_left = cornering_left.into_target();
     let cornering_right = commands
-        .spawn(SpriteBundle {
-            texture: square_filled_image.clone(),
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: square_filled_image.clone(),
                 color: white_color,
-                ..Default::default()
+                ..default()
             },
-            transform: Transform {
+            Transform {
                 translation: cornering_right_tween_start,
                 rotation: Quat::from_rotation_z(PI / 4.),
                 scale: Vec3::ONE * 5. * SCALE,
             },
-            ..Default::default()
-        })
+        ))
         .id();
     let cornering_right = cornering_right.into_target();
 
@@ -208,8 +209,10 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         square_and_triangle.state(Vec3::ZERO * SCALE);
     let mut square_and_triangle_alpha = square_and_triangle.state(1.);
     let mut square_angle_z = square.state(0.);
+    let mut square_color = square.state(blue_glow.with_alpha(0.));
     let mut triangle_angle_z = triangle.state(0.);
     let mut triangle_translation = triangle.state(Vec3::ZERO);
+    let mut triangle_color = triangle.state(pink_glow.with_alpha(0.));
     let mut square_translation = square.state(Vec3::ZERO);
     let mut cornering_right_translation =
         cornering_right.state(cornering_right_tween_start);
@@ -230,69 +233,84 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ),
                 tween_exact(
                     secs(0.)..secs(5.),
-                    EaseFunction::QuinticOut,
+                    EaseKind::QuinticOut,
                     bevy_tween_text_angle_z.with(angle_z_to(PI * 4.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(9.),
-                    EaseFunction::CircularOut,
+                    EaseKind::CircularOut,
                     bevy_tween_text_scale.with(scale_to(Vec3::ONE * SCALE)),
                 ),
                 tween_exact(
                     secs(11.)..secs(11.5),
-                    EaseFunction::SineOut,
+                    EaseKind::SineOut,
                     bevy_tween_text_scale
                         .with(scale_to(Vec3::ONE * text_pop_scale * SCALE)),
                 ),
                 tween_exact(
                     secs(11.5)..secs(12.),
-                    EaseFunction::SineIn,
+                    EaseKind::SineIn,
                     bevy_tween_text_scale.with(scale_to(Vec3::ZERO * SCALE)),
                 ),
                 tween_exact(
                     secs(10.)..secs(12.),
-                    EaseFunction::QuinticIn,
+                    EaseKind::QuinticIn,
                     bevy_tween_text_color
                         .with(sprite_color_to(white_color.with_alpha(0.0))),
                 ),
                 tween_exact(
                     secs(11.)..secs(12.),
-                    EaseFunction::QuinticIn,
+                    EaseKind::QuinticIn,
                     bevy_tween_text_angle_z.with(angle_z_to(PI * 7.)),
                 ),
             ),
             (
-                set_value(square_and_triangle_alpha.with(sprite_alpha_to(1.))),
+                sequence((
+                    // the objects is visible for a split second without this
+                    go(secs(0.1)),
+                    set_value(square_color.with(sprite_color_to(blue_glow))),
+                    set_value(triangle_color.with(sprite_color_to(pink_glow))),
+                )),
                 tween_exact(
                     secs(0.)..secs(9.),
-                    EaseFunction::CircularOut,
+                    EaseKind::CircularOut,
                     square_and_triangle_scale.with(scale_to(Vec3::ONE * SCALE)),
                 ),
                 tween_exact(
                     secs(4.)..secs(10.),
-                    EaseFunction::ExponentialInOut,
+                    EaseKind::ExponentialInOut,
+                    square_color.with(sprite_color_to(blue_normal)),
+                ),
+                tween_exact(
+                    secs(4.)..secs(10.),
+                    EaseKind::ExponentialInOut,
+                    triangle_color.with(sprite_color_to(pink_normal)),
+                ),
+                tween_exact(
+                    secs(4.)..secs(10.),
+                    EaseKind::ExponentialInOut,
                     square_and_triangle_alpha.with(sprite_alpha_to(0.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(12.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     triangle_angle_z.with(angle_z_to(-PI * 10.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(12.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     square_angle_z.with(angle_z_to(PI * 10.)),
                 ),
                 tween_exact(
                     secs(0.)..secs(4.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     triangle_translation.with(translation_to(
                         Vec3::new(150., -20., 0.) * SCALE,
                     )),
                 ),
                 tween_exact(
                     secs(0.)..secs(4.),
-                    EaseFunction::ExponentialOut,
+                    EaseKind::ExponentialOut,
                     square_translation.with(translation_to(
                         Vec3::new(-150., 20., 0.) * SCALE,
                     )),
@@ -301,25 +319,25 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             (
                 tween_exact(
                     secs(6.)..secs(6.2),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_left_translation
                         .with(translation_to(destinated_cornering_left)),
                 ),
                 tween_exact(
                     secs(6.)..secs(6.2),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_right_translation
                         .with(translation_to(destinated_cornering_right)),
                 ),
                 tween_exact(
                     secs(9.8)..secs(10.),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_left_translation
                         .with(translation_to(cornering_left_tween_end)),
                 ),
                 tween_exact(
                     secs(9.8)..secs(10.),
-                    EaseFunction::Linear,
+                    EaseKind::Linear,
                     cornering_right_translation
                         .with(translation_to(cornering_right_tween_end)),
                 ),
@@ -327,13 +345,13 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
             (
                 tween_exact(
                     secs(0.)..secs(5.),
-                    EaseFunction::QuinticOut,
+                    EaseKind::QuinticOut,
                     dot_grid_scale
                         .with(scale_to(Vec3::new(0.4, 0.4, 0.) * SCALE)),
                 ),
                 tween_exact(
                     secs(11.5)..secs(12.),
-                    EaseFunction::QuadraticInOut,
+                    EaseKind::QuadraticInOut,
                     dot_grid_scale
                         .with(scale_to(Vec3::new(0.01, 0.01, 0.) * SCALE)),
                 ),
@@ -361,6 +379,6 @@ fn set_value<B: Bundle>(
     interpolator: B,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
-        tween_exact(*pos..=*pos, EaseFunction::Linear, interpolator)(a, pos)
+        tween_exact(*pos..=*pos, EaseKind::Linear, interpolator)(a, pos)
     }
 }

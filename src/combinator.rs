@@ -37,7 +37,7 @@ pub trait AnimationBuilderExt {
     fn animation(&mut self) -> AnimationBuilder<'_>;
 }
 
-impl<'a> AnimationBuilderExt for EntityCommands<'a> {
+impl AnimationBuilderExt for EntityCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`EntityCommands`].
     /// Use this entity as the animator.
     /// Tweens will be spawned as children of this entity.
@@ -46,7 +46,7 @@ impl<'a> AnimationBuilderExt for EntityCommands<'a> {
     }
 }
 
-impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
+impl AnimationBuilderExt for Commands<'_, '_> {
     /// Construct [`AnimationBuilder`] from [`Commands`].
     /// This will automatically spawn an entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
@@ -54,7 +54,7 @@ impl<'w, 's> AnimationBuilderExt for Commands<'w, 's> {
     }
 }
 
-impl<'a> AnimationBuilderExt for ChildBuilder<'a> {
+impl AnimationBuilderExt for ChildBuilder<'_> {
     /// Construct [`AnimationBuilder`] from [`ChildBuilder`].
     /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
@@ -98,7 +98,7 @@ impl<'a> AnimationBuilder<'a> {
     /// Configure [`TimeRunner`]'s [`Repeat`]
     pub fn repeat(mut self, repeat: Repeat) -> Self {
         let time_runner = self.time_runner_or_default();
-        match time_runner.repeat() {
+        match TimeRunner::repeat(time_runner) {
             Some((_, repeat_style)) => {
                 time_runner.set_repeat(Some((repeat, repeat_style)));
             }
@@ -112,7 +112,7 @@ impl<'a> AnimationBuilder<'a> {
     /// Configure [`TimeRunner`]'s [`RepeatStyle`]
     pub fn repeat_style(mut self, repeat_style: RepeatStyle) -> Self {
         let time_runner = self.time_runner_or_default();
-        match time_runner.repeat() {
+        match TimeRunner::repeat(time_runner) {
             Some((repeat, _)) => {
                 time_runner.set_repeat(Some((repeat, repeat_style)));
             }

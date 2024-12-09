@@ -16,7 +16,9 @@ pub fn main_cursor_world_coord_system(
 
     if let Some(world_position) = window
         .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .and_then(|cursor| {
+            camera.viewport_to_world(camera_transform, cursor).ok()
+        })
         .map(|ray| ray.origin.truncate())
     {
         coord.0 = Some(world_position);

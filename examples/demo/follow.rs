@@ -43,7 +43,7 @@ enum UpdateKind {
 #[derive(Resource, Reflect)]
 struct Config {
     tween_duration: Duration,
-    tween_ease: EaseFunction,
+    tween_ease: EaseKind,
     update_kind: UpdateKind,
 }
 impl Default for Config {
@@ -51,7 +51,7 @@ impl Default for Config {
         Config {
             update_kind: UpdateKind::CursorMoved,
             tween_duration: Duration::from_millis(500),
-            tween_ease: EaseFunction::ExponentialOut,
+            tween_ease: EaseKind::ExponentialOut,
         }
     }
 }
@@ -66,19 +66,14 @@ struct Jeb;
 struct JebTranslationAnimator;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((
-        Camera2dBundle {
-            ..Default::default()
-        },
-        utils::MainCamera,
-    ));
+    commands.spawn((Camera2d, utils::MainCamera));
 
     // Spawning the square
     commands
         .spawn((
-            SpriteBundle {
-                texture: asset_server.load("square_filled.png"),
-                ..Default::default()
+            Sprite {
+                image: asset_server.load("square_filled.png"),
+                ..default()
             },
             Jeb,
             AnimationTarget,
@@ -95,7 +90,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .repeat_style(RepeatStyle::PingPong)
                 .insert_tween_here(
                     Duration::from_secs(2),
-                    EaseFunction::CubicInOut,
+                    EaseKind::CubicInOut,
                     jeb.with_closure(|transform: &mut Transform, value| {
                         let start = 0.;
                         let end = TAU;
@@ -108,7 +103,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             // when you launch up the demo.
             c.animation().insert_tween_here(
                 Duration::from_secs(1),
-                EaseFunction::QuinticIn,
+                EaseKind::QuinticIn,
                 jeb.with(scale(Vec3::ZERO, Vec3::ONE)),
             );
         });

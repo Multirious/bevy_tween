@@ -27,7 +27,7 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     let triangle_image = asset_server.load("big_triangle.png");
     // colors by https://color-hex.org/color-palettes/189
@@ -41,15 +41,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let mut spawn_triangle = |color, z| {
         commands
-            .spawn((SpriteBundle {
-                sprite: Sprite {
+            .spawn((
+                Sprite {
+                    image: triangle_image.clone(),
                     color,
                     ..Default::default()
                 },
-                transform: Transform::from_xyz(0., 0., z),
-                texture: triangle_image.clone(),
-                ..Default::default()
-            },))
+                Transform::from_xyz(0., 0., z),
+            ))
             .id()
     };
     let triangles = colors
@@ -60,7 +59,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .collect::<Vec<_>>();
 
     let secs = 12.;
-    let ease = EaseFunction::ExponentialInOut;
+    let ease = EaseKind::ExponentialInOut;
 
     commands
         .animation()
@@ -75,26 +74,25 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let dotted_line_target = AnimationTarget.into_target();
     commands
-        .spawn((SpatialBundle::default(), AnimationTarget))
+        .spawn((Transform::IDENTITY, Visibility::Visible, AnimationTarget))
         .with_children(dotted_line)
         .animation()
         .repeat(Repeat::Infinitely)
         .insert_tween_here(
             Duration::from_secs_f32(12. / 7.),
-            EaseFunction::ExponentialInOut,
+            EaseKind::ExponentialInOut,
             dotted_line_target
                 .with(translation(Vec3::ZERO, Vec3::new(30. * 10., 0., 0.))),
         );
 
-    commands.spawn(SpriteBundle {
-        sprite: Sprite {
+    commands.spawn((
+        Sprite {
             custom_size: Some(Vec2::new(250., 250.)),
             color: Color::srgb_u8(43, 44, 47),
             ..Default::default()
         },
-        transform: Transform::from_xyz(0., 0., 1.),
-        ..Default::default()
-    });
+        Transform::from_xyz(0., 0., 1.),
+    ));
 }
 
 fn secs(secs: f32) -> Duration {
@@ -106,7 +104,7 @@ fn snap_rotate(
     dur: f32,
     max: usize,
     rev: f32,
-    ease: EaseFunction,
+    ease: EaseKind,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration) {
     move |a, pos| {
         for i in 0..max {
@@ -135,14 +133,13 @@ fn dotted_line(c: &mut ChildBuilder) {
         -(width * count as f32 + (spacing - width) * count as f32) / 2.;
     for i in 0..count {
         let i = i as f32;
-        c.spawn(SpriteBundle {
-            sprite: Sprite {
+        c.spawn((
+            Sprite {
                 color,
                 custom_size: Some(Vec2::new(width, height)),
                 ..Default::default()
             },
-            transform: Transform::from_xyz(i * spacing + x_offset, 0., 0.),
-            ..Default::default()
-        });
+            Transform::from_xyz(i * spacing + x_offset, 0., 0.),
+        ));
     }
 }
