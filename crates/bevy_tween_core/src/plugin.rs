@@ -68,7 +68,8 @@ impl PluginGroup for DefaultTweenCorePlugins {
         #[cfg(feature = "bevy_transform")]
         use bevy_transform::components::Transform;
 
-        let pg = PluginGroupBuilder::start::<DefaultTweenCorePlugins>();
+        let pg = PluginGroupBuilder::start::<DefaultTweenCorePlugins>()
+            .add(TweenCorePlugin::default());
         let pg = pg
             .add(ValuePlugin::<bool>::default())
             .add(ValuePlugin::<f32>::default())
