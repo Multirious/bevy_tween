@@ -4,3 +4,7 @@ version = "0.7.0"
 edition = "2021"
 
 [dependencies]
+bevy_time_runner = "0.3"
+bevy_tween_core = { path = "../bevy_tween_core", version = "0.7" }
+bevy_ecs = { version = "0.15", default-features = false }
+bevy_hierarchy = { version = "0.15", default-features = false }
