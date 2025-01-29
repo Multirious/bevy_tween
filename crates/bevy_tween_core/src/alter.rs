@@ -26,7 +26,7 @@ pub trait Alter: Send + Sync + 'static {
 pub trait AlterSingle: Send + Sync + 'static {
     type Value: Send + Sync + 'static;
     type Item: Send + Sync + 'static;
-    fn alter_single(&self, value: &Self::Value, item: &mut Self::Item);
+    fn alter_single(&self, item: &mut Self::Item, value: &Self::Value);
 }
 
 #[derive(Debug)]
@@ -66,7 +66,7 @@ where
         let alterer = q_source
             .get_mut(source)
             .map_err(AlterComponentError::QuerySourceError)?;
-        alterer.0 .0.alter_single(value, &mut *target_component);
+        alterer.0 .0.alter_single(&mut *target_component, value);
         Ok(())
     }
 }
@@ -107,7 +107,7 @@ where
         let resource = resource
             .as_mut()
             .ok_or(AlterResourceError::ResourceNotExists)?;
-        alterer.0 .0.alter_single(value, &mut *resource);
+        alterer.0 .0.alter_single(&mut *resource, value);
         Ok(())
     }
 }
@@ -156,7 +156,7 @@ where
         let asset = assets.get_mut(target).ok_or(
             AlterAssetError::AssetDoesNotExists(target.clone_weak().untyped()),
         )?;
-        alterer.0 .0.alter_single(value, asset);
+        alterer.0 .0.alter_single(asset, value);
         Ok(())
     }
 }
