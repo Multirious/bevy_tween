@@ -4,7 +4,7 @@ version = "0.7.0"
 edition = "2021"
 
 [dependencies]
-bevy_time_runner = "0.3.0"
+bevy_time_runner = "0.3"
 
 bevy_ecs = { version = "0.15", default-features = false }
 bevy_math = { version = "0.15", default-features = false, features = ["curve"] }
