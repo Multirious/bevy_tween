@@ -88,3 +88,14 @@ where
             })
     }
 }
+
+impl<A> Default for TweenBlend<A>
+where
+    A: Alter,
+    A::Target: Eq + Hash + Clone,
+    A::Value: Animatable + Clone,
+{
+    fn default() -> Self {
+        TweenBlend::new()
+    }
+}
