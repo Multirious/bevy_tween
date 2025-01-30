@@ -1,4 +1,4 @@
-use std::{fmt::Display, marker::PhantomData};
+use std::marker::PhantomData;
 
 use bevy_animation::animatable::Animatable;
 use bevy_app::{Plugin, PluginGroup, PluginGroupBuilder};
@@ -48,10 +48,9 @@ impl Plugin for TweenCorePlugin {
         app.configure_sets(
             self.app_resource.schedule,
             (
-                TweenSystemSet::ClearBlendInputs,
-                TweenSystemSet::ProgressCurve,
-                TweenSystemSet::BlendInputs,
-                TweenSystemSet::Alter,
+                TweenSystemSet::PrepareValues,
+                TweenSystemSet::BlendValues,
+                TweenSystemSet::ApplyValues,
             )
                 .chain()
                 .after(bevy_time_runner::TimeRunnerSet::Progress),
@@ -65,34 +64,9 @@ impl PluginGroup for DefaultTweenCorePlugins {
         #[cfg(feature = "bevy_color")]
         use bevy_color::*;
         use bevy_math::*;
-        #[cfg(feature = "bevy_transform")]
-        use bevy_transform::components::Transform;
 
         let pg = PluginGroupBuilder::start::<DefaultTweenCorePlugins>()
             .add(TweenCorePlugin::default());
-        let pg = pg
-            .add(ValuePlugin::<bool>::default())
-            .add(ValuePlugin::<f32>::default())
-            .add(ValuePlugin::<f64>::default())
-            .add(ValuePlugin::<Vec2>::default())
-            .add(ValuePlugin::<Vec3>::default())
-            .add(ValuePlugin::<Vec4>::default())
-            .add(ValuePlugin::<DVec2>::default())
-            .add(ValuePlugin::<DVec3>::default())
-            .add(ValuePlugin::<DVec4>::default())
-            .add(ValuePlugin::<Vec3A>::default())
-            .add(ValuePlugin::<Quat>::default());
-
-        #[cfg(feature = "bevy_transform")]
-        let pg = pg.add(ValuePlugin::<Transform>::default());
-
-        #[cfg(feature = "bevy_color")]
-        let pg = pg
-            .add(ValuePlugin::<Laba>::default())
-            .add(ValuePlugin::<LinearRgba>::default())
-            .add(ValuePlugin::<Oklaba>::default())
-            .add(ValuePlugin::<Srgba>::default())
-            .add(ValuePlugin::<Xyza>::default());
 
         type EasingCurvePlugin<V> =
             CurvePlugin<bevy_math::curve::EasingCurve<V>, V>;
@@ -122,16 +96,21 @@ where
 impl<A> Plugin for AltererPlugin<A>
 where
     A: Alter,
-    for<'w> A::Error<'w>: Display,
 {
     fn build(&self, app: &mut bevy_app::App) {
+        app.init_resource::<crate::TweenBlend<A>>();
         let res = app
             .world()
             .get_resource::<TweenCoreAppResource>()
             .expect("TweenCoreAppResource exists");
         app.add_systems(
             res.schedule,
-            systems::alterer_system::<A>.in_set(TweenSystemSet::Alter),
+            (
+                systems::update_blend_system::<A>
+                    .in_set(TweenSystemSet::BlendValues),
+                systems::alterer_system::<A>
+                    .in_set(TweenSystemSet::ApplyValues),
+            ),
         );
     }
 }
@@ -146,10 +125,9 @@ where
 
 #[derive(SystemSet, Clone, PartialEq, Eq, Debug, Hash)]
 pub enum TweenSystemSet {
-    ClearBlendInputs,
-    ProgressCurve,
-    BlendInputs,
-    Alter,
+    PrepareValues,
+    BlendValues,
+    ApplyValues,
 }
 
 pub fn component_plugin<A>(app: &mut bevy_app::App)
@@ -180,45 +158,6 @@ where
     app.add_plugins(AltererPlugin::<AlterAsset<A>>::default());
 }
 
-pub struct ValuePlugin<V>
-where
-    V: Animatable + Clone,
-{
-    __marker: PhantomData<V>,
-}
-
-impl<V> Plugin for ValuePlugin<V>
-where
-    V: Animatable + Clone,
-{
-    fn build(&self, app: &mut bevy_app::App) {
-        let res = app
-            .world()
-            .get_resource::<TweenCoreAppResource>()
-            .expect("TweenCoreAppResource exists");
-        app.add_systems(
-            res.schedule,
-            (
-                systems::blend_inputs_system::<V>
-                    .in_set(TweenSystemSet::BlendInputs),
-                systems::clear_blend_inputs_system::<V>
-                    .in_set(TweenSystemSet::ClearBlendInputs),
-            ),
-        );
-    }
-}
-
-impl<V> Default for ValuePlugin<V>
-where
-    V: Animatable + Clone,
-{
-    fn default() -> Self {
-        ValuePlugin {
-            __marker: PhantomData,
-        }
-    }
-}
-
 pub struct CurvePlugin<C, V>
 where
     C: Curve<V>,
@@ -239,7 +178,7 @@ where
         app.add_systems(
             res.schedule,
             systems::progress_curve_system::<C, V>
-                .in_set(TweenSystemSet::ProgressCurve),
+                .in_set(TweenSystemSet::PrepareValues),
         );
     }
 }
