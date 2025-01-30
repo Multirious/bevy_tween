@@ -1,5 +1,3 @@
-#![allow(non_upper_case_globals)]
-
 use bevy_math::prelude::*;
 use bevy_transform::prelude::*;
 
@@ -8,12 +6,23 @@ use bevy_reflect::Reflect;
 
 use crate::{AlterComponent, AlterSingle};
 
-pub const Translation: AlterComponent<AlterTranslation> =
-    AlterComponent(AlterTranslation);
-pub const Rotation: AlterComponent<AlterRotation> =
-    AlterComponent(AlterRotation);
-pub const Scale: AlterComponent<AlterScale> = AlterComponent(AlterScale);
-pub const AngleZ: AlterComponent<AlterAngleZ> = AlterComponent(AlterAngleZ);
+pub mod types {
+    use super::*;
+    pub type Translation = AlterComponent<AlterTranslation>;
+    pub type Rotation = AlterComponent<AlterRotation>;
+    pub type Scale = AlterComponent<AlterScale>;
+    pub type AngleZ = AlterComponent<AlterAngleZ>;
+}
+
+#[allow(non_upper_case_globals)]
+pub mod consts {
+    use super::*;
+    pub const Translation: types::Translation =
+        AlterComponent(AlterTranslation);
+    pub const Rotation: types::Rotation = AlterComponent(AlterRotation);
+    pub const Scale: types::Scale = AlterComponent(AlterScale);
+    pub const AngleZ: types::AngleZ = AlterComponent(AlterAngleZ);
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]

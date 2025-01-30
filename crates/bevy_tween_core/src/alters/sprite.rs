@@ -1,5 +1,3 @@
-#![allow(non_upper_case_globals)]
-
 use std::marker::PhantomData;
 
 use bevy_color::Color;
@@ -9,33 +7,56 @@ use bevy_sprite::{ColorMaterial, Sprite};
 
 use crate::{AlterAsset, AlterComponent, AlterSingle};
 
-pub const SpriteColorLaba: AlterComponent<AlterSpriteColor<bevy_color::Laba>> =
-    AlterComponent(AlterSpriteColor(PhantomData));
-pub const SpriteColorLinearRgba: AlterComponent<
-    AlterSpriteColor<bevy_color::LinearRgba>,
-> = AlterComponent(AlterSpriteColor(PhantomData));
-pub const SpriteColorOklaba: AlterComponent<
-    AlterSpriteColor<bevy_color::Oklaba>,
-> = AlterComponent(AlterSpriteColor(PhantomData));
-pub const SpriteColorSrgba: AlterComponent<
-    AlterSpriteColor<bevy_color::Srgba>,
-> = AlterComponent(AlterSpriteColor(PhantomData));
-pub const SpriteColorXyza: AlterComponent<AlterSpriteColor<bevy_color::Xyza>> =
-    AlterComponent(AlterSpriteColor(PhantomData));
+pub mod types {
+    use super::*;
+    pub type SpriteColorLaba =
+        AlterComponent<AlterSpriteColor<bevy_color::Laba>>;
+    pub type SpriteColorLinearRgba =
+        AlterComponent<AlterSpriteColor<bevy_color::LinearRgba>>;
+    pub type SpriteColorOklaba =
+        AlterComponent<AlterSpriteColor<bevy_color::Oklaba>>;
+    pub type SpriteColorSrgba =
+        AlterComponent<AlterSpriteColor<bevy_color::Srgba>>;
+    pub type SpriteColorXyza =
+        AlterComponent<AlterSpriteColor<bevy_color::Xyza>>;
 
-pub const ColorMaterialLaba: AlterAsset<AlterColorMaterial<bevy_color::Laba>> =
-    AlterAsset(AlterColorMaterial(PhantomData));
-pub const ColorMaterialLinearRgba: AlterAsset<
-    AlterColorMaterial<bevy_color::LinearRgba>,
-> = AlterAsset(AlterColorMaterial(PhantomData));
-pub const ColorMaterialOklaba: AlterAsset<
-    AlterColorMaterial<bevy_color::Oklaba>,
-> = AlterAsset(AlterColorMaterial(PhantomData));
-pub const ColorMaterialSrgba: AlterAsset<
-    AlterColorMaterial<bevy_color::Srgba>,
-> = AlterAsset(AlterColorMaterial(PhantomData));
-pub const ColorMaterialXyza: AlterAsset<AlterColorMaterial<bevy_color::Xyza>> =
-    AlterAsset(AlterColorMaterial(PhantomData));
+    pub type ColorMaterialLaba =
+        AlterAsset<AlterColorMaterial<bevy_color::Laba>>;
+    pub type ColorMaterialLinearRgba =
+        AlterAsset<AlterColorMaterial<bevy_color::LinearRgba>>;
+    pub type ColorMaterialOklaba =
+        AlterAsset<AlterColorMaterial<bevy_color::Oklaba>>;
+    pub type ColorMaterialSrgba =
+        AlterAsset<AlterColorMaterial<bevy_color::Srgba>>;
+    pub type ColorMaterialXyza =
+        AlterAsset<AlterColorMaterial<bevy_color::Xyza>>;
+}
+
+#[allow(non_upper_case_globals)]
+pub mod consts {
+    use super::*;
+    pub const SpriteColorLaba: types::SpriteColorLaba =
+        AlterComponent(AlterSpriteColor(PhantomData));
+    pub const SpriteColorLinearRgba: types::SpriteColorLinearRgba =
+        AlterComponent(AlterSpriteColor(PhantomData));
+    pub const SpriteColorOklaba: types::SpriteColorOklaba =
+        AlterComponent(AlterSpriteColor(PhantomData));
+    pub const SpriteColorSrgba: types::SpriteColorSrgba =
+        AlterComponent(AlterSpriteColor(PhantomData));
+    pub const SpriteColorXyza: types::SpriteColorXyza =
+        AlterComponent(AlterSpriteColor(PhantomData));
+
+    pub const ColorMaterialLaba: types::ColorMaterialLaba =
+        AlterAsset(AlterColorMaterial(PhantomData));
+    pub const ColorMaterialLinearRgba: types::ColorMaterialLinearRgba =
+        AlterAsset(AlterColorMaterial(PhantomData));
+    pub const ColorMaterialOklaba: types::ColorMaterialOklaba =
+        AlterAsset(AlterColorMaterial(PhantomData));
+    pub const ColorMaterialSrgba: types::ColorMaterialSrgba =
+        AlterAsset(AlterColorMaterial(PhantomData));
+    pub const ColorMaterialXyza: types::ColorMaterialXyza =
+        AlterAsset(AlterColorMaterial(PhantomData));
+}
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
