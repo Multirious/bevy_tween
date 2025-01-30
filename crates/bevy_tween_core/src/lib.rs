@@ -1,6 +1,7 @@
 #![allow(clippy::type_complexity)]
 
 mod alter;
+pub mod alters;
 pub mod argument;
 #[cfg(feature = "bevy_app")]
 mod plugin;
