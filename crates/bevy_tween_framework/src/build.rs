@@ -1,12 +1,30 @@
 use std::hash::Hash;
 use std::time::Duration;
 
-use bevy_ecs::entity::Entity;
+use bevy_ecs::{bundle::Bundle, entity::Entity, system::EntityCommands};
+use bevy_hierarchy::{ChildBuild as _, ChildBuilder};
 use bevy_math::curve::{EaseFunction, EasingCurve};
 use bevy_time_runner::TimeSpan;
 use bevy_tween_core::{argument, Alter};
 
-use crate::commands::AnimationCommands;
+/// Commands to use within an animation combinator
+pub struct AnimationCommands<'r, 'a> {
+    child_builder: &'r mut ChildBuilder<'a>,
+}
+
+impl<'r, 'a> AnimationCommands<'r, 'a> {
+    pub(crate) fn new(
+        child_builder: &'r mut ChildBuilder<'a>,
+    ) -> AnimationCommands<'r, 'a> {
+        AnimationCommands { child_builder }
+    }
+
+    /// Spawn an entity as a child.
+    /// Currently always spawn as a child of animation root that should contains [`bevy_time_runner::TimeRunner`].
+    pub fn spawn(&mut self, bundle: impl Bundle) -> EntityCommands<'_> {
+        self.child_builder.spawn(bundle)
+    }
+}
 
 pub trait BuildAnimation {
     fn build(self, commands: &mut AnimationCommands, position: &mut Duration);

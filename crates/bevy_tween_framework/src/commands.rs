@@ -6,24 +6,7 @@ use bevy_time_runner::{
     Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner,
 };
 
-/// Commands to use within an animation combinator
-pub struct AnimationCommands<'r, 'a> {
-    child_builder: &'r mut ChildBuilder<'a>,
-}
-
-impl<'r, 'a> AnimationCommands<'r, 'a> {
-    pub(crate) fn new(
-        child_builder: &'r mut ChildBuilder<'a>,
-    ) -> AnimationCommands<'r, 'a> {
-        AnimationCommands { child_builder }
-    }
-
-    /// Spawn an entity as a child.
-    /// Currently always spawn as a child of animation root that should contains [`bevy_time_runner::TimeRunner`].
-    pub fn spawn(&mut self, bundle: impl Bundle) -> EntityCommands<'_> {
-        self.child_builder.spawn(bundle)
-    }
-}
+use crate::build::AnimationCommands;
 
 /// Extension trait for types that can be used to make an animation.
 pub trait AnimationBuilderExt {
