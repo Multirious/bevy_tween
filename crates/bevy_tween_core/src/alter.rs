@@ -27,7 +27,7 @@ pub trait AlterSingle: Send + Sync + 'static {
     fn alter_single(item: &mut Self::Item, value: &Self::Value);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct AlterComponent<T>(pub T)
 where
     T: AlterSingle,
@@ -55,6 +55,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct AlterResource<T>(pub T)
 where
     T: AlterSingle,
@@ -83,6 +84,7 @@ where
 }
 
 #[cfg(feature = "bevy_asset")]
+#[derive(Debug, Clone, Copy)]
 pub struct AlterAsset<T>(pub T)
 where
     T: AlterSingle,
