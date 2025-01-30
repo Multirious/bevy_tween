@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy_ecs::{prelude::*, system::EntityCommands};
 use bevy_hierarchy::{BuildChildren, ChildBuild, ChildBuilder};
 use bevy_time_runner::{
-    Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
+    Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner,
 };
 
 /// Commands to use within an animation combinator
@@ -198,45 +198,45 @@ impl<'a> AnimationBuilder<'a> {
         entity_commands
     }
 
-    /// Insert tween components directly to this entity.
-    /// Can be used to create a simple animation quickly.
-    /// [`TimeRunner`]'s length is determined by provided `duration` unless use
-    /// [`Self::length`]
-    pub fn insert_tween_here<I, T>(
-        self,
-        duration: Duration,
-        interpolation: I,
-        tweens: T,
-    ) -> EntityCommands<'a>
-    where
-        I: Bundle,
-        T: Bundle,
-    {
-        let AnimationBuilder {
-            mut entity_commands,
-            time_runner,
-            custom_length,
-            skipped,
-        } = self;
-        let mut time_runner = time_runner.unwrap_or_default();
-        match custom_length {
-            Some(length) => {
-                time_runner.set_length(length);
-            }
-            None => {
-                time_runner.set_length(duration);
-            }
-        }
+    // /// Insert tween components directly to this entity.
+    // /// Can be used to create a simple animation quickly.
+    // /// [`TimeRunner`]'s length is determined by provided `duration` unless use
+    // /// [`Self::length`]
+    // pub fn insert_tween_here<I, T>(
+    //     self,
+    //     duration: Duration,
+    //     interpolation: I,
+    //     tweens: T,
+    // ) -> EntityCommands<'a>
+    // where
+    //     I: Bundle,
+    //     T: Bundle,
+    // {
+    //     let AnimationBuilder {
+    //         mut entity_commands,
+    //         time_runner,
+    //         custom_length,
+    //         skipped,
+    //     } = self;
+    //     let mut time_runner = time_runner.unwrap_or_default();
+    //     match custom_length {
+    //         Some(length) => {
+    //             time_runner.set_length(length);
+    //         }
+    //         None => {
+    //             time_runner.set_length(duration);
+    //         }
+    //     }
 
-        entity_commands.insert((
-            TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
-            interpolation,
-            tweens,
-            time_runner,
-        ));
-        if skipped {
-            entity_commands.insert(SkipTimeRunner);
-        }
-        entity_commands
-    }
+    //     entity_commands.insert((
+    //         TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
+    //         interpolation,
+    //         tweens,
+    //         time_runner,
+    //     ));
+    //     if skipped {
+    //         entity_commands.insert(SkipTimeRunner);
+    //     }
+    //     entity_commands
+    // }
 }
