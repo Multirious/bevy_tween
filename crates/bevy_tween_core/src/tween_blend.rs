@@ -87,12 +87,9 @@ where
     pub(crate) fn iter_targets_value(
         &self,
     ) -> impl Iterator<Item = (&A::Target, &A::Value)> {
-        self.inputs
-            .iter()
-            .filter_map(|(target, (_, value))| match value {
-                Some(value) => Some((target, value)),
-                None => None,
-            })
+        self.inputs.iter().filter_map(|(target, (_, value))| {
+            value.as_ref().map(|value| (target, value))
+        })
     }
 }
 
