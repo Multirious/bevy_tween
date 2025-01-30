@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::{component::Component, entity::Entity};
+use bevy_ecs::component::Component;
 
 #[cfg(feature = "bevy_reflect")]
 use bevy_ecs::reflect::ReflectComponent;
@@ -26,24 +26,19 @@ where
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
 pub struct Alterer<A: Alter>(pub A);
 
-#[derive(Default, Component)]
+#[derive(Default, Debug, Component, Clone)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
-pub struct BlendInputs<V>(pub Vec<bevy_animation::animatable::BlendInput<V>>)
+pub struct SampledValue<V>(pub Option<V>)
 where
-    V: bevy_animation::prelude::Animatable;
+    V: Send + Sync + 'static;
 
 #[derive(Default, Debug, Component, Clone)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
-pub struct FinalValue<V>(pub V)
+pub struct FinalValue<V>(pub Option<V>)
 where
     V: Send + Sync + 'static;
-
-#[derive(Debug, Component, Clone, Copy)]
-#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
-#[cfg_attr(feature = "bevy_reflect", reflect(Component))]
-pub struct ValueInputId(pub Entity);
 
 #[derive(Default, Debug, Component, Clone, Copy)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
@@ -60,5 +55,23 @@ where
 {
     pub fn new(curve: C) -> Curve<C, V> {
         Curve(curve, PhantomData)
+    }
+}
+
+#[derive(Debug, Component, Clone, Copy)]
+#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy_reflect", reflect(Component))]
+#[non_exhaustive]
+pub struct Blend {
+    pub weigth: f32,
+    pub additive: bool,
+}
+
+impl Default for Blend {
+    fn default() -> Blend {
+        Blend {
+            weigth: 1.0,
+            additive: false,
+        }
     }
 }
