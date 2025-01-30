@@ -1,6 +1,6 @@
 use bevy_animation::animatable::Animatable;
 #[cfg(feature = "bevy_asset")]
-use bevy_asset::{Asset, Assets, Handle, UntypedHandle};
+use bevy_asset::{Asset, Assets, Handle};
 use std::hash::Hash;
 
 use bevy_ecs::{
@@ -89,15 +89,6 @@ pub struct AlterAsset<T>(pub T)
 where
     T: AlterSingle,
     T::Item: Asset;
-
-#[cfg(feature = "bevy_asset")]
-#[derive(Debug, thiserror::Error)]
-pub enum AlterAssetError {
-    #[error("Asset resource does not exists")]
-    AssetResourceDoesNotExists,
-    #[error("Asset {0:?} does not exists")]
-    AssetDoesNotExists(UntypedHandle),
-}
 
 #[cfg(feature = "bevy_asset")]
 impl<T> Alter for AlterAsset<T>
