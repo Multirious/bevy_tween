@@ -8,6 +8,9 @@ mod plugin;
 mod systems;
 mod tween_blend;
 
+#[cfg(test)]
+mod test;
+
 pub use alter::*;
 #[cfg(feature = "bevy_app")]
 pub use plugin::*;
