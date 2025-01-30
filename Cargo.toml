@@ -23,6 +23,10 @@ members = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bevy_tween_core = { version = "0.7", path = "./crates/bevy_tween_core" }
+bevy_tween_framework = { version = "0.7", path = "./crates/bevy_tween_framework" }
+bevy_tween_event = { version = "0.7", path = "./crates/bevy_tween_event" }
+
 # bevy = { version = "0.15.0", default-features = false }
 # bevy_time_runner = "0.3.0" 
 # serde = { version = "1", optional = true, features = ["derive"] }
