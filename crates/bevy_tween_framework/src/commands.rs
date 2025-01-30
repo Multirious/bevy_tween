@@ -6,7 +6,7 @@ use bevy_time_runner::{
     Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner,
 };
 
-use crate::build::AnimationCommands;
+use crate::build::{AnimationCommands, BuildAnimation};
 
 /// Extension trait for types that can be used to make an animation.
 pub trait AnimationBuilderExt {
@@ -150,9 +150,9 @@ impl<'a> AnimationBuilder<'a> {
     /// [`Self::length`].
     /// It's also possible to use combinator like [`go`], [`forward`], and [`backward`]
     /// as the last combinator to customize the length.
-    pub fn insert<F>(self, animation: F) -> EntityCommands<'a>
+    pub fn insert<A>(self, animation: A) -> EntityCommands<'a>
     where
-        F: FnOnce(&mut AnimationCommands, &mut Duration),
+        A: BuildAnimation,
     {
         let AnimationBuilder {
             mut entity_commands,
@@ -163,7 +163,7 @@ impl<'a> AnimationBuilder<'a> {
         let mut dur = Duration::ZERO;
         entity_commands.with_children(|c| {
             let mut a = AnimationCommands::new(c);
-            animation(&mut a, &mut dur);
+            animation.build(&mut a, &mut dur);
         });
         let mut time_runner = time_runner.unwrap_or_default();
         match custom_length {
