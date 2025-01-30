@@ -6,7 +6,14 @@ use bevy_utils::HashMap;
 
 use crate::Alter;
 
+#[cfg(feature = "bevy_reflect")]
+use bevy_ecs::reflect::ReflectResource;
+#[cfg(feature = "bevy_reflect")]
+use bevy_reflect::Reflect;
+
 #[derive(Resource)]
+#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy_reflect", reflect(Resource))]
 pub struct TweenBlend<A>
 where
     A: Alter,
