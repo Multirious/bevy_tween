@@ -26,12 +26,21 @@ where
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
 pub struct Alterer<A: Alter>(pub A);
 
-#[derive(Default, Debug, Component, Clone)]
+#[derive(Debug, Component, Clone)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
 pub struct SampledValue<V>(pub Option<V>)
 where
     V: Send + Sync + 'static;
+
+impl<V> Default for SampledValue<V>
+where
+    V: Send + Sync + 'static,
+{
+    fn default() -> Self {
+        SampledValue(None)
+    }
+}
 
 #[derive(Default, Debug, Component, Clone)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
@@ -41,6 +50,7 @@ where
     V: Send + Sync + 'static;
 
 #[derive(Default, Debug, Component, Clone, Copy)]
+#[require(SampledValue<V>)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
 pub struct Curve<C, V>(pub C, PhantomData<V>)
