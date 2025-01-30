@@ -19,16 +19,26 @@ bevy_log = { version = "0.15", default-features = false, optional = true }
 bevy_asset = { version = "0.15", default-features = false, optional = true }
 bevy_transform = { version = "0.15", default-features = false, optional = true }
 bevy_color = { version = "0.15", default-features = false, optional = true }
+bevy_sprite = { version = "0.15", default-features = false, optional = true }
 
 [dev-dependencies.bevy]
 version = "0.15"
 default-features = false
 
 [features]
-default = ["bevy_reflect", "bevy_app", "bevy_log", "bevy_asset", "bevy_transform", "bevy_color"]
+default = [
+  "bevy_reflect",
+  "bevy_app",
+  "bevy_log",
+  "bevy_asset",
+  "bevy_transform",
+  "bevy_color",
+  "bevy_sprite",
+]
 bevy_reflect = ["dep:bevy_reflect", "bevy_ecs/bevy_reflect"]
 bevy_app = ["dep:bevy_app"]
 bevy_log = ["dep:bevy_log"]
 bevy_asset = ["dep:bevy_asset"]
 bevy_transform = ["dep:bevy_transform"]
 bevy_color = ["dep:bevy_color"]
+bevy_sprite = ["dep:bevy_sprite", "dep:bevy_color", "dep:bevy_asset"]
