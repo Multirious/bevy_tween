@@ -10,6 +10,12 @@ bevy_ecs = { version = "0.15", default-features = false }
 bevy_hierarchy = { version = "0.15", default-features = false }
 bevy_math = { version = "0.15", default-features = false }
 
+bevy_asset = { version = "0.15", default-features = false, optional = true }
+
+[features]
+default = ["bevy_asset"]
+bevy_asset = ["dep:bevy_asset"]
+
 [dev-dependencies.bevy]
 version = "0.15"
 default-features = false
