@@ -2,11 +2,13 @@ use std::time::Duration;
 
 use bevy_ecs::{prelude::*, system::EntityCommands};
 use bevy_hierarchy::{BuildChildren, ChildBuild, ChildBuilder};
+use bevy_math::Curve;
 use bevy_time_runner::{
-    Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner,
+    Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
 };
+use bevy_tween_core::{argument, Alter};
 
-use crate::build::{AnimationCommands, BuildAnimation};
+use crate::build::{AnimationCommands, BuildAnimation, BuildTween};
 
 /// Extension trait for types that can be used to make an animation.
 pub trait AnimationBuilderExt {
@@ -182,45 +184,46 @@ impl<'a> AnimationBuilder<'a> {
         entity_commands
     }
 
-    // /// Insert tween components directly to this entity.
-    // /// Can be used to create a simple animation quickly.
-    // /// [`TimeRunner`]'s length is determined by provided `duration` unless use
-    // /// [`Self::length`]
-    // pub fn insert_tween_here<I, T>(
-    //     self,
-    //     duration: Duration,
-    //     interpolation: I,
-    //     tweens: T,
-    // ) -> EntityCommands<'a>
-    // where
-    //     I: Bundle,
-    //     T: Bundle,
-    // {
-    //     let AnimationBuilder {
-    //         mut entity_commands,
-    //         time_runner,
-    //         custom_length,
-    //         skipped,
-    //     } = self;
-    //     let mut time_runner = time_runner.unwrap_or_default();
-    //     match custom_length {
-    //         Some(length) => {
-    //             time_runner.set_length(length);
-    //         }
-    //         None => {
-    //             time_runner.set_length(duration);
-    //         }
-    //     }
+    /// Insert tween components directly to this entity.
+    /// Can be used to create a simple animation quickly.
+    /// [`TimeRunner`]'s length is determined by provided `duration` unless use
+    /// [`Self::length`]
+    pub fn insert_tween_here<A, C>(
+        self,
+        tween: BuildTween<A, C>,
+    ) -> EntityCommands<'a>
+    where
+        A: Alter,
+        C: Curve<A::Value> + Send + Sync + 'static,
+    {
+        let AnimationBuilder {
+            mut entity_commands,
+            time_runner,
+            custom_length,
+            skipped,
+        } = self;
+        let mut time_runner = time_runner.unwrap_or_default();
+        match custom_length {
+            Some(length) => {
+                time_runner.set_length(length);
+            }
+            None => {
+                time_runner.set_length(tween.duration);
+            }
+        }
 
-    //     entity_commands.insert((
-    //         TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
-    //         interpolation,
-    //         tweens,
-    //         time_runner,
-    //     ));
-    //     if skipped {
-    //         entity_commands.insert(SkipTimeRunner);
-    //     }
-    //     entity_commands
-    // }
+        entity_commands.insert((
+            TimeSpan::try_from(Duration::ZERO..(tween.duration)).unwrap(),
+            time_runner,
+            argument::TweenRoot,
+            argument::Tween,
+            argument::Target(tween.target),
+            argument::Alterer(tween.alter),
+            argument::Curve::new(tween.curve),
+        ));
+        if skipped {
+            entity_commands.insert(SkipTimeRunner);
+        }
+        entity_commands
+    }
 }
