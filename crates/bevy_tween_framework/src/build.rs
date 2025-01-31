@@ -10,6 +10,9 @@ use bevy_math::{
 use bevy_time_runner::TimeSpan;
 use bevy_tween_core::{argument, Alter};
 
+#[cfg(feature = "bevy_asset")]
+use bevy_asset::{Asset, Handle};
+
 /// Commands to use within an animation combinator
 pub struct AnimationCommands<'r, 'a> {
     child_builder: &'r mut ChildBuilder<'a>,
@@ -281,6 +284,27 @@ impl TweenBuilderExt for Entity {
     {
         TweenBuilder(TargetAlter {
             target: *self,
+            alter: via,
+        })
+    }
+}
+#[cfg(feature = "bevy_asset")]
+impl<A> TweenBuilderExt for Handle<A>
+where
+    A: Asset,
+{
+    fn tween(&self) -> TweenBuilder<Target<Self>> {
+        TweenBuilder(Target {
+            target: self.clone(),
+        })
+    }
+
+    fn tween_via<Al>(&self, via: Al) -> TweenBuilder<TargetAlter<Al>>
+    where
+        Al: Alter<Target = Self>,
+    {
+        TweenBuilder(TargetAlter {
+            target: self.clone(),
             alter: via,
         })
     }
