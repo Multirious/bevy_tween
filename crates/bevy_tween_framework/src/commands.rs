@@ -174,7 +174,8 @@ impl<'a> AnimationBuilder<'a> {
                 time_runner.set_length(dur);
             }
         }
-        entity_commands.insert(time_runner);
+        entity_commands
+            .insert((time_runner, bevy_tween_core::argument::TweenRoot));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
         }
