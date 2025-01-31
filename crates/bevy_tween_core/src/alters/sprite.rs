@@ -7,55 +7,52 @@ use bevy_sprite::{ColorMaterial, Sprite};
 
 use crate::{AlterAsset, AlterComponent, AlterSingle};
 
-pub mod types {
-    use super::*;
-    pub type SpriteColorLaba =
-        AlterComponent<AlterSpriteColor<bevy_color::Laba>>;
-    pub type SpriteColorLinearRgba =
-        AlterComponent<AlterSpriteColor<bevy_color::LinearRgba>>;
-    pub type SpriteColorOklaba =
-        AlterComponent<AlterSpriteColor<bevy_color::Oklaba>>;
-    pub type SpriteColorSrgba =
-        AlterComponent<AlterSpriteColor<bevy_color::Srgba>>;
-    pub type SpriteColorXyza =
-        AlterComponent<AlterSpriteColor<bevy_color::Xyza>>;
+pub type SpriteColorLaba = AlterComponent<AlterSpriteColor<bevy_color::Laba>>;
+pub type SpriteColorLinearRgba =
+    AlterComponent<AlterSpriteColor<bevy_color::LinearRgba>>;
+pub type SpriteColorOklaba =
+    AlterComponent<AlterSpriteColor<bevy_color::Oklaba>>;
+pub type SpriteColorSrgba = AlterComponent<AlterSpriteColor<bevy_color::Srgba>>;
+pub type SpriteColorXyza = AlterComponent<AlterSpriteColor<bevy_color::Xyza>>;
 
-    pub type ColorMaterialLaba =
-        AlterAsset<AlterColorMaterial<bevy_color::Laba>>;
-    pub type ColorMaterialLinearRgba =
-        AlterAsset<AlterColorMaterial<bevy_color::LinearRgba>>;
-    pub type ColorMaterialOklaba =
-        AlterAsset<AlterColorMaterial<bevy_color::Oklaba>>;
-    pub type ColorMaterialSrgba =
-        AlterAsset<AlterColorMaterial<bevy_color::Srgba>>;
-    pub type ColorMaterialXyza =
-        AlterAsset<AlterColorMaterial<bevy_color::Xyza>>;
+pub type ColorMaterialLaba = AlterAsset<AlterColorMaterial<bevy_color::Laba>>;
+pub type ColorMaterialLinearRgba =
+    AlterAsset<AlterColorMaterial<bevy_color::LinearRgba>>;
+pub type ColorMaterialOklaba =
+    AlterAsset<AlterColorMaterial<bevy_color::Oklaba>>;
+pub type ColorMaterialSrgba = AlterAsset<AlterColorMaterial<bevy_color::Srgba>>;
+pub type ColorMaterialXyza = AlterAsset<AlterColorMaterial<bevy_color::Xyza>>;
+
+pub fn sprite_color_laba() -> SpriteColorLaba {
+    SpriteColorLaba::default()
+}
+pub fn sprite_color_linear_rgba() -> SpriteColorLinearRgba {
+    SpriteColorLinearRgba::default()
+}
+pub fn sprite_color_oklaba() -> SpriteColorOklaba {
+    SpriteColorOklaba::default()
+}
+pub fn sprite_color_srgba() -> SpriteColorSrgba {
+    SpriteColorSrgba::default()
+}
+pub fn sprite_color_xyza() -> SpriteColorXyza {
+    SpriteColorXyza::default()
 }
 
-#[allow(non_upper_case_globals)]
-pub mod consts {
-    use super::*;
-    pub const SpriteColorLaba: types::SpriteColorLaba =
-        AlterComponent(AlterSpriteColor(PhantomData));
-    pub const SpriteColorLinearRgba: types::SpriteColorLinearRgba =
-        AlterComponent(AlterSpriteColor(PhantomData));
-    pub const SpriteColorOklaba: types::SpriteColorOklaba =
-        AlterComponent(AlterSpriteColor(PhantomData));
-    pub const SpriteColorSrgba: types::SpriteColorSrgba =
-        AlterComponent(AlterSpriteColor(PhantomData));
-    pub const SpriteColorXyza: types::SpriteColorXyza =
-        AlterComponent(AlterSpriteColor(PhantomData));
-
-    pub const ColorMaterialLaba: types::ColorMaterialLaba =
-        AlterAsset(AlterColorMaterial(PhantomData));
-    pub const ColorMaterialLinearRgba: types::ColorMaterialLinearRgba =
-        AlterAsset(AlterColorMaterial(PhantomData));
-    pub const ColorMaterialOklaba: types::ColorMaterialOklaba =
-        AlterAsset(AlterColorMaterial(PhantomData));
-    pub const ColorMaterialSrgba: types::ColorMaterialSrgba =
-        AlterAsset(AlterColorMaterial(PhantomData));
-    pub const ColorMaterialXyza: types::ColorMaterialXyza =
-        AlterAsset(AlterColorMaterial(PhantomData));
+pub fn color_material_laba() -> ColorMaterialLaba {
+    ColorMaterialLaba::default()
+}
+pub fn color_material_linear_rgba() -> ColorMaterialLinearRgba {
+    ColorMaterialLinearRgba::default()
+}
+pub fn color_material_oklaba() -> ColorMaterialOklaba {
+    ColorMaterialOklaba::default()
+}
+pub fn color_material_srgba() -> ColorMaterialSrgba {
+    ColorMaterialSrgba::default()
+}
+pub fn color_material_xyza() -> ColorMaterialXyza {
+    ColorMaterialXyza::default()
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]

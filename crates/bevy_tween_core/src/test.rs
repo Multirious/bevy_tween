@@ -1,6 +1,9 @@
 use std::time::Duration;
 
-use crate::{alters::consts::Translation, argument, DefaultTweenCorePlugins};
+use crate::{
+    alters::{self, Translation},
+    argument, DefaultTweenCorePlugins,
+};
 use bevy::{prelude::*, time::TimeUpdateStrategy};
 use bevy_time_runner::{TimeRunner, TimeSpan};
 
@@ -9,7 +12,7 @@ fn default_test_app() -> App {
     app.add_plugins((
         MinimalPlugins,
         DefaultTweenCorePlugins,
-        crate::AltererPlugin::<crate::alters::types::Translation>::default(),
+        crate::AltererPlugin::<Translation>::default(),
     ));
     *app.world_mut().resource_mut::<TimeUpdateStrategy>() =
         TimeUpdateStrategy::ManualDuration(secs(1));
@@ -44,7 +47,7 @@ fn simple() {
             c.spawn((
                 argument::Target(target_id),
                 TimeSpan::try_from(secs(2)..secs(4)).unwrap(),
-                argument::Alterer(Translation),
+                argument::Alterer(alters::translation()),
                 argument::Curve::new(EasingCurve::new(
                     Vec3::new(0., 0., 0.),
                     Vec3::new(2., 2., 2.),
