@@ -81,6 +81,7 @@ where
         let end = *position + self.duration;
         commands.spawn((
             TimeSpan::try_from(start..end).unwrap(),
+            argument::Tween,
             argument::Target(self.target),
             argument::Alterer(self.alter),
             argument::Curve::new(self.curve),
