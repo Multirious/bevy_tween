@@ -3,7 +3,10 @@ use std::time::Duration;
 
 use bevy_ecs::{bundle::Bundle, entity::Entity, system::EntityCommands};
 use bevy_hierarchy::{ChildBuild as _, ChildBuilder};
-use bevy_math::curve::{EaseFunction, EasingCurve};
+use bevy_math::{
+    curve::{Ease, EaseFunction, EasingCurve},
+    Curve,
+};
 use bevy_time_runner::TimeSpan;
 use bevy_tween_core::{argument, Alter};
 
@@ -71,7 +74,7 @@ where
 impl<A, C> BuildAnimation for BuildTween<A, C>
 where
     A: Alter,
-    C: bevy_math::Curve<A::Value> + Send + Sync + 'static,
+    C: Curve<A::Value> + Send + Sync + 'static,
 {
     fn build(self, commands: &mut AnimationCommands, position: &mut Duration) {
         let start = *position;
@@ -92,6 +95,24 @@ impl<T> TweenBuilder<Target<T>>
 where
     T: Eq + Hash + Clone + Send + Sync + 'static,
 {
+    pub fn curve_via<A, C>(
+        &self,
+        via: A,
+        curve: C,
+        for_duration: Duration,
+    ) -> BuildTween<A, C>
+    where
+        A: Alter<Target = T>,
+        C: Curve<A::Value> + Send + Sync + 'static,
+    {
+        BuildTween {
+            duration: for_duration,
+            target: self.0.target.clone(),
+            alter: via,
+            curve,
+        }
+    }
+
     pub fn ease_via<A>(
         &self,
         via: A,
@@ -102,13 +123,23 @@ where
     ) -> BuildTween<A, EasingCurve<A::Value>>
     where
         A: Alter<Target = T>,
+        A::Value: Ease,
     {
-        BuildTween {
-            duration: for_duration,
-            target: self.0.target.clone(),
-            alter: via,
-            curve: EasingCurve::new(from, to, by),
-        }
+        self.curve_via(via, EasingCurve::new(from, to, by), for_duration)
+    }
+
+    pub fn lerp_via<A>(
+        &self,
+        via: A,
+        from: A::Value,
+        to: A::Value,
+        for_duration: Duration,
+    ) -> BuildTween<A, EasingCurve<A::Value>>
+    where
+        A: Alter<Target = T>,
+        A::Value: Ease,
+    {
+        self.ease_via(via, from, to, EaseFunction::Linear, for_duration)
     }
 
     pub fn via<A>(self, via: A) -> TweenBuilder<TargetAlter<A>>
@@ -125,19 +156,41 @@ impl<A> TweenBuilder<TargetAlter<A>>
 where
     A: Alter + Clone,
 {
+    pub fn curve<C>(&self, curve: C, for_duration: Duration) -> BuildTween<A, C>
+    where
+        C: Curve<A::Value>,
+    {
+        BuildTween {
+            duration: for_duration,
+            target: self.0.target.clone(),
+            alter: self.0.alter.clone(),
+            curve,
+        }
+    }
+
     pub fn ease(
         &self,
         from: A::Value,
         to: A::Value,
         by: EaseFunction,
         for_duration: Duration,
-    ) -> BuildTween<A, EasingCurve<A::Value>> {
-        BuildTween {
-            duration: for_duration,
-            target: self.0.target.clone(),
-            alter: self.0.alter.clone(),
-            curve: EasingCurve::new(from, to, by),
-        }
+    ) -> BuildTween<A, EasingCurve<A::Value>>
+    where
+        A::Value: Ease,
+    {
+        self.curve(EasingCurve::new(from, to, by), for_duration)
+    }
+
+    pub fn lerp(
+        &self,
+        from: A::Value,
+        to: A::Value,
+        for_duration: Duration,
+    ) -> BuildTween<A, EasingCurve<A::Value>>
+    where
+        A::Value: Ease,
+    {
+        self.ease(from, to, EaseFunction::Linear, for_duration)
     }
 
     pub fn from(self, value: A::Value) -> TweenBuilder<TargetAlterState<A>> {
@@ -158,7 +211,10 @@ where
         to: A::Value,
         by: EaseFunction,
         for_duration: Duration,
-    ) -> BuildTween<A, EasingCurve<A::Value>> {
+    ) -> BuildTween<A, EasingCurve<A::Value>>
+    where
+        A::Value: Ease,
+    {
         let from = std::mem::replace(&mut self.0.state, to.clone());
         BuildTween {
             duration: for_duration,
@@ -166,6 +222,17 @@ where
             alter: self.0.alter.clone(),
             curve: EasingCurve::new(from, to, by),
         }
+    }
+
+    pub fn lerp_to(
+        &mut self,
+        to: A::Value,
+        for_duration: Duration,
+    ) -> BuildTween<A, EasingCurve<A::Value>>
+    where
+        A::Value: Ease,
+    {
+        self.ease_to(to, EaseFunction::Linear, for_duration)
     }
 }
 
