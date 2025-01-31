@@ -781,6 +781,7 @@ dependencies = [
 name = "bevy_tween"
 version = "0.7.0"
 dependencies = [
+ "bevy_time_runner",
  "bevy_tween_core",
  "bevy_tween_event",
  "bevy_tween_framework",
