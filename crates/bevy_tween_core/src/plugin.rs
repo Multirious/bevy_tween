@@ -143,34 +143,6 @@ pub enum TweenSystemSet {
     ApplyValues,
 }
 
-pub fn component_plugin<A>(app: &mut bevy_app::App)
-where
-    A: AlterSingle,
-    A::Item: Component,
-{
-    use crate::alter::AlterComponent;
-    app.add_plugins(AlterPlugin::<AlterComponent<A>>::default());
-}
-
-pub fn resource_plugin<A>(app: &mut bevy_app::App)
-where
-    A: AlterSingle,
-    A::Item: Resource,
-{
-    use crate::alter::AlterResource;
-    app.add_plugins(AlterPlugin::<AlterResource<A>>::default());
-}
-
-#[cfg(feature = "bevy_asset")]
-pub fn asset_plugin<A>(app: &mut bevy_app::App)
-where
-    A: AlterSingle,
-    A::Item: Asset,
-{
-    use crate::alter::AlterAsset;
-    app.add_plugins(AlterPlugin::<AlterAsset<A>>::default());
-}
-
 pub struct CurvePlugin<C, V>
 where
     C: Curve<V>,
