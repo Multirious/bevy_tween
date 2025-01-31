@@ -193,16 +193,19 @@ where
         self.ease(from, to, EaseFunction::Linear, for_duration)
     }
 
-    pub fn from(self, value: A::Value) -> TweenBuilder<TargetAlterState<A>> {
-        TweenBuilder(TargetAlterState {
+    pub fn ease_from(
+        self,
+        from: A::Value,
+    ) -> TweenBuilder<TargetAlterEaseState<A>> {
+        TweenBuilder(TargetAlterEaseState {
             alter: self.0.alter,
             target: self.0.target,
-            state: value,
+            state: from,
         })
     }
 }
 
-impl<A> TweenBuilder<TargetAlterState<A>>
+impl<A> TweenBuilder<TargetAlterEaseState<A>>
 where
     A: Alter + Clone,
 {
@@ -251,7 +254,7 @@ where
 }
 
 #[derive(Clone, Copy)]
-pub struct TargetAlterState<A>
+pub struct TargetAlterEaseState<A>
 where
     A: Alter,
 {
