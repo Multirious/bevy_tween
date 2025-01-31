@@ -10,7 +10,7 @@ fn default_test_app() -> App {
     app.add_plugins((
         MinimalPlugins,
         bevy_tween_core::DefaultTweenCorePlugins,
-        bevy_tween_core::AltererPlugin::<
+        bevy_tween_core::AlterPlugin::<
             bevy_tween_core::alters::types::Translation,
         >::default(),
     ));
