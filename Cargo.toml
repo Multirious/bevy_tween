@@ -15,9 +15,10 @@ categories = ["game-development"]
 [workspace]
 resolver = "2"
 members = [
-    "crates/bevy_tween_core",
-    "crates/bevy_tween_event",
-    "crates/bevy_tween_framework"
+  "crates/bevy_tween_core",
+  "crates/bevy_tween_event",
+  "crates/bevy_tween_framework",
+  "crates/bevy_tween_utils",
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
