@@ -1,23 +1,29 @@
 use bevy_animation::animatable::Animatable;
 #[cfg(feature = "bevy_asset")]
 use bevy_asset::{Asset, Assets, Handle};
+use bevy_utils::HashMap;
 use std::hash::Hash;
+
+#[cfg(feature = "bevy_reflect")]
+use bevy_ecs::reflect::ReflectResource;
+#[cfg(feature = "bevy_reflect")]
+use bevy_reflect::Reflect;
 
 use bevy_ecs::{
     component::Component,
     entity::Entity,
-    system::{In, Query, ResMut, Resource, SystemParam, SystemParamItem},
+    system::{Query, Res, ResMut, Resource, SystemParam, SystemParamItem},
 };
 
-pub trait Alter: Send + Sync + 'static {
+pub trait Alter: Send + Sync + 'static + Sized {
     type Target: Eq + Hash + Clone + Send + Sync + 'static;
     type Value: Animatable + Clone;
     type Param<'w, 's>: for<'w2, 's2> SystemParam<
         Item<'w2, 's2> = Self::Param<'w2, 's2>,
     >;
-    fn alter<'w, 'a>(
-        input: In<impl Iterator<Item = (&'a Self::Target, &'a Self::Value)>>,
-        param: &'w mut SystemParamItem<Self::Param<'w, '_>>,
+    fn alter_system(
+        target_values: Res<'_, TweensTargetFinalValue<Self>>,
+        param: SystemParamItem<Self::Param<'_, '_>>,
     );
 }
 
@@ -42,11 +48,11 @@ where
     type Value = T::Value;
     type Param<'w, 's> = Query<'w, 's, &'static mut T::Item>;
 
-    fn alter<'w, 'a>(
-        In(iter): In<impl Iterator<Item = (&'a Self::Target, &'a Self::Value)>>,
-        q_component: &'w mut SystemParamItem<Self::Param<'w, '_>>,
+    fn alter_system(
+        target_values: Res<'_, TweensTargetFinalValue<Self>>,
+        mut q_component: SystemParamItem<Self::Param<'_, '_>>,
     ) {
-        for (target, value) in iter {
+        for (target, value) in target_values.map.iter() {
             let Ok(mut target_component) = q_component.get_mut(*target) else {
                 continue;
             };
@@ -70,14 +76,14 @@ where
     type Value = T::Value;
     type Param<'w, 's> = Option<ResMut<'w, T::Item>>;
 
-    fn alter<'w, 'a>(
-        In(iter): In<impl Iterator<Item = (&'a Self::Target, &'a Self::Value)>>,
-        resource: &mut SystemParamItem<Self::Param<'w, '_>>,
+    fn alter_system(
+        target_values: Res<'_, TweensTargetFinalValue<Self>>,
+        mut resource: SystemParamItem<Self::Param<'_, '_>>,
     ) {
         let Some(resource) = resource.as_mut() else {
             return;
         };
-        for (_, value) in iter {
+        for value in target_values.map.values() {
             T::alter_single(&mut *resource, value);
         }
     }
@@ -100,18 +106,28 @@ where
     type Value = T::Value;
     type Param<'w, 's> = Option<ResMut<'w, Assets<T::Item>>>;
 
-    fn alter<'w, 'a>(
-        In(iter): In<impl Iterator<Item = (&'a Self::Target, &'a Self::Value)>>,
-        resource: &mut SystemParamItem<Self::Param<'w, '_>>,
+    fn alter_system(
+        target_values: Res<'_, TweensTargetFinalValue<Self>>,
+        mut resource: SystemParamItem<Self::Param<'_, '_>>,
     ) {
         let Some(assets) = resource.as_mut() else {
             return;
         };
-        for (target, value) in iter {
+        for (target, value) in target_values.map.iter() {
             let Some(asset) = assets.get_mut(target) else {
                 return;
             };
             T::alter_single(asset, value);
         }
     }
+}
+
+#[derive(Default, Debug, Clone, Resource)]
+#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy_reflect", reflect(Resource))]
+pub struct TweensTargetFinalValue<A>
+where
+    A: Alter,
+{
+    pub map: HashMap<A::Target, A::Value>,
 }

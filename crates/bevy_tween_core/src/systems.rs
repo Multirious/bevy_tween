@@ -1,7 +1,7 @@
 use bevy_animation::animatable::Animatable;
 use bevy_ecs::{
     query::With,
-    system::{In, Query, Res, ResMut},
+    system::{Query, ResMut},
 };
 use bevy_math::{curve::Curve, FloatExt};
 
@@ -76,13 +76,4 @@ pub fn update_blend_system<A>(
         .for_each(|(target, mut value)| {
             value.0 = res.final_value(&target.0).cloned();
         });
-}
-
-pub fn alterer_system<A>(
-    blend: Res<crate::TweenBlend<A>>,
-    mut param: A::Param<'_, '_>,
-) where
-    A: Alter,
-{
-    A::alter(In(blend.iter_targets_value()), &mut param);
 }

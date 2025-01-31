@@ -2,21 +2,14 @@ use std::marker::PhantomData;
 
 use bevy_animation::animatable::Animatable;
 use bevy_app::{Plugin, PluginGroup, PluginGroupBuilder};
-use bevy_ecs::{
-    component::Component,
-    schedule::{
-        InternedScheduleLabel, IntoSystemConfigs, IntoSystemSetConfigs,
-        ScheduleLabel, SystemSet,
-    },
-    system::Resource,
+use bevy_ecs::schedule::{
+    InternedScheduleLabel, IntoSystemConfigs, IntoSystemSetConfigs,
+    ScheduleLabel, SystemSet,
 };
 use bevy_math::Curve;
 
-use crate::alter::{Alter, AlterSingle};
+use crate::alter::Alter;
 use crate::systems;
-
-#[cfg(feature = "bevy_asset")]
-use bevy_asset::Asset;
 
 #[derive(bevy_ecs::system::Resource, Clone)]
 #[non_exhaustive]
@@ -111,8 +104,7 @@ where
             (
                 systems::update_blend_system::<A>
                     .in_set(TweenSystemSet::BlendValues),
-                systems::alterer_system::<A>
-                    .in_set(TweenSystemSet::ApplyValues),
+                A::alter_system.in_set(TweenSystemSet::ApplyValues),
             ),
         );
 
