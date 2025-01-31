@@ -3,16 +3,14 @@ use std::time::Duration;
 use crate::prelude::*;
 use bevy::{prelude::*, time::TimeUpdateStrategy};
 use bevy_ecs::system::RunSystemOnce;
-use bevy_tween_core::alters::consts::Translation;
+use bevy_tween_core::alters::{self, Translation};
 
 fn default_test_app() -> App {
     let mut app = App::new();
     app.add_plugins((
         MinimalPlugins,
         bevy_tween_core::DefaultTweenCorePlugins,
-        bevy_tween_core::AlterPlugin::<
-            bevy_tween_core::alters::types::Translation,
-        >::default(),
+        bevy_tween_core::AlterPlugin::<Translation>::default(),
     ));
     *app.world_mut().resource_mut::<TimeUpdateStrategy>() =
         TimeUpdateStrategy::ManualDuration(secs(1));
@@ -42,7 +40,7 @@ fn simple() {
     let target_id = target.id();
     app.world_mut()
         .run_system_once(move |mut commands: Commands| {
-            let target = target_id.tween_via(Translation);
+            let target = target_id.tween_via(alters::translation());
             commands.animation().insert(sequence((
                 forward(secs(1)),
                 target.ease(
