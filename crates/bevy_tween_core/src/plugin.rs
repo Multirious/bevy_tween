@@ -68,6 +68,9 @@ impl PluginGroup for DefaultTweenCorePlugins {
         let pg = PluginGroupBuilder::start::<DefaultTweenCorePlugins>()
             .add(TweenCorePlugin::default());
 
+        #[cfg(feature = "debug")]
+        let pg = pg.add(TweenDebugPlugin);
+
         type EasingCurvePlugin<V> =
             CurvePlugin<bevy_math::curve::EasingCurve<V>, V>;
 
@@ -112,6 +115,16 @@ where
                     .in_set(TweenSystemSet::ApplyValues),
             ),
         );
+
+        #[cfg(feature = "debug")]
+        {
+            use crate::debug::WillTweenList;
+            if let Some(mut list) =
+                app.world_mut().get_resource_mut::<WillTweenList>()
+            {
+                list.will_be_applied::<A>();
+            }
+        }
     }
 }
 impl<A> Default for AltererPlugin<A>
@@ -180,6 +193,16 @@ where
             systems::progress_curve_system::<C, V>
                 .in_set(TweenSystemSet::PrepareValues),
         );
+
+        #[cfg(feature = "debug")]
+        {
+            use crate::debug::WillTweenList;
+            if let Some(mut list) =
+                app.world_mut().get_resource_mut::<WillTweenList>()
+            {
+                list.will_be_prepared::<C>();
+            }
+        }
     }
 }
 
@@ -191,5 +214,16 @@ where
         CurvePlugin {
             __marker: PhantomData,
         }
+    }
+}
+
+#[cfg(feature = "debug")]
+pub struct TweenDebugPlugin;
+
+#[cfg(feature = "debug")]
+impl Plugin for TweenDebugPlugin {
+    fn build(&self, app: &mut bevy_app::App) {
+        use crate::debug::WillTweenList;
+        app.init_resource::<WillTweenList>();
     }
 }

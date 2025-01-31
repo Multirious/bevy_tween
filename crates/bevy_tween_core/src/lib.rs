@@ -3,6 +3,8 @@
 mod alter;
 pub mod alters;
 pub mod argument;
+#[cfg(feature = "debug")]
+mod debug;
 #[cfg(feature = "bevy_app")]
 mod plugin;
 mod systems;

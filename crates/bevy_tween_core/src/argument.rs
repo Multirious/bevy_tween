@@ -1,6 +1,12 @@
 use std::marker::PhantomData;
 
-use bevy_ecs::component::Component;
+use bevy_ecs::{
+    component::{Component, ComponentId},
+    entity::Entity,
+    world::DeferredWorld,
+};
+#[cfg(feature = "debug")]
+use bevy_log::prelude::*;
 
 #[cfg(feature = "bevy_reflect")]
 use bevy_ecs::reflect::ReflectComponent;
@@ -27,9 +33,28 @@ where
     T: Send + Sync + 'static;
 
 #[derive(Debug, Component, Clone, Copy)]
+#[component(on_add = on_alterer_add_hook::<A>)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
 pub struct Alterer<A: Alter>(pub A);
+
+#[allow(unused)]
+fn on_alterer_add_hook<A: Alter>(
+    world: DeferredWorld,
+    _: Entity,
+    _: ComponentId,
+) {
+    #[cfg(feature = "debug")]
+    {
+        use crate::debug::WillTweenList;
+        if let Some(list) = world.get_resource::<WillTweenList>() {
+            if !list.is_will_be_applied::<A>() {
+                let type_name = std::any::type_name::<A>();
+                warn!("{type_name} may be missing an `AltererPlugin` and tweening will not work!")
+            }
+        }
+    }
+}
 
 #[derive(Debug, Component, Clone)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
@@ -56,6 +81,7 @@ where
 
 #[derive(Default, Debug, Component, Clone, Copy)]
 #[require(SampledValue<V>)]
+#[component(on_add = on_curve_add_hook::<C, V>)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
 pub struct Curve<C, V>(pub C, PhantomData<V>)
@@ -70,6 +96,24 @@ where
 {
     pub fn new(curve: C) -> Curve<C, V> {
         Curve(curve, PhantomData)
+    }
+}
+
+#[allow(unused)]
+fn on_curve_add_hook<C: bevy_math::curve::Curve<V> + 'static, V>(
+    world: DeferredWorld,
+    _: Entity,
+    _: ComponentId,
+) {
+    #[cfg(feature = "debug")]
+    {
+        use crate::debug::WillTweenList;
+        if let Some(list) = world.get_resource::<WillTweenList>() {
+            if !list.is_will_be_prepared::<C>() {
+                let type_name = std::any::type_name::<C>();
+                warn!("{type_name} may be missing a `CurvePlugin` and tweening will not work!")
+            }
+        }
     }
 }
 

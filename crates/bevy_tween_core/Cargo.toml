@@ -34,6 +34,7 @@ default = [
   "bevy_transform",
   "bevy_color",
   "bevy_sprite",
+  "debug",
 ]
 bevy_reflect = ["dep:bevy_reflect", "bevy_ecs/bevy_reflect"]
 bevy_app = ["dep:bevy_app"]
@@ -42,3 +43,4 @@ bevy_asset = ["dep:bevy_asset"]
 bevy_transform = ["dep:bevy_transform"]
 bevy_color = ["dep:bevy_color"]
 bevy_sprite = ["dep:bevy_sprite", "dep:bevy_color", "dep:bevy_asset"]
+debug = ["bevy_log"]
