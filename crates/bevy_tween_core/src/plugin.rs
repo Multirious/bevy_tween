@@ -93,10 +93,10 @@ impl PluginGroup for DefaultTweenCorePlugins {
     }
 }
 
-pub struct AltererPlugin<A>(PhantomData<A>)
+pub struct AlterPlugin<A>(PhantomData<A>)
 where
     A: Alter;
-impl<A> Plugin for AltererPlugin<A>
+impl<A> Plugin for AlterPlugin<A>
 where
     A: Alter,
 {
@@ -127,12 +127,12 @@ where
         }
     }
 }
-impl<A> Default for AltererPlugin<A>
+impl<A> Default for AlterPlugin<A>
 where
     A: Alter,
 {
     fn default() -> Self {
-        AltererPlugin(PhantomData)
+        AlterPlugin(PhantomData)
     }
 }
 
@@ -149,7 +149,7 @@ where
     A::Item: Component,
 {
     use crate::alter::AlterComponent;
-    app.add_plugins(AltererPlugin::<AlterComponent<A>>::default());
+    app.add_plugins(AlterPlugin::<AlterComponent<A>>::default());
 }
 
 pub fn resource_plugin<A>(app: &mut bevy_app::App)
@@ -158,7 +158,7 @@ where
     A::Item: Resource,
 {
     use crate::alter::AlterResource;
-    app.add_plugins(AltererPlugin::<AlterResource<A>>::default());
+    app.add_plugins(AlterPlugin::<AlterResource<A>>::default());
 }
 
 #[cfg(feature = "bevy_asset")]
@@ -168,7 +168,7 @@ where
     A::Item: Asset,
 {
     use crate::alter::AlterAsset;
-    app.add_plugins(AltererPlugin::<AlterAsset<A>>::default());
+    app.add_plugins(AlterPlugin::<AlterAsset<A>>::default());
 }
 
 pub struct CurvePlugin<C, V>

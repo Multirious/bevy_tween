@@ -50,7 +50,7 @@ fn on_alterer_add_hook<A: Alter>(
         if let Some(list) = world.get_resource::<WillTweenList>() {
             if !list.is_will_be_applied::<A>() {
                 let type_name = std::any::type_name::<A>();
-                warn!("{type_name} may be missing an `AltererPlugin` and tweening will not work!")
+                warn!("{type_name} may be missing an `AlterPlugin` and tweening will not work!")
             }
         }
     }
