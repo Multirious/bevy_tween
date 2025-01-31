@@ -816,6 +816,7 @@ name = "bevy_tween_framework"
 version = "0.7.0"
 dependencies = [
  "bevy",
+ "bevy_asset",
  "bevy_ecs",
  "bevy_hierarchy",
  "bevy_math",
