@@ -12,7 +12,7 @@ fn default_test_app() -> App {
     app.add_plugins((
         MinimalPlugins,
         DefaultTweenCorePlugins,
-        crate::AltererPlugin::<Translation>::default(),
+        crate::AlterPlugin::<Translation>::default(),
     ));
     *app.world_mut().resource_mut::<TimeUpdateStrategy>() =
         TimeUpdateStrategy::ManualDuration(secs(1));
