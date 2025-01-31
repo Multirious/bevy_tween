@@ -17,6 +17,11 @@ pub struct Tween;
 #[derive(Default, Debug, Component, Clone, Copy)]
 #[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
 #[cfg_attr(feature = "bevy_reflect", reflect(Component))]
+pub struct TweenRoot;
+
+#[derive(Default, Debug, Component, Clone, Copy)]
+#[cfg_attr(feature = "bevy_reflect", derive(Reflect))]
+#[cfg_attr(feature = "bevy_reflect", reflect(Component))]
 pub struct Target<T>(pub T)
 where
     T: Send + Sync + 'static;
