@@ -368,6 +368,7 @@
 #![warn(missing_docs)]
 
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
+use bevy::ecs::system::ScheduleSystem;
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
 mod utils;
@@ -533,7 +534,7 @@ pub trait BevyTweenRegisterSystems {
     /// Register tween systems
     fn add_tween_systems<M>(
         &mut self,
-        tween_systems: impl IntoSystemConfigs<M>,
+        tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) -> &mut Self;
 }
 
@@ -546,7 +547,7 @@ impl BevyTweenRegisterSystems for App {
     /// Panics if [`TweenAppResource`] does not exist in world.
     fn add_tween_systems<M>(
         &mut self,
-        tween_systems: impl IntoSystemConfigs<M>,
+        tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) -> &mut Self {
         let app_resource = self
             .world()
