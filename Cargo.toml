@@ -20,7 +20,7 @@ resolver = "2"
 [dependencies.bevy]
 version = "0.16.0-rc.1"
 default-features = false
-features = ["std"] 
+features = ["std", "bevy_log"]
 
 [dependencies.bevy_time_runner]
 version = "0.3.0"
