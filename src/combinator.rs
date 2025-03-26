@@ -14,12 +14,12 @@ pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
 /// Commands to use within an animation combinator
 pub struct AnimationCommands<'r, 'a> {
-    child_builder: &'r mut ChildBuilder<'a>,
+    child_builder: &'r mut ChildSpawnerCommands<'a>,
 }
 
 impl<'r, 'a> AnimationCommands<'r, 'a> {
     pub(crate) fn new(
-        child_builder: &'r mut ChildBuilder<'a>,
+        child_builder: &'r mut ChildSpawnerCommands<'a>,
     ) -> AnimationCommands<'r, 'a> {
         AnimationCommands { child_builder }
     }
@@ -54,7 +54,7 @@ impl AnimationBuilderExt for Commands<'_, '_> {
     }
 }
 
-impl AnimationBuilderExt for ChildBuilder<'_> {
+impl AnimationBuilderExt for ChildSpawnerCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`ChildBuilder`].
     /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
