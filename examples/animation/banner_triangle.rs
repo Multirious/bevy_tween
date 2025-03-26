@@ -123,7 +123,7 @@ fn snap_rotate(
     }
 }
 
-fn dotted_line(c: &mut ChildBuilder) {
+fn dotted_line(c: &mut ChildSpawner) {
     let color = Color::WHITE;
     let count = 70;
     let height = 5.;
