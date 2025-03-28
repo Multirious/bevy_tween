@@ -18,14 +18,14 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.16.0-rc.1"
+version = "0.16.0-rc.2"
 default-features = false
 features = ["std", "bevy_log"]
 
 [dependencies.bevy_time_runner]
 version = "0.3.0"
 git = "https://github.com/Multirious/bevy_time_runner"
-branch = "bevy-v0.16-rc.1" 
+branch = "bevy-v0.16.0" 
 
 [dependencies.serde]
 version = "1"
@@ -33,15 +33,15 @@ optional = true
 features = ["derive"] 
 
 [dependencies.bevy_lookup_curve ]
-version = "0.6.0"
+version = "0.6.0" # Has no bevy v0.16.0-rc.2 yet
 optional = true 
 
 [dev-dependencies]
-bevy-inspector-egui = "0.28.0" # Has no bevy v0.16.0-rc.1 yet
+bevy-inspector-egui = "0.28.0" # Has no bevy v0.16.0-rc.2 yet
 rand = "0.8.5"
 
 [dev-dependencies.bevy]
-version = "0.16.0-rc.1"
+version = "0.16.0-rc.2"
 default-features = false
 features = [
     "bevy_window",
