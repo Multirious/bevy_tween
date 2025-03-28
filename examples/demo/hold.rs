@@ -80,7 +80,7 @@ fn setup(
 ) {
     use interpolate::{effect_intensity, sprite_color};
     commands
-        .entity(window.single())
+        .entity(window.single().unwrap())
         .insert(CursorIcon::System(SystemCursorIcon::Pointer));
     commands.spawn(Camera2d);
     let big_x = commands
@@ -124,11 +124,14 @@ fn mouse_hold(
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
-    q_effect_animator.single_mut().set_direction(if mouse_down {
-        TimeDirection::Forward
-    } else {
-        TimeDirection::Backward
-    });
+    q_effect_animator
+        .single_mut()
+        .unwrap()
+        .set_direction(if mouse_down {
+            TimeDirection::Forward
+        } else {
+            TimeDirection::Backward
+        });
 }
 
 fn big_x_do_effect(
@@ -139,10 +142,11 @@ fn big_x_do_effect(
     let mut rng = rand::thread_rng();
     let dx: f32 = rng.r#gen();
     let dy: f32 = rng.r#gen();
-    q_big_x.single_mut().translation =
+    q_big_x.single_mut().unwrap().translation =
         Vec3::new(dx - 0.5, dy - 0.5, 0.) * 100. * effect_intensity.0;
 
     q_rotation_animator
         .single_mut()
+        .unwrap()
         .set_time_scale(effect_intensity.0);
 }
