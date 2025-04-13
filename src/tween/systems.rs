@@ -176,7 +176,7 @@ pub fn apply_component_tween_system<I>(
                                         break 'l Some(curr);
                                     } else {
                                         match parent {
-                                            Some(parent) => curr = parent.parent,
+                                            Some(parent) => curr = parent.parent(),
                                             None => break 'l None,
                                         }
                                     }
