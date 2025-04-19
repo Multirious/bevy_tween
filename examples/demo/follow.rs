@@ -39,7 +39,7 @@ enum UpdateKind {
     AnimatorCompleted,
 }
 
-// Let us change the the tween ease and duration at runtime
+// Let us change the tween ease and duration at runtime
 #[derive(Resource, Reflect)]
 struct Config {
     tween_duration: Duration,
@@ -120,47 +120,49 @@ fn jeb_follows_cursor(
     >,
     mut cursor_moved: EventReader<CursorMoved>,
 ) {
-    let jeb_transform = q_jeb.single();
-    let (jeb_animator_entity, jeb_time_runner) =
-        q_jeb_translation_animator.single();
     let Some(coord) = coord.0 else {
         return;
     };
-    let update = match config.update_kind {
-        UpdateKind::CursorMoved => cursor_moved.read().next().is_some(),
-        UpdateKind::CusorStopped => {
-            let dx = (coord.x - jeb_transform.translation.x).abs();
-            let dy = (coord.x - jeb_transform.translation.x).abs();
-            let is_near_coord = dx < 0.05 && dy < 0.05;
-            cursor_moved.read().next().is_none() && !is_near_coord
-        }
-        UpdateKind::AnimatorCompleted => match jeb_time_runner {
-            Some(jeb_time_runner) => {
-                jeb_time_runner.is_completed()
-                    && coord != jeb_transform.translation.xy()
+    if let (
+        Ok(jeb_transform),
+        Ok((jeb_animator_entity, jeb_time_runner))
+    ) = (q_jeb.single(), q_jeb_translation_animator.single()){
+        let update = match config.update_kind {
+            UpdateKind::CursorMoved => cursor_moved.read().next().is_some(),
+            UpdateKind::CusorStopped => {
+                let dx = (coord.x - jeb_transform.translation.x).abs();
+                let dy = (coord.x - jeb_transform.translation.x).abs();
+                let is_near_coord = dx < 0.05 && dy < 0.05;
+                cursor_moved.read().next().is_none() && !is_near_coord
             }
-            None => true,
-        },
-    };
-    if update {
-        let jeb = AnimationTarget.into_target();
-        commands
-            .entity(jeb_animator_entity)
-            .animation()
-            .insert_tween_here(
-                config.tween_duration,
-                config.tween_ease,
-                (
-                    jeb.with(translation(
-                        jeb_transform.translation,
-                        Vec3::new(coord.x, coord.y, 0.),
-                    )),
-                    jeb.with(sprite_color(
-                        into_color(WHITE),
-                        into_color(DEEP_PINK),
-                    )),
-                ),
-            );
+            UpdateKind::AnimatorCompleted => match jeb_time_runner {
+                Some(jeb_time_runner) => {
+                    jeb_time_runner.is_completed()
+                        && coord != jeb_transform.translation.xy()
+                }
+                None => true,
+            },
+        };
+        if update {
+            let jeb = AnimationTarget.into_target();
+            commands
+                .entity(jeb_animator_entity)
+                .animation()
+                .insert_tween_here(
+                    config.tween_duration,
+                    config.tween_ease,
+                    (
+                        jeb.with(translation(
+                            jeb_transform.translation,
+                            Vec3::new(coord.x, coord.y, 0.),
+                        )),
+                        jeb.with(sprite_color(
+                            into_color(WHITE),
+                            into_color(DEEP_PINK),
+                        )),
+                    ),
+                );
+        }
     }
 }
 
