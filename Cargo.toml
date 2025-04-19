@@ -18,7 +18,7 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.16.0-rc.5"
+version = "0.16.0-rc.4"
 default-features = false
 features = ["std"]
 
@@ -30,30 +30,18 @@ branch = "bevy-v0.16.0"
 [dependencies.serde]
 version = "1"
 optional = true
-features = ["derive"]
-
-[dependencies.tracing]
-version = "0.1.41"
-features = [
-    "std"
-]
-
-[dependencies.bevy_platform]
-version =  "0.16.0-rc.5"
-features = [
-    "std"
-]
+features = ["derive"] 
 
 [dependencies.bevy_lookup_curve ]
-version = "0.8.0" # Has no bevy v0.16.0-rc.4 yet
+version = "0.6.0" # Has no bevy v0.16.0-rc.4 yet
 optional = true 
 
 [dev-dependencies]
-bevy-inspector-egui = "0.30.0" # Has no bevy v0.16.0-rc.4 yet
-rand = "0.9.0"
+bevy-inspector-egui = "0.28.0" # Has no bevy v0.16.0-rc.4 yet
+rand = "0.8.5"
 
 [dev-dependencies.bevy]
-version = "0.16.0-rc.5"
+version = "0.16.0-rc.4"
 default-features = false
 features = [
     "bevy_window",
@@ -66,7 +54,7 @@ features = [
 ] 
 
 [build-dependencies]
-rustc_version = "0.4.1"
+rustc_version = "0.4.0"
 
 [features]
 default = [
@@ -169,4 +157,3 @@ required-features = [
     "bevy_sprite",
     "bevy_lookup_curve",
 ]
-

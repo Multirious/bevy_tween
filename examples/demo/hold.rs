@@ -139,9 +139,9 @@ fn big_x_do_effect(
     mut q_big_x: Query<&mut Transform, With<BigX>>,
     mut q_rotation_animator: Query<&mut TimeRunner, With<RotatationAnimator>>,
 ) {
-    let mut rng = rand::rng();
-    let dx: f32 = rng.random();
-    let dy: f32 = rng.random();
+    let mut rng = rand::thread_rng();
+    let dx: f32 = rng.r#gen();
+    let dy: f32 = rng.r#gen();
     q_big_x.single_mut().unwrap().translation =
         Vec3::new(dx - 0.5, dy - 0.5, 0.) * 100. * effect_intensity.0;
 
