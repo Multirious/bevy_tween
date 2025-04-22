@@ -3,10 +3,11 @@ use bevy::{
     ecs::{
         component::Mutable, query::QueryEntityError, schedule::ScheduleConfigs,
         system::ScheduleSystem,
-    },
-    platform_support::collections::{HashMap, HashSet},
+    }
 };
+use bevy::platform::collections::{HashMap, HashSet};
 use std::any::type_name;
+use tracing::error;
 
 /// Alias for [`apply_component_tween_system`] and may contains more systems
 /// in the future.
