@@ -5,7 +5,7 @@ use bevy::{
         system::ScheduleSystem,
     }
 };
-use bevy_platform::collections::{HashMap, HashSet};
+use bevy::platform::collections::{HashMap, HashSet};
 use std::any::type_name;
 use tracing::error;
 

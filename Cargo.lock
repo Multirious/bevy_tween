@@ -1831,7 +1831,6 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_lookup_curve",
- "bevy_platform",
  "bevy_time_runner",
  "rand 0.9.0",
  "rustc_version",

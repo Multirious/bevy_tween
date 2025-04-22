@@ -1,5 +1,4 @@
 use std::f32::consts::TAU;
-use bevy::ecs::relationship::RelatedSpawnerCommands;
 use bevy::prelude::*;
 use bevy_tween::{
     combinator::{parallel, tween_exact, AnimationCommands},
@@ -123,7 +122,7 @@ fn snap_rotate(
     }
 }
 
-fn dotted_line(c: &mut RelatedSpawnerCommands<ChildOf>) {
+fn dotted_line(c: &mut ChildSpawnerCommands) {
     let color = Color::WHITE;
     let count = 70;
     let height = 5.;
