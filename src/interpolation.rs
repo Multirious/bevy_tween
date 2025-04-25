@@ -9,6 +9,7 @@
 //! **Systems**:
 //! - [`sample_interpolations_system`]
 
+use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
 
 use crate::{tween::TweenInterpolationValue, TweenSystemSet};
