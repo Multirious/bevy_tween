@@ -20,13 +20,12 @@
 //! Let say we have this sprite:
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
-//! let mut sprite_commands = commands.spawn(SpriteBundle {
-//!     sprite: Sprite {
+//! let mut sprite_commands = commands.spawn(
+//!     Sprite {
 //!         custom_size: Some(Vec2::new(50., 50.)),
 //!         ..Default::default()
-//!     },
-//!     ..Default::default()
-//! });
+//!     }
+//! );
 //! ```
 //!
 //! Now we want to animate it, maybe with one simple tween animation.
@@ -36,13 +35,12 @@
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{interpolate::sprite_color, combinator::tween};
 //!
 //! let sprite = sprite_commands.id().into_target();
@@ -70,13 +68,12 @@
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{
 //!     interpolate::sprite_color,
 //!     combinator::{tween, sequence}
@@ -108,13 +105,12 @@
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{
 //!     interpolate::sprite_color_to,
 //!     combinator::{tween, sequence}
@@ -144,13 +140,12 @@
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{
 //!     interpolate::sprite_color_to,
 //!     combinator::{tween, sequence}
@@ -185,13 +180,12 @@
 //! ```no_run
 //! # use bevy::color::palettes::css::{WHITE, RED};
 #![doc = utils::doc_test_boilerplate!()]
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{
 //!     interpolate::sprite_color_to,
 //!     combinator::{AnimationCommands, TargetState, tween, sequence},
@@ -231,13 +225,12 @@
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{
 //!     interpolate::sprite_color,
 //!     combinator::{tween, sequence}
@@ -266,13 +259,12 @@
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{
 //!     interpolate::sprite_color,
 //!     combinator::{tween, sequence}
@@ -299,13 +291,12 @@
 //! ```no_run
 #![doc = utils::doc_test_boilerplate!()]
 //! # use bevy::color::palettes::css::{WHITE, RED};
-//! # let mut sprite_commands = commands.spawn(SpriteBundle {
-//! #     sprite: Sprite {
+//! # let mut sprite_commands = commands.spawn(
+//! #     Sprite {
 //! #         custom_size: Some(Vec2::new(50., 50.)),
 //! #         ..Default::default()
 //! #     },
-//! #     ..Default::default()
-//! # });
+//! # );
 //! use bevy_tween::{
 //!     interpolate::sprite_color,
 //!     combinator::tween,
