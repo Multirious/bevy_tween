@@ -6,7 +6,9 @@ use bevy::{
     color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
 };
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+use bevy_inspector_egui::{
+    bevy_egui::EguiPlugin, quick::ResourceInspectorPlugin,
+};
 use bevy_tween::{
     bevy_time_runner::TimeRunner,
     interpolate::{scale, sprite_color, translation},
@@ -19,6 +21,9 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             DefaultTweenPlugins,
+            EguiPlugin {
+                enable_multipass_for_primary_context: false,
+            },
             ResourceInspectorPlugin::<Config>::new(),
         ))
         .add_systems(Startup, setup)
@@ -123,10 +128,9 @@ fn jeb_follows_cursor(
     let Some(coord) = coord.0 else {
         return;
     };
-    if let (
-        Ok(jeb_transform),
-        Ok((jeb_animator_entity, jeb_time_runner))
-    ) = (q_jeb.single(), q_jeb_translation_animator.single()){
+    if let (Ok(jeb_transform), Ok((jeb_animator_entity, jeb_time_runner))) =
+        (q_jeb.single(), q_jeb_translation_animator.single())
+    {
         let update = match config.update_kind {
             UpdateKind::CursorMoved => cursor_moved.read().next().is_some(),
             UpdateKind::CusorStopped => {
