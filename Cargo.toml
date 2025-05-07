@@ -22,11 +22,6 @@ version = "0.16.0"
 default-features = false
 features = ["std"]
 
-[dependencies.bevy_math]
-version = "0.16.0"
-default-features = false
-features = ["curve", "serialize"]
-
 [dependencies.bevy_time_runner]
 version = "0.3.0"
 git = "https://github.com/Multirious/bevy_time_runner"
@@ -44,15 +39,15 @@ features = [
 ]
 
 [dependencies.bevy_lookup_curve ]
-version = "0.8.0" # Has no bevy v0.16.0-rc.4 yet
+version = "0.9.0"
 optional = true 
 
 [dev-dependencies]
-bevy-inspector-egui = "0.30.0" # Has no bevy v0.16.0-rc.4 yet
+bevy-inspector-egui = "0.31.0"
 rand = "0.9.0"
 
 [dev-dependencies.bevy]
-version = "0.16.0-rc.5"
+version = "0.16.0"
 default-features = false
 features = [
     "bevy_window",
