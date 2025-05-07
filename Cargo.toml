@@ -1,7 +1,7 @@
 [package]
 name = "bevy_tween"
 description = "Flexible tweening plugin library for Bevy"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2024"
 authors = ["Multirious"]
 license = "MIT OR Apache-2.0"
@@ -18,14 +18,9 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.16.0-rc.5"
+version = "0.16.0"
 default-features = false
 features = ["std"]
-
-[dependencies.bevy_math]
-version = "0.16.0-rc.5"
-default-features = false
-features = ["curve", "serialize"]
 
 [dependencies.bevy_time_runner]
 version = "0.3.0"
@@ -44,15 +39,15 @@ features = [
 ]
 
 [dependencies.bevy_lookup_curve ]
-version = "0.8.0" # Has no bevy v0.16.0-rc.4 yet
+version = "0.9.0"
 optional = true 
 
 [dev-dependencies]
-bevy-inspector-egui = "0.30.0" # Has no bevy v0.16.0-rc.4 yet
+bevy-inspector-egui = "0.31.0"
 rand = "0.9.0"
 
 [dev-dependencies.bevy]
-version = "0.16.0-rc.5"
+version = "0.16.0"
 default-features = false
 features = [
     "bevy_window",
