@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased - xxxx-xx-xx
+
+### Changes
+
+- Migrate to bevy 0.16
+  - Update all examples
+- Change to Rust edition 2024
+- Add Nix flake files
+- Update EaseKind documentation to EaseFunction
+
 ## v0.7.0 - 2024-12-09
 
 ### Changes

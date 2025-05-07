@@ -1,40 +1,51 @@
 use super::*;
 use bevy::{
-    ecs::{query::QueryEntityError, schedule::SystemConfigs},
-    utils::{HashMap, HashSet},
+    ecs::{
+        component::Mutable, query::QueryEntityError, schedule::ScheduleConfigs,
+        system::ScheduleSystem,
+    }
 };
+use bevy::platform::collections::{HashMap, HashSet};
 use std::any::type_name;
+use tracing::error;
 
 /// Alias for [`apply_component_tween_system`] and may contains more systems
 /// in the future.
-pub fn component_tween_system<I>() -> SystemConfigs
+pub fn component_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
-    I::Item: Component,
+    I::Item: Component<Mutability = Mutable>,
 {
     apply_component_tween_system::<I>.into_configs()
 }
 
-/// [`QueryEntityError`] without [`UnsafeWorldCell`] and implemented [`PartialEq`], [`Eq`], and [`Hash`]
+/// [`QueryEntityError`] but implemented hash [`Hash`]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum QueryEntityErrorWithoutWorld {
-    QueryDoesNotMatch(Entity),
-    NoSuchEntity(Entity),
+    /// The given [`Entity`]'s components do not match the query.
+    ///
+    /// Either it does not have a requested component, or it has a component which the query filters out.
+    QueryDoesNotMatch(Entity, bevy::ecs::archetype::ArchetypeId),
+    /// The given [`Entity`] does not exist.
+    EntityDoesNotExist(Entity),
+    /// The [`Entity`] was requested mutably more than once.
+    ///
+    /// See [`Query::get_many_mut`](crate::system::Query::get_many_mut) for an example.
     AliasedMutability(Entity),
 }
 
-impl From<&QueryEntityError<'_>> for QueryEntityErrorWithoutWorld {
-    fn from(x: &QueryEntityError<'_>) -> Self {
+impl From<&QueryEntityError> for QueryEntityErrorWithoutWorld {
+    fn from(x: &QueryEntityError) -> Self {
+        use QueryEntityError as E;
+        use QueryEntityErrorWithoutWorld as EH;
         match x {
-            QueryEntityError::QueryDoesNotMatch(e, _) => {
-                QueryEntityErrorWithoutWorld::QueryDoesNotMatch(*e)
+            E::QueryDoesNotMatch(entity, archetype_id) => {
+                EH::QueryDoesNotMatch(*entity, *archetype_id)
             }
-            QueryEntityError::NoSuchEntity(e) => {
-                QueryEntityErrorWithoutWorld::NoSuchEntity(*e)
+            E::EntityDoesNotExist(entity_does_not_exist_error) => {
+                EH::EntityDoesNotExist(entity_does_not_exist_error.entity)
             }
-            QueryEntityError::AliasedMutability(e) => {
-                QueryEntityErrorWithoutWorld::AliasedMutability(*e)
-            }
+            E::AliasedMutability(entity) => EH::AliasedMutability(*entity),
         }
     }
 }
@@ -44,10 +55,10 @@ impl core::error::Error for QueryEntityErrorWithoutWorld {}
 impl core::fmt::Display for QueryEntityErrorWithoutWorld {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match *self {
-            Self::QueryDoesNotMatch(entity) => {
+            Self::QueryDoesNotMatch(entity, _) => {
                 write!(f, "The query does not match the entity {entity}")
             }
-            Self::NoSuchEntity(entity) => {
+            Self::EntityDoesNotExist(entity) => {
                 write!(f, "The entity {entity} does not exist")
             }
             Self::AliasedMutability(entity) => write!(
@@ -107,7 +118,7 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 /// ```
 #[allow(clippy::type_complexity)]
 pub fn apply_component_tween_system<I>(
-    q_animation_target: Query<(Option<&Parent>, Has<AnimationTarget>)>,
+    q_animation_target: Query<(Option<&ChildOf>, Has<AnimationTarget>)>,
     q_tween: Query<
         (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
         Without<SkipTween>,
@@ -117,10 +128,10 @@ pub fn apply_component_tween_system<I>(
     mut last_search_error: Local<HashSet<Entity>>,
 ) where
     I: Interpolator + Send + Sync + 'static,
-    I::Item: Component,
+    I::Item: Component<Mutability = Mutable>,
 {
-    let mut entity_error = HashMap::new();
-    let mut search_error = HashSet::new();
+    let mut entity_error = HashMap::default();
+    let mut search_error = HashSet::default();
     q_tween
         .iter()
         .for_each(|(entity, tween, ease_value)| match &tween.target {
@@ -166,7 +177,7 @@ pub fn apply_component_tween_system<I>(
                                         break 'l Some(curr);
                                     } else {
                                         match parent {
-                                            Some(parent) => curr = parent.get(),
+                                            Some(parent) => curr = parent.parent(),
                                             None => break 'l None,
                                         }
                                     }
@@ -229,9 +240,9 @@ pub fn apply_component_tween_system<I>(
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `component_tween_system::<BoxedInterpolator<...>>()` for consistency
-pub fn component_dyn_tween_system<C>() -> SystemConfigs
+pub fn component_dyn_tween_system<C>() -> ScheduleConfigs<ScheduleSystem>
 where
-    C: Component,
+    C: Component<Mutability = Mutable>,
 {
     apply_component_tween_system::<Box<dyn Interpolator<Item = C>>>
         .into_configs()
@@ -239,7 +250,7 @@ where
 
 /// Alias for [`apply_resource_tween_system`] and may contains more systems
 /// in the future.
-pub fn resource_tween_system<I>() -> SystemConfigs
+pub fn resource_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Resource,
@@ -328,7 +339,7 @@ pub fn apply_resource_tween_system<I>(
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `resource_tween_system::<BoxedInterpolator<...>>()` for consistency
-pub fn resource_dyn_tween_system<R>() -> SystemConfigs
+pub fn resource_dyn_tween_system<R>() -> ScheduleConfigs<ScheduleSystem>
 where
     R: Resource,
 {
@@ -339,7 +350,7 @@ where
 /// Alias for [`apply_asset_tween_system`] and may contains more systems
 /// in the future.
 #[cfg(feature = "bevy_asset")]
-pub fn asset_tween_system<I>() -> SystemConfigs
+pub fn asset_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Asset,
@@ -408,7 +419,7 @@ pub fn apply_asset_tween_system<I>(
     I: Interpolator,
     I::Item: Asset,
 {
-    let mut asset_error = HashSet::new();
+    let mut asset_error = HashSet::default();
 
     let Some(mut asset) = asset else {
         if !*last_resource_error {
@@ -470,7 +481,7 @@ pub fn apply_asset_tween_system<I>(
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `asset_tween_system::<BoxedInterpolator<...>>()` for consistency
 #[cfg(feature = "bevy_asset")]
-pub fn asset_dyn_tween_system<A>() -> SystemConfigs
+pub fn asset_dyn_tween_system<A>() -> ScheduleConfigs<ScheduleSystem>
 where
     A: Asset,
 {

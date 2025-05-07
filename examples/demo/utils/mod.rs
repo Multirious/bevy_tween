@@ -11,8 +11,8 @@ pub fn main_cursor_world_coord_system(
     q_primary_window: Query<&Window, With<bevy::window::PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
-    let (camera, camera_transform) = q_camera.single();
-    let window = q_primary_window.single();
+    let (camera, camera_transform) = q_camera.single().unwrap();
+    let window = q_primary_window.single().unwrap();
 
     if let Some(world_position) = window
         .cursor_position()
