@@ -22,6 +22,11 @@ version = "0.16.0"
 default-features = false
 features = ["std"]
 
+[dependencies.bevy_math]
+version = "0.16.0"
+default-features = false
+features = ["curve"]
+
 [dependencies.bevy_time_runner]
 version = "0.3.0"
 git = "https://github.com/Multirious/bevy_time_runner"
@@ -34,9 +39,7 @@ features = ["derive"]
 
 [dependencies.tracing]
 version = "0.1.41"
-features = [
-    "std"
-]
+features = ["std"]
 
 [dependencies.bevy_lookup_curve ]
 version = "0.9.0"
