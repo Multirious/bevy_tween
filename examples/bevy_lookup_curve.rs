@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_tween::{
     bevy_lookup_curve::{
         editor::LookupCurveEditor, Knot, KnotInterpolation, LookupCurve,
@@ -13,7 +14,14 @@ use bevy_tween::{
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins, LookupCurvePlugin))
+        .add_plugins((
+            DefaultPlugins,
+            DefaultTweenPlugins,
+            EguiPlugin {
+                enable_multipass_for_primary_context: false,
+            },
+            LookupCurvePlugin,
+        ))
         .add_systems(Startup, setup)
         .run();
 }

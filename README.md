@@ -109,11 +109,11 @@ How it works:
 
 ## Bevy Version Support
 
-|`bevy`|`bevy_tween`|
-|------|------------|
-|0.15  |0.7         |
-|0.14  |0.6         |
-|0.13  |0.2–0.5     |
+| `bevy` | `bevy_tween` |
+|--------|--------------|
+| 0.15   | 0.7          |
+| 0.14   | 0.6          |
+| 0.13   | 0.2–0.5      |
 
 ## Credits
 - [`bevy_tweening`](https://github.com/djeedai/bevy_tweening)

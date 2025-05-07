@@ -11,7 +11,8 @@
 
 use super::*;
 use ::bevy_lookup_curve::{LookupCache, LookupCurve};
-use bevy::utils::HashSet;
+use bevy::platform::collections::HashSet;
+use tracing::error;
 
 /// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation.
 pub struct BevyLookupCurveInterpolationPlugin;
@@ -96,7 +97,7 @@ pub fn sample_lookup_curve_system(
         });
 
     removed.read().for_each(|entity| {
-        if let Some(mut entity) = commands.get_entity(entity) {
+        if let Ok(mut entity) = commands.get_entity(entity) {
             entity.remove::<TweenInterpolationValue>();
         }
     });

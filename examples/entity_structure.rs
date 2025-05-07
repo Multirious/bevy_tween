@@ -68,8 +68,9 @@ fn setup(mut commands: Commands) {
     // equivalent to
     //
     // let target = TargetComponent::marker();
-    // commands.spawn((sprite(...), AnimationTarget)).animate()
-    //     .insert_here(
+    // commands.spawn((sprite(...), AnimationTarget))
+    //     .animation()
+    //     .insert_tween_here(
     //         Duration::from_secs(5),
     //         EaseKind::QuadraticOut,
     //         (
@@ -110,7 +111,7 @@ fn setup(mut commands: Commands) {
     //
     // let target = TargetComponent::marker();
     // commands.spawn((sprite(...), AnimationTarget))
-    //     .animate()
+    //     .animation()
     //     .insert(tween(
     //         Duration::from_secs(5),
     //         EaseKind::QuadraticOut,
@@ -148,16 +149,17 @@ fn setup(mut commands: Commands) {
     // equivalent to
     //
     // let target = TargetComponent::marker();
-    // commands.spawn((sprite(...), AnimationTarget)).with_children(|c| {
-    //     c.animate().insert_here(
-    //         Duration::from_secs(5),
-    //         EaseKind::QuadraticOut,
-    //         (
-    //             target.with(translation(...)),
-    //             target.with(angle_z(...))
-    //         ),
-    //     );
-    // });
+    // commands.spawn((sprite(...), AnimationTarget))
+    //     .with_children(|c| {
+    //         c.animation().insert_tween_here(
+    //             Duration::from_secs(5),
+    //             EaseKind::QuadraticOut,
+    //             (
+    //                 target.with(translation(...)),
+    //                 target.with(angle_z(...))
+    //             ),
+    //         );
+    //     });
 
     // Only Sprite as parent, tweens as children of a time runner.
     let y = 3. * spacing_y + offset_y;
@@ -189,16 +191,17 @@ fn setup(mut commands: Commands) {
     // equivalent to
     //
     // let target = TargetComponent::marker();
-    // commands.spawn((sprite(...), AnimationTarget)).with_children(|c| {
-    //     c.animate().insert(tween(
-    //         Duration::from_secs(5),
-    //         EaseKind::QuadraticOut,
-    //         (
-    //             target.with(translation(...)),
-    //             target.with(angle_z(...))
-    //         ),
-    //     ));
-    // });
+    // commands.spawn((sprite(...), AnimationTarget))
+    //     .with_children(|c| {
+    //         c.animation().insert(tween(
+    //             Duration::from_secs(5),
+    //             EaseKind::QuadraticOut,
+    //             (
+    //                 target.with(translation(...)),
+    //                 target.with(angle_z(...))
+    //             ),
+    //         ));
+    //     });
 
     // or with this completely detached
     let y = 4. * spacing_y + offset_y;
