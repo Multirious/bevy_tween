@@ -55,7 +55,7 @@ impl AnimationBuilderExt for Commands<'_, '_> {
 }
 
 impl AnimationBuilderExt for ChildSpawnerCommands<'_> {
-    /// Construct [`AnimationBuilder`] from [`ChildBuilder`].
+    /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
     /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
         AnimationBuilder::new(self.spawn_empty())
