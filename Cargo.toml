@@ -84,7 +84,7 @@ bevy_ui = ["bevy/bevy_ui"]
 # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
 bevy_lookup_curve = ["dep:bevy_lookup_curve", "bevy_asset"]
 # Derive Serialize and Deserialize for some types
-serde = ["dep:serde"]
+serde = ["dep:serde", "bevy_math/serialize"]
 
 [package.metadata.docs.rs]
 all-features = true
