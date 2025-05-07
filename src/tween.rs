@@ -432,7 +432,7 @@ impl<const N: usize> From<&[Entity; N]> for TargetComponent {
 
 /// [`ComponentTween`]'s system will navigate up the parent chain
 /// for this marker component while using [`TargetComponent::Marker`].
-#[derive(Debug, Component, Reflect)]
+#[derive(Default, Debug, Component, Reflect)]
 #[reflect(Component)]
 pub struct AnimationTarget;
 
