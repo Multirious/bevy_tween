@@ -1,7 +1,7 @@
 [package]
 name = "bevy_tween"
 description = "Flexible tweening plugin library for Bevy"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2024"
 authors = ["Multirious"]
 license = "MIT OR Apache-2.0"
