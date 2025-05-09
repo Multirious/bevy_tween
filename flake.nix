@@ -7,10 +7,9 @@
     };
     flake-utils = {
       url = "github:numtide/flake-utils";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, nixpkgs, flake-utils, ... } @ inputs:
+  outputs = { nixpkgs, flake-utils, ... } @ inputs:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
