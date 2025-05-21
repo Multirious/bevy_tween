@@ -140,7 +140,7 @@ fn effect_system(
                         ..default()
                     },
                     Transform::from_translation(
-                        q_triangle.single().translation,
+                        q_triangle.single().unwrap().translation,
                     ),
                     AnimationTarget,
                 ))
@@ -199,7 +199,7 @@ fn despawn_effect_system(
 ) {
     ended.read().for_each(|ended| {
         if ended.is_completed() && q_effect.contains(ended.time_runner) {
-            commands.entity(ended.time_runner).despawn_recursive();
+            commands.entity(ended.time_runner).despawn();
         }
     });
 }

@@ -14,12 +14,12 @@ pub use state::{TargetState, TransformTargetState, TransformTargetStateExt};
 
 /// Commands to use within an animation combinator
 pub struct AnimationCommands<'r, 'a> {
-    child_builder: &'r mut ChildBuilder<'a>,
+    child_builder: &'r mut ChildSpawnerCommands<'a>,
 }
 
 impl<'r, 'a> AnimationCommands<'r, 'a> {
     pub(crate) fn new(
-        child_builder: &'r mut ChildBuilder<'a>,
+        child_builder: &'r mut ChildSpawnerCommands<'a>,
     ) -> AnimationCommands<'r, 'a> {
         AnimationCommands { child_builder }
     }
@@ -54,8 +54,8 @@ impl AnimationBuilderExt for Commands<'_, '_> {
     }
 }
 
-impl AnimationBuilderExt for ChildBuilder<'_> {
-    /// Construct [`AnimationBuilder`] from [`ChildBuilder`].
+impl AnimationBuilderExt for ChildSpawnerCommands<'_> {
+    /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
     /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
         AnimationBuilder::new(self.spawn_empty())
@@ -242,53 +242,6 @@ impl<'a> AnimationBuilder<'a> {
         ));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
-        }
-        entity_commands
-    }
-
-    /// Insert tween components directly to this entity.
-    /// Can be used to create a simple animation quickly.
-    /// [`TimeRunner`]'s length is determined by provided `duration` unless use
-    /// [`Self::length`]
-    ///
-    /// # Note
-    ///
-    /// If the entity does not exist when this command is executed,
-    /// the resulting error will be ignored.
-    pub fn try_insert_tween_here<I, T>(
-        self,
-        duration: Duration,
-        interpolation: I,
-        tweens: T,
-    ) -> EntityCommands<'a>
-    where
-        I: Bundle,
-        T: Bundle,
-    {
-        let AnimationBuilder {
-            mut entity_commands,
-            time_runner,
-            custom_length,
-            skipped,
-        } = self;
-        let mut time_runner = time_runner.unwrap_or_default();
-        match custom_length {
-            Some(length) => {
-                time_runner.set_length(length);
-            }
-            None => {
-                time_runner.set_length(duration);
-            }
-        }
-
-        entity_commands.try_insert((
-            TimeSpan::try_from(Duration::ZERO..duration).unwrap(),
-            interpolation,
-            tweens,
-            time_runner,
-        ));
-        if skipped {
-            entity_commands.try_insert(SkipTimeRunner);
         }
         entity_commands
     }

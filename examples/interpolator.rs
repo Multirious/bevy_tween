@@ -115,7 +115,7 @@ fn what_happen(
     time_passed.tick(time.delta());
     print_tick.tick(time.delta());
     if time_passed.elapsed_secs() < 3. && print_tick.elapsed_secs() > 0.2 {
-        let circle = q_circle.single();
+        let circle = q_circle.single().unwrap();
         println!(
             "{:.2} {:.2} {:.2}",
             circle.hue, circle.radius, circle.spikiness

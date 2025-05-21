@@ -138,7 +138,7 @@ pub fn tween_event_system<Data>(
                 entity,
             };
             commands.trigger_targets(event.clone(), entity);
-            event_writer.send(event);
+            event_writer.write(event);
         },
     );
 }
