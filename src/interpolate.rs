@@ -11,6 +11,7 @@
 //! - [`AngleZ`]
 //! - [`SpriteColor`]
 //! - [`ColorMaterial`]
+//! - All their delta variants (such as [`TranslationDelta`])
 //!
 //! # Your own [`Interpolator`]
 //!

@@ -62,7 +62,7 @@ pub fn sprite_color_to(to: Color) -> impl Fn(&mut Color) -> SpriteColor {
 // type ReflectInterpolatorColorMaterial =
 //     ReflectInterpolator<bevy::sprite::ColorMaterial>;
 
-/// [`Interpolator`] for [`Sprite`]'s [`ColorMaterial`]
+/// [`Interpolator`] for [`Sprite`]'s ColorMaterial
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 // #[reflect(InterpolatorColorMaterial)]
 pub struct ColorMaterial {
@@ -80,7 +80,7 @@ impl Interpolator for ColorMaterial {
     }
 }
 
-/// delta [`Interpolator`] for [`Sprite`]'s [`ColorMaterial`]
+/// delta [`Interpolator`] for [`Sprite`]'s ColorMaterial
 #[derive(Debug, Default, Clone, PartialEq, Reflect)]
 pub struct ColorMaterialDelta {
     #[allow(missing_docs)]
