@@ -35,8 +35,11 @@ impl Interpolator for SpriteColorDelta {
     type Item = Sprite;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
-        let value_delta = value - previous_value;
-        item.color.mix_assign(self.end, value_delta);
+        let previous_color_as_vec = self.start.mix(&self.end, previous_value).to_linear().to_vec4();
+        let next_color_as_vec = self.start.mix(&self.end, value).to_linear().to_vec4();
+        let color_delta = next_color_as_vec - previous_color_as_vec;
+        let updated_color = item.color.to_linear().to_vec4() + color_delta;
+        item.color = Color::srgba(updated_color.x, updated_color.y, updated_color.z, updated_color.w);
     }
 }
 
@@ -90,8 +93,11 @@ impl Interpolator for ColorMaterialDelta {
     type Item = bevy::sprite::ColorMaterial;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
-        let value_delta = value - previous_value;
-        item.color.mix_assign(self.end, value_delta);
+        let previous_color_as_vec = self.start.mix(&self.end, previous_value).to_linear().to_vec4();
+        let next_color_as_vec = self.start.mix(&self.end, value).to_linear().to_vec4();
+        let color_delta = next_color_as_vec - previous_color_as_vec;
+        let updated_color = item.color.to_linear().to_vec4() + color_delta;
+        item.color = Color::srgba(updated_color.x, updated_color.y, updated_color.z, updated_color.w);
     }
 }
 

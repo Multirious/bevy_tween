@@ -103,8 +103,10 @@ impl Interpolator for RotationDelta {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
-        let value_delta = value - previous_value;
-        item.rotation = item.rotation.slerp(self.end, value_delta);
+        let previous_rotation = self.start.slerp(self.end, previous_value);
+        let next_rotation = self.start.slerp(self.end, value);
+        let rotation_delta = next_rotation - previous_rotation;
+        item.rotation = item.rotation.mul_quat(rotation_delta);
     }
 }
 
@@ -175,8 +177,10 @@ impl Interpolator for ScaleDelta {
     type Item = Transform;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
-        let value_delta = value - previous_value;
-        item.scale += item.scale.lerp(self.end, value_delta);
+        let previous_scale = self.start.lerp(self.end, previous_value);
+        let next_scale = self.start.lerp(self.end, value);
+        let scale_delta = next_scale - previous_scale;
+        item.scale += scale_delta;
     }
 }
 
