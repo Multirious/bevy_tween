@@ -165,3 +165,6 @@ required-features = [
     "bevy_lookup_curve",
 ]
 
+[[example]]
+name = "delta_tweens"
+path = "examples/demo/delta_tweens.rs"

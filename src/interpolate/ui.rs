@@ -18,6 +18,24 @@ impl Interpolator for BackgroundColor {
     }
 }
 
+/// delta [`Interpolator`] for Bevy's [`BackgroundColor`](bevy::prelude::BackgroundColor) used in UIs.
+#[derive(Debug, Default, Clone, PartialEq, Reflect)]
+pub struct BackgroundColorDelta {
+    #[allow(missing_docs)]
+    pub start: Color,
+    #[allow(missing_docs)]
+    pub end: Color,
+}
+
+impl Interpolator for BackgroundColorDelta {
+    type Item = bevy::prelude::BackgroundColor;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
+        let value_delta = value - previous_value;
+        item.0.mix_assign(self.end, value_delta);
+    }
+}
+
 /// Constructor for [`BackgroundColor`](crate::interpolate::BackgroundColor)
 pub fn background_color(start: Color, end: Color) -> BackgroundColor {
     BackgroundColor { start, end }
@@ -51,6 +69,26 @@ impl Interpolator for BorderColor {
         item.0 = self.start.mix(&self.end, value)
     }
 }
+
+
+/// delta [`Interpolator`] for Bevy's [`BorderColor`](bevy::prelude::BorderColor) used in UIs.
+#[derive(Debug, Default, Clone, PartialEq, Reflect)]
+pub struct BorderColorDelta {
+    #[allow(missing_docs)]
+    pub start: Color,
+    #[allow(missing_docs)]
+    pub end: Color,
+}
+
+impl Interpolator for BorderColorDelta {
+    type Item = bevy::prelude::BackgroundColor;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
+        let value_delta = value - previous_value;
+        item.0.mix_assign(self.end, value_delta);
+    }
+}
+
 
 /// Constructor for [`BorderColor`](crate::interpolate::BorderColor)
 pub fn border_color(start: Color, end: Color) -> BorderColor {

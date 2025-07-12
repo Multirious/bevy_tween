@@ -99,7 +99,7 @@ fn setup(mut commands: Commands) {
             Duration::from_secs(2),
             EaseKind::Linear,
             // Requires [`component_dyn_tween_system`]
-            circle.with_closure(|circle: &mut Circle, value| {
+            circle.with_closure(|circle: &mut Circle, value, _| {
                 circle.spikiness = (2.).lerp(4., value);
             }),
         ),

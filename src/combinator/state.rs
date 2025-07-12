@@ -170,4 +170,19 @@ impl TransformTargetState {
     pub fn scale_by(&mut self, by: Vec3) -> ComponentTween<Scale> {
         self.scale_with(scale_by(by))
     }
+
+    /// Create delta [`ComponentTween`] of transform's translation tweening by provided input
+    pub fn translation_delta_by(&mut self, by: Vec3) -> ComponentTween<TranslationDelta> {
+        self.translation_with(translation_delta_by(by))
+    }
+
+    /// Create delta [`ComponentTween`] of transform's rotation tweening by provided input
+    pub fn rotation_delta_by(&mut self, by: Quat) -> ComponentTween<RotationDelta> {
+        self.rotation_with(rotation_delta_by(by))
+    }
+    
+    /// Create delta [`ComponentTween`] of scale's rotation tweening by provided input
+    pub fn scale_delta_by(&mut self, by: Vec3) -> ComponentTween<ScaleDelta> {
+        self.scale_with(scale_delta_by(by))
+    }
 }

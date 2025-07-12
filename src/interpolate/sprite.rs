@@ -21,6 +21,26 @@ impl Interpolator for SpriteColor {
     }
 }
 
+
+/// delta [`Interpolator`] for [`Sprite`]'s color
+#[derive(Debug, Default, Clone, PartialEq, Reflect)]
+pub struct SpriteColorDelta {
+    #[allow(missing_docs)]
+    pub start: Color,
+    #[allow(missing_docs)]
+    pub end: Color,
+}
+
+impl Interpolator for SpriteColorDelta {
+    type Item = Sprite;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
+        let value_delta = value - previous_value;
+        item.color.mix_assign(self.end, value_delta);
+    }
+}
+
+
 /// Constructor for [`SpriteColor`]
 pub fn sprite_color(start: Color, end: Color) -> SpriteColor {
     SpriteColor { start, end }
@@ -56,6 +76,25 @@ impl Interpolator for ColorMaterial {
         item.color = self.start.mix(&self.end, value);
     }
 }
+
+/// delta [`Interpolator`] for [`Sprite`]'s [`ColorMaterial`]
+#[derive(Debug, Default, Clone, PartialEq, Reflect)]
+pub struct ColorMaterialDelta {
+    #[allow(missing_docs)]
+    pub start: Color,
+    #[allow(missing_docs)]
+    pub end: Color,
+}
+
+impl Interpolator for ColorMaterialDelta {
+    type Item = bevy::sprite::ColorMaterial;
+
+    fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
+        let value_delta = value - previous_value;
+        item.color.mix_assign(self.end, value_delta);
+    }
+}
+
 
 /// Constructor for [`ColorMaterial`](crate::interpolate::ColorMaterial)
 pub fn color_material(start: Color, end: Color) -> ColorMaterial {
