@@ -58,7 +58,7 @@
 //!
 //!     impl Interpolator for FooA {
 //!         # type Item = super::Foo;
-//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //!         #     todo!()
 //!         # }
 //!         /* ... */
@@ -70,7 +70,7 @@
 //!
 //!     impl Interpolator for FooB {
 //!         # type Item = super::Foo;
-//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //!         #     todo!()
 //!         # }
 //!         /* ... */
@@ -82,7 +82,7 @@
 //!
 //!     impl Interpolator for FooC {
 //!         # type Item = super::Foo;
-//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//!         # fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //!         #     todo!()
 //!         # }
 //!         /* ... */
@@ -114,21 +114,21 @@
 //! #     pub struct FooA {}
 //! #     impl Interpolator for FooA {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //! #             todo!()
 //! #         }
 //! #     }
 //! #     pub struct FooB {}
 //! #     impl Interpolator for FooB {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //! #             todo!()
 //! #         }
 //! #     }
 //! #     pub struct FooC {}
 //! #     impl Interpolator for FooC {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //! #             todo!()
 //! #         }
 //! #     }
@@ -172,21 +172,21 @@
 //! #     pub struct FooA {}
 //! #     impl Interpolator for FooA {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //! #             todo!()
 //! #         }
 //! #     }
 //! #     pub struct FooB {}
 //! #     impl Interpolator for FooB {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //! #             todo!()
 //! #         }
 //! #     }
 //! #     pub struct FooC {}
 //! #     impl Interpolator for FooC {
 //! #         type Item = super::Foo;
-//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32) {
+//! #         fn interpolate(&self, _item: &mut Self::Item, _value: f32, _previous_value: f32) {
 //! #             todo!()
 //! #         }
 //! #     }
@@ -251,6 +251,7 @@ pub struct TweenInterpolationValue(pub f32);
 #[derive(
     Debug, Default, Component, Clone, Copy, PartialEq, Eq, Hash, Reflect,
 )]
+#[require(TweenPreviousValue)]
 #[reflect(Component)]
 pub struct Tween<T, I> {
     #[allow(missing_docs)]
@@ -258,6 +259,14 @@ pub struct Tween<T, I> {
     #[allow(missing_docs)]
     pub interpolator: I,
 }
+
+/// Tracks the tween's previous value
+#[derive(
+    Debug, Default, Component, Clone, Copy, Reflect,
+)]
+#[reflect(Component)]
+pub struct TweenPreviousValue(pub f32);
+
 impl<T, I> Tween<T, I>
 where
     I: Interpolator,
@@ -370,7 +379,7 @@ impl TargetComponent {
         closure: F,
     ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
     where
-        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        F: Fn(&mut C, f32, f32) + Send + Sync + 'static,
         C: Component,
     {
         let closure = crate::interpolate::closure(closure);
@@ -481,7 +490,7 @@ impl TargetResource {
         closure: F,
     ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
     where
-        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        F: Fn(&mut C, f32, f32) + Send + Sync + 'static,
         C: Component,
     {
         let closure = crate::interpolate::closure(closure);
@@ -549,7 +558,7 @@ impl<A: Asset> TargetAsset<A> {
         closure: F,
     ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
     where
-        F: Fn(&mut C, f32) + Send + Sync + 'static,
+        F: Fn(&mut C, f32, f32) + Send + Sync + 'static,
         C: Component,
     {
         let closure = crate::interpolate::closure(closure);

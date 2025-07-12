@@ -45,7 +45,7 @@
 //!     type Item = Foo;
 //!
 //!     // Then we define how we want to interpolate `Foo`
-//!     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+//!     fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
 //!         // Usually if the type already have the `.lerp` function provided
 //!         // by the `FloatExt` trait then we can use just that
 //!         item.0 = self.start.lerp(self.end, value);
@@ -90,13 +90,13 @@ use bevy::prelude::*;
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 
-type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32) + Send + Sync + 'static>;
+type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32, f32) + Send + Sync + 'static>;
 
 /// Create boxed closure in order to be used with dynamic [`Interpolator`]
 pub fn closure<I, F>(f: F) -> InterpolatorClosure<I>
 where
     I: 'static,
-    F: Fn(&mut I, f32) + Send + Sync + 'static,
+    F: Fn(&mut I, f32, f32) + Send + Sync + 'static,
 {
     Box::new(f)
 }
@@ -115,7 +115,7 @@ pub trait Interpolator: Send + Sync + 'static {
     /// The value should be already sampled from an [`Interpolation`]
     ///
     /// [`Interpolation`]: crate::interpolation::Interpolation
-    fn interpolate(&self, item: &mut Self::Item, value: f32);
+    fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32);
 }
 
 // /// Reflect [`Interpolator`] trait

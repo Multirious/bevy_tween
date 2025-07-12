@@ -34,7 +34,7 @@ mod interpolate {
     impl Interpolator for CircleRadius {
         type Item = Circle;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
             item.radius = self.start.lerp(self.end, value);
         }
     }
@@ -51,7 +51,7 @@ mod interpolate {
     impl Interpolator for CircleHue {
         type Item = Circle;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
             item.hue = self.start.lerp(self.end, value);
         }
     }

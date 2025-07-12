@@ -13,7 +13,7 @@ pub struct BackgroundColor {
 impl Interpolator for BackgroundColor {
     type Item = bevy::prelude::BackgroundColor;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         item.0 = self.start.mix(&self.end, value)
     }
 }
@@ -47,7 +47,7 @@ pub struct BorderColor {
 impl Interpolator for BorderColor {
     type Item = bevy::prelude::BorderColor;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         item.0 = self.start.mix(&self.end, value)
     }
 }

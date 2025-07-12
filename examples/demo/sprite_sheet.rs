@@ -25,7 +25,7 @@ mod interpolate {
     impl Interpolator for AtlasIndex {
         type Item = Sprite;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
             let Some(texture_atlas) = &mut item.texture_atlas else {
                 return;
             };

@@ -16,7 +16,7 @@ pub struct SpriteColor {
 impl Interpolator for SpriteColor {
     type Item = Sprite;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         item.color = self.start.mix(&self.end, value)
     }
 }
@@ -52,7 +52,7 @@ pub struct ColorMaterial {
 impl Interpolator for ColorMaterial {
     type Item = bevy::sprite::ColorMaterial;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         item.color = self.start.mix(&self.end, value);
     }
 }

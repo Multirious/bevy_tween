@@ -15,7 +15,7 @@ pub struct Translation {
 impl Interpolator for Translation {
     type Item = Transform;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         item.translation = self.start.lerp(self.end, value);
     }
 }
@@ -57,7 +57,7 @@ pub struct Rotation {
 impl Interpolator for Rotation {
     type Item = Transform;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         item.rotation = self.start.slerp(self.end, value);
     }
 }
@@ -99,7 +99,7 @@ pub struct Scale {
 impl Interpolator for Scale {
     type Item = Transform;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         item.scale = self.start.lerp(self.end, value);
     }
 }
@@ -142,7 +142,7 @@ pub struct AngleZ {
 impl Interpolator for AngleZ {
     type Item = Transform;
 
-    fn interpolate(&self, item: &mut Self::Item, value: f32) {
+    fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
         let angle = (self.end - self.start).mul_add(value, self.start);
         item.rotation = Quat::from_rotation_z(angle);
     }
