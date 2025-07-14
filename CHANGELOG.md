@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.8.1 - 2025-07-14
+
+### Breaking Changes
+
+- `interpolate` functions now take an additional `previous_value` argument, which you can now use to make delta tweens.
+Still, you'd have to update everything that implements `Interpolator` to match the new signature.
+
+### Changes
+
+- Migrate to Bevy 0.16.1
+- You can now use `previous_value` to make tweens that apply delta instead of set values
+  (see `TranslationDelta` for example). This is useful when you want two ongoing tweens to affect the same entity.
+
 ## v0.8.0 - 2025-05-09
 
 ### Changes

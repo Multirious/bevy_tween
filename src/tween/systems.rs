@@ -93,7 +93,7 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 /// impl Interpolator for InterpolateSize {
 ///     type Item = Size;
 ///
-///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///     fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
 ///         item.0 = self.start.lerp(self.end, value);
 ///     }
 /// }
@@ -119,8 +119,8 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 #[allow(clippy::type_complexity)]
 pub fn apply_component_tween_system<I>(
     q_animation_target: Query<(Option<&ChildOf>, Has<AnimationTarget>)>,
-    q_tween: Query<
-        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue),
+    mut q_tween: Query<
+        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
         Without<SkipTween>,
     >,
     mut q_component: Query<&mut I::Item>,
@@ -133,8 +133,8 @@ pub fn apply_component_tween_system<I>(
     let mut entity_error = HashMap::default();
     let mut search_error = HashSet::default();
     q_tween
-        .iter()
-        .for_each(|(entity, tween, ease_value)| match &tween.target {
+        .iter_mut()
+        .for_each(|(entity, tween, ease_value, mut previous_value)| match &tween.target {
             TargetComponent::Entities(e) => {
                 e.iter().for_each(|target| {
                     let mut target_component =
@@ -163,7 +163,8 @@ pub fn apply_component_tween_system<I>(
                         };
                     tween
                         .interpolator
-                        .interpolate(&mut target_component, ease_value.0);
+                        .interpolate(&mut target_component, ease_value.0, previous_value.0);
+                    previous_value.0 = ease_value.0;
                 });
             }
             _ => {
@@ -229,7 +230,8 @@ pub fn apply_component_tween_system<I>(
                 };
                 tween
                     .interpolator
-                    .interpolate(&mut target_component, ease_value.0);
+                    .interpolate(&mut target_component, ease_value.0, previous_value.0);
+                previous_value.0 = ease_value.0;
             }
         });
     *last_entity_error = entity_error;
@@ -282,7 +284,7 @@ where
 /// impl Interpolator for InterpolateScreenFade {
 ///     type Item = ScreenFade;
 ///
-///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///     fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
 ///         item.0 = self.start.lerp(self.end, value);
 ///     }
 /// }
@@ -309,8 +311,8 @@ where
 /// ```
 #[allow(clippy::type_complexity)]
 pub fn apply_resource_tween_system<I>(
-    q_tween: Query<
-        (&Tween<TargetResource, I>, &TweenInterpolationValue),
+    mut q_tween: Query<
+        (&Tween<TargetResource, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
         Without<SkipTween>,
     >,
     resource: Option<ResMut<I::Item>>,
@@ -330,8 +332,9 @@ pub fn apply_resource_tween_system<I>(
         return;
     };
     *last_error = false;
-    q_tween.iter().for_each(|(tween, ease_value)| {
-        tween.interpolator.interpolate(&mut resource, ease_value.0);
+    q_tween.iter_mut().for_each(|(tween, ease_value, mut previous_value)| {
+        tween.interpolator.interpolate(&mut resource, ease_value.0, previous_value.0);
+        previous_value.0 = ease_value.0;
     })
 }
 
@@ -382,7 +385,7 @@ where
 /// impl Interpolator for InterpolateRainbow {
 ///     type Item = Rainbow;
 ///
-///     fn interpolate(&self, item: &mut Self::Item, value: f32) {
+///     fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
 ///         item.0 = self.start.lerp(self.end, value);
 ///     }
 /// }
@@ -408,8 +411,8 @@ where
 #[cfg(feature = "bevy_asset")]
 #[allow(clippy::type_complexity)]
 pub fn apply_asset_tween_system<I>(
-    q_tween: Query<
-        (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue),
+    mut q_tween: Query<
+        (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
         Without<SkipTween>,
     >,
     asset: Option<ResMut<Assets<I::Item>>>,
@@ -433,8 +436,8 @@ pub fn apply_asset_tween_system<I>(
     };
     *last_resource_error = false;
     q_tween
-        .iter()
-        .for_each(|(tween, ease_value)| match &tween.target {
+        .iter_mut()
+        .for_each(|(tween, ease_value, mut previous_value)| match &tween.target {
             TargetAsset::Asset(a) => {
                 let Some(asset) = asset.get_mut(a) else {
                     if !last_asset_error.contains(&a.id())
@@ -450,7 +453,8 @@ pub fn apply_asset_tween_system<I>(
                     asset_error.insert(a.id());
                     return;
                 };
-                tween.interpolator.interpolate(asset, ease_value.0);
+                tween.interpolator.interpolate(asset, ease_value.0, previous_value.0);
+                previous_value.0 = ease_value.0;
             }
             TargetAsset::Assets(assets) => {
                 for a in assets {
@@ -468,7 +472,8 @@ pub fn apply_asset_tween_system<I>(
                         asset_error.insert(a.id());
                         continue;
                     };
-                    tween.interpolator.interpolate(a, ease_value.0);
+                    tween.interpolator.interpolate(a, ease_value.0, previous_value.0);
+                    previous_value.0 = ease_value.0;
                 }
             }
         });

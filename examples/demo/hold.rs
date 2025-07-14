@@ -27,7 +27,7 @@ mod interpolate {
     impl Interpolator for EffectIntensity {
         type Item = super::EffectIntensitiy;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32) {
+        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
             item.0 = self.start.lerp(self.end, value)
         }
     }
