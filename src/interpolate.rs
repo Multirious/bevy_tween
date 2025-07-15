@@ -11,7 +11,6 @@
 //! - [`AngleZ`]
 //! - [`SpriteColor`]
 //! - [`ColorMaterial`]
-//! - All their delta variants (such as [`TranslationDelta`])
 //!
 //! # Your own [`Interpolator`]
 //!
@@ -218,47 +217,31 @@ impl Plugin for DefaultInterpolatorsPlugin {
             tween::component_tween_system::<Rotation>(),
             tween::component_tween_system::<Scale>(),
             tween::component_tween_system::<AngleZ>(),
-            tween::component_tween_system::<TranslationDelta>(),
-            tween::component_tween_system::<RotationDelta>(),
-            tween::component_tween_system::<ScaleDelta>(),
-            tween::component_tween_system::<AngleZDelta>()
         ))
         .register_type::<tween::ComponentTween<Translation>>()
         .register_type::<tween::ComponentTween<Rotation>>()
         .register_type::<tween::ComponentTween<Scale>>()
-        .register_type::<tween::ComponentTween<AngleZ>>()
-        .register_type::<tween::ComponentTween<TranslationDelta>>()
-        .register_type::<tween::ComponentTween<RotationDelta>>()
-        .register_type::<tween::ComponentTween<ScaleDelta>>()
-        .register_type::<tween::ComponentTween<AngleZDelta>>();
+        .register_type::<tween::ComponentTween<AngleZ>>();
 
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems((
             tween::component_tween_system::<SpriteColor>(),
-            tween::component_tween_system::<SpriteColorDelta>(),
         ))
-            .register_type::<tween::ComponentTween<SpriteColor>>()
-            .register_type::<tween::ComponentTween<SpriteColorDelta>>();
+            .register_type::<tween::ComponentTween<SpriteColor>>();
 
         #[cfg(feature = "bevy_ui")]
         app.add_tween_systems((
             tween::component_tween_system::<ui::BackgroundColor>(),
             tween::component_tween_system::<ui::BorderColor>(),
-            tween::component_tween_system::<BackgroundColorDelta>(),
-            tween::component_tween_system::<BorderColorDelta>(),
         ))
             .register_type::<tween::ComponentTween<ui::BackgroundColor>>()
-            .register_type::<tween::ComponentTween<ui::BorderColor>>()
-            .register_type::<tween::ComponentTween<BackgroundColorDelta>>()
-            .register_type::<tween::ComponentTween<BorderColorDelta>>();
+            .register_type::<tween::ComponentTween<ui::BorderColor>>();
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
         app.add_tween_systems((
             tween::asset_tween_system::<sprite::ColorMaterial>(),
-            tween::asset_tween_system::<ColorMaterialDelta>(),
         ))
-            .register_type::<tween::AssetTween<sprite::ColorMaterial>>()
-            .register_type::<tween::ComponentTween<ColorMaterialDelta>>();
+            .register_type::<tween::AssetTween<sprite::ColorMaterial>>();
     }
 }
 

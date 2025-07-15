@@ -2,10 +2,13 @@ use std::time::Duration;
 use bevy::{
     prelude::*,
 };
+use bevy::color::palettes::basic::WHITE;
+use bevy::color::palettes::css::{BLUE, RED};
 use bevy_tween::{
     combinator::*, prelude::*,
     tween::AnimationTarget,
 };
+use bevy_tween::interpolate::{sprite_color_delta_to};
 
 fn secs(secs: f32) -> Duration {
     Duration::from_secs_f32(secs)
@@ -36,13 +39,14 @@ fn spawn_circle_with_tweens(
     let float_duration = secs(4.0);
     let circle = AnimationTarget.into_target();
     let mut circle_transform_state = circle.transform_state(circle_transform);
+    let mut circle_sprite_state = circle.state(WHITE.into());
 
     let mut circle_commands = commands
         .spawn((
-            Sprite {
-                image: circle_filled_image,
-                ..default()
-            },
+           Sprite {
+               image: circle_filled_image,
+               ..default()
+           },
             circle_transform,
             AnimationTarget,
         ));
@@ -60,6 +64,16 @@ fn spawn_circle_with_tweens(
                 float_duration,
                 EaseKind::SineInOut,
                 circle_transform_state.translation_delta_by(vertical_delta),
-            )
+            ),
+            tween(
+                float_duration,
+                EaseKind::Linear,
+                circle_sprite_state.with(sprite_color_delta_to(BLUE.into())),
+            ),
+             tween(
+                 float_duration,
+                 EaseKind::CubicIn,
+                 circle_sprite_state.with(sprite_color_delta_to(RED.into())),
+             )
         )));
 }

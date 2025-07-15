@@ -1,6 +1,15 @@
 # Changelog
 
-## v0.8.1 - 2025-07-14
+## v0.9.1 - 2025-07-15
+
+- Fix color delta interpolation
+
+### Breaking Change
+
+- Add a delta flag to the built-in tweens
+  - This comes instead of the additional XDelta type so that one won't have to register so twice the types
+
+## v0.9.0 - 2025-07-14
 
 ### Breaking Changes
 
