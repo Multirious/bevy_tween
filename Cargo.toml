@@ -1,7 +1,7 @@
 [package]
 name = "bevy_tween"
 description = "Flexible tweening plugin library for Bevy"
-version = "0.9.0"
+version = "0.9.1"
 edition = "2024"
 authors = ["Multirious", "Rabbival"]
 license = "MIT OR Apache-2.0"
@@ -23,7 +23,7 @@ default-features = false
 features = ["std"]
 
 [dependencies.bevy_math]
-version = "0.16.0"
+version = "0.16.1"
 default-features = false
 features = ["curve"]
 
