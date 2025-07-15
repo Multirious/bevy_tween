@@ -6,6 +6,7 @@
 
 - `interpolate` functions now take an additional `previous_value` argument, which you can now use to make delta tweens.
 Still, you'd have to update everything that implements `Interpolator` to match the new signature.
+  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is     a required component, so it'll always be on the tween's entity unless you explicitly remove it.
 
 ### Changes
 
