@@ -60,6 +60,7 @@ pub fn translation_delta_by(by: Vec3) -> impl Fn(&mut Vec3) -> Translation {
     move |state| {
         let start = *state;
         let end = *state + by;
+        *state += by;
         Translation { start, end, delta: true }
     }
 }
@@ -244,7 +245,7 @@ pub fn angle_z_by(by: f32) -> impl Fn(&mut f32) -> AngleZ {
     }
 }
 
-/// Constructor for [`AngleZDelta`] that's relative to previous value
+/// Constructor for [`AngleZ`] that's relative to previous value
 /// Since this is a delta tween, it can happen with other ongoing tweens of that type
 pub fn angle_z_delta_by(by: f32) -> impl Fn(&mut f32) -> AngleZ {
     move |state| {

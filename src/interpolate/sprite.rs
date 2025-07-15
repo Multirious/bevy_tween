@@ -101,7 +101,7 @@ pub fn color_material_to(to: Color) -> impl Fn(&mut Color) -> ColorMaterial {
     }
 }
 
-/// Constructor for delta [`ColorMaterial`]
+/// Constructor for delta [`ColorMaterial`](crate::interpolate::ColorMaterial)
 pub fn color_material_delta_to(to: Color) -> impl Fn(&mut Color) -> ColorMaterial {
     move |state| {
         let start = *state;

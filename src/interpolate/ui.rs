@@ -44,7 +44,7 @@ pub fn background_color_to(
     }
 }
 
-/// Constructor for delta [`BackgroundColor`]
+/// Constructor for delta [`BackgroundColor`](crate::interpolate::BackgroundColor)
 pub fn background_color_delta_to(
     to: Color,
 ) -> impl Fn(&mut Color) -> BackgroundColor {
@@ -97,7 +97,7 @@ pub fn border_color_to(to: Color) -> impl Fn(&mut Color) -> BorderColor {
     }
 }
 
-/// Constructor for [`BorderColor`] that's relative to previous value using currying.
+/// Constructor for [`BorderColor`](crate::interpolate::BorderColor) that's relative to previous value using currying.
 pub fn border_color_delta_to(to: Color) -> impl Fn(&mut Color) -> BorderColor {
     move |state| {
         let start = *state;
