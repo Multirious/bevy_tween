@@ -362,7 +362,7 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 type InterpolateSpriteAlpha = Box<dyn Interpolator<Item = Sprite>>;
 fn sprite_alpha(start: f32, end: f32) -> InterpolateSpriteAlpha {
-    Box::new(interpolate::closure(move |sprite: &mut Sprite, value| {
+    Box::new(interpolate::closure(move |sprite: &mut Sprite, value, _| {
         sprite.color = sprite.color.with_alpha(start.lerp(end, value));
     }))
 }

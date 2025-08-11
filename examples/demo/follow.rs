@@ -21,9 +21,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             DefaultTweenPlugins,
-            EguiPlugin {
-                enable_multipass_for_primary_context: false,
-            },
+            EguiPlugin::default(),
             ResourceInspectorPlugin::<Config>::new(),
         ))
         .add_systems(Startup, setup)
@@ -96,7 +94,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .insert_tween_here(
                     Duration::from_secs(2),
                     EaseKind::CubicInOut,
-                    jeb.with_closure(|transform: &mut Transform, value| {
+                    jeb.with_closure(|transform: &mut Transform, value, _| {
                         let start = 0.;
                         let end = TAU;
                         transform.rotation =

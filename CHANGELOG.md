@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.9.1 - 2025-07-15
+
+- Fix color delta interpolation
+
+### Breaking Change
+
+- Add a delta flag to the built-in tweens
+  - This comes instead of the additional XDelta type so that one won't have to register so twice the types
+
+## v0.9.0 - 2025-07-14
+
+### Breaking Changes
+
+- `interpolate` functions now take an additional `previous_value` argument, which you can now use to make delta tweens.
+Still, you'd have to update everything that implements `Interpolator` to match the new signature.
+  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is     a required component, so it'll always be on the tween's entity unless you explicitly remove it.
+
+### Changes
+
+- Migrate to Bevy 0.16.1
+- You can now use `previous_value` to make tweens that apply delta instead of set values
+  (see `TranslationDelta` for example). This is useful when you want two ongoing tweens to affect the same entity.
+
 ## v0.8.0 - 2025-05-09
 
 ### Changes
