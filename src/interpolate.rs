@@ -281,9 +281,9 @@ impl Plugin for DefaultDynInterpolatorsPlugin {
             >(),
         ));
 
-        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset", feature = "bevy_sprite_render"))]
         app.add_tween_systems(tween::asset_tween_system::<
-            BoxedInterpolator<bevy::sprite::ColorMaterial>,
+            BoxedInterpolator<bevy::sprite_render::ColorMaterial>,
         >());
     }
 }

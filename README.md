@@ -21,7 +21,7 @@ See changelog [here](CHANGELOG.md).
   <summary>Example</summary>
 
   ```rust
-  let sprite_id = commands.spawn(SpriteBundle { ... }).id();
+  let sprite_id = commands.spawn(Sprite { ... }).id();
   let sprite = sprite_id.into_target();
   commands.animation()
       .insert(tween(
@@ -111,6 +111,7 @@ How it works:
 
 | `bevy` | `bevy_tween` |
 |--------|--------------|
+| 0.17   | 0.10         |
 | 0.16   | 0.8 - 0.9    |
 | 0.15   | 0.7          |
 | 0.14   | 0.6          |

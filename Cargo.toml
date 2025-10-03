@@ -1,7 +1,7 @@
 [package]
 name = "bevy_tween"
 description = "Flexible tweening plugin library for Bevy"
-version = "0.9.1"
+version = "0.10.0"
 edition = "2024"
 authors = ["Multirious", "Rabbival"]
 license = "MIT OR Apache-2.0"
@@ -18,17 +18,17 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.bevy]
-version = "0.16.1"
+version = "0.17.1"
 default-features = false
 features = ["std"]
 
 [dependencies.bevy_math]
-version = "0.16.1"
+version = "0.17.1"
 default-features = false
 features = ["curve"]
 
 [dependencies.bevy_time_runner]
-version = "0.4.1"
+version = "0.5.0"
 
 [dependencies.serde]
 version = "1"
@@ -44,11 +44,11 @@ version = "0.9.0"
 optional = true 
 
 [dev-dependencies]
-bevy-inspector-egui = "0.32.0"
+bevy-inspector-egui = "0.34.0"
 rand = "0.9.1"
 
 [dev-dependencies.bevy]
-version = "0.16.1"
+version = "0.17.1"
 default-features = false
 features = [
     "bevy_window",
@@ -58,6 +58,7 @@ features = [
     "hdr",
     "tonemapping_luts",
     "png",
+    "bevy_sprite_render"
 ] 
 
 [build-dependencies]
@@ -68,6 +69,7 @@ default = [
     "bevy_asset",
     "bevy_render",
     "bevy_sprite",
+    "bevy_sprite_render",
     "bevy_ui",
 ]
 
@@ -77,6 +79,8 @@ bevy_asset = ["bevy/bevy_asset"]
 bevy_render = ["bevy/bevy_render"]
 # Add some built-in interpolators related to sprite
 bevy_sprite = ["bevy/bevy_sprite"]
+# Add some built-in interpolators related to sprite render
+bevy_sprite_render = ["bevy/bevy_sprite_render"]
 # Adds some built-in interpolators related to ui
 bevy_ui = ["bevy/bevy_ui"]
 # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)

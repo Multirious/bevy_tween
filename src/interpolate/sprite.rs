@@ -71,7 +71,7 @@ pub struct ColorMaterial {
 }
 
 impl Interpolator for ColorMaterial {
-    type Item = bevy::sprite::ColorMaterial;
+    type Item = bevy::sprite_render::ColorMaterial;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
         if self.delta {
