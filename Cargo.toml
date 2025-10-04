@@ -70,7 +70,6 @@ default = [
     "bevy_asset",
     "bevy_render",
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_ui",
 ]
 
@@ -79,9 +78,7 @@ bevy_asset = ["bevy/bevy_asset"]
 # Adds nothing just yet but required by the "bevy_sprite" feature.
 bevy_render = ["bevy/bevy_render"]
 # Add some built-in interpolators related to sprite
-bevy_sprite = ["bevy/bevy_sprite"]
-# Add some built-in interpolators related to sprite render
-bevy_sprite_render = ["bevy/bevy_sprite_render"]
+bevy_sprite = ["bevy/bevy_sprite", "bevy/bevy_sprite_render"]
 # Adds some built-in interpolators related to ui
 bevy_ui = ["bevy/bevy_ui"]
 # Supports for `bevy_lookup_curve` (https://github.com/villor/bevy_lookup_curve)
@@ -97,7 +94,6 @@ name = "banner_bounce"
 path = "examples/animation/banner_bounce.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_asset",
 ]
 
@@ -106,7 +102,6 @@ name = "banner_triangle"
 path = "examples/animation/banner_triangle.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_asset",
 ]
 
@@ -115,7 +110,6 @@ name = "thumbnail_triangle"
 path = "examples/animation/thumbnail_triangle.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
 ]
 
 [[example]]
@@ -123,7 +117,6 @@ name = "follow"
 path = "examples/demo/follow.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_asset",
 ]
 
@@ -132,7 +125,6 @@ name = "click"
 path = "examples/demo/click.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_asset",
 ]
 
@@ -141,7 +133,6 @@ name = "hold"
 path = "examples/demo/hold.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_asset",
 ]
 
@@ -150,7 +141,6 @@ name = "event"
 path = "examples/demo/event.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_asset",
 ]
 
@@ -163,7 +153,6 @@ name = "sprite_sheet"
 path = "examples/demo/sprite_sheet.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
 ]
 
 [[example]]
@@ -175,7 +164,6 @@ name = "bevy_lookup_curve"
 path = "examples/bevy_lookup_curve.rs"
 required-features = [
     "bevy_sprite",
-    "bevy_sprite_render",
     "bevy_lookup_curve",
 ]
 
