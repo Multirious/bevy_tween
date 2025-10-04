@@ -1,4 +1,4 @@
-use crate::interpolate::Interpolator;
+use crate::interpolate::{CurrentValue, Interpolator, PreviousValue};
 use std::sync::Arc;
 
 impl<I> Interpolator for Box<I>
@@ -34,7 +34,7 @@ where
     }
 }
 
-impl<I: 'static> Interpolator for dyn Fn(&mut I, f32, f32) + Send + Sync + 'static {
+impl<I: 'static> Interpolator for dyn Fn(&mut I, CurrentValue, PreviousValue) + Send + Sync + 'static {
     type Item = I;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {

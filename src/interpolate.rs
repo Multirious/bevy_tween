@@ -90,13 +90,18 @@ use bevy::prelude::*;
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 
-type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32, f32) + Send + Sync + 'static>;
+/// A marker type for the tweens current value, for ease of closure readability
+pub type CurrentValue = f32;
+/// A marker type for the tweens previous value, for ease of closure readability
+pub type PreviousValue = f32;
+
+type InterpolatorClosure<I> = Box<dyn Fn(&mut I, CurrentValue, PreviousValue) + Send + Sync + 'static>;
 
 /// Create boxed closure in order to be used with dynamic [`Interpolator`]
 pub fn closure<I, F>(f: F) -> InterpolatorClosure<I>
 where
     I: 'static,
-    F: Fn(&mut I, f32, f32) + Send + Sync + 'static,
+    F: Fn(&mut I, CurrentValue, PreviousValue) + Send + Sync + 'static,
 {
     Box::new(f)
 }
@@ -115,7 +120,7 @@ pub trait Interpolator: Send + Sync + 'static {
     /// The value should be already sampled from an [`Interpolation`]
     ///
     /// [`Interpolation`]: crate::interpolation::Interpolation
-    fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32);
+    fn interpolate(&self, item: &mut Self::Item, value: CurrentValue, previous_value: PreviousValue);
 }
 
 // /// Reflect [`Interpolator`] trait

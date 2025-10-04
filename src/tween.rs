@@ -214,7 +214,7 @@
 use bevy::prelude::*;
 
 use crate::combinator::TargetState;
-use crate::interpolate::Interpolator;
+use crate::interpolate::{Interpolator, PreviousValue, CurrentValue};
 
 mod systems;
 #[cfg(feature = "bevy_asset")]
@@ -379,7 +379,7 @@ impl TargetComponent {
         closure: F,
     ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
     where
-        F: Fn(&mut C, f32, f32) + Send + Sync + 'static,
+        F: Fn(&mut C, CurrentValue, PreviousValue) + Send + Sync + 'static,
         C: Component,
     {
         let closure = crate::interpolate::closure(closure);
@@ -490,7 +490,7 @@ impl TargetResource {
         closure: F,
     ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
     where
-        F: Fn(&mut C, f32, f32) + Send + Sync + 'static,
+        F: Fn(&mut C, CurrentValue, PreviousValue) + Send + Sync + 'static,
         C: Component,
     {
         let closure = crate::interpolate::closure(closure);
@@ -558,7 +558,7 @@ impl<A: Asset> TargetAsset<A> {
         closure: F,
     ) -> Tween<Self, Box<dyn Interpolator<Item = C>>>
     where
-        F: Fn(&mut C, f32, f32) + Send + Sync + 'static,
+        F: Fn(&mut C, CurrentValue, PreviousValue) + Send + Sync + 'static,
         C: Component,
     {
         let closure = crate::interpolate::closure(closure);
