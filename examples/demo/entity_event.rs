@@ -9,10 +9,10 @@ fn main() {
     App::new()
         .add_plugins((MinimalPlugins, DefaultTweenPlugins))
         .add_systems(Startup, setup)
-        .add_observer(|trigger: Trigger<TweenEvent<&'static str>>| {
+        .add_observer(|trigger: On<TweenEvent<&'static str>>| {
             println!("TweenEvent: {}", trigger.data)
         })
-        .add_observer(|trigger: Trigger<TimeRunnerEnded>| {
+        .add_observer(|trigger: On<TimeRunnerEnded>| {
             if trigger.is_completed() {
                 println!("done!");
             } else {

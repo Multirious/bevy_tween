@@ -802,7 +802,7 @@ pub fn tween_event_system<Data>(
         ),
         Without<SkipTween>,
     >,
-    event_writer: EventWriter<TweenEvent<Data>>,
+    event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
 {

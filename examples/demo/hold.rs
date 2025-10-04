@@ -4,8 +4,8 @@ use bevy::{
     color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
     window::{PrimaryWindow, SystemCursorIcon},
-    winit::cursor::CursorIcon,
 };
+use bevy::window::CursorIcon;
 use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
 

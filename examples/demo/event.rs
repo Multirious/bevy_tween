@@ -98,7 +98,7 @@ fn effect_system(
     asset_server: Res<AssetServer>,
     effect_pos: Res<EffectPos>,
     q_triangle: Query<&Transform, With<Triangle>>,
-    mut event: EventReader<TweenEvent<&'static str>>,
+    mut event: MessageReader<TweenEvent<&'static str>>,
 ) {
     use interpolate::{scale, sprite_color, translation};
     event.read().for_each(|event| match event.data {
@@ -195,11 +195,11 @@ fn effect_system(
 fn despawn_effect_system(
     mut commands: Commands,
     q_effect: Query<(), With<Effect>>,
-    mut ended: EventReader<TimeRunnerEnded>,
+    mut ended: MessageReader<TimeRunnerEnded>,
 ) {
     ended.read().for_each(|ended| {
-        if ended.is_completed() && q_effect.contains(ended.time_runner) {
-            commands.entity(ended.time_runner).despawn();
+        if ended.is_completed() && q_effect.contains(ended.entity) {
+            commands.entity(ended.entity).despawn();
         }
     });
 }
