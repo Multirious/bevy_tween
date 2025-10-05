@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.10.0 - 2025-10-05
+## Unreleased - XXXX-XX-XX
 
 - Migrate to Bevy 0.17.2
 
