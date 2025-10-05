@@ -258,7 +258,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
 /// - [`ColorMaterial`] asset if `"bevy_sprite"` feature is enabled.
 /// - [`BackgroundColor`] and [`BorderColor`] components if `"bevy_ui"` feature is enabled.
 ///
-/// [`ColorMaterial`]: bevy::sprite::ColorMaterial
+/// [`ColorMaterial`]: bevy::sprite_render::ColorMaterial
 pub struct DefaultDynInterpolatorsPlugin;
 impl Plugin for DefaultDynInterpolatorsPlugin {
     /// # Panics
