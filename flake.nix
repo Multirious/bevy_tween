@@ -35,7 +35,7 @@
         ];
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
         stableRust = (
-          pkgs.rust-bin.stable."1.85.1".default.override {
+          pkgs.rust-bin.stable."1.90.0".default.override {
             extensions = [
               "rust-analyzer"
               "rust-src"
