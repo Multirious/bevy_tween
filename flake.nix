@@ -42,11 +42,26 @@
             ];
           }
         );
+        nightlyRust = pkgs.rust-bin.selectLatestNightlyWith (
+          toolchain:
+          toolchain.default.override {
+            extensions = [
+              "rust-analyzer"
+              "rust-src"
+            ];
+          }
+        );
       in
       {
-        devShells.default = pkgs.mkShell {
-          inherit nativeBuildInputs LD_LIBRARY_PATH;
-          buildInputs = buildInputs ++ [ stableRust ];
+        devShells = {
+          default = pkgs.mkShell {
+            inherit nativeBuildInputs LD_LIBRARY_PATH;
+            buildInputs = buildInputs ++ [ stableRust ];
+          };
+          docrs = pkgs.mkShell {
+            inherit nativeBuildInputs LD_LIBRARY_PATH;
+            buildInputs = buildInputs ++ [ nightlyRust ];
+          };
         };
       }
     );
