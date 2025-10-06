@@ -17,9 +17,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             DefaultTweenPlugins,
-            EguiPlugin {
-                enable_multipass_for_primary_context: false,
-            },
+            EguiPlugin::default(),
             LookupCurvePlugin,
         ))
         .add_systems(Startup, setup)

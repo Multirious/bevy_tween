@@ -90,13 +90,18 @@ use bevy::prelude::*;
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
 
-type InterpolatorClosure<I> = Box<dyn Fn(&mut I, f32, f32) + Send + Sync + 'static>;
+/// A marker type for the tweens current value, for ease of closure readability
+pub type CurrentValue = f32;
+/// A marker type for the tweens previous value, for ease of closure readability
+pub type PreviousValue = f32;
+
+type InterpolatorClosure<I> = Box<dyn Fn(&mut I, CurrentValue, PreviousValue) + Send + Sync + 'static>;
 
 /// Create boxed closure in order to be used with dynamic [`Interpolator`]
 pub fn closure<I, F>(f: F) -> InterpolatorClosure<I>
 where
     I: 'static,
-    F: Fn(&mut I, f32, f32) + Send + Sync + 'static,
+    F: Fn(&mut I, CurrentValue, PreviousValue) + Send + Sync + 'static,
 {
     Box::new(f)
 }
@@ -115,7 +120,7 @@ pub trait Interpolator: Send + Sync + 'static {
     /// The value should be already sampled from an [`Interpolation`]
     ///
     /// [`Interpolation`]: crate::interpolation::Interpolation
-    fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32);
+    fn interpolate(&self, item: &mut Self::Item, value: CurrentValue, previous_value: PreviousValue);
 }
 
 // /// Reflect [`Interpolator`] trait
@@ -253,7 +258,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
 /// - [`ColorMaterial`] asset if `"bevy_sprite"` feature is enabled.
 /// - [`BackgroundColor`] and [`BorderColor`] components if `"bevy_ui"` feature is enabled.
 ///
-/// [`ColorMaterial`]: bevy::sprite::ColorMaterial
+/// [`ColorMaterial`]: bevy::sprite_render::ColorMaterial
 pub struct DefaultDynInterpolatorsPlugin;
 impl Plugin for DefaultDynInterpolatorsPlugin {
     /// # Panics
@@ -281,9 +286,9 @@ impl Plugin for DefaultDynInterpolatorsPlugin {
             >(),
         ));
 
-        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
         app.add_tween_systems(tween::asset_tween_system::<
-            BoxedInterpolator<bevy::sprite::ColorMaterial>,
+            BoxedInterpolator<bevy::sprite_render::ColorMaterial>,
         >());
     }
 }

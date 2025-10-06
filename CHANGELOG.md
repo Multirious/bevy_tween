@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased - XXXX-XX-XX
+
+- Migrate to Bevy 0.17.2
+
 ## v0.9.1 - 2025-07-15
 
 - Fix color delta interpolation

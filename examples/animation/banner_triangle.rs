@@ -1,5 +1,6 @@
 use std::f32::consts::TAU;
 use bevy::prelude::*;
+use bevy::window::WindowResolution;
 use bevy_tween::{
     combinator::{parallel, tween_exact, AnimationCommands},
     interpolate::{angle_z, translation},
@@ -14,7 +15,7 @@ fn main() {
                 primary_window: Some(Window {
                     title: "Banner triangle".to_string(),
                     resizable: false,
-                    resolution: Vec2::new(1100., 250.).into(),
+                    resolution: WindowResolution::new(1100, 250),
                     ..Default::default()
                 }),
                 ..Default::default()

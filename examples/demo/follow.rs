@@ -121,7 +121,7 @@ fn jeb_follows_cursor(
         (Entity, Option<&TimeRunner>),
         With<JebTranslationAnimator>,
     >,
-    mut cursor_moved: EventReader<CursorMoved>,
+    mut cursor_moved: MessageReader<CursorMoved>,
 ) {
     let Some(coord) = coord.0 else {
         return;
