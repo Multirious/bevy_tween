@@ -56,7 +56,8 @@ where
             (tween_event_system::<Data>)
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
-        .add_message::<TweenEvent<Data>>();
+        .add_message::<TweenEvent<Data>>()
+        .add_observer(tag_newborn_tweens::<Data>);
     }
 }
 
@@ -108,6 +109,22 @@ pub struct TweenEvent<Data = ()> {
     pub interpolation_value: Option<f32>,
     /// The entity that emitted the event
     pub entity: Entity,
+}
+
+/// Used to mark event-emitting tweens (tweens with `TweenEventData<Data>` for some registered `Data`)
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct EventEmittingTween;
+
+fn tag_newborn_tweens<Data>(
+    trigger: On<Add, TweenEventData<Data>>,
+    mut commands: Commands,
+) where
+    Data: Clone + Send + Sync + 'static,
+{
+    commands
+        .entity(trigger.entity)
+        .try_insert(EventEmittingTween);
 }
 
 /// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
