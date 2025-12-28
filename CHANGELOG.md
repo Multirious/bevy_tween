@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased - XXXX-XX-XX
+## v0.10.x - 2025-12-28
 
-- Migrate to Bevy 0.17.2
+- Migrate to Bevy 0.17.3
+- Add `EventEmittingTween` tag to event emitting tweens, for ease of querying no matter their data type
 
 ## v0.9.1 - 2025-07-15
 
