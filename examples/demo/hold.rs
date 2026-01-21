@@ -1,11 +1,11 @@
 use std::f32::consts::PI;
 
+use bevy::window::CursorIcon;
 use bevy::{
     color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
     window::{PrimaryWindow, SystemCursorIcon},
 };
-use bevy::window::CursorIcon;
 use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
 
@@ -27,7 +27,12 @@ mod interpolate {
     impl Interpolator for EffectIntensity {
         type Item = super::EffectIntensitiy;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
+        fn interpolate(
+            &self,
+            item: &mut Self::Item,
+            value: f32,
+            _previous_value: f32,
+        ) {
             item.0 = self.start.lerp(self.end, value)
         }
     }
@@ -120,7 +125,7 @@ fn setup(
 }
 
 fn mouse_hold(
-    mut q_effect_animator: Query<&mut TimeRunner, With<EffectAnimator>>,
+    mut q_effect_animator: Query<&mut TimeRunner<()>, With<EffectAnimator>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
@@ -137,7 +142,10 @@ fn mouse_hold(
 fn big_x_do_effect(
     effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
-    mut q_rotation_animator: Query<&mut TimeRunner, With<RotatationAnimator>>,
+    mut q_rotation_animator: Query<
+        &mut TimeRunner<()>,
+        With<RotatationAnimator>,
+    >,
 ) {
     let mut rng = rand::rng();
     let dx: f32 = rng.random();

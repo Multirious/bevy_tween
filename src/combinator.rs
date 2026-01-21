@@ -63,15 +63,23 @@ impl AnimationBuilderExt for ChildSpawnerCommands<'_> {
 }
 
 /// Configure [`TimeRunner`] through a builder API and add animation entities
-pub struct AnimationBuilder<'a> {
+pub struct AnimationBuilder<'a, TimeStep = ()>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
     entity_commands: EntityCommands<'a>,
-    time_runner: Option<TimeRunner>,
+    time_runner: Option<TimeRunner<TimeStep>>,
     custom_length: Option<Duration>,
     skipped: bool,
 }
-impl<'a> AnimationBuilder<'a> {
+impl<'a, TimeStep> AnimationBuilder<'a, TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
     /// Create new [`AnimationBuilder`]
-    pub fn new(entity_commands: EntityCommands<'a>) -> AnimationBuilder<'a> {
+    pub fn new(
+        entity_commands: EntityCommands<'a>,
+    ) -> AnimationBuilder<'a, TimeStep> {
         AnimationBuilder {
             entity_commands,
             time_runner: None,
@@ -86,12 +94,12 @@ impl<'a> AnimationBuilder<'a> {
     }
 
     /// Get the inner building [`TimeRunner`]
-    pub fn time_runner(&self) -> &Option<TimeRunner> {
+    pub fn time_runner(&self) -> &Option<TimeRunner<TimeStep>> {
         &self.time_runner
     }
 
     /// Get the inner building [`TimeRunner`] mutably
-    pub fn time_runner_mut(&mut self) -> &mut Option<TimeRunner> {
+    pub fn time_runner_mut(&mut self) -> &mut Option<TimeRunner<TimeStep>> {
         &mut self.time_runner
     }
 
@@ -163,7 +171,7 @@ impl<'a> AnimationBuilder<'a> {
         self
     }
 
-    fn time_runner_or_default(&mut self) -> &mut TimeRunner {
+    fn time_runner_or_default(&mut self) -> &mut TimeRunner<TimeStep> {
         self.time_runner.get_or_insert_with(TimeRunner::default)
     }
 

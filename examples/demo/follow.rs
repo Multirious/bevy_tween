@@ -118,7 +118,7 @@ fn jeb_follows_cursor(
     config: Res<Config>,
     q_jeb: Query<&Transform, With<Jeb>>,
     q_jeb_translation_animator: Query<
-        (Entity, Option<&TimeRunner>),
+        (Entity, Option<&TimeRunner<()>>),
         With<JebTranslationAnimator>,
     >,
     mut cursor_moved: MessageReader<CursorMoved>,

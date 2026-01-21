@@ -477,9 +477,10 @@ impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
             app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
-                schedule: self.app_resource.schedule,
+                default_time_schedule: self.app_resource.schedule,
             });
         }
+
         app.configure_sets(
             self.app_resource.schedule,
             (

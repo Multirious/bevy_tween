@@ -28,7 +28,8 @@ default-features = false
 features = ["curve"]
 
 [dependencies.bevy_time_runner]
-version = "0.5.2"
+git = "https://github.com/Multirious/bevy_time_runner"
+branch = "generic_time_steps"
 
 [dependencies.serde]
 version = "1"
