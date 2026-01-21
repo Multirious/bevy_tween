@@ -125,7 +125,7 @@ fn setup(
 }
 
 fn mouse_hold(
-    mut q_effect_animator: Query<&mut TimeRunner<()>, With<EffectAnimator>>,
+    mut q_effect_animator: Query<&mut TimeRunner, With<EffectAnimator>>,
     mouse_button: Res<ButtonInput<MouseButton>>,
 ) {
     let mouse_down = mouse_button.pressed(MouseButton::Left);
@@ -142,10 +142,7 @@ fn mouse_hold(
 fn big_x_do_effect(
     effect_intensity: Res<EffectIntensitiy>,
     mut q_big_x: Query<&mut Transform, With<BigX>>,
-    mut q_rotation_animator: Query<
-        &mut TimeRunner<()>,
-        With<RotatationAnimator>,
-    >,
+    mut q_rotation_animator: Query<&mut TimeRunner, With<RotatationAnimator>>,
 ) {
     let mut rng = rand::rng();
     let dx: f32 = rng.random();
