@@ -56,8 +56,7 @@ where
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_plugins(TweenEventOnSchedulesPlugin::<Data>::for_schedules(
             vec![app_resource.default_schedule],
-        ))
-        .add_message::<TweenEvent<Data>>();
+        ));
     }
 }
 
@@ -92,7 +91,8 @@ where
                 schedule,
                 (tween_event_system::<Data>)
                     .in_set(crate::TweenSystemSet::ApplyTween),
-            );
+            )
+            .add_message::<TweenEvent<Data>>();
         }
     }
 }
