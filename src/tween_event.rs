@@ -31,7 +31,10 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 use bevy_time_runner::TimeSpanProgress;
 
-use crate::tween::{SkipTween, TweenInterpolationValue};
+use crate::{
+    InternedScheduleLabel,
+    tween::{SkipTween, TweenInterpolationValue},
+};
 
 /// Plugin for simple generic event that fires at a specific time span.
 #[derive(Default)]
@@ -51,12 +54,44 @@ where
             .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` resource doesn't exist");
+        app.add_plugins(TweenEventOnSchedulePlugin::<Data>::for_schedule(
+            app_resource.default_schedule,
+        ))
+        .add_message::<TweenEvent<Data>>();
+    }
+}
+
+/// A plugin for registering the tween event system for tween of type Data for the specified schedule
+pub struct TweenEventOnSchedulePlugin<Data>
+where
+    Data: Send + Sync + 'static + Clone,
+{
+    /// The systems schedule
+    pub schedule: InternedScheduleLabel,
+    marker: PhantomData<Data>,
+}
+impl<Data> TweenEventOnSchedulePlugin<Data>
+where
+    Data: Send + Sync + 'static + Clone,
+{
+    /// Constructor for a schedule
+    pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            marker: PhantomData::default(),
+        }
+    }
+}
+impl<Data> Plugin for TweenEventOnSchedulePlugin<Data>
+where
+    Data: Send + Sync + 'static + Clone,
+{
+    fn build(&self, app: &mut App) {
         app.add_systems(
-            app_resource.schedule,
+            self.schedule,
             (tween_event_system::<Data>)
                 .in_set(crate::TweenSystemSet::ApplyTween),
-        )
-        .add_message::<TweenEvent<Data>>();
+        );
     }
 }
 

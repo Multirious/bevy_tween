@@ -10,6 +10,7 @@
 //! - [`sample_lookup_curve_system`]
 
 use super::*;
+use crate::InternedScheduleLabel;
 use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 use bevy::platform::collections::HashSet;
 use tracing::error;
@@ -18,20 +19,40 @@ use tracing::error;
 pub struct BevyLookupCurveInterpolationPlugin;
 
 impl Plugin for BevyLookupCurveInterpolationPlugin {
+    /// # Panics
+    ///
+    /// Panics if [`TweenAppResource`] does not exist in world.
+    ///
+    /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
         let app_resource = app
             .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be inserted to world");
-        app.add_systems(
-            app_resource.schedule,
-            (
-                sample_lookup_curve_system
-                    .in_set(TweenSystemSet::UpdateInterpolationValue),
-                // sample_interpolations_mut_system::<CurveCached>
-                //     .in_set(TweenSystemSet::UpdateInterpolationValue),
-            ),
-        );
+        app.add_plugins(BevyLookupCurveInterpolationForSchedulePlugin {
+            schedule: app_resource.default_schedule,
+        });
+    }
+}
+
+/// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation on the specified schedule
+pub struct BevyLookupCurveInterpolationForSchedulePlugin {
+    /// The systems' schedules
+    pub schedules: Vec<InternedScheduleLabel>,
+}
+impl Plugin for BevyLookupCurveInterpolationForSchedulePlugin {
+    fn build(&self, app: &mut App) {
+        for schedule in self.schedules.clone() {
+            app.add_systems(
+                schedule,
+                (
+                    sample_lookup_curve_system
+                        .in_set(TweenSystemSet::UpdateInterpolationValue),
+                    // sample_interpolations_mut_system::<CurveCached>
+                    //     .in_set(TweenSystemSet::UpdateInterpolationValue),
+                ),
+            );
+        }
     }
 }
 

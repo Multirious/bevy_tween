@@ -1,6 +1,9 @@
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_time_runner::TimeRunnerRegistrationPlugin;
-use bevy_tween::{combinator::*, prelude::*, tween::AnimationTarget};
+use bevy_tween::{
+    TweenScheduleDependentPlugins, TweenScheduleIndependentPlugins,
+    combinator::*, prelude::*, tween::AnimationTarget,
+};
 use std::time::Duration;
 
 fn secs(secs: f32) -> Duration {
@@ -9,7 +12,13 @@ fn secs(secs: f32) -> Duration {
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            TweenScheduleIndependentPlugins,
+            TweenScheduleDependentPlugins {
+                schedules: vec![FixedLast.intern()],
+            },
+        ))
         .add_plugins(
             TimeRunnerRegistrationPlugin::<Fixed>::from_schedule_intern(
                 FixedLast.intern(),

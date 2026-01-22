@@ -12,7 +12,9 @@
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
 
-use crate::{tween::TweenInterpolationValue, TweenSystemSet};
+use crate::{
+    InternedScheduleLabel, TweenSystemSet, tween::TweenInterpolationValue,
+};
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -32,7 +34,6 @@ pub trait Interpolation {
 
 /// Plugin for [`EaseKind`]
 pub struct EaseKindPlugin;
-
 impl Plugin for EaseKindPlugin {
     /// # Panics
     ///
@@ -44,12 +45,37 @@ impl Plugin for EaseKindPlugin {
             .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
-        app.add_systems(
-            app_resource.schedule,
-            sample_interpolations_system::<EaseKind>
-                .in_set(TweenSystemSet::UpdateInterpolationValue),
-        )
-        .register_type::<EaseKind>();
+        app.add_plugins((
+            EaseKindTypeRegistrationPlugin,
+            EaseKindSystemRegistrationPlugin {
+                schedules: vec![app_resource.default_schedule],
+            },
+        ));
+    }
+}
+
+/// Plugin for [`EaseKind`] type registration
+pub struct EaseKindTypeRegistrationPlugin;
+impl Plugin for EaseKindTypeRegistrationPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<EaseKind>();
+    }
+}
+
+/// Plugin for [`EaseKind`] system registration
+pub struct EaseKindSystemRegistrationPlugin {
+    /// The systems' schedules
+    pub schedules: Vec<InternedScheduleLabel>,
+}
+impl Plugin for EaseKindSystemRegistrationPlugin {
+    fn build(&self, app: &mut App) {
+        for schedule in self.schedules.clone() {
+            app.add_systems(
+                schedule,
+                sample_interpolations_system::<EaseKind>
+                    .in_set(TweenSystemSet::UpdateInterpolationValue),
+            );
+        }
     }
 }
 
@@ -420,7 +446,7 @@ impl Plugin for EaseClosurePlugin {
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
-            app_resource.schedule,
+            app_resource.default_schedule,
             sample_interpolations_system::<EaseClosure>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
@@ -486,7 +512,7 @@ pub fn sample_interpolations_system<I>(
 mod easing_functions {
     use core::f32::consts::{FRAC_PI_2, FRAC_PI_3, PI};
 
-    use bevy::math::{ops, FloatPow};
+    use bevy::math::{FloatPow, ops};
 
     #[inline]
     pub(crate) fn linear(t: f32) -> f32 {
