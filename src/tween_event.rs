@@ -54,44 +54,46 @@ where
             .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` resource doesn't exist");
-        app.add_plugins(TweenEventOnSchedulePlugin::<Data>::for_schedule(
-            app_resource.default_schedule,
+        app.add_plugins(TweenEventOnSchedulesPlugin::<Data>::for_schedules(
+            vec![app_resource.default_schedule],
         ))
         .add_message::<TweenEvent<Data>>();
     }
 }
 
 /// A plugin for registering the tween event system for tween of type Data for the specified schedule
-pub struct TweenEventOnSchedulePlugin<Data>
+pub struct TweenEventOnSchedulesPlugin<Data>
 where
     Data: Send + Sync + 'static + Clone,
 {
     /// The systems schedule
-    pub schedule: InternedScheduleLabel,
+    pub schedules: Vec<InternedScheduleLabel>,
     marker: PhantomData<Data>,
 }
-impl<Data> TweenEventOnSchedulePlugin<Data>
+impl<Data> TweenEventOnSchedulesPlugin<Data>
 where
     Data: Send + Sync + 'static + Clone,
 {
     /// Constructor for a schedule
-    pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn for_schedules(schedules: Vec<InternedScheduleLabel>) -> Self {
         Self {
-            schedule,
+            schedules,
             marker: PhantomData::default(),
         }
     }
 }
-impl<Data> Plugin for TweenEventOnSchedulePlugin<Data>
+impl<Data> Plugin for TweenEventOnSchedulesPlugin<Data>
 where
     Data: Send + Sync + 'static + Clone,
 {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            self.schedule,
-            (tween_event_system::<Data>)
-                .in_set(crate::TweenSystemSet::ApplyTween),
-        );
+        for schedule in self.schedules.clone() {
+            app.add_systems(
+                schedule,
+                (tween_event_system::<Data>)
+                    .in_set(crate::TweenSystemSet::ApplyTween),
+            );
+        }
     }
 }
 

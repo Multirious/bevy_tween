@@ -30,7 +30,7 @@ impl Plugin for BevyLookupCurveInterpolationPlugin {
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be inserted to world");
         app.add_plugins(BevyLookupCurveInterpolationForSchedulePlugin {
-            schedule: app_resource.default_schedule,
+            schedules: vec![app_resource.default_schedule],
         });
     }
 }
