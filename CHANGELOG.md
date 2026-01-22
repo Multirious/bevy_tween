@@ -8,7 +8,7 @@ Breaking:
 - Add `animation_for_timestep<TimeStep>()` for animation creation on different time steps (for example, `Fixed`)
 - Add the ability to register systems for different schedules other than the default one (important if you want the animators from the bullet above to update the interpolation values at the right time)
   - To do that, register `TweenScheduleDependantPlugins { schedules: [your_schedules_here] }`, see `time_steps.rs` example
-  - You may also add events that will be checked on specific schedules using `TweenEventSystemRegistrationPlugin::<EventDataTypeHere>::for_schedules([your_schedules_here])`
+  - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulesPlugin::<EventDataTypeHere>::for_schedules([your_schedules_here])`
 
 ## v0.11.0 - 2026-01-01
 
