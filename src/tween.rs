@@ -215,7 +215,7 @@ use bevy::prelude::*;
 
 use crate::combinator::TargetState;
 use crate::interpolate::{CurrentValue, Interpolator, PreviousValue};
-use bevy_time_runner::{TimeSpanProgress, TimeStepMarker};
+use bevy_time_runner::{TimeRunner, TimeSpanProgress, TimeStepMarker};
 
 mod systems;
 #[cfg(feature = "bevy_asset")]
@@ -795,11 +795,16 @@ pub fn tween_event_system<Data, TimeStep>(
     q_tween_event_data: Query<
         (
             Entity,
+            &ChildOf,
             &TweenEventData<Data>,
             &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
-        (Without<SkipTween>, With<TimeStepMarker<TimeStep>>),
+        Without<SkipTween>,
+    >,
+    time_step_runners: Query<
+        (),
+        (With<TimeRunner>, With<TimeStepMarker<TimeStep>>),
     >,
     event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
@@ -809,6 +814,7 @@ pub fn tween_event_system<Data, TimeStep>(
     crate::tween_event::tween_event_system(
         commands,
         q_tween_event_data,
+        time_step_runners,
         event_writer,
     )
 }

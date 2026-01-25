@@ -11,7 +11,7 @@
 
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
-use bevy_time_runner::TimeStepMarker;
+use bevy_time_runner::{TimeRunner, TimeStepMarker};
 use std::marker::PhantomData;
 
 use crate::{
@@ -515,27 +515,33 @@ impl Interpolation for EaseClosure {
 pub fn sample_interpolations_system<I, TimeStep>(
     mut commands: Commands,
     query: Query<
-        (Entity, &I, &TimeSpanProgress),
-        (
-            Or<(Changed<I>, Changed<TimeSpanProgress>)>,
-            With<TimeStepMarker<TimeStep>>,
-        ),
+        (Entity, &ChildOf, &I, &TimeSpanProgress),
+        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+    >,
+    time_step_runners: Query<
+        (),
+        (With<TimeRunner>, With<TimeStepMarker<TimeStep>>),
     >,
     mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: Interpolation + Component,
     TimeStep: Default + Send + Sync + 'static,
 {
-    query.iter().for_each(|(entity, interpolator, progress)| {
-        if progress.now_percentage.is_nan() {
-            return;
-        }
-        let value = interpolator.sample(progress.now_percentage.clamp(0., 1.));
+    query.iter().for_each(
+        |(entity, ChildOf(parent), interpolator, progress)| {
+            if progress.now_percentage.is_nan()
+                || !time_step_runners.contains(*parent)
+            {
+                return;
+            }
+            let value =
+                interpolator.sample(progress.now_percentage.clamp(0., 1.));
 
-        commands
-            .entity(entity)
-            .insert(TweenInterpolationValue(value));
-    });
+            commands
+                .entity(entity)
+                .insert(TweenInterpolationValue(value));
+        },
+    );
     removed.read().for_each(|entity| {
         if let Ok(mut entity) = commands.get_entity(entity) {
             entity.remove::<TweenInterpolationValue>();
