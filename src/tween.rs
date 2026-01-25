@@ -237,7 +237,7 @@ pub use systems::{
 pub struct SkipTween;
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseKind`] and
-/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`](bevy_time_runner::TimeSpanProgress).
+/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`].
 /// See [`sample_interpolations_system`]
 ///
 /// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
