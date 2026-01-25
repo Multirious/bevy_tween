@@ -1,5 +1,5 @@
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_time_runner::TimeRunnerRegistrationPlugin;
+use bevy_time_runner::TimeRunnerSystemsPlugin;
 use bevy_tween::{
     TweenScheduleDependentPlugins, TweenScheduleIndependentPlugins,
     combinator::*, prelude::*, tween::AnimationTarget,
@@ -20,7 +20,7 @@ fn main() {
             },
         ))
         .add_plugins(
-            TimeRunnerRegistrationPlugin::<Fixed>::from_schedule_intern(
+            TimeRunnerSystemsPlugin::<Fixed>::from_schedule_intern(
                 FixedLast.intern(),
             ),
         )

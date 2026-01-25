@@ -47,7 +47,8 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         sprite(start_x, y),
         AnimationTarget,
-        TimeRunner::<()>::new(Duration::from_secs(5)),
+        TimeRunner::new(Duration::from_secs(5)),
+        TimeStepMarker::<()>::default(),
         TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
         EaseKind::QuadraticInOut,
         ComponentTween::new_target(
@@ -83,7 +84,8 @@ fn setup(mut commands: Commands) {
         .spawn((
             sprite(start_x, y),
             AnimationTarget,
-            TimeRunner::<()>::new(Duration::from_secs(5)),
+            TimeRunner::new(Duration::from_secs(5)),
+            TimeStepMarker::<()>::default(),
         ))
         .with_children(|c| {
             c.spawn((
@@ -126,7 +128,8 @@ fn setup(mut commands: Commands) {
         .spawn((sprite(start_x, y), AnimationTarget))
         .with_children(|c| {
             c.spawn((
-                TimeRunner::<()>::new(Duration::from_secs(5)),
+                TimeRunner::new(Duration::from_secs(5)),
+                TimeStepMarker::<()>::default(),
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
                 EaseKind::QuadraticInOut,
                 ComponentTween::new_target(
@@ -166,7 +169,7 @@ fn setup(mut commands: Commands) {
     commands
         .spawn((sprite(start_x, y), AnimationTarget))
         .with_children(|c| {
-            c.spawn(TimeRunner::<()>::new(Duration::from_secs(5)))
+            c.spawn((TimeRunner::new(Duration::from_secs(5)), TimeStepMarker::<()>::default()))
                 .with_children(|c| {
                     c.spawn((
                         TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
@@ -211,7 +214,7 @@ fn setup(mut commands: Commands) {
     let sprite = commands.spawn(sprite(start_x, y)).id();
 
     commands
-        .spawn(TimeRunner::<()>::new(Duration::from_secs(5)))
+        .spawn((TimeRunner::new(Duration::from_secs(5)),TimeStepMarker::<()>::default()))
         .with_children(|c| {
             c.spawn((
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),

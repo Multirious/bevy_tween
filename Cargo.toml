@@ -29,7 +29,7 @@ features = ["curve"]
 
 [dependencies.bevy_time_runner]
 git = "https://github.com/Multirious/bevy_time_runner"
-branch = "generic_time_steps"
+branch = "generic_time_steps_0.17"
 
 [dependencies.serde]
 version = "1"

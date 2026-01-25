@@ -5,6 +5,7 @@ use std::time::Duration;
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_time_runner::{
     Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
+    TimeStepMarker,
 };
 
 mod animation_combinators;
@@ -115,7 +116,8 @@ where
     TimeStep: Default + Send + Sync + 'static,
 {
     entity_commands: EntityCommands<'a>,
-    time_runner: Option<TimeRunner<TimeStep>>,
+    time_runner: Option<TimeRunner>,
+    time_step_marker: Option<TimeStepMarker<TimeStep>>,
     custom_length: Option<Duration>,
     skipped: bool,
 }
@@ -130,6 +132,7 @@ where
         AnimationBuilder {
             entity_commands,
             time_runner: None,
+            time_step_marker: None,
             custom_length: None,
             skipped: false,
         }
@@ -141,12 +144,12 @@ where
     }
 
     /// Get the inner building [`TimeRunner`]
-    pub fn time_runner(&self) -> &Option<TimeRunner<TimeStep>> {
+    pub fn time_runner(&self) -> &Option<TimeRunner> {
         &self.time_runner
     }
 
     /// Get the inner building [`TimeRunner`] mutably
-    pub fn time_runner_mut(&mut self) -> &mut Option<TimeRunner<TimeStep>> {
+    pub fn time_runner_mut(&mut self) -> &mut Option<TimeRunner> {
         &mut self.time_runner
     }
 
@@ -218,7 +221,7 @@ where
         self
     }
 
-    fn time_runner_or_default(&mut self) -> &mut TimeRunner<TimeStep> {
+    fn time_runner_or_default(&mut self) -> &mut TimeRunner {
         self.time_runner.get_or_insert_with(TimeRunner::default)
     }
 
@@ -235,6 +238,7 @@ where
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
+            time_step_marker,
             custom_length,
             skipped,
         } = self;
@@ -252,7 +256,8 @@ where
                 time_runner.set_length(dur);
             }
         }
-        entity_commands.insert(time_runner);
+        entity_commands
+            .insert((time_runner, time_step_marker.unwrap_or_default()));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
         }
@@ -276,6 +281,7 @@ where
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
+            time_step_marker,
             custom_length,
             skipped,
         } = self;
@@ -294,6 +300,7 @@ where
             interpolation,
             tweens,
             time_runner,
+            time_step_marker.unwrap_or_default(),
         ));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
@@ -323,6 +330,7 @@ where
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
+            time_step_marker,
             custom_length,
             skipped,
         } = self;
@@ -341,6 +349,7 @@ where
             interpolation,
             tweens,
             time_runner,
+            time_step_marker.unwrap_or_default(),
         ));
         if skipped {
             entity_commands.try_insert(SkipTimeRunner);

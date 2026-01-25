@@ -382,7 +382,9 @@ pub mod prelude {
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
     pub use crate::interpolation::EaseKind;
 
-    pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
+    pub use crate::bevy_time_runner::{
+        Repeat, RepeatStyle, TimeDirection, TimeStepMarker,
+    };
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
@@ -514,7 +516,7 @@ impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
             app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
-                default_time_schedule: self.app_resource.default_schedule,
+                schedule: self.app_resource.default_schedule,
             });
         }
 
