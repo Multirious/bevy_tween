@@ -11,6 +11,8 @@
 
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
+use bevy_time_runner::TimeStepMarker;
+use std::marker::PhantomData;
 
 use crate::{
     InternedScheduleLabel, TweenSystemSet, tween::TweenInterpolationValue,
@@ -47,9 +49,9 @@ impl Plugin for EaseKindPlugin {
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_plugins((
             EaseKindTypeRegistrationPlugin,
-            EaseKindSystemRegistrationPlugin {
-                schedules: vec![app_resource.default_schedule],
-            },
+            EaseKindSystemRegistrationPlugin::<()>::on_schedule(
+                app_resource.default_schedule,
+            ),
         ));
     }
 }
@@ -63,19 +65,37 @@ impl Plugin for EaseKindTypeRegistrationPlugin {
 }
 
 /// Plugin for [`EaseKind`] system registration
-pub struct EaseKindSystemRegistrationPlugin {
+pub struct EaseKindSystemRegistrationPlugin<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
     /// The systems' schedules
-    pub schedules: Vec<InternedScheduleLabel>,
+    pub schedule: InternedScheduleLabel,
+    /// time step marker
+    time_step_marker: PhantomData<TimeStep>,
 }
-impl Plugin for EaseKindSystemRegistrationPlugin {
-    fn build(&self, app: &mut App) {
-        for schedule in self.schedules.clone() {
-            app.add_systems(
-                schedule,
-                sample_interpolations_system::<EaseKind>
-                    .in_set(TweenSystemSet::UpdateInterpolationValue),
-            );
+impl<TimeStep> EaseKindSystemRegistrationPlugin<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
+    /// Constructor for that schedule
+    pub fn on_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            time_step_marker: PhantomData::default(),
         }
+    }
+}
+impl<TimeStep> Plugin for EaseKindSystemRegistrationPlugin<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            self.schedule.clone(),
+            sample_interpolations_system::<EaseKind, TimeStep>
+                .in_set(TweenSystemSet::UpdateInterpolationValue),
+        );
     }
 }
 
@@ -433,8 +453,18 @@ impl From<EaseFunction> for EaseKind {
 /// not with [`DefaultTweenPlugins`] to reduce unused system.
 ///
 /// [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
-pub struct EaseClosurePlugin;
-impl Plugin for EaseClosurePlugin {
+#[derive(Default)]
+pub struct EaseClosurePlugin<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
+    /// time step marker
+    time_step_marker: PhantomData<TimeStep>,
+}
+impl<TimeStep> Plugin for EaseClosurePlugin<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
@@ -447,7 +477,7 @@ impl Plugin for EaseClosurePlugin {
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
             app_resource.default_schedule,
-            sample_interpolations_system::<EaseClosure>
+            sample_interpolations_system::<EaseClosure, TimeStep>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
@@ -482,15 +512,19 @@ impl Interpolation for EaseClosure {
 /// [`TimeSpanProgress`] component then insert [`TweenInterpolationValue`].
 /// Remove [`TweenInterpolationValue`] if [`TimeSpanProgress`] is removed.
 #[allow(clippy::type_complexity)]
-pub fn sample_interpolations_system<I>(
+pub fn sample_interpolations_system<I, TimeStep>(
     mut commands: Commands,
     query: Query<
         (Entity, &I, &TimeSpanProgress),
-        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+        (
+            Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+            With<TimeStepMarker<TimeStep>>,
+        ),
     >,
     mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: Interpolation + Component,
+    TimeStep: Default + Send + Sync + 'static,
 {
     query.iter().for_each(|(entity, interpolator, progress)| {
         if progress.now_percentage.is_nan() {

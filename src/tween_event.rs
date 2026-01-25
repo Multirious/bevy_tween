@@ -25,6 +25,7 @@
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
+use bevy_time_runner::TimeStepMarker;
 use std::marker::PhantomData;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
@@ -54,46 +55,49 @@ where
             .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` resource doesn't exist");
-        app.add_plugins(TweenEventOnSchedulesPlugin::<Data>::for_schedules(
-            vec![app_resource.default_schedule],
+        app.add_plugins(TweenEventOnSchedulePlugin::<Data, ()>::for_schedule(
+            app_resource.default_schedule,
         ));
     }
 }
 
 /// A plugin for registering the tween event system for tween of type Data for the specified schedule
-pub struct TweenEventOnSchedulesPlugin<Data>
+pub struct TweenEventOnSchedulePlugin<Data, TimeStep>
 where
     Data: Send + Sync + 'static + Clone,
+    TimeStep: Default + Send + Sync + 'static,
 {
     /// The systems schedule
-    pub schedules: Vec<InternedScheduleLabel>,
-    marker: PhantomData<Data>,
+    pub schedule: InternedScheduleLabel,
+    data_marker: PhantomData<Data>,
+    time_step_marker: PhantomData<TimeStep>,
 }
-impl<Data> TweenEventOnSchedulesPlugin<Data>
+impl<Data, TimeStep> TweenEventOnSchedulePlugin<Data, TimeStep>
 where
     Data: Send + Sync + 'static + Clone,
+    TimeStep: Default + Send + Sync + 'static,
 {
-    /// Constructor for a schedule
-    pub fn for_schedules(schedules: Vec<InternedScheduleLabel>) -> Self {
+    /// Constructor for schedule
+    pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
-            schedules,
-            marker: PhantomData::default(),
+            schedule,
+            data_marker: PhantomData::default(),
+            time_step_marker: PhantomData::default(),
         }
     }
 }
-impl<Data> Plugin for TweenEventOnSchedulesPlugin<Data>
+impl<Data, TimeStep> Plugin for TweenEventOnSchedulePlugin<Data, TimeStep>
 where
     Data: Send + Sync + 'static + Clone,
+    TimeStep: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
-        for schedule in self.schedules.clone() {
-            app.add_systems(
-                schedule,
-                (tween_event_system::<Data>)
-                    .in_set(crate::TweenSystemSet::ApplyTween),
-            )
-            .add_message::<TweenEvent<Data>>();
-        }
+        app.add_systems(
+            self.schedule.clone(),
+            (tween_event_system::<Data, TimeStep>)
+                .in_set(crate::TweenSystemSet::ApplyTween),
+        )
+        .add_message::<TweenEvent<Data>>();
     }
 }
 
@@ -157,7 +161,7 @@ pub struct TweenEvent<Data = ()> {
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// cloning the data.
 #[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data>(
+pub fn tween_event_system<Data, TimeStep>(
     mut commands: Commands,
     q_tween_event_data: Query<
         (
@@ -166,11 +170,12 @@ pub fn tween_event_system<Data>(
             &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
-        Without<SkipTween>,
+        (Without<SkipTween>, With<TimeStepMarker<TimeStep>>),
     >,
     mut event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
+    TimeStep: Default + Send + Sync + 'static,
 {
     q_tween_event_data.iter().for_each(
         |(entity, event_data, progress, interpolation_value)| {

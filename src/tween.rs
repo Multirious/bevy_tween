@@ -214,7 +214,8 @@
 use bevy::prelude::*;
 
 use crate::combinator::TargetState;
-use crate::interpolate::{Interpolator, PreviousValue, CurrentValue};
+use crate::interpolate::{CurrentValue, Interpolator, PreviousValue};
+use bevy_time_runner::{TimeSpanProgress, TimeStepMarker};
 
 mod systems;
 #[cfg(feature = "bevy_asset")]
@@ -261,9 +262,7 @@ pub struct Tween<T, I> {
 }
 
 /// Tracks the tween's previous value
-#[derive(
-    Debug, Default, Component, Clone, Copy, Reflect,
-)]
+#[derive(Debug, Default, Component, Clone, Copy, Reflect)]
 #[reflect(Component)]
 pub struct TweenPreviousValue(pub f32);
 
@@ -791,20 +790,21 @@ pub type DefaultTweenEventsPlugin =
 #[doc(hidden)]
 #[allow(deprecated)]
 #[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data>(
+pub fn tween_event_system<Data, TimeStep>(
     commands: Commands,
     q_tween_event_data: Query<
         (
             Entity,
             &TweenEventData<Data>,
-            &bevy_time_runner::TimeSpanProgress,
+            &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
-        Without<SkipTween>,
+        (Without<SkipTween>, With<TimeStepMarker<TimeStep>>),
     >,
     event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
+    TimeStep: Default + Send + Sync + 'static,
 {
     crate::tween_event::tween_event_system(
         commands,

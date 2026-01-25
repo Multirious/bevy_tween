@@ -361,6 +361,8 @@
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy::ecs::system::ScheduleSystem;
 use bevy::{app::PluginGroupBuilder, prelude::*};
+use bevy_time_runner::TimeRunnerSystemsPlugin;
+use std::marker::PhantomData;
 
 mod utils;
 
@@ -426,14 +428,17 @@ impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add_group(TweenScheduleIndependentPlugins)
-            .add_group(TweenScheduleDependentPlugins {
+            .add_group(TweenSchedulesDependentPlugins {
                 schedules: vec![PostUpdate.intern()],
-            });
+            })
+            .add(TweenScheduleAndStepDependentPlugins::<()>::for_schedule(
+                PostUpdate.intern(),
+            ));
         group
     }
 }
 
-/// A plugin for registering the schedule-independent tween systems, such as type registrations
+/// Time-step and schedule agnostic logic. These should always be registered once and the same.
 pub struct TweenScheduleIndependentPlugins;
 
 impl PluginGroup for TweenScheduleIndependentPlugins {
@@ -448,36 +453,74 @@ impl PluginGroup for TweenScheduleIndependentPlugins {
     }
 }
 
-/// A plugin for registering the basic tween systems on a specified schedules
-pub struct TweenScheduleDependentPlugins {
-    /// The systems' schedule
+/// Schedule-specific logic that is time-step agnostic. Should be registered once with all the schedules.
+pub struct TweenSchedulesDependentPlugins {
+    /// schedules in which the systems would run
     pub schedules: Vec<InternedScheduleLabel>,
 }
-
-impl PluginGroup for TweenScheduleDependentPlugins {
+impl PluginGroup for TweenSchedulesDependentPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        #[allow(clippy::let_and_return)]
-        let group = PluginGroupBuilder::start::<TweenScheduleDependentPlugins>(
-        )
-        .add(SystemSetsRegistraitonPlugin {
-            schedules: self.schedules.clone(),
-        })
-        .add(interpolate::DefaultInterpolatorsSystemRegistrationPlugin {
-            schedules: self.schedules.clone(),
-        })
-        .add(
-            interpolate::DefaultDynInterpolatorsSystemRegistrationPlugin {
-                schedules: self.schedules.clone(),
-            },
-        )
-        .add(interpolation::EaseKindSystemRegistrationPlugin {
-            schedules: self.schedules.clone(),
-        });
-        #[cfg(feature = "bevy_lookup_curve")]
-        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationForSchedulePlugin{
-            schedules: self.schedules,
-        });
+        let group =
+            PluginGroupBuilder::start::<TweenSchedulesDependentPlugins>()
+                .add(
+                    interpolate::DefaultInterpolatorsSystemRegistrationPlugin {
+                        schedules: self.schedules.clone(),
+                    },
+                )
+                .add(
+                    interpolate::DefaultDynInterpolatorsSystemRegistrationPlugin {
+                        schedules: self.schedules.clone(),
+                    },
+                )
+                .add(SystemSetsRegistraitonPlugin {
+                    schedules: self.schedules.clone(),
+                });
         group
+    }
+}
+
+/// Schedule and time-step specific systems.
+/// For example, if I want to add systems for Fixed time-step interpolation,
+/// I should specify here the schedule in which they should run (In this case, probably FixedLast).
+pub struct TweenScheduleAndStepDependentPlugins<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
+    /// The schedule in which the time-step based systems would be executed
+    pub schedule: InternedScheduleLabel,
+    time_step_marker: PhantomData<TimeStep>,
+}
+impl<TimeStep> TweenScheduleAndStepDependentPlugins<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
+    /// Constructor for schedule
+    pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            time_step_marker: PhantomData::default(),
+        }
+    }
+}
+
+impl<TimeStep> Plugin for TweenScheduleAndStepDependentPlugins<TimeStep>
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
+    fn build(&self, app: &mut App) {
+        #[allow(clippy::let_and_return)]
+        app.add_plugins(interpolation::EaseKindSystemRegistrationPlugin::<
+            TimeStep,
+        >::on_schedule(self.schedule.clone()));
+        #[cfg(feature = "bevy_lookup_curve")]
+        app.add_plugins(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationForSchedulePlugin::<TimeStep>::on_schedule(self.schedule.clone()));
+        if !app.is_plugin_added::<TimeRunnerSystemsPlugin<TimeStep>>() {
+            app.add_plugins(
+                TimeRunnerSystemsPlugin::<TimeStep>::from_schedule_intern(
+                    self.schedule.clone(),
+                ),
+            );
+        }
     }
 }
 

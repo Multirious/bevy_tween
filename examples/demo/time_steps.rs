@@ -1,8 +1,8 @@
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_time_runner::TimeRunnerSystemsPlugin;
 use bevy_tween::{
-    TweenScheduleDependentPlugins, TweenScheduleIndependentPlugins,
-    combinator::*, prelude::*, tween::AnimationTarget,
+    TweenScheduleAndStepDependentPlugins, TweenScheduleIndependentPlugins,
+    TweenSchedulesDependentPlugins, combinator::*, prelude::*,
+    tween::AnimationTarget,
 };
 use std::time::Duration;
 
@@ -15,15 +15,13 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             TweenScheduleIndependentPlugins,
-            TweenScheduleDependentPlugins {
+            TweenSchedulesDependentPlugins {
                 schedules: vec![FixedLast.intern()],
             },
-        ))
-        .add_plugins(
-            TimeRunnerSystemsPlugin::<Fixed>::from_schedule_intern(
+            TweenScheduleAndStepDependentPlugins::<Fixed>::for_schedule(
                 FixedLast.intern(),
             ),
-        )
+        ))
         .insert_resource(Time::<Fixed>::from_seconds(0.25))
         .add_systems(Startup, (setup, spawn_circle_with_tweens))
         .run();
