@@ -9,6 +9,7 @@
 //! **Systems**:
 //! - [`sample_interpolations_system`]
 
+use crate::utils;
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
 use bevy_time_runner::TimeStepMarker;
@@ -515,7 +516,7 @@ impl Interpolation for EaseClosure {
 pub fn sample_interpolations_system<I, TimeStep>(
     mut commands: Commands,
     query: Query<
-        (Entity, &ChildOf, &I, &TimeSpanProgress),
+        (Entity, Option<&ChildOf>, &I, &TimeSpanProgress),
         Or<(Changed<I>, Changed<TimeSpanProgress>)>,
     >,
     time_step_marked: Query<(), With<TimeStepMarker<TimeStep>>>,
@@ -525,10 +526,13 @@ pub fn sample_interpolations_system<I, TimeStep>(
     TimeStep: Default + Send + Sync + 'static,
 {
     query.iter().for_each(
-        |(entity, ChildOf(parent), interpolator, progress)| {
+        |(entity, maybe_child_of, interpolator, progress)| {
             if progress.now_percentage.is_nan()
-                || !(time_step_marked.contains(*parent)
-                    || time_step_marked.contains(entity))
+                || !utils::either_parent_or_child_have_time_step_marker(
+                    entity,
+                    maybe_child_of,
+                    &time_step_marked,
+                )
             {
                 return;
             }

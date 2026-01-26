@@ -10,7 +10,7 @@
 //! - [`sample_lookup_curve_system`]
 
 use super::*;
-use crate::InternedScheduleLabel;
+use crate::{InternedScheduleLabel, utils};
 use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 use bevy::platform::collections::HashSet;
 use tracing::error;
@@ -93,7 +93,7 @@ pub fn sample_lookup_curve_system<TimeStep>(
     mut query: Query<
         (
             Entity,
-            &ChildOf,
+            Option<&ChildOf>,
             &LookupCurveHandle,
             Option<&mut LookupCurveCache>,
             &TimeSpanProgress,
@@ -109,10 +109,13 @@ pub fn sample_lookup_curve_system<TimeStep>(
 {
     let mut handle_error = HashSet::new();
     query.iter_mut().for_each(
-        |(entity, ChildOf(parent), curve, cache, progress)| {
+        |(entity, maybe_child_of, curve, cache, progress)| {
             if progress.now_percentage.is_nan()
-                || !(time_step_marked.contains(*parent)
-                    || time_step_marked.contains(entity))
+                || !utils::either_parent_or_child_have_time_step_marker(
+                    entity,
+                    maybe_child_of,
+                    &time_step_marked,
+                )
             {
                 return;
             }

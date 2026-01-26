@@ -25,6 +25,7 @@
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
+use crate::utils;
 use bevy_time_runner::TimeStepMarker;
 use std::marker::PhantomData;
 
@@ -166,7 +167,7 @@ pub fn tween_event_system<Data, TimeStep>(
     q_tween_event_data: Query<
         (
             Entity,
-            &ChildOf,
+            Option<&ChildOf>,
             &TweenEventData<Data>,
             &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
@@ -182,14 +183,16 @@ pub fn tween_event_system<Data, TimeStep>(
     q_tween_event_data.iter().for_each(
         |(
             entity,
-            ChildOf(parent),
+            maybe_child_of,
             event_data,
             progress,
             interpolation_value,
         )| {
-            if !(time_step_marked.contains(*parent)
-                || time_step_marked.contains(entity))
-            {
+            if !utils::either_parent_or_child_have_time_step_marker(
+                entity,
+                maybe_child_of,
+                &time_step_marked,
+            ) {
                 return;
             }
             let event = TweenEvent {

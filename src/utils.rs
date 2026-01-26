@@ -134,3 +134,23 @@ pub(crate) use doc_test_boilerplate;
 //     }
 //     true
 // }
+
+use bevy_time_runner::TimeStepMarker;
+pub fn either_parent_or_child_have_time_step_marker<TimeStep>(
+    child: Entity,
+    maybe_child_of: Option<&ChildOf>,
+    time_step_marked: &Query<(), With<TimeStepMarker<TimeStep>>>,
+) -> bool
+where
+    TimeStep: Default + Send + Sync + 'static,
+{
+    if time_step_marked.contains(child) {
+        true
+    } else if let Some(ChildOf(parent)) = maybe_child_of
+        && time_step_marked.contains(*parent)
+    {
+        true
+    } else {
+        false
+    }
+}

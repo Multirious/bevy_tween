@@ -795,7 +795,7 @@ pub fn tween_event_system<Data, TimeStep>(
     q_tween_event_data: Query<
         (
             Entity,
-            &ChildOf,
+            Option<&ChildOf>,
             &TweenEventData<Data>,
             &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
