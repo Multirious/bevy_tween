@@ -13,7 +13,6 @@ use super::*;
 use crate::InternedScheduleLabel;
 use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 use bevy::platform::collections::HashSet;
-use bevy_time_runner::TimeRunner;
 use tracing::error;
 
 /// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation.
@@ -101,10 +100,7 @@ pub fn sample_lookup_curve_system<TimeStep>(
         ),
         (Or<(Changed<LookupCurveHandle>, Changed<TimeSpanProgress>)>,),
     >,
-    time_step_runners: Query<
-        (),
-        (With<TimeRunner>, With<TimeStepMarker<TimeStep>>),
-    >,
+    time_step_marked: Query<(), With<TimeStepMarker<TimeStep>>>,
     mut removed: RemovedComponents<TimeSpanProgress>,
     lookup_curve: Res<Assets<LookupCurve>>,
     mut last_handle_error: Local<HashSet<AssetId<LookupCurve>>>,
@@ -115,7 +111,8 @@ pub fn sample_lookup_curve_system<TimeStep>(
     query.iter_mut().for_each(
         |(entity, ChildOf(parent), curve, cache, progress)| {
             if progress.now_percentage.is_nan()
-                || !time_step_runners.contains(*parent)
+                || !(time_step_marked.contains(*parent)
+                    || time_step_marked.contains(entity))
             {
                 return;
             }

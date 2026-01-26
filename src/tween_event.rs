@@ -25,7 +25,7 @@
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
-use bevy_time_runner::{TimeRunner, TimeStepMarker};
+use bevy_time_runner::TimeStepMarker;
 use std::marker::PhantomData;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
@@ -173,10 +173,7 @@ pub fn tween_event_system<Data, TimeStep>(
         ),
         Without<SkipTween>,
     >,
-    time_step_runners: Query<
-        (),
-        (With<TimeRunner>, With<TimeStepMarker<TimeStep>>),
-    >,
+    time_step_marked: Query<(), With<TimeStepMarker<TimeStep>>>,
     mut event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
@@ -190,7 +187,9 @@ pub fn tween_event_system<Data, TimeStep>(
             progress,
             interpolation_value,
         )| {
-            if !time_step_runners.contains(*parent) {
+            if !(time_step_marked.contains(*parent)
+                || time_step_marked.contains(entity))
+            {
                 return;
             }
             let event = TweenEvent {

@@ -11,7 +11,7 @@
 
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
-use bevy_time_runner::{TimeRunner, TimeStepMarker};
+use bevy_time_runner::TimeStepMarker;
 use std::marker::PhantomData;
 
 use crate::{
@@ -518,10 +518,7 @@ pub fn sample_interpolations_system<I, TimeStep>(
         (Entity, &ChildOf, &I, &TimeSpanProgress),
         Or<(Changed<I>, Changed<TimeSpanProgress>)>,
     >,
-    time_step_runners: Query<
-        (),
-        (With<TimeRunner>, With<TimeStepMarker<TimeStep>>),
-    >,
+    time_step_marked: Query<(), With<TimeStepMarker<TimeStep>>>,
     mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: Interpolation + Component,
@@ -530,7 +527,8 @@ pub fn sample_interpolations_system<I, TimeStep>(
     query.iter().for_each(
         |(entity, ChildOf(parent), interpolator, progress)| {
             if progress.now_percentage.is_nan()
-                || !time_step_runners.contains(*parent)
+                || !(time_step_marked.contains(*parent)
+                    || time_step_marked.contains(entity))
             {
                 return;
             }
