@@ -385,7 +385,7 @@ pub mod prelude {
     pub use crate::interpolation::EaseKind;
 
     pub use crate::bevy_time_runner::{
-        Repeat, RepeatStyle, TimeDirection, TimeStepMarker,
+        Repeat, RepeatStyle, TimeDirection, TimeContext,
     };
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
@@ -549,10 +549,19 @@ impl Default for TweenAppResource {
 ///
 ///   [`UpdateInterpolationValue`]: [`TweenSystemSet::UpdateInterpolationValue`]
 ///   [`ApplyTween`]: [`TweenSystemSet::ApplyTween`]
-#[derive(Default)]
 pub struct TweenCorePlugin {
     /// See [`TweenAppResource`]
     pub app_resource: TweenAppResource,
+    /// Whether bevy_time_runner should log debug info
+    pub enable_time_runner_debug: bool
+}
+impl Default for TweenCorePlugin{
+    fn default() -> Self{
+        Self{
+            app_resource: TweenAppResource::default(),
+            enable_time_runner_debug: true
+        }
+    }
 }
 
 impl Plugin for TweenCorePlugin {
@@ -560,6 +569,7 @@ impl Plugin for TweenCorePlugin {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
             app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
                 schedule: self.app_resource.default_schedule,
+                enable_debug: self.enable_time_runner_debug
             });
         }
 

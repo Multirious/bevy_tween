@@ -5,7 +5,7 @@ use std::time::Duration;
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_time_runner::{
     Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
-    TimeStepMarker,
+    TimeContext,
 };
 
 mod animation_combinators;
@@ -117,7 +117,7 @@ where
 {
     entity_commands: EntityCommands<'a>,
     time_runner: Option<TimeRunner>,
-    time_step_marker: Option<TimeStepMarker<TimeStep>>,
+    time_step_marker: Option<TimeContext<TimeStep>>,
     custom_length: Option<Duration>,
     skipped: bool,
 }

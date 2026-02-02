@@ -4,6 +4,7 @@
 
 Breaking:
 - rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
+- add `enable_time_runner_debug` field to `TweenCorePlugin`
 
 - Add `animation_for_timestep<TimeStep>()` for animation creation on different time steps (for example, `Fixed`)
 - Add the ability to register systems for different schedules other than the default one (important if you want the animators from the bullet above to update the interpolation values at the right time)

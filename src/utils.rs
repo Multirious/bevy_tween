@@ -135,11 +135,11 @@ pub(crate) use doc_test_boilerplate;
 //     true
 // }
 
-use bevy_time_runner::TimeStepMarker;
+use bevy_time_runner::TimeContext;
 pub fn either_parent_or_child_have_time_step_marker<TimeStep>(
     child: Entity,
     maybe_child_of: Option<&ChildOf>,
-    time_step_marked: &Query<(), With<TimeStepMarker<TimeStep>>>,
+    time_step_marked: &Query<(), With<TimeContext<TimeStep>>>,
 ) -> bool
 where
     TimeStep: Default + Send + Sync + 'static,

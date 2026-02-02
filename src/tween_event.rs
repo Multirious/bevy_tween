@@ -26,7 +26,7 @@
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
 use crate::utils;
-use bevy_time_runner::TimeStepMarker;
+use bevy_time_runner::TimeContext;
 use std::marker::PhantomData;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
@@ -174,7 +174,7 @@ pub fn tween_event_system<Data, TimeStep>(
         ),
         Without<SkipTween>,
     >,
-    time_step_marked: Query<(), With<TimeStepMarker<TimeStep>>>,
+    time_step_marked: Query<(), With<TimeContext<TimeStep>>>,
     mut event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,

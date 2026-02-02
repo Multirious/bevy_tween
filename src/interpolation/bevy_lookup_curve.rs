@@ -100,7 +100,7 @@ pub fn sample_lookup_curve_system<TimeStep>(
         ),
         (Or<(Changed<LookupCurveHandle>, Changed<TimeSpanProgress>)>,),
     >,
-    time_step_marked: Query<(), With<TimeStepMarker<TimeStep>>>,
+    time_step_marked: Query<(), With<TimeContext<TimeStep>>>,
     mut removed: RemovedComponents<TimeSpanProgress>,
     lookup_curve: Res<Assets<LookupCurve>>,
     mut last_handle_error: Local<HashSet<AssetId<LookupCurve>>>,

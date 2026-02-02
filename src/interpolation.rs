@@ -12,7 +12,7 @@
 use crate::utils;
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
-use bevy_time_runner::TimeStepMarker;
+use bevy_time_runner::TimeContext;
 use std::marker::PhantomData;
 
 use crate::{
@@ -519,7 +519,7 @@ pub fn sample_interpolations_system<I, TimeStep>(
         (Entity, Option<&ChildOf>, &I, &TimeSpanProgress),
         Or<(Changed<I>, Changed<TimeSpanProgress>)>,
     >,
-    time_step_marked: Query<(), With<TimeStepMarker<TimeStep>>>,
+    time_step_marked: Query<(), With<TimeContext<TimeStep>>>,
     mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: Interpolation + Component,
