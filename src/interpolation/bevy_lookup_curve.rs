@@ -10,7 +10,7 @@
 //! - [`sample_lookup_curve_system`]
 
 use super::*;
-use crate::{InternedScheduleLabel, utils};
+use crate::InternedScheduleLabel;
 use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 use bevy::platform::collections::HashSet;
 use tracing::error;
@@ -38,18 +38,18 @@ impl Plugin for BevyLookupCurveInterpolationPlugin {
 }
 
 /// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation on the specified schedule
-pub struct BevyLookupCurveInterpolationForSchedulePlugin<TimeStep>
+pub struct BevyLookupCurveInterpolationForSchedulePlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// The systems' schedules
     pub schedule: InternedScheduleLabel,
     /// time step marker
-    time_step_marker: PhantomData<TimeStep>,
+    time_step_marker: PhantomData<TimeCtx>,
 }
-impl<TimeStep> BevyLookupCurveInterpolationForSchedulePlugin<TimeStep>
+impl<TimeCtx> BevyLookupCurveInterpolationForSchedulePlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for that schedule
     pub fn on_schedule(schedule: InternedScheduleLabel) -> Self {
@@ -59,16 +59,15 @@ where
         }
     }
 }
-impl<TimeStep> Plugin
-    for BevyLookupCurveInterpolationForSchedulePlugin<TimeStep>
+impl<TimeCtx> Plugin for BevyLookupCurveInterpolationForSchedulePlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
         app.add_systems(
             self.schedule.clone(),
             (
-                sample_lookup_curve_system::<TimeStep>
+                sample_lookup_curve_system::<TimeCtx>
                     .in_set(TweenSystemSet::UpdateInterpolationValue),
                 // sample_interpolations_mut_system::<CurveCached>
                 //     .in_set(TweenSystemSet::UpdateInterpolationValue),
@@ -88,35 +87,31 @@ pub struct LookupCurveHandle(pub Handle<LookupCurve>);
 
 /// Interpolation system for [`LookupCurveHandle`]
 #[allow(clippy::type_complexity)]
-pub fn sample_lookup_curve_system<TimeStep>(
+pub fn sample_lookup_curve_system<TimeCtx>(
     mut commands: Commands,
     mut query: Query<
         (
             Entity,
-            Option<&ChildOf>,
             &LookupCurveHandle,
             Option<&mut LookupCurveCache>,
             &TimeSpanProgress,
         ),
-        (Or<(Changed<LookupCurveHandle>, Changed<TimeSpanProgress>)>,),
+        (
+            Or<(Changed<LookupCurveHandle>, Changed<TimeSpanProgress>)>,
+            With<TimeContext<TimeCtx>>,
+        ),
     >,
-    time_step_marked: Query<(), With<TimeContext<TimeStep>>>,
     mut removed: RemovedComponents<TimeSpanProgress>,
     lookup_curve: Res<Assets<LookupCurve>>,
     mut last_handle_error: Local<HashSet<AssetId<LookupCurve>>>,
 ) where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     let mut handle_error = HashSet::new();
-    query.iter_mut().for_each(
-        |(entity, maybe_child_of, curve, cache, progress)| {
-            if progress.now_percentage.is_nan()
-                || !utils::either_parent_or_child_have_time_step_marker(
-                    entity,
-                    maybe_child_of,
-                    &time_step_marked,
-                )
-            {
+    query
+        .iter_mut()
+        .for_each(|(entity, curve, cache, progress)| {
+            if progress.now_percentage.is_nan() {
                 return;
             }
 
@@ -145,8 +140,7 @@ pub fn sample_lookup_curve_system<TimeStep>(
             commands
                 .entity(entity)
                 .insert(TweenInterpolationValue(value));
-        },
-    );
+        });
 
     removed.read().for_each(|entity| {
         if let Ok(mut entity) = commands.get_entity(entity) {

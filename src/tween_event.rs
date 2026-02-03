@@ -25,7 +25,6 @@
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
-use crate::utils;
 use bevy_time_runner::TimeContext;
 use std::marker::PhantomData;
 
@@ -63,20 +62,20 @@ where
 }
 
 /// A plugin for registering the tween event system for tween of type Data for the specified schedule
-pub struct TweenEventOnSchedulePlugin<Data, TimeStep>
+pub struct TweenEventOnSchedulePlugin<Data, TimeCtx>
 where
     Data: Send + Sync + 'static + Clone,
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// The systems schedule
     pub schedule: InternedScheduleLabel,
     data_marker: PhantomData<Data>,
-    time_step_marker: PhantomData<TimeStep>,
+    time_step_marker: PhantomData<TimeCtx>,
 }
-impl<Data, TimeStep> TweenEventOnSchedulePlugin<Data, TimeStep>
+impl<Data, TimeCtx> TweenEventOnSchedulePlugin<Data, TimeCtx>
 where
     Data: Send + Sync + 'static + Clone,
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for schedule
     pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
@@ -87,15 +86,15 @@ where
         }
     }
 }
-impl<Data, TimeStep> Plugin for TweenEventOnSchedulePlugin<Data, TimeStep>
+impl<Data, TimeCtx> Plugin for TweenEventOnSchedulePlugin<Data, TimeCtx>
 where
     Data: Send + Sync + 'static + Clone,
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
         app.add_systems(
             self.schedule.clone(),
-            (tween_event_system::<Data, TimeStep>)
+            (tween_event_system::<Data, TimeCtx>)
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
         .add_message::<TweenEvent<Data>>();
@@ -162,39 +161,24 @@ pub struct TweenEvent<Data = ()> {
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// cloning the data.
 #[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data, TimeStep>(
+pub fn tween_event_system<Data, TimeCtx>(
     mut commands: Commands,
     q_tween_event_data: Query<
         (
             Entity,
-            Option<&ChildOf>,
             &TweenEventData<Data>,
             &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
-        Without<SkipTween>,
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
-    time_step_marked: Query<(), With<TimeContext<TimeStep>>>,
     mut event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     q_tween_event_data.iter().for_each(
-        |(
-            entity,
-            maybe_child_of,
-            event_data,
-            progress,
-            interpolation_value,
-        )| {
-            if !utils::either_parent_or_child_have_time_step_marker(
-                entity,
-                maybe_child_of,
-                &time_step_marked,
-            ) {
-                return;
-            }
+        |(entity, event_data, progress, interpolation_value)| {
             let event = TweenEvent {
                 data: event_data.0.clone(),
                 progress: *progress,

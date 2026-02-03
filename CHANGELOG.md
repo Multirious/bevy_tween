@@ -6,15 +6,15 @@ Breaking:
 - rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
 - add `enable_time_runner_debug` field to `TweenCorePlugin`
 
-- Add `animation_for_timestep<TimeStep>()` for animation creation on different time steps (for example, `Fixed`)
+- Add `animation_for_timestep<TimeCtx>()` for animation creation on different time steps (for example, `Fixed`)
 - Add the ability to register systems for different schedules other than the default one (important if you want the animators from the bullet above to update the interpolation values at the right time)
   - To do that (see `time_steps.rs` example):
     - do not register `DefaultTweenPlugins`
     - register `TweenScheduleIndependentPlugins`
     - register `TweenSchedulesDependentPlugins { schedules: [your_schedules_here] }`
-    - for each `TimeStep`, choose a schedule in which it should be applied, then register
-      `TweenScheduleAndStepDependentPlugins::<TimeStep>::for_schedule([schedule_here])`
-  - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeStep>::for_schedule([your_schedules_here])`
+    - for each `TimeCtx`, choose a schedule in which it should be applied, then register
+      `TweenScheduleAndStepDependentPlugins::<TimeCtx>::for_schedule([schedule_here])`
+  - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeCtx>::for_schedule([your_schedules_here])`
 
 ## v0.11.0 - 2026-01-01
 

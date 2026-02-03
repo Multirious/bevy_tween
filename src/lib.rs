@@ -385,7 +385,7 @@ pub mod prelude {
     pub use crate::interpolation::EaseKind;
 
     pub use crate::bevy_time_runner::{
-        Repeat, RepeatStyle, TimeDirection, TimeContext,
+        Repeat, RepeatStyle, TimeContext, TimeDirection,
     };
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
@@ -482,17 +482,17 @@ impl PluginGroup for TweenSchedulesDependentPlugins {
 /// Schedule and time-step specific systems.
 /// For example, if I want to add systems for Fixed time-step interpolation,
 /// I should specify here the schedule in which they should run (In this case, probably FixedLast).
-pub struct TweenScheduleAndStepDependentPlugins<TimeStep>
+pub struct TweenScheduleAndStepDependentPlugins<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// The schedule in which the time-step based systems would be executed
     pub schedule: InternedScheduleLabel,
-    time_step_marker: PhantomData<TimeStep>,
+    time_step_marker: PhantomData<TimeCtx>,
 }
-impl<TimeStep> TweenScheduleAndStepDependentPlugins<TimeStep>
+impl<TimeCtx> TweenScheduleAndStepDependentPlugins<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for schedule
     pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
@@ -503,20 +503,20 @@ where
     }
 }
 
-impl<TimeStep> Plugin for TweenScheduleAndStepDependentPlugins<TimeStep>
+impl<TimeCtx> Plugin for TweenScheduleAndStepDependentPlugins<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
         #[allow(clippy::let_and_return)]
         app.add_plugins(interpolation::EaseKindSystemRegistrationPlugin::<
-            TimeStep,
+            TimeCtx,
         >::on_schedule(self.schedule.clone()));
         #[cfg(feature = "bevy_lookup_curve")]
-        app.add_plugins(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationForSchedulePlugin::<TimeStep>::on_schedule(self.schedule.clone()));
-        if !app.is_plugin_added::<TimeRunnerSystemsPlugin<TimeStep>>() {
+        app.add_plugins(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationForSchedulePlugin::<TimeCtx>::on_schedule(self.schedule.clone()));
+        if !app.is_plugin_added::<TimeRunnerSystemsPlugin<TimeCtx>>() {
             app.add_plugins(
-                TimeRunnerSystemsPlugin::<TimeStep>::from_schedule_intern(
+                TimeRunnerSystemsPlugin::<TimeCtx>::from_schedule_intern(
                     self.schedule.clone(),
                 ),
             );
@@ -553,13 +553,13 @@ pub struct TweenCorePlugin {
     /// See [`TweenAppResource`]
     pub app_resource: TweenAppResource,
     /// Whether bevy_time_runner should log debug info
-    pub enable_time_runner_debug: bool
+    pub enable_time_runner_debug: bool,
 }
-impl Default for TweenCorePlugin{
-    fn default() -> Self{
-        Self{
+impl Default for TweenCorePlugin {
+    fn default() -> Self {
+        Self {
             app_resource: TweenAppResource::default(),
-            enable_time_runner_debug: true
+            enable_time_runner_debug: true,
         }
     }
 }
@@ -569,7 +569,7 @@ impl Plugin for TweenCorePlugin {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
             app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
                 schedule: self.app_resource.default_schedule,
-                enable_debug: self.enable_time_runner_debug
+                enable_debug: self.enable_time_runner_debug,
             });
         }
 

@@ -215,7 +215,7 @@ use bevy::prelude::*;
 
 use crate::combinator::TargetState;
 use crate::interpolate::{CurrentValue, Interpolator, PreviousValue};
-use bevy_time_runner::{TimeSpanProgress, TimeContext};
+use bevy_time_runner::{TimeContext, TimeSpanProgress};
 
 mod systems;
 #[cfg(feature = "bevy_asset")]
@@ -790,28 +790,25 @@ pub type DefaultTweenEventsPlugin =
 #[doc(hidden)]
 #[allow(deprecated)]
 #[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data, TimeStep>(
+pub fn tween_event_system<Data, TimeCtx>(
     commands: Commands,
     q_tween_event_data: Query<
         (
             Entity,
-            Option<&ChildOf>,
             &TweenEventData<Data>,
             &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
-        Without<SkipTween>,
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
-    time_step_marked: Query<(), With<TimeContext<TimeStep>>>,
     event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     crate::tween_event::tween_event_system(
         commands,
         q_tween_event_data,
-        time_step_marked,
         event_writer,
     )
 }

@@ -9,7 +9,6 @@
 //! **Systems**:
 //! - [`sample_interpolations_system`]
 
-use crate::utils;
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
 use bevy_time_runner::TimeContext;
@@ -66,18 +65,18 @@ impl Plugin for EaseKindTypeRegistrationPlugin {
 }
 
 /// Plugin for [`EaseKind`] system registration
-pub struct EaseKindSystemRegistrationPlugin<TimeStep>
+pub struct EaseKindSystemRegistrationPlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// The systems' schedules
     pub schedule: InternedScheduleLabel,
     /// time step marker
-    time_step_marker: PhantomData<TimeStep>,
+    time_step_marker: PhantomData<TimeCtx>,
 }
-impl<TimeStep> EaseKindSystemRegistrationPlugin<TimeStep>
+impl<TimeCtx> EaseKindSystemRegistrationPlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for that schedule
     pub fn on_schedule(schedule: InternedScheduleLabel) -> Self {
@@ -87,14 +86,14 @@ where
         }
     }
 }
-impl<TimeStep> Plugin for EaseKindSystemRegistrationPlugin<TimeStep>
+impl<TimeCtx> Plugin for EaseKindSystemRegistrationPlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
         app.add_systems(
             self.schedule.clone(),
-            sample_interpolations_system::<EaseKind, TimeStep>
+            sample_interpolations_system::<EaseKind, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
@@ -455,16 +454,16 @@ impl From<EaseFunction> for EaseKind {
 ///
 /// [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
 #[derive(Default)]
-pub struct EaseClosurePlugin<TimeStep>
+pub struct EaseClosurePlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// time step marker
-    time_step_marker: PhantomData<TimeStep>,
+    time_step_marker: PhantomData<TimeCtx>,
 }
-impl<TimeStep> Plugin for EaseClosurePlugin<TimeStep>
+impl<TimeCtx> Plugin for EaseClosurePlugin<TimeCtx>
 where
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     /// # Panics
     ///
@@ -478,7 +477,7 @@ where
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
             app_resource.default_schedule,
-            sample_interpolations_system::<EaseClosure, TimeStep>
+            sample_interpolations_system::<EaseClosure, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
@@ -513,37 +512,30 @@ impl Interpolation for EaseClosure {
 /// [`TimeSpanProgress`] component then insert [`TweenInterpolationValue`].
 /// Remove [`TweenInterpolationValue`] if [`TimeSpanProgress`] is removed.
 #[allow(clippy::type_complexity)]
-pub fn sample_interpolations_system<I, TimeStep>(
+pub fn sample_interpolations_system<I, TimeCtx>(
     mut commands: Commands,
     query: Query<
-        (Entity, Option<&ChildOf>, &I, &TimeSpanProgress),
-        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+        (Entity, &I, &TimeSpanProgress),
+        (
+            Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+            With<TimeContext<TimeCtx>>,
+        ),
     >,
-    time_step_marked: Query<(), With<TimeContext<TimeStep>>>,
     mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: Interpolation + Component,
-    TimeStep: Default + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    query.iter().for_each(
-        |(entity, maybe_child_of, interpolator, progress)| {
-            if progress.now_percentage.is_nan()
-                || !utils::either_parent_or_child_have_time_step_marker(
-                    entity,
-                    maybe_child_of,
-                    &time_step_marked,
-                )
-            {
-                return;
-            }
-            let value =
-                interpolator.sample(progress.now_percentage.clamp(0., 1.));
+    query.iter().for_each(|(entity, interpolator, progress)| {
+        if progress.now_percentage.is_nan() {
+            return;
+        }
+        let value = interpolator.sample(progress.now_percentage.clamp(0., 1.));
 
-            commands
-                .entity(entity)
-                .insert(TweenInterpolationValue(value));
-        },
-    );
+        commands
+            .entity(entity)
+            .insert(TweenInterpolationValue(value));
+    });
     removed.read().for_each(|entity| {
         if let Ok(mut entity) = commands.get_entity(entity) {
             entity.remove::<TweenInterpolationValue>();
