@@ -85,10 +85,10 @@ fn click_spawn_circle(
 
 fn despawn_finished_circle(
     mut commands: Commands,
-    mut time_runner_ended_reader: EventReader<TimeRunnerEnded>,
+    mut time_runner_ended_reader: MessageReader<TimeRunnerEnded>,
 ) {
     for t in time_runner_ended_reader.read() {
-        commands.entity(t.time_runner).despawn();
+        commands.entity(t.entity).despawn();
     }
 }
 

@@ -355,7 +355,7 @@
 //! [`Tween`]: tween::Tween
 //! [`AnimationTarget`]: tween::AnimationTarget
 #![allow(clippy::needless_doctest_main)]
-#![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
+#![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_cfg))]
 #![warn(missing_docs)]
 
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};

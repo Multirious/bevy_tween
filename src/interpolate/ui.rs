@@ -71,13 +71,15 @@ impl Interpolator for BorderColor {
     type Item = bevy::prelude::BorderColor;
 
     fn interpolate(&self, item: &mut Self::Item, value: f32, previous_value: f32) {
-        if self.delta {
-            let previous_color_as_vec = self.start.mix(&self.end, previous_value).to_linear();
-            let next_color_as_vec = self.start.mix(&self.end, value).to_linear();
-            let updated_color = item.0.to_linear() + (next_color_as_vec - previous_color_as_vec);
-            item.0 = updated_color.into();
-        }else{
-            item.0 = self.start.mix(&self.end, value)
+        for color in [&mut item.top, &mut item.right, &mut item.bottom, &mut item.left]{
+            if self.delta {
+                let previous_color_as_vec = self.start.mix(&self.end, previous_value).to_linear();
+                let next_color_as_vec = self.start.mix(&self.end, value).to_linear();
+                let updated_color = color.to_linear() + (next_color_as_vec - previous_color_as_vec);
+                *color = updated_color.into();
+            }else{
+                *color = self.start.mix(&self.end, value)
+            }
         }
     }
 }

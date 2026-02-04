@@ -56,7 +56,7 @@ where
             (tween_event_system::<Data>)
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
-        .add_event::<TweenEvent<Data>>();
+        .add_message::<TweenEvent<Data>>();
     }
 }
 
@@ -78,9 +78,15 @@ impl PluginGroup for DefaultTweenEventPlugins {
 /// Fires [`TweenEvent`] whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity.
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
+#[require(EventEmittingTween)]
 pub struct TweenEventData<Data = ()>(pub Data)
 where
     Data: Send + Sync + 'static;
+
+/// Used to mark event-emitting tweens (tweens with `TweenEventData<Data>` for some registered `Data`)
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct EventEmittingTween;
 
 impl<Data: Send + Sync + 'static> TweenEventData<Data> {
     /// Create new [`TweenEventData`] with custom user data.
@@ -98,7 +104,7 @@ impl TweenEventData<()> {
 
 /// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
 /// by [`tween_event_system`].
-#[derive(Debug, Clone, PartialEq, Event, Reflect)]
+#[derive(Debug, Clone, PartialEq, Message, Reflect, EntityEvent)]
 pub struct TweenEvent<Data = ()> {
     /// Custom user data
     pub data: Data,
@@ -125,7 +131,7 @@ pub fn tween_event_system<Data>(
         ),
         Without<SkipTween>,
     >,
-    mut event_writer: EventWriter<TweenEvent<Data>>,
+    mut event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
 {
@@ -137,7 +143,7 @@ pub fn tween_event_system<Data>(
                 interpolation_value: interpolation_value.map(|v| v.0),
                 entity,
             };
-            commands.trigger_targets(event.clone(), entity);
+            commands.trigger(event.clone());
             event_writer.write(event);
         },
     );
