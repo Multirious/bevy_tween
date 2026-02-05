@@ -361,6 +361,8 @@
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy::ecs::system::ScheduleSystem;
 use bevy::{app::PluginGroupBuilder, prelude::*};
+use bevy_time_runner::TimeRunnerSystemsPlugin;
+use std::marker::PhantomData;
 
 mod utils;
 
@@ -382,7 +384,9 @@ pub mod prelude {
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
     pub use crate::interpolation::EaseKind;
 
-    pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
+    pub use crate::bevy_time_runner::{
+        Repeat, RepeatStyle, TimeContext, TimeDirection,
+    };
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
@@ -418,27 +422,105 @@ pub use tween::resource_tween_system;
 pub use tween_event::tween_event_system;
 
 /// Default plugins for using crate.
-///
-/// Plugins:
-/// - [`TweenCorePlugin`]
-/// - [`interpolate::DefaultInterpolatorsPlugin`]
-/// - [`interpolate::DefaultDynInterpolatorsPlugin`]
-/// - [`interpolation::EaseKindPlugin`]
-/// - [`tween_event::DefaultTweenEventPlugins`]
 pub struct DefaultTweenPlugins;
 
 impl PluginGroup for DefaultTweenPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        #[allow(clippy::let_and_return)]
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
-            .add(TweenCorePlugin::default())
-            .add(interpolate::DefaultInterpolatorsPlugin)
-            .add(interpolate::DefaultDynInterpolatorsPlugin)
-            .add(interpolation::EaseKindPlugin)
-            .add_group(tween_event::DefaultTweenEventPlugins);
-        #[cfg(feature = "bevy_lookup_curve")]
-        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+            .add_group(TweenScheduleIndependentPlugins)
+            .add_group(TweenSchedulesDependentPlugins {
+                schedules: vec![PostUpdate.intern()],
+            })
+            .add(TweenScheduleAndStepDependentPlugins::<()>::for_schedule(
+                PostUpdate.intern(),
+            ));
         group
+    }
+}
+
+/// Time-step and schedule agnostic logic. These should always be registered once and the same.
+pub struct TweenScheduleIndependentPlugins;
+
+impl PluginGroup for TweenScheduleIndependentPlugins {
+    fn build(self) -> bevy::app::PluginGroupBuilder {
+        let group =
+            PluginGroupBuilder::start::<TweenScheduleIndependentPlugins>()
+                .add(TweenCorePlugin::default())
+                .add(interpolate::DefaultInterpolatorsTypeRegistrationPlugin)
+                .add(interpolation::EaseKindTypeRegistrationPlugin)
+                .add_group(tween_event::DefaultTweenEventPlugins);
+        group
+    }
+}
+
+/// Schedule-specific logic that is time-step agnostic. Should be registered once with all the schedules.
+pub struct TweenSchedulesDependentPlugins {
+    /// schedules in which the systems would run
+    pub schedules: Vec<InternedScheduleLabel>,
+}
+impl PluginGroup for TweenSchedulesDependentPlugins {
+    fn build(self) -> bevy::app::PluginGroupBuilder {
+        let group =
+            PluginGroupBuilder::start::<TweenSchedulesDependentPlugins>()
+                .add(
+                    interpolate::DefaultInterpolatorsSystemRegistrationPlugin {
+                        schedules: self.schedules.clone(),
+                    },
+                )
+                .add(
+                    interpolate::DefaultDynInterpolatorsSystemRegistrationPlugin {
+                        schedules: self.schedules.clone(),
+                    },
+                )
+                .add(SystemSetsRegistraitonPlugin {
+                    schedules: self.schedules.clone(),
+                });
+        group
+    }
+}
+
+/// Schedule and time-step specific systems.
+/// For example, if I want to add systems for Fixed time-step interpolation,
+/// I should specify here the schedule in which they should run (In this case, probably FixedLast).
+pub struct TweenScheduleAndStepDependentPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// The schedule in which the time-step based systems would be executed
+    pub schedule: InternedScheduleLabel,
+    time_step_marker: PhantomData<TimeCtx>,
+}
+impl<TimeCtx> TweenScheduleAndStepDependentPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Constructor for schedule
+    pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            time_step_marker: PhantomData::default(),
+        }
+    }
+}
+
+impl<TimeCtx> Plugin for TweenScheduleAndStepDependentPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    fn build(&self, app: &mut App) {
+        #[allow(clippy::let_and_return)]
+        app.add_plugins(interpolation::EaseKindSystemRegistrationPlugin::<
+            TimeCtx,
+        >::on_schedule(self.schedule.clone()));
+        #[cfg(feature = "bevy_lookup_curve")]
+        app.add_plugins(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationForSchedulePlugin::<TimeCtx>::on_schedule(self.schedule.clone()));
+        if !app.is_plugin_added::<TimeRunnerSystemsPlugin<TimeCtx>>() {
+            app.add_plugins(
+                TimeRunnerSystemsPlugin::<TimeCtx>::from_schedule_intern(
+                    self.schedule.clone(),
+                ),
+            );
+        }
     }
 }
 
@@ -447,13 +529,13 @@ impl PluginGroup for DefaultTweenPlugins {
 #[derive(Resource, Clone)]
 pub struct TweenAppResource {
     /// Configured schedule for tween systems.
-    pub schedule: InternedScheduleLabel,
+    pub default_schedule: InternedScheduleLabel,
 }
 
 impl Default for TweenAppResource {
     fn default() -> Self {
         TweenAppResource {
-            schedule: PostUpdate.intern(),
+            default_schedule: PostUpdate.intern(),
         }
     }
 }
@@ -467,35 +549,59 @@ impl Default for TweenAppResource {
 ///
 ///   [`UpdateInterpolationValue`]: [`TweenSystemSet::UpdateInterpolationValue`]
 ///   [`ApplyTween`]: [`TweenSystemSet::ApplyTween`]
-#[derive(Default)]
 pub struct TweenCorePlugin {
     /// See [`TweenAppResource`]
     pub app_resource: TweenAppResource,
+    /// Whether bevy_time_runner should log debug info
+    pub enable_time_runner_debug: bool,
+}
+impl Default for TweenCorePlugin {
+    fn default() -> Self {
+        Self {
+            app_resource: TweenAppResource::default(),
+            enable_time_runner_debug: true,
+        }
+    }
 }
 
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
             app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
-                schedule: self.app_resource.schedule,
+                schedule: self.app_resource.default_schedule,
+                enable_debug: self.enable_time_runner_debug,
             });
         }
-        app.configure_sets(
-            self.app_resource.schedule,
-            (
-                TweenSystemSet::UpdateInterpolationValue,
-                TweenSystemSet::ApplyTween,
-            )
-                .chain()
-                .after(bevy_time_runner::TimeRunnerSet::Progress),
-        )
-        .insert_resource(self.app_resource.clone())
-        .register_type::<tween::AnimationTarget>()
-        .register_type::<tween::TweenInterpolationValue>();
+
+        app.insert_resource(self.app_resource.clone())
+            .register_type::<tween::AnimationTarget>()
+            .register_type::<tween::TweenInterpolationValue>();
     }
 
     fn cleanup(&self, app: &mut App) {
         app.world_mut().remove_resource::<TweenAppResource>();
+    }
+}
+
+/// A plugin for registering the system sets in specific schedules
+struct SystemSetsRegistraitonPlugin {
+    /// The schedules to register the sets in
+    schedules: Vec<InternedScheduleLabel>,
+}
+
+impl Plugin for SystemSetsRegistraitonPlugin {
+    fn build(&self, app: &mut App) {
+        for schedule in self.schedules.clone() {
+            app.configure_sets(
+                schedule,
+                (
+                    TweenSystemSet::UpdateInterpolationValue,
+                    TweenSystemSet::ApplyTween,
+                )
+                    .chain()
+                    .after(bevy_time_runner::TimeRunnerSet::Progress),
+            );
+        }
     }
 }
 
@@ -544,8 +650,34 @@ impl BevyTweenRegisterSystems for App {
             .world()
             .get_resource::<TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
+        self.add_tween_systems_to_schedule(
+            app_resource.default_schedule,
+            tween_systems,
+        )
+    }
+}
+
+/// Helper trait to add systems by this crate to your app
+/// for different schedules
+pub trait BevyTweenRegisterSystemsToSchedule {
+    /// Register tween systems
+    fn add_tween_systems_to_schedule<M>(
+        &mut self,
+        schedule: InternedScheduleLabel,
+        tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
+    ) -> &mut Self;
+}
+
+impl BevyTweenRegisterSystemsToSchedule for App {
+    /// Register tween systems in schedule
+    /// in set [`TweenSystemSet::ApplyTween`]
+    fn add_tween_systems_to_schedule<M>(
+        &mut self,
+        schedule: InternedScheduleLabel,
+        tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
+    ) -> &mut Self {
         self.add_systems(
-            app_resource.schedule,
+            schedule,
             tween_systems.in_set(TweenSystemSet::ApplyTween),
         )
     }
