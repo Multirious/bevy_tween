@@ -11,8 +11,12 @@
 
 use bevy::math::curve::EaseFunction;
 use bevy::prelude::*;
+use bevy_time_runner::TimeContext;
+use std::marker::PhantomData;
 
-use crate::{tween::TweenInterpolationValue, TweenSystemSet};
+use crate::{
+    InternedScheduleLabel, TweenSystemSet, tween::TweenInterpolationValue,
+};
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -32,7 +36,6 @@ pub trait Interpolation {
 
 /// Plugin for [`EaseKind`]
 pub struct EaseKindPlugin;
-
 impl Plugin for EaseKindPlugin {
     /// # Panics
     ///
@@ -44,12 +47,55 @@ impl Plugin for EaseKindPlugin {
             .world()
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
+        app.add_plugins((
+            EaseKindTypeRegistrationPlugin,
+            EaseKindSystemRegistrationPlugin::<()>::on_schedule(
+                app_resource.default_schedule,
+            ),
+        ));
+    }
+}
+
+/// Plugin for [`EaseKind`] type registration
+pub struct EaseKindTypeRegistrationPlugin;
+impl Plugin for EaseKindTypeRegistrationPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<EaseKind>();
+    }
+}
+
+/// Plugin for [`EaseKind`] system registration
+pub struct EaseKindSystemRegistrationPlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// The systems' schedules
+    pub schedule: InternedScheduleLabel,
+    /// time step marker
+    time_step_marker: PhantomData<TimeCtx>,
+}
+impl<TimeCtx> EaseKindSystemRegistrationPlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Constructor for that schedule
+    pub fn on_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            time_step_marker: PhantomData::default(),
+        }
+    }
+}
+impl<TimeCtx> Plugin for EaseKindSystemRegistrationPlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    fn build(&self, app: &mut App) {
         app.add_systems(
-            app_resource.schedule,
-            sample_interpolations_system::<EaseKind>
+            self.schedule.clone(),
+            sample_interpolations_system::<EaseKind, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
-        )
-        .register_type::<EaseKind>();
+        );
     }
 }
 
@@ -407,8 +453,18 @@ impl From<EaseFunction> for EaseKind {
 /// not with [`DefaultTweenPlugins`] to reduce unused system.
 ///
 /// [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
-pub struct EaseClosurePlugin;
-impl Plugin for EaseClosurePlugin {
+#[derive(Default)]
+pub struct EaseClosurePlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// time step marker
+    time_step_marker: PhantomData<TimeCtx>,
+}
+impl<TimeCtx> Plugin for EaseClosurePlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     /// # Panics
     ///
     /// Panics if [`TweenAppResource`] does not exist in world.
@@ -420,8 +476,8 @@ impl Plugin for EaseClosurePlugin {
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
-            app_resource.schedule,
-            sample_interpolations_system::<EaseClosure>
+            app_resource.default_schedule,
+            sample_interpolations_system::<EaseClosure, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
     }
@@ -456,15 +512,19 @@ impl Interpolation for EaseClosure {
 /// [`TimeSpanProgress`] component then insert [`TweenInterpolationValue`].
 /// Remove [`TweenInterpolationValue`] if [`TimeSpanProgress`] is removed.
 #[allow(clippy::type_complexity)]
-pub fn sample_interpolations_system<I>(
+pub fn sample_interpolations_system<I, TimeCtx>(
     mut commands: Commands,
     query: Query<
         (Entity, &I, &TimeSpanProgress),
-        Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+        (
+            Or<(Changed<I>, Changed<TimeSpanProgress>)>,
+            With<TimeContext<TimeCtx>>,
+        ),
     >,
     mut removed: RemovedComponents<TimeSpanProgress>,
 ) where
     I: Interpolation + Component,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     query.iter().for_each(|(entity, interpolator, progress)| {
         if progress.now_percentage.is_nan() {
@@ -486,7 +546,7 @@ pub fn sample_interpolations_system<I>(
 mod easing_functions {
     use core::f32::consts::{FRAC_PI_2, FRAC_PI_3, PI};
 
-    use bevy::math::{ops, FloatPow};
+    use bevy::math::{FloatPow, ops};
 
     #[inline]
     pub(crate) fn linear(t: f32) -> f32 {
