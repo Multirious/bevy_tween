@@ -42,8 +42,8 @@ impl From<&QueryEntityError> for QueryEntityErrorWithoutWorld {
             E::QueryDoesNotMatch(entity, archetype_id) => {
                 EH::QueryDoesNotMatch(*entity, *archetype_id)
             }
-            E::EntityDoesNotExist(entity_does_not_exist_error) => {
-                EH::EntityDoesNotExist(entity_does_not_exist_error.entity)
+            E::NotSpawned(entity_not_spawned_error) => {
+                EH::EntityDoesNotExist(entity_not_spawned_error.entity())
             }
             E::AliasedMutability(entity) => EH::AliasedMutability(*entity),
         }
