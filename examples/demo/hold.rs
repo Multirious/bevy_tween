@@ -1,11 +1,11 @@
 use std::f32::consts::PI;
 
+use bevy::window::CursorIcon;
 use bevy::{
     color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
     window::{PrimaryWindow, SystemCursorIcon},
 };
-use bevy::window::CursorIcon;
 use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
 
@@ -27,7 +27,12 @@ mod interpolate {
     impl Interpolator for EffectIntensity {
         type Item = super::EffectIntensitiy;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
+        fn interpolate(
+            &self,
+            item: &mut Self::Item,
+            value: f32,
+            _previous_value: f32,
+        ) {
             item.0 = self.start.lerp(self.end, value)
         }
     }

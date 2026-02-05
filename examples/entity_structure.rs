@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tween::interpolate::{translation, AngleZ, Translation};
+use bevy_tween::interpolate::{AngleZ, Translation, translation};
 use bevy_tween::prelude::*;
 use bevy_tween::{
     bevy_time_runner::{TimeRunner, TimeSpan},
@@ -48,18 +48,19 @@ fn setup(mut commands: Commands) {
         sprite(start_x, y),
         AnimationTarget,
         TimeRunner::new(Duration::from_secs(5)),
+        TimeContext::<()>::default(),
         TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
         EaseKind::QuadraticInOut,
         ComponentTween::new_target(
             TargetComponent::marker(),
-            translation(Vec3::new(start_x, y, 0.), Vec3::new(end_x, y, 0.))
+            translation(Vec3::new(start_x, y, 0.), Vec3::new(end_x, y, 0.)),
         ),
         ComponentTween::new_target(
             TargetComponent::marker(),
             AngleZ {
                 start: angle_start,
                 end: angle_end,
-                delta: false
+                delta: false,
             },
         ),
     ));
@@ -84,6 +85,7 @@ fn setup(mut commands: Commands) {
             sprite(start_x, y),
             AnimationTarget,
             TimeRunner::new(Duration::from_secs(5)),
+            TimeContext::<()>::default(),
         ))
         .with_children(|c| {
             c.spawn((
@@ -91,14 +93,17 @@ fn setup(mut commands: Commands) {
                 EaseKind::QuadraticInOut,
                 ComponentTween::new_target(
                     TargetComponent::marker(),
-                    translation(Vec3::new(start_x, y, 0.), Vec3::new(end_x, y, 0.))
+                    translation(
+                        Vec3::new(start_x, y, 0.),
+                        Vec3::new(end_x, y, 0.),
+                    ),
                 ),
                 ComponentTween::new_target(
                     TargetComponent::marker(),
                     AngleZ {
                         start: angle_start,
                         end: angle_end,
-                        delta: false
+                        delta: false,
                     },
                 ),
             ));
@@ -124,18 +129,22 @@ fn setup(mut commands: Commands) {
         .with_children(|c| {
             c.spawn((
                 TimeRunner::new(Duration::from_secs(5)),
+                TimeContext::<()>::default(),
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
                 EaseKind::QuadraticInOut,
                 ComponentTween::new_target(
                     TargetComponent::marker(),
-                    translation(Vec3::new(start_x, y, 0.), Vec3::new(end_x, y, 0.))
+                    translation(
+                        Vec3::new(start_x, y, 0.),
+                        Vec3::new(end_x, y, 0.),
+                    ),
                 ),
                 ComponentTween::new_target(
                     TargetComponent::marker(),
                     AngleZ {
                         start: angle_start,
                         end: angle_end,
-                        delta: false
+                        delta: false,
                     },
                 ),
             ));
@@ -160,7 +169,7 @@ fn setup(mut commands: Commands) {
     commands
         .spawn((sprite(start_x, y), AnimationTarget))
         .with_children(|c| {
-            c.spawn(TimeRunner::new(Duration::from_secs(5)))
+            c.spawn((TimeRunner::new(Duration::from_secs(5)), TimeContext::<()>::default()))
                 .with_children(|c| {
                     c.spawn((
                         TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
@@ -170,7 +179,7 @@ fn setup(mut commands: Commands) {
                             Translation {
                                 start: Vec3::new(start_x, y, 0.),
                                 end: Vec3::new(end_x, y, 0.),
-                                delta: false
+                                delta: false,
                             },
                         ),
                         ComponentTween::new_target(
@@ -178,7 +187,7 @@ fn setup(mut commands: Commands) {
                             AngleZ {
                                 start: angle_start,
                                 end: angle_end,
-                                delta: false
+                                delta: false,
                             },
                         ),
                     ));
@@ -205,21 +214,24 @@ fn setup(mut commands: Commands) {
     let sprite = commands.spawn(sprite(start_x, y)).id();
 
     commands
-        .spawn(TimeRunner::new(Duration::from_secs(5)))
+        .spawn((TimeRunner::new(Duration::from_secs(5)),TimeContext::<()>::default()))
         .with_children(|c| {
             c.spawn((
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
                 EaseKind::QuadraticInOut,
                 ComponentTween::new_target(
                     sprite,
-                    translation(Vec3::new(start_x, y, 0.), Vec3::new(end_x, y, 0.))
+                    translation(
+                        Vec3::new(start_x, y, 0.),
+                        Vec3::new(end_x, y, 0.),
+                    ),
                 ),
                 ComponentTween::new_target(
                     sprite,
                     AngleZ {
                         start: angle_start,
                         end: angle_end,
-                        delta: false
+                        delta: false,
                     },
                 ),
             ));
