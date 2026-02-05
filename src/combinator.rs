@@ -4,7 +4,8 @@ use std::time::Duration;
 
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_time_runner::{
-    Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
+    Repeat, RepeatStyle, SkipTimeRunner, TimeContext, TimeDirection,
+    TimeRunner, TimeSpan,
 };
 
 mod animation_combinators;
@@ -37,44 +38,101 @@ pub trait AnimationBuilderExt {
     fn animation(&mut self) -> AnimationBuilder<'_>;
 }
 
+/// Extension trait for types that can be used to make an animation.
+pub trait AnimationBuilderExtGeneric {
+    /// Construct [`AnimationBuilder`] from [`Self`]
+    fn animation_for_timestep<TimeCtx>(
+        &mut self,
+    ) -> AnimationBuilder<'_, TimeCtx>
+    where
+        TimeCtx: Default + Send + Sync + 'static;
+}
+
+impl AnimationBuilderExtGeneric for EntityCommands<'_> {
+    /// Construct [`AnimationBuilder`] from [`EntityCommands`].
+    /// Use this entity as the animator.
+    /// Tweens will be spawned as children of this entity.
+    fn animation_for_timestep<TimeCtx>(
+        &mut self,
+    ) -> AnimationBuilder<'_, TimeCtx>
+    where
+        TimeCtx: Default + Send + Sync + 'static,
+    {
+        AnimationBuilder::new(self.reborrow())
+    }
+}
 impl AnimationBuilderExt for EntityCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`EntityCommands`].
     /// Use this entity as the animator.
     /// Tweens will be spawned as children of this entity.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        AnimationBuilder::new(self.reborrow())
+        self.animation_for_timestep()
     }
 }
 
+impl AnimationBuilderExtGeneric for Commands<'_, '_> {
+    /// Construct [`AnimationBuilder`] from [`Commands`].
+    /// This will automatically spawn an entity as the animator.
+    fn animation_for_timestep<TimeCtx>(
+        &mut self,
+    ) -> AnimationBuilder<'_, TimeCtx>
+    where
+        TimeCtx: Default + Send + Sync + 'static,
+    {
+        AnimationBuilder::new(self.spawn_empty())
+    }
+}
 impl AnimationBuilderExt for Commands<'_, '_> {
     /// Construct [`AnimationBuilder`] from [`Commands`].
     /// This will automatically spawn an entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        AnimationBuilder::new(self.spawn_empty())
+        self.animation_for_timestep()
     }
 }
 
+impl AnimationBuilderExtGeneric for ChildSpawnerCommands<'_> {
+    /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
+    /// This will automatically spawn a child entity as the animator.
+    fn animation_for_timestep<TimeCtx>(
+        &mut self,
+    ) -> AnimationBuilder<'_, TimeCtx>
+    where
+        TimeCtx: Default + Send + Sync + 'static,
+    {
+        AnimationBuilder::new(self.spawn_empty())
+    }
+}
 impl AnimationBuilderExt for ChildSpawnerCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
     /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        AnimationBuilder::new(self.spawn_empty())
+        self.animation_for_timestep()
     }
 }
 
 /// Configure [`TimeRunner`] through a builder API and add animation entities
-pub struct AnimationBuilder<'a> {
+pub struct AnimationBuilder<'a, TimeCtx = ()>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     entity_commands: EntityCommands<'a>,
     time_runner: Option<TimeRunner>,
+    time_step_marker: Option<TimeContext<TimeCtx>>,
     custom_length: Option<Duration>,
     skipped: bool,
 }
-impl<'a> AnimationBuilder<'a> {
+impl<'a, TimeCtx> AnimationBuilder<'a, TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     /// Create new [`AnimationBuilder`]
-    pub fn new(entity_commands: EntityCommands<'a>) -> AnimationBuilder<'a> {
+    pub fn new(
+        entity_commands: EntityCommands<'a>,
+    ) -> AnimationBuilder<'a, TimeCtx> {
         AnimationBuilder {
             entity_commands,
             time_runner: None,
+            time_step_marker: None,
             custom_length: None,
             skipped: false,
         }
@@ -180,6 +238,7 @@ impl<'a> AnimationBuilder<'a> {
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
+            time_step_marker,
             custom_length,
             skipped,
         } = self;
@@ -197,7 +256,8 @@ impl<'a> AnimationBuilder<'a> {
                 time_runner.set_length(dur);
             }
         }
-        entity_commands.insert(time_runner);
+        entity_commands
+            .insert((time_runner, time_step_marker.unwrap_or_default()));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
         }
@@ -221,6 +281,7 @@ impl<'a> AnimationBuilder<'a> {
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
+            time_step_marker,
             custom_length,
             skipped,
         } = self;
@@ -239,6 +300,7 @@ impl<'a> AnimationBuilder<'a> {
             interpolation,
             tweens,
             time_runner,
+            time_step_marker.unwrap_or_default(),
         ));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
@@ -268,6 +330,7 @@ impl<'a> AnimationBuilder<'a> {
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
+            time_step_marker,
             custom_length,
             skipped,
         } = self;
@@ -286,6 +349,7 @@ impl<'a> AnimationBuilder<'a> {
             interpolation,
             tweens,
             time_runner,
+            time_step_marker.unwrap_or_default(),
         ));
         if skipped {
             entity_commands.try_insert(SkipTimeRunner);
