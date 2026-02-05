@@ -173,5 +173,5 @@ name = "delta_tweens"
 path = "examples/demo/delta_tweens.rs"
 
 [[example]]
-name = "time_steps"
-path = "examples/demo/time_steps.rs"
+name = "time_context_animation"
+path = "examples/demo/time_context_animation.rs"

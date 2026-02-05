@@ -41,7 +41,7 @@ pub trait AnimationBuilderExt {
 /// Extension trait for types that can be used to make an animation.
 pub trait AnimationBuilderExtGeneric {
     /// Construct [`AnimationBuilder`] from [`Self`]
-    fn animation_for_timestep<TimeCtx>(
+    fn animation_for_time_context<TimeCtx>(
         &mut self,
     ) -> AnimationBuilder<'_, TimeCtx>
     where
@@ -52,7 +52,7 @@ impl AnimationBuilderExtGeneric for EntityCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`EntityCommands`].
     /// Use this entity as the animator.
     /// Tweens will be spawned as children of this entity.
-    fn animation_for_timestep<TimeCtx>(
+    fn animation_for_time_context<TimeCtx>(
         &mut self,
     ) -> AnimationBuilder<'_, TimeCtx>
     where
@@ -66,14 +66,14 @@ impl AnimationBuilderExt for EntityCommands<'_> {
     /// Use this entity as the animator.
     /// Tweens will be spawned as children of this entity.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        self.animation_for_timestep()
+        self.animation_for_time_context()
     }
 }
 
 impl AnimationBuilderExtGeneric for Commands<'_, '_> {
     /// Construct [`AnimationBuilder`] from [`Commands`].
     /// This will automatically spawn an entity as the animator.
-    fn animation_for_timestep<TimeCtx>(
+    fn animation_for_time_context<TimeCtx>(
         &mut self,
     ) -> AnimationBuilder<'_, TimeCtx>
     where
@@ -86,14 +86,14 @@ impl AnimationBuilderExt for Commands<'_, '_> {
     /// Construct [`AnimationBuilder`] from [`Commands`].
     /// This will automatically spawn an entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        self.animation_for_timestep()
+        self.animation_for_time_context()
     }
 }
 
 impl AnimationBuilderExtGeneric for ChildSpawnerCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
     /// This will automatically spawn a child entity as the animator.
-    fn animation_for_timestep<TimeCtx>(
+    fn animation_for_time_context<TimeCtx>(
         &mut self,
     ) -> AnimationBuilder<'_, TimeCtx>
     where
@@ -106,7 +106,7 @@ impl AnimationBuilderExt for ChildSpawnerCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
     /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        self.animation_for_timestep()
+        self.animation_for_time_context()
     }
 }
 
