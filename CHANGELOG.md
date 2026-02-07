@@ -8,7 +8,7 @@ Breaking:
 
 - Add `animation_for_time_context<TimeCtx>()` for animation creation on different time steps (for example, `Fixed`)
 - Add the ability to register systems for different schedules other than the default one (important if you want the animators from the bullet above to update the interpolation values at the right time)
-  - To do that (see `time_steps.rs` example):
+  - To do that (see `time_context_animation.rs` example):
     - do not register `DefaultTweenPlugins`
     - register `TweenScheduleIndependentPlugins`
     - register `TweenSchedulesDependentPlugins { schedules: [your_schedules_here] }`

@@ -486,9 +486,9 @@ pub struct TweenScheduleAndStepDependentPlugins<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The schedule in which the time-step based systems would be executed
+    /// The schedule in which the time-context based systems would be executed
     pub schedule: InternedScheduleLabel,
-    time_step_marker: PhantomData<TimeCtx>,
+    time_context_marker: PhantomData<TimeCtx>,
 }
 impl<TimeCtx> TweenScheduleAndStepDependentPlugins<TimeCtx>
 where
@@ -498,7 +498,7 @@ where
     pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
-            time_step_marker: PhantomData::default(),
+            time_context_marker: PhantomData::default(),
         }
     }
 }

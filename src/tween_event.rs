@@ -70,7 +70,7 @@ where
     /// The systems schedule
     pub schedule: InternedScheduleLabel,
     data_marker: PhantomData<Data>,
-    time_step_marker: PhantomData<TimeCtx>,
+    time_context_marker: PhantomData<TimeCtx>,
 }
 impl<Data, TimeCtx> TweenEventOnSchedulePlugin<Data, TimeCtx>
 where
@@ -82,7 +82,7 @@ where
         Self {
             schedule,
             data_marker: PhantomData::default(),
-            time_step_marker: PhantomData::default(),
+            time_context_marker: PhantomData::default(),
         }
     }
 }

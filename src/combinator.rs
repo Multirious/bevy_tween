@@ -117,7 +117,7 @@ where
 {
     entity_commands: EntityCommands<'a>,
     time_runner: Option<TimeRunner>,
-    time_step_marker: Option<TimeContext<TimeCtx>>,
+    time_context_marker: Option<TimeContext<TimeCtx>>,
     custom_length: Option<Duration>,
     skipped: bool,
 }
@@ -132,7 +132,7 @@ where
         AnimationBuilder {
             entity_commands,
             time_runner: None,
-            time_step_marker: None,
+            time_context_marker: None,
             custom_length: None,
             skipped: false,
         }
@@ -238,7 +238,7 @@ where
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
-            time_step_marker,
+            time_context_marker,
             custom_length,
             skipped,
         } = self;
@@ -257,7 +257,7 @@ where
             }
         }
         entity_commands
-            .insert((time_runner, time_step_marker.unwrap_or_default()));
+            .insert((time_runner, time_context_marker.unwrap_or_default()));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
         }
@@ -281,7 +281,7 @@ where
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
-            time_step_marker,
+            time_context_marker,
             custom_length,
             skipped,
         } = self;
@@ -300,7 +300,7 @@ where
             interpolation,
             tweens,
             time_runner,
-            time_step_marker.unwrap_or_default(),
+            time_context_marker.unwrap_or_default(),
         ));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
@@ -330,7 +330,7 @@ where
         let AnimationBuilder {
             mut entity_commands,
             time_runner,
-            time_step_marker,
+            time_context_marker,
             custom_length,
             skipped,
         } = self;
@@ -349,7 +349,7 @@ where
             interpolation,
             tweens,
             time_runner,
-            time_step_marker.unwrap_or_default(),
+            time_context_marker.unwrap_or_default(),
         ));
         if skipped {
             entity_commands.try_insert(SkipTimeRunner);

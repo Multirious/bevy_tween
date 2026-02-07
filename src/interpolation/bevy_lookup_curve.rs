@@ -44,8 +44,8 @@ where
 {
     /// The systems' schedules
     pub schedule: InternedScheduleLabel,
-    /// time step marker
-    time_step_marker: PhantomData<TimeCtx>,
+    /// time context marker
+    time_context_marker: PhantomData<TimeCtx>,
 }
 impl<TimeCtx> BevyLookupCurveInterpolationForSchedulePlugin<TimeCtx>
 where
@@ -55,7 +55,7 @@ where
     pub fn on_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
-            time_step_marker: PhantomData::default(),
+            time_context_marker: PhantomData::default(),
         }
     }
 }
