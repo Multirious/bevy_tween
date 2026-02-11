@@ -439,33 +439,53 @@ impl From<EaseFunction> for EaseKind {
 /// not with [`DefaultTweenPlugins`] to reduce unused system.
 ///
 /// [`DefaultTweenPlugins`]: crate::DefaultTweenPlugins
-#[derive(Default)]
-pub struct EaseClosurePlugin<TimeCtx>
+pub struct EaseClosurePlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// time context marker
-    time_context_marker: PhantomData<TimeCtx>,
+    /// The schedule the systems should run on.
+    pub schedule: InternedScheduleLabel,
+    marker: PhantomData<TimeCtx>,
 }
+
+impl<TimeCtx> EaseClosurePlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Initialize this plugin's system on this schedule
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            marker: PhantomData::default(),
+        }
+    }
+}
+
 impl<TimeCtx> Plugin for EaseClosurePlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
-    ///
-    /// [`TweenAppResource`]: crate::TweenAppResource
     fn build(&self, app: &mut App) {
-        let app_resource = app
+        #[allow(deprecated)]
+        let schedule = app
             .world()
             .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
+            .map(|a| a.schedule)
+            .unwrap_or(self.schedule);
         app.add_systems(
-            app_resource.schedule,
+            schedule,
             sample_interpolations_system::<EaseClosure, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
+    }
+}
+
+impl Default for EaseClosurePlugin<()> {
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            marker: Default::default(),
+        }
     }
 }
 
