@@ -56,7 +56,7 @@ where
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` resource doesn't exist");
         app.add_plugins(TweenEventOnSchedulePlugin::<Data, ()>::for_schedule(
-            app_resource.default_schedule,
+            app_resource.schedule,
         ));
     }
 }

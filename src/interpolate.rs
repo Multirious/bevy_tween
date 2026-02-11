@@ -233,7 +233,7 @@ impl Plugin for DefaultInterpolatorsPlugin {
         app.add_plugins((
             DefaultInterpolatorsTypeRegistrationPlugin,
             DefaultInterpolatorsSystemRegistrationPlugin {
-                schedules: vec![app_resource.default_schedule],
+                schedules: vec![app_resource.schedule],
             },
         ));
     }
@@ -324,7 +324,7 @@ impl Plugin for DefaultDynInterpolatorsPlugin {
             .get_resource::<TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_plugins(DefaultDynInterpolatorsSystemRegistrationPlugin {
-            schedules: vec![app_resource.default_schedule],
+            schedules: vec![app_resource.schedule],
         });
     }
 }

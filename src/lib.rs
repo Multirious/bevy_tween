@@ -529,13 +529,13 @@ where
 #[derive(Resource, Clone)]
 pub struct TweenAppResource {
     /// Configured schedule for tween systems.
-    pub default_schedule: InternedScheduleLabel,
+    pub schedule: InternedScheduleLabel,
 }
 
 impl Default for TweenAppResource {
     fn default() -> Self {
         TweenAppResource {
-            default_schedule: PostUpdate.intern(),
+            schedule: PostUpdate.intern(),
         }
     }
 }
@@ -568,7 +568,7 @@ impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
             app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
-                schedule: self.app_resource.default_schedule,
+                schedule: self.app_resource.schedule,
                 enable_debug: self.enable_time_runner_debug,
             });
         }
@@ -650,10 +650,7 @@ impl BevyTweenRegisterSystems for App {
             .world()
             .get_resource::<TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
-        self.add_tween_systems_to_schedule(
-            app_resource.default_schedule,
-            tween_systems,
-        )
+        self.add_tween_systems_to_schedule(app_resource.schedule, tween_systems)
     }
 }
 

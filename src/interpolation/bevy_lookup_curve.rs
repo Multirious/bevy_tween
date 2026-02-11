@@ -31,7 +31,7 @@ impl Plugin for BevyLookupCurveInterpolationPlugin {
             .expect("`TweenAppResource` to be inserted to world");
         app.add_plugins(
             BevyLookupCurveInterpolationForSchedulePlugin::<()>::on_schedule(
-                app_resource.default_schedule,
+                app_resource.schedule,
             ),
         );
     }

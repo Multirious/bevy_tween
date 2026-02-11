@@ -50,7 +50,7 @@ impl Plugin for EaseKindPlugin {
         app.add_plugins((
             EaseKindTypeRegistrationPlugin,
             EaseKindSystemRegistrationPlugin::<()>::on_schedule(
-                app_resource.default_schedule,
+                app_resource.schedule,
             ),
         ));
     }
@@ -476,7 +476,7 @@ where
             .get_resource::<crate::TweenAppResource>()
             .expect("`TweenAppResource` to be is inserted to world");
         app.add_systems(
-            app_resource.default_schedule,
+            app_resource.schedule,
             sample_interpolations_system::<EaseClosure, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
