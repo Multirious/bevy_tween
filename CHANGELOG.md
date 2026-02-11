@@ -1,6 +1,6 @@
 # Changelog
 
-## unreleased
+## Unreleased - XXXX-XX-XX
 
 Breaking:
 - rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
@@ -15,6 +15,10 @@ Breaking:
     - for each `TimeCtx`, choose a schedule in which it should be applied, then register
       `TweenScheduleAndStepDependentPlugins::<TimeCtx>::for_schedule([schedule_here])`
   - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeCtx>::for_schedule([your_schedules_here])`
+- Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
+  - Use latest instead of a version for stableRust in flake.nix
+  - `nix flake update`
+  - Remove flake-utils dependency from flake.nix
 
 ## v0.11.0 - 2026-01-01
 
