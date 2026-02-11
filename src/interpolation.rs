@@ -14,9 +14,8 @@ use bevy::prelude::*;
 use bevy_time_runner::TimeContext;
 use std::marker::PhantomData;
 
-use crate::{
-    InternedScheduleLabel, TweenSystemSet, tween::TweenInterpolationValue,
-};
+use crate::{TweenSystemSet, tween::TweenInterpolationValue};
+use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -35,67 +34,54 @@ pub trait Interpolation {
 }
 
 /// Plugin for [`EaseKind`]
-pub struct EaseKindPlugin;
-impl Plugin for EaseKindPlugin {
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
-    ///
-    /// [`TweenAppResource`]: crate::TweenAppResource
-    fn build(&self, app: &mut App) {
-        let app_resource = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
-        app.add_plugins((
-            EaseKindTypeRegistrationPlugin,
-            EaseKindSystemRegistrationPlugin::<()>::on_schedule(
-                app_resource.schedule,
-            ),
-        ));
-    }
-}
-
-/// Plugin for [`EaseKind`] type registration
-pub struct EaseKindTypeRegistrationPlugin;
-impl Plugin for EaseKindTypeRegistrationPlugin {
-    fn build(&self, app: &mut App) {
-        app.register_type::<EaseKind>();
-    }
-}
-
-/// Plugin for [`EaseKind`] system registration
-pub struct EaseKindSystemRegistrationPlugin<TimeCtx>
+pub struct EaseKindPlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The systems' schedules
+    /// The schedule the systems should run on.
     pub schedule: InternedScheduleLabel,
-    /// time context marker
-    time_context_marker: PhantomData<TimeCtx>,
+    marker: PhantomData<TimeCtx>,
 }
-impl<TimeCtx> EaseKindSystemRegistrationPlugin<TimeCtx>
+
+impl<TimeCtx> EaseKindPlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// Constructor for that schedule
-    pub fn on_schedule(schedule: InternedScheduleLabel) -> Self {
+    /// Initialize this plugin's system in this schedule
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
-            time_context_marker: PhantomData::default(),
+            marker: PhantomData::default(),
         }
     }
 }
-impl<TimeCtx> Plugin for EaseKindSystemRegistrationPlugin<TimeCtx>
+
+impl<TimeCtx> Plugin for EaseKindPlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
+        #[allow(deprecated)]
+        let schedule = app
+            .world()
+            .get_resource::<crate::TweenAppResource>()
+            .map(|a| a.schedule)
+            .unwrap_or(self.schedule);
+        app.register_type::<EaseKind>();
         app.add_systems(
-            self.schedule.clone(),
+            schedule,
             sample_interpolations_system::<EaseKind, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
+    }
+}
+
+impl Default for EaseKindPlugin<()> {
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            marker: Default::default(),
+        }
     }
 }
 
