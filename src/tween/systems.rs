@@ -1,9 +1,7 @@
 use super::*;
-use bevy::{
-    ecs::{
-        component::Mutable, query::QueryEntityError, schedule::ScheduleConfigs,
-        system::ScheduleSystem,
-    }
+use bevy::ecs::{
+    component::Mutable, query::QueryEntityError, schedule::ScheduleConfigs,
+    system::ScheduleSystem,
 };
 use bevy::platform::collections::{HashMap, HashSet};
 use std::any::type_name;
@@ -353,12 +351,13 @@ where
 /// Alias for [`apply_asset_tween_system`] and may contains more systems
 /// in the future.
 #[cfg(feature = "bevy_asset")]
-pub fn asset_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
+pub fn asset_tween_system<I, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Asset,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_asset_tween_system::<I>.into_configs()
+    apply_asset_tween_system::<I, TimeCtx>.into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
@@ -410,10 +409,14 @@ where
 /// ```
 #[cfg(feature = "bevy_asset")]
 #[allow(clippy::type_complexity)]
-pub fn apply_asset_tween_system<I>(
+pub fn apply_asset_tween_system<I, TimeCtx>(
     mut q_tween: Query<
-        (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
-        Without<SkipTween>,
+        (
+            &Tween<TargetAsset<I::Item>, I>,
+            &TweenInterpolationValue,
+            &mut TweenPreviousValue,
+        ),
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
     asset: Option<ResMut<Assets<I::Item>>>,
     mut last_resource_error: Local<bool>,
@@ -421,6 +424,7 @@ pub fn apply_asset_tween_system<I>(
 ) where
     I: Interpolator,
     I::Item: Asset,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     let mut asset_error = HashSet::default();
 
@@ -486,9 +490,11 @@ pub fn apply_asset_tween_system<I>(
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `asset_tween_system::<BoxedInterpolator<...>>()` for consistency
 #[cfg(feature = "bevy_asset")]
-pub fn asset_dyn_tween_system<A>() -> ScheduleConfigs<ScheduleSystem>
+pub fn asset_dyn_tween_system<A, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     A: Asset,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
+    apply_asset_tween_system::<Box<dyn Interpolator<Item = A>>, TimeCtx>
+        .into_configs()
 }
