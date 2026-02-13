@@ -259,12 +259,13 @@ where
 
 /// Alias for [`apply_resource_tween_system`] and may contains more systems
 /// in the future.
-pub fn resource_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
+pub fn resource_tween_system<I, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Resource,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_resource_tween_system::<I>.into_configs()
+    apply_resource_tween_system::<I, TimeCtx>.into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
@@ -317,16 +318,21 @@ where
 /// }
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn apply_resource_tween_system<I>(
+pub fn apply_resource_tween_system<I, TimeCtx>(
     mut q_tween: Query<
-        (&Tween<TargetResource, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
-        Without<SkipTween>,
+        (
+            &Tween<TargetResource, I>,
+            &TweenInterpolationValue,
+            &mut TweenPreviousValue,
+        ),
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
     resource: Option<ResMut<I::Item>>,
     mut last_error: Local<bool>,
 ) where
     I: Interpolator,
     I::Item: Resource,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     let Some(mut resource) = resource else {
         if !*last_error {
@@ -339,21 +345,28 @@ pub fn apply_resource_tween_system<I>(
         return;
     };
     *last_error = false;
-    q_tween.iter_mut().for_each(|(tween, ease_value, mut previous_value)| {
-        tween.interpolator.interpolate(&mut resource, ease_value.0, previous_value.0);
-        previous_value.0 = ease_value.0;
-    })
+    q_tween
+        .iter_mut()
+        .for_each(|(tween, ease_value, mut previous_value)| {
+            tween.interpolator.interpolate(
+                &mut resource,
+                ease_value.0,
+                previous_value.0,
+            );
+            previous_value.0 = ease_value.0;
+        })
 }
 
 /// System alias for [`apply_resource_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `resource_tween_system::<BoxedInterpolator<...>>()` for consistency
-pub fn resource_dyn_tween_system<R>() -> ScheduleConfigs<ScheduleSystem>
+pub fn resource_dyn_tween_system<R, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     R: Resource,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_resource_tween_system::<Box<dyn Interpolator<Item = R>>>
+    apply_resource_tween_system::<Box<dyn Interpolator<Item = R>>, TimeCtx>
         .into_configs()
 }
 
