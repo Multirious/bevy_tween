@@ -86,8 +86,6 @@ pub use sprite::*;
 #[cfg(feature = "bevy_ui")]
 pub use ui::*;
 
-#[allow(deprecated)]
-use crate::TweenAppResource;
 use crate::{BevyTweenRegisterSystemsToSchedule, tween};
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 
@@ -321,62 +319,77 @@ impl Default for DefaultInterpolatorsPlugin<()> {
 /// - [`BackgroundColor`] and [`BorderColor`] components if `"bevy_ui"` feature is enabled.
 ///
 /// [`ColorMaterial`]: bevy::sprite_render::ColorMaterial
-pub struct DefaultDynInterpolatorsPlugin;
-impl Plugin for DefaultDynInterpolatorsPlugin {
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
-    ///
-    /// [`TweenAppResource`]: crate::TweenAppResource
+pub struct DefaultDynInterpolatorsPlugin<TimeCtx = ()>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// The schedule the systems should run on.
+    pub schedule: InternedScheduleLabel,
+    marker: PhantomData<TimeCtx>,
+}
+
+impl<TimeCtx> Plugin for DefaultDynInterpolatorsPlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     fn build(&self, app: &mut App) {
-        let app_resource = app
+        #[allow(deprecated)]
+        let schedule = app
             .world()
-            .get_resource::<TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
-        app.add_plugins(DefaultDynInterpolatorsSystemRegistrationPlugin {
-            schedules: vec![app_resource.schedule],
-        });
+            .get_resource::<crate::TweenAppResource>()
+            .map(|a| a.schedule)
+            .unwrap_or(self.schedule);
+
+        app.add_tween_systems_to_schedule(
+            schedule,
+            tween::component_tween_system::<
+                BoxedInterpolator<Transform>,
+                TimeCtx,
+            >(),
+        );
+
+        #[cfg(feature = "bevy_sprite")]
+        app.add_tween_systems_to_schedule(
+            schedule,
+            tween::component_tween_system::<BoxedInterpolator<Sprite>, TimeCtx>(
+            ),
+        );
+
+        #[cfg(feature = "bevy_ui")]
+        app.add_tween_systems_to_schedule(
+            schedule,
+            (
+                tween::component_tween_system::<
+                    BoxedInterpolator<bevy::prelude::BackgroundColor>,
+                    TimeCtx,
+                >(),
+                tween::component_tween_system::<
+                    BoxedInterpolator<bevy::prelude::BorderColor>,
+                    TimeCtx,
+                >(),
+            ),
+        );
+
+        #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
+        app.add_tween_systems_to_schedule(
+            schedule,
+            tween::asset_tween_system::<
+                BoxedInterpolator<bevy::sprite_render::ColorMaterial>,
+                TimeCtx,
+            >(),
+        );
     }
 }
-/// Register type and systems for the dynamic default interpolators for a chosen schedule
-pub struct DefaultDynInterpolatorsSystemRegistrationPlugin {
-    /// The systems' schedules
-    pub schedules: Vec<InternedScheduleLabel>,
-}
-impl Plugin for DefaultDynInterpolatorsSystemRegistrationPlugin {
-    fn build(&self, app: &mut App) {
-        for schedule in self.schedules.clone() {
-            app.add_tween_systems_to_schedule(
-                schedule,
-                tween::component_tween_system::<BoxedInterpolator<Transform>>(),
-            );
 
-            #[cfg(feature = "bevy_sprite")]
-            app.add_tween_systems_to_schedule(
-                schedule,
-                tween::component_tween_system::<BoxedInterpolator<Sprite>>(),
-            );
-
-            #[cfg(feature = "bevy_ui")]
-            app.add_tween_systems_to_schedule(
-                schedule,
-                (
-                    tween::component_tween_system::<
-                        BoxedInterpolator<bevy::prelude::BackgroundColor>,
-                    >(),
-                    tween::component_tween_system::<
-                        BoxedInterpolator<bevy::prelude::BorderColor>,
-                    >(),
-                ),
-            );
-
-            #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
-            app.add_tween_systems_to_schedule(
-                schedule,
-                tween::asset_tween_system::<
-                    BoxedInterpolator<bevy::sprite_render::ColorMaterial>,
-                >(),
-            );
+impl<TimeCtx> DefaultDynInterpolatorsPlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Initialize this plugin's system on this schedule
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            marker: PhantomData::default(),
         }
     }
 }
