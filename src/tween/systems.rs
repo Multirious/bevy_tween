@@ -9,12 +9,13 @@ use tracing::error;
 
 /// Alias for [`apply_component_tween_system`] and may contains more systems
 /// in the future.
-pub fn component_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
+pub fn component_tween_system<I, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component<Mutability = Mutable>,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_component_tween_system::<I>.into_configs()
+    apply_component_tween_system::<I, TimeCtx>.into_configs()
 }
 
 /// [`QueryEntityError`] but implemented hash [`Hash`]
@@ -115,11 +116,16 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 /// }
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn apply_component_tween_system<I>(
+pub fn apply_component_tween_system<I, TimeCtx>(
     q_animation_target: Query<(Option<&ChildOf>, Has<AnimationTarget>)>,
     mut q_tween: Query<
-        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
-        Without<SkipTween>,
+        (
+            Entity,
+            &Tween<TargetComponent, I>,
+            &TweenInterpolationValue,
+            &mut TweenPreviousValue,
+        ),
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
     mut q_component: Query<&mut I::Item>,
     mut last_entity_error: Local<HashMap<Entity, QueryEntityErrorWithoutWorld>>,
@@ -127,6 +133,7 @@ pub fn apply_component_tween_system<I>(
 ) where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component<Mutability = Mutable>,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     let mut entity_error = HashMap::default();
     let mut search_error = HashSet::default();
@@ -240,11 +247,13 @@ pub fn apply_component_tween_system<I>(
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `component_tween_system::<BoxedInterpolator<...>>()` for consistency
-pub fn component_dyn_tween_system<C>() -> ScheduleConfigs<ScheduleSystem>
+pub fn component_dyn_tween_system<C, TimeCtx>()
+-> ScheduleConfigs<ScheduleSystem>
 where
     C: Component<Mutability = Mutable>,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>>
+    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>, TimeCtx>
         .into_configs()
 }
 
