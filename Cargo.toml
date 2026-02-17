@@ -28,8 +28,8 @@ default-features = false
 features = ["curve"]
 
 [dependencies.bevy_time_runner]
-git = "https://github.com/natepiano/bevy_time_runner"
-branch = "bevy-0.18"
+git = "https://github.com/multirious/bevy_time_runner"
+branch = "main"
 
 [dependencies.serde]
 version = "1"
