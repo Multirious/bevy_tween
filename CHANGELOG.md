@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased - XXXX-XX-XX
+- Migrate to Bevy 0.18
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
