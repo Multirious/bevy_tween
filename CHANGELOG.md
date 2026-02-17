@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased - XXXX-XX-XX
+- Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
+  - Use latest instead of a version for stableRust in flake.nix
+  - `nix flake update`
+  - Remove flake-utils dependency from flake.nix
+
 ## v0.11.0 - 2026-01-01
 
 - Add `EventEmittingTween` to all event-emitting tweens, no matter their `Data` type
