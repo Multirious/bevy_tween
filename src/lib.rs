@@ -607,50 +607,21 @@ pub enum TweenSystemSet {
     ApplyTween,
 }
 
-/// Helper trait to add systems by this crate to your app and avoid mistake
-/// from forgetting to use the intended schedule and set.
+/// Helper trait to add systems by this crate to your app
+/// for different schedules
 pub trait BevyTweenRegisterSystems {
     /// Register tween systems
     fn add_tween_systems<M>(
-        &mut self,
-        tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
-    ) -> &mut Self;
-}
-
-impl BevyTweenRegisterSystems for App {
-    /// Register tween systems in schedule configured in [`TweenAppResource`]
-    /// in set [`TweenSystemSet::ApplyTween`]
-    ///
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
-    fn add_tween_systems<M>(
-        &mut self,
-        tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
-    ) -> &mut Self {
-        let app_resource = self
-            .world()
-            .get_resource::<TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
-        self.add_tween_systems_to_schedule(app_resource.schedule, tween_systems)
-    }
-}
-
-/// Helper trait to add systems by this crate to your app
-/// for different schedules
-pub trait BevyTweenRegisterSystemsToSchedule {
-    /// Register tween systems
-    fn add_tween_systems_to_schedule<M>(
         &mut self,
         schedule: InternedScheduleLabel,
         tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) -> &mut Self;
 }
 
-impl BevyTweenRegisterSystemsToSchedule for App {
+impl BevyTweenRegisterSystems for App {
     /// Register tween systems in schedule
     /// in set [`TweenSystemSet::ApplyTween`]
-    fn add_tween_systems_to_schedule<M>(
+    fn add_tween_systems<M>(
         &mut self,
         schedule: InternedScheduleLabel,
         tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,

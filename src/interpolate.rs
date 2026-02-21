@@ -86,7 +86,7 @@ pub use sprite::*;
 #[cfg(feature = "bevy_ui")]
 pub use ui::*;
 
-use crate::{BevyTweenRegisterSystemsToSchedule, tween};
+use crate::{BevyTweenRegisterSystems, tween};
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 
 use bevy::prelude::*;
@@ -255,7 +255,7 @@ where
             .map(|a| a.schedule)
             .unwrap_or(self.schedule);
 
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             (
                 tween::component_tween_system::<Translation, TimeCtx>(),
@@ -266,13 +266,13 @@ where
         );
 
         #[cfg(feature = "bevy_sprite")]
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             tween::component_tween_system::<SpriteColor, TimeCtx>(),
         );
 
         #[cfg(feature = "bevy_ui")]
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             (
                 tween::component_tween_system::<ui::BackgroundColor, TimeCtx>(),
@@ -281,7 +281,7 @@ where
         );
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             tween::asset_tween_system::<sprite::ColorMaterial, TimeCtx>(),
         );
@@ -340,7 +340,7 @@ where
             .map(|a| a.schedule)
             .unwrap_or(self.schedule);
 
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             tween::component_tween_system::<
                 BoxedInterpolator<Transform>,
@@ -349,14 +349,14 @@ where
         );
 
         #[cfg(feature = "bevy_sprite")]
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             tween::component_tween_system::<BoxedInterpolator<Sprite>, TimeCtx>(
             ),
         );
 
         #[cfg(feature = "bevy_ui")]
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             (
                 tween::component_tween_system::<
@@ -371,7 +371,7 @@ where
         );
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
-        app.add_tween_systems_to_schedule(
+        app.add_tween_systems(
             schedule,
             tween::asset_tween_system::<
                 BoxedInterpolator<bevy::sprite_render::ColorMaterial>,
