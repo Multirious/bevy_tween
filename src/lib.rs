@@ -446,8 +446,6 @@ impl PluginGroup for TweenScheduleIndependentPlugins {
         let group =
             PluginGroupBuilder::start::<TweenScheduleIndependentPlugins>()
                 .add(TweenCorePlugin::default())
-                .add(interpolate::DefaultInterpolatorsTypeRegistrationPlugin)
-                .add(interpolation::EaseKindTypeRegistrationPlugin)
                 .add_group(tween_event::DefaultTweenEventPlugins);
         group
     }
@@ -461,20 +459,11 @@ pub struct TweenSchedulesDependentPlugins {
 impl PluginGroup for TweenSchedulesDependentPlugins {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         let group =
-            PluginGroupBuilder::start::<TweenSchedulesDependentPlugins>()
-                .add(
-                    interpolate::DefaultInterpolatorsSystemRegistrationPlugin {
-                        schedules: self.schedules.clone(),
-                    },
-                )
-                .add(
-                    interpolate::DefaultDynInterpolatorsSystemRegistrationPlugin {
-                        schedules: self.schedules.clone(),
-                    },
-                )
-                .add(SystemSetsRegistraitonPlugin {
+            PluginGroupBuilder::start::<TweenSchedulesDependentPlugins>().add(
+                SystemSetsRegistraitonPlugin {
                     schedules: self.schedules.clone(),
-                });
+                },
+            );
         group
     }
 }
@@ -509,9 +498,17 @@ where
 {
     fn build(&self, app: &mut App) {
         #[allow(clippy::let_and_return)]
-        app.add_plugins(interpolation::EaseKindSystemRegistrationPlugin::<
-            TimeCtx,
-        >::on_schedule(self.schedule.clone()));
+        app.add_plugins((
+            interpolation::EaseKindPlugin::<TimeCtx>::in_schedule(
+                self.schedule.clone(),
+            ),
+            interpolate::DefaultInterpolatorsPlugin::<TimeCtx>::in_schedule(
+                self.schedule.clone(),
+            ),
+            interpolate::DefaultDynInterpolatorsPlugin::<TimeCtx>::in_schedule(
+                self.schedule.clone(),
+            ),
+        ));
         #[cfg(feature = "bevy_lookup_curve")]
         app.add_plugins(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationForSchedulePlugin::<TimeCtx>::on_schedule(self.schedule.clone()));
         if !app.is_plugin_added::<TimeRunnerSystemsPlugin<TimeCtx>>() {
