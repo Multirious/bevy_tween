@@ -467,10 +467,13 @@ impl Default for TweenAppResource {
 ///
 ///   [`UpdateInterpolationValue`]: [`TweenSystemSet::UpdateInterpolationValue`]
 ///   [`ApplyTween`]: [`TweenSystemSet::ApplyTween`]
-#[derive(Default)]
 pub struct TweenCorePlugin {
     /// See [`TweenAppResource`]
     pub app_resource: TweenAppResource,
+    /// Enable debug information and warnings.
+    ///
+    /// This currently is passed to [`bevy_time_runner::TimeRunnerPlugin::enable_debug`] field.
+    pub enable_debug: bool,
 }
 
 impl Plugin for TweenCorePlugin {
@@ -478,6 +481,7 @@ impl Plugin for TweenCorePlugin {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
             app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
                 schedule: self.app_resource.schedule,
+                enable_debug: self.enable_debug,
             });
         }
         app.configure_sets(
@@ -496,6 +500,15 @@ impl Plugin for TweenCorePlugin {
 
     fn cleanup(&self, app: &mut App) {
         app.world_mut().remove_resource::<TweenAppResource>();
+    }
+}
+
+impl Default for TweenCorePlugin {
+    fn default() -> Self {
+        Self {
+            app_resource: Default::default(),
+            enable_debug: true,
+        }
     }
 }
 

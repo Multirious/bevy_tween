@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased - XXXX-XX-XX
+- Breaking:
+  - Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)
+- Migrate to Bevy 0.18 by [#75](https://github.com/Multirious/bevy_tween/pull/75)
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
