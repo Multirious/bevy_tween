@@ -422,16 +422,24 @@ pub use tween::resource_tween_system;
 pub use tween_event::tween_event_system;
 
 /// Default plugins for using crate.
-pub struct DefaultTweenPlugins {
+pub struct DefaultTweenPlugins<TimeCtx = ()>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     /// The schedule to register all default systems in
     schedule: InternedScheduleLabel,
     /// Enable debug information and warnings.
     ///
     /// This currently is passed to [`bevy_time_runner::TimeRunnerPlugin::enable_debug`] field.
     pub enable_debug: bool,
+    /// A marker for the plugins time context
+    time_context_marker: PhantomData<TimeCtx>,
 }
 
-impl PluginGroup for DefaultTweenPlugins {
+impl<TimeCtx> PluginGroup for DefaultTweenPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     fn build(self) -> bevy::app::PluginGroupBuilder {
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(TweenCorePlugin {
@@ -441,39 +449,54 @@ impl PluginGroup for DefaultTweenPlugins {
             .add_group(tween_event::DefaultTweenEventPlugins {
                 schedule: self.schedule.clone(),
             })
-            .add(TweenScheduleAndStepDependentPlugins::<()>::for_schedule(
+            .add(TweenSystemsPlugins::<TimeCtx>::in_schedule(
                 self.schedule.clone(),
             ));
         group
     }
 }
 
-impl Default for DefaultTweenPlugins {
-    fn default() -> Self {
-        Self {
-            schedule: PostUpdate.intern(),
-            enable_debug: true,
-        }
-    }
-}
-
-/// Schedule and time-step specific systems.
-/// For example, if I want to add systems for Fixed time-step interpolation,
-/// I should specify here the schedule in which they should run (In this case, probably FixedLast).
-pub struct TweenScheduleAndStepDependentPlugins<TimeCtx>
-where
-    TimeCtx: Default + Send + Sync + 'static,
-{
-    /// The schedule in which the time-context based systems would be executed
-    pub schedule: InternedScheduleLabel,
-    time_context_marker: PhantomData<TimeCtx>,
-}
-impl<TimeCtx> TweenScheduleAndStepDependentPlugins<TimeCtx>
+impl<TimeCtx> DefaultTweenPlugins<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for schedule
-    pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            time_context_marker: PhantomData::default(),
+            schedule: schedule.clone(),
+            ..default()
+        }
+    }
+}
+impl<TimeCtx> Default for DefaultTweenPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            enable_debug: true,
+            time_context_marker: PhantomData::default(),
+        }
+    }
+}
+
+/// Tween system and type registration
+struct TweenSystemsPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// The schedule in which the time-context based systems would be executed
+    schedule: InternedScheduleLabel,
+    time_context_marker: PhantomData<TimeCtx>,
+}
+impl<TimeCtx> TweenSystemsPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Constructor for schedule
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
             time_context_marker: PhantomData::default(),
@@ -481,7 +504,7 @@ where
     }
 }
 
-impl<TimeCtx> Plugin for TweenScheduleAndStepDependentPlugins<TimeCtx>
+impl<TimeCtx> Plugin for TweenSystemsPlugins<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
