@@ -37,32 +37,8 @@ use crate::{
     tween::{SkipTween, TweenInterpolationValue},
 };
 
-/// Plugin for simple generic event that fires at a specific time span.
-#[derive(Default)]
-pub struct TweenEventPlugin<Data>
-where
-    Data: Send + Sync + 'static + Clone,
-{
-    marker: PhantomData<Data>,
-}
-
-impl<Data> Plugin for TweenEventPlugin<Data>
-where
-    Data: Send + Sync + 'static + Clone,
-{
-    fn build(&self, app: &mut App) {
-        let app_resource = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` resource doesn't exist");
-        app.add_plugins(TweenEventOnSchedulePlugin::<Data, ()>::for_schedule(
-            app_resource.schedule,
-        ));
-    }
-}
-
 /// A plugin for registering the tween event system for tween of type Data for the specified schedule
-pub struct TweenEventOnSchedulePlugin<Data, TimeCtx>
+pub struct TweenEventPlugin<Data, TimeCtx = ()>
 where
     Data: Send + Sync + 'static + Clone,
     TimeCtx: Default + Send + Sync + 'static,
@@ -72,13 +48,13 @@ where
     data_marker: PhantomData<Data>,
     time_context_marker: PhantomData<TimeCtx>,
 }
-impl<Data, TimeCtx> TweenEventOnSchedulePlugin<Data, TimeCtx>
+impl<Data, TimeCtx> TweenEventPlugin<Data, TimeCtx>
 where
     Data: Send + Sync + 'static + Clone,
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for schedule
-    pub fn for_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
             data_marker: PhantomData::default(),
@@ -86,7 +62,7 @@ where
         }
     }
 }
-impl<Data, TimeCtx> Plugin for TweenEventOnSchedulePlugin<Data, TimeCtx>
+impl<Data, TimeCtx> Plugin for TweenEventPlugin<Data, TimeCtx>
 where
     Data: Send + Sync + 'static + Clone,
     TimeCtx: Default + Send + Sync + 'static,
@@ -104,15 +80,17 @@ where
 /// Default tween event plugins:
 /// - `TweenEventPlugin::<()>::default()`,
 /// - `TweenEventPlugin::<&'static str>::default()`
-pub struct DefaultTweenEventPlugins;
+pub struct DefaultTweenEventPlugins {
+    pub schedule: InternedScheduleLabel,
+}
 
 impl PluginGroup for DefaultTweenEventPlugins {
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<DefaultTweenEventPlugins>()
-            .add(TweenEventPlugin::<()>::default())
-            .add(TweenEventPlugin::<&'static str>::default())
+            .add(TweenEventPlugin::<()>::in_schedule(self.schedule))
+            .add(TweenEventPlugin::<&'static str>::in_schedule(self.schedule))
     }
 }
 
