@@ -81,6 +81,7 @@ where
 /// - `TweenEventPlugin::<()>::default()`,
 /// - `TweenEventPlugin::<&'static str>::default()`
 pub struct DefaultTweenEventPlugins {
+    /// Schedule to register default tweens in
     pub schedule: InternedScheduleLabel,
 }
 
