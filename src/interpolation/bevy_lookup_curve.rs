@@ -15,30 +15,8 @@ use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 use bevy::platform::collections::HashSet;
 use tracing::error;
 
-/// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation.
-pub struct BevyLookupCurveInterpolationPlugin;
-
-impl Plugin for BevyLookupCurveInterpolationPlugin {
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
-    ///
-    /// [`TweenAppResource`]: crate::TweenAppResource
-    fn build(&self, app: &mut App) {
-        let app_resource = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .expect("`TweenAppResource` to be inserted to world");
-        app.add_plugins(
-            BevyLookupCurveInterpolationForSchedulePlugin::<()>::on_schedule(
-                app_resource.schedule,
-            ),
-        );
-    }
-}
-
 /// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation on the specified schedule
-pub struct BevyLookupCurveInterpolationForSchedulePlugin<TimeCtx>
+pub struct BevyLookupCurveInterpolationPlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
@@ -47,19 +25,19 @@ where
     /// time context marker
     time_context_marker: PhantomData<TimeCtx>,
 }
-impl<TimeCtx> BevyLookupCurveInterpolationForSchedulePlugin<TimeCtx>
+impl<TimeCtx> BevyLookupCurveInterpolationPlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for that schedule
-    pub fn on_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
             time_context_marker: PhantomData::default(),
         }
     }
 }
-impl<TimeCtx> Plugin for BevyLookupCurveInterpolationForSchedulePlugin<TimeCtx>
+impl<TimeCtx> Plugin for BevyLookupCurveInterpolationPlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
