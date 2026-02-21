@@ -28,7 +28,7 @@ default-features = false
 features = ["curve"]
 
 [dependencies.bevy_time_runner]
-git = "https://github.com/Multirious/bevy_time_runner"
+git = "https://github.com/multirious/bevy_time_runner"
 branch = "main"
 
 [dependencies.serde]

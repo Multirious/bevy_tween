@@ -3,8 +3,11 @@
 ## Unreleased - XXXX-XX-XX
 
 Breaking:
+
 - rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
 - add `enable_time_runner_debug` field to `TweenCorePlugin`
+- Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)
+- Migrate to Bevy 0.18 by [#75](https://github.com/Multirious/bevy_tween/pull/75)
 
 - Add `animation_for_time_context<TimeCtx>()` for animation creation on different time steps (for example, `Fixed`)
 - Add the ability to register systems for different schedules other than the default one (important if you want the animators from the bullet above to update the interpolation values at the right time)
@@ -42,8 +45,8 @@ Breaking:
 ### Breaking Changes
 
 - `interpolate` functions now take an additional `previous_value` argument, which you can now use to make delta tweens.
-Still, you'd have to update everything that implements `Interpolator` to match the new signature.
-  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is     a required component, so it'll always be on the tween's entity unless you explicitly remove it.
+  Still, you'd have to update everything that implements `Interpolator` to match the new signature.
+  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is a required component, so it'll always be on the tween's entity unless you explicitly remove it.
 
 ### Changes
 
