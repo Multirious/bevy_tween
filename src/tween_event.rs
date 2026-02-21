@@ -45,8 +45,7 @@ where
 {
     /// The systems schedule
     pub schedule: InternedScheduleLabel,
-    data_marker: PhantomData<Data>,
-    time_context_marker: PhantomData<TimeCtx>,
+    marker: PhantomData<(Data, TimeCtx)>,
 }
 impl<Data, TimeCtx> TweenEventPlugin<Data, TimeCtx>
 where
@@ -57,8 +56,7 @@ where
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
-            data_marker: PhantomData::default(),
-            time_context_marker: PhantomData::default(),
+            marker: PhantomData::default(),
         }
     }
 }
@@ -69,7 +67,7 @@ where
 {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            self.schedule.clone(),
+            self.schedule,
             (tween_event_system::<Data, TimeCtx>)
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )

@@ -23,7 +23,7 @@ where
     /// The systems' schedules
     pub schedule: InternedScheduleLabel,
     /// time context marker
-    time_context_marker: PhantomData<TimeCtx>,
+    marker: PhantomData<TimeCtx>,
 }
 impl<TimeCtx> BevyLookupCurveInterpolationPlugin<TimeCtx>
 where
@@ -33,7 +33,7 @@ where
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
-            time_context_marker: PhantomData::default(),
+            marker: PhantomData::default(),
         }
     }
 }
@@ -43,7 +43,7 @@ where
 {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            self.schedule.clone(),
+            self.schedule,
             (
                 sample_lookup_curve_system::<TimeCtx>
                     .in_set(TweenSystemSet::UpdateInterpolationValue),
