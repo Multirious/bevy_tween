@@ -258,25 +258,34 @@ where
         app.add_tween_systems(
             schedule,
             (
-                tween::component_tween_system::<Translation, TimeCtx>(),
-                tween::component_tween_system::<Rotation, TimeCtx>(),
-                tween::component_tween_system::<Scale, TimeCtx>(),
-                tween::component_tween_system::<AngleZ, TimeCtx>(),
+                tween::component_tween_system_with_time_context::<Translation, TimeCtx>(),
+                tween::component_tween_system_with_time_context::<Rotation, TimeCtx>(),
+                tween::component_tween_system_with_time_context::<Scale, TimeCtx>(),
+                tween::component_tween_system_with_time_context::<AngleZ, TimeCtx>(),
             ),
         );
 
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems(
             schedule,
-            tween::component_tween_system::<SpriteColor, TimeCtx>(),
+            tween::component_tween_system_with_time_context::<
+                SpriteColor,
+                TimeCtx,
+            >(),
         );
 
         #[cfg(feature = "bevy_ui")]
         app.add_tween_systems(
             schedule,
             (
-                tween::component_tween_system::<ui::BackgroundColor, TimeCtx>(),
-                tween::component_tween_system::<ui::BorderColor, TimeCtx>(),
+                tween::component_tween_system_with_time_context::<
+                    ui::BackgroundColor,
+                    TimeCtx,
+                >(),
+                tween::component_tween_system_with_time_context::<
+                    ui::BorderColor,
+                    TimeCtx,
+                >(),
             ),
         );
 
@@ -342,7 +351,7 @@ where
 
         app.add_tween_systems(
             schedule,
-            tween::component_tween_system::<
+            tween::component_tween_system_with_time_context::<
                 BoxedInterpolator<Transform>,
                 TimeCtx,
             >(),
@@ -351,19 +360,21 @@ where
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems(
             schedule,
-            tween::component_tween_system::<BoxedInterpolator<Sprite>, TimeCtx>(
-            ),
+            tween::component_tween_system_with_time_context::<
+                BoxedInterpolator<Sprite>,
+                TimeCtx,
+            >(),
         );
 
         #[cfg(feature = "bevy_ui")]
         app.add_tween_systems(
             schedule,
             (
-                tween::component_tween_system::<
+                tween::component_tween_system_with_time_context::<
                     BoxedInterpolator<bevy::prelude::BackgroundColor>,
                     TimeCtx,
                 >(),
-                tween::component_tween_system::<
+                tween::component_tween_system_with_time_context::<
                     BoxedInterpolator<bevy::prelude::BorderColor>,
                     TimeCtx,
                 >(),
