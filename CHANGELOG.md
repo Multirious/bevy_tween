@@ -15,6 +15,7 @@ Breaking:
   - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeCtx>::for_schedule([your_schedules_here])`
   - Add `component_tween_system_with_time_context` which is the same as `component_tween_system` but the system has the specified `TimeCtx`
   - Add `component_dyn_tween_system_with_time_context` which is the same as `component_dyn_tween_system` but the system has the specified `TimeCtx`
+  - Add `resource_tween_system_with_time_context` which is the same as `resource_tween_system` but the system has the specified `TimeCtx`
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`

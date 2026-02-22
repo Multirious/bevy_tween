@@ -282,7 +282,18 @@ where
 
 /// Alias for [`apply_resource_tween_system`] and may contains more systems
 /// in the future.
-pub fn resource_tween_system<I, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
+pub fn resource_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
+where
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Resource,
+{
+    apply_resource_tween_system::<I, ()>.into_configs()
+}
+
+/// Alias for [`apply_resource_tween_system`] and may contains more systems
+/// in the future.
+pub fn resource_tween_system_with_time_context<I, TimeCtx>()
+-> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Resource,
