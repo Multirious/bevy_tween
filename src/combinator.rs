@@ -4,7 +4,8 @@ use std::time::Duration;
 
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use bevy_time_runner::{
-    Repeat, RepeatStyle, SkipTimeRunner, TimeDirection, TimeRunner, TimeSpan,
+    Repeat, RepeatStyle, SkipTimeRunner, TimeContext, TimeDirection,
+    TimeRunner, TimeSpan,
 };
 
 mod animation_combinators;
@@ -197,7 +198,7 @@ impl<'a> AnimationBuilder<'a> {
                 time_runner.set_length(dur);
             }
         }
-        entity_commands.insert(time_runner);
+        entity_commands.insert((time_runner, TimeContext::<()>::default()));
         if skipped {
             entity_commands.insert(SkipTimeRunner);
         }
