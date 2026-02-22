@@ -3,20 +3,14 @@
 ## Unreleased - XXXX-XX-XX
 
 Breaking:
-
+- you'd now have to specify a schedule for `DefaultTweenPlugins` to run in using the `in_schedule` function
 - rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
 - add `enable_time_runner_debug` field to `TweenCorePlugin`
 - Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)
 - Migrate to Bevy 0.18 by [#75](https://github.com/Multirious/bevy_tween/pull/75)
 
 - Add `animation_for_time_context<TimeCtx>()` for animation creation on different time steps (for example, `Fixed`)
-- Add the ability to register systems for different schedules other than the default one (important if you want the animators from the bullet above to update the interpolation values at the right time)
-  - To do that (see `time_context_animation.rs` example):
-    - do not register `DefaultTweenPlugins`
-    - register `TweenScheduleIndependentPlugins`
-    - register `TweenSchedulesDependentPlugins { schedules: [your_schedules_here] }`
-    - for each `TimeCtx`, choose a schedule in which it should be applied, then register
-      `TweenScheduleAndStepDependentPlugins::<TimeCtx>::for_schedule([schedule_here])`
+  - In order for tweens to work on a different time context, you have to register another instance of the `DefaultTweenPlugins`, for example: `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())`, see time_context_animation example
   - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeCtx>::for_schedule([your_schedules_here])`
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
