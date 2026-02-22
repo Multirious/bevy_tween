@@ -2,7 +2,7 @@ use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use bevy_tween::{
-    combinator::{parallel, tween_exact, AnimationCommands},
+    combinator::{AnimationCommands, parallel, tween_exact},
     interpolate::angle_z,
     prelude::*,
     tween::TargetComponent,
@@ -10,7 +10,10 @@ use bevy_tween::{
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
+        ))
         .add_systems(Startup, setup)
         .run();
 }

@@ -1,9 +1,5 @@
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_tween::{
-    TweenScheduleAndStepDependentPlugins, TweenScheduleIndependentPlugins,
-    TweenSchedulesDependentPlugins, combinator::*, prelude::*,
-    tween::AnimationTarget,
-};
+use bevy_tween::{combinator::*, prelude::*, tween::AnimationTarget};
 use std::time::Duration;
 
 fn secs(secs: f32) -> Duration {
@@ -14,13 +10,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            TweenScheduleIndependentPlugins,
-            TweenSchedulesDependentPlugins {
-                schedules: vec![FixedLast.intern()],
-            },
-            TweenScheduleAndStepDependentPlugins::<Fixed>::for_schedule(
-                FixedLast.intern(),
-            ),
+            DefaultTweenPluginsOnDefaultTime::default()::<Fixed>::in_schedule(FixedLast.intern()),
         ))
         .insert_resource(Time::<Fixed>::from_seconds(0.25))
         .add_systems(Startup, (setup, spawn_circle_with_tweens))

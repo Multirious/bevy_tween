@@ -25,7 +25,12 @@ mod interpolate {
     impl Interpolator for AtlasIndex {
         type Item = Sprite;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
+        fn interpolate(
+            &self,
+            item: &mut Self::Item,
+            value: f32,
+            _previous_value: f32,
+        ) {
             let Some(texture_atlas) = &mut item.texture_atlas else {
                 return;
             };
@@ -40,7 +45,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            DefaultTweenPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
             interpolate::custom_interpolators_plugin,
         ))
         .add_systems(Startup, setup)

@@ -4,6 +4,7 @@
 
 Breaking:
 - you'd now have to specify a schedule for `DefaultTweenPlugins` to run in using the `in_schedule` function
+  - For default usage, you could either manually write: `DefaultTweenPlugins::<()>::in_schedule(PostUpdate.intern())`, or use `DefaultTweenPluginsOnDefaultTime::default()`
 - rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
 - add `enable_time_runner_debug` field to `TweenCorePlugin`
 - Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)

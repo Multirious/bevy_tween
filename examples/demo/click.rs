@@ -14,7 +14,10 @@ fn secs(secs: f32) -> Duration {
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
+        ))
         .add_systems(Startup, setup)
         .add_systems(
             Update,

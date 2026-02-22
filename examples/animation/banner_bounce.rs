@@ -1,15 +1,16 @@
 use std::f32::consts::PI;
 
+use bevy::render::view::Hdr;
 use bevy::{
-    color::{palettes::css::WHITE, Srgba},
-    core_pipeline::{tonemapping::Tonemapping},
+    color::{Srgba, palettes::css::WHITE},
+    core_pipeline::tonemapping::Tonemapping,
+    ecs::schedule::ScheduleLabel,
     post_process::bloom::Bloom,
     prelude::*,
     window,
 };
-use bevy::render::view::Hdr;
 use bevy_tween::{
-    combinator::{go, parallel, sequence, tween_exact, AnimationCommands},
+    combinator::{AnimationCommands, go, parallel, sequence, tween_exact},
     prelude::*,
 };
 
@@ -35,7 +36,7 @@ fn main() {
                 }),
                 ..default()
             }),
-            DefaultTweenPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
         ))
         .add_systems(Startup, (animation, setup_camera))
         .run();
@@ -205,7 +206,8 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
     // ========================================================================
     let mut bevy_tween_text_color = bevy_tween_text.state(white_color);
     let mut bevy_tween_text_angle_z = bevy_tween_text.state(PI);
-    let mut bevy_tween_text_scale = bevy_tween_text.state(Vec3::ZERO * SCALE_AS_F32);
+    let mut bevy_tween_text_scale =
+        bevy_tween_text.state(Vec3::ZERO * SCALE_AS_F32);
     let mut square_and_triangle_scale =
         square_and_triangle.state(Vec3::ZERO * SCALE_AS_F32);
     let mut square_and_triangle_alpha = square_and_triangle.state(1.);
@@ -219,7 +221,8 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
         cornering_right.state(cornering_right_tween_start);
     let mut cornering_left_translation =
         cornering_left.state(cornering_left_tween_start);
-    let mut dot_grid_scale = dot_grid.state(Vec3::new(0.01, 0.01, 0.) * SCALE_AS_F32);
+    let mut dot_grid_scale =
+        dot_grid.state(Vec3::new(0.01, 0.01, 0.) * SCALE_AS_F32);
 
     fn secs(secs: f32) -> Duration {
         Duration::from_secs_f32(secs)
@@ -240,18 +243,21 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 tween_exact(
                     secs(0.)..secs(9.),
                     EaseKind::CircularOut,
-                    bevy_tween_text_scale.with(scale_to(Vec3::ONE * SCALE_AS_F32)),
+                    bevy_tween_text_scale
+                        .with(scale_to(Vec3::ONE * SCALE_AS_F32)),
                 ),
                 tween_exact(
                     secs(11.)..secs(11.5),
                     EaseKind::SineOut,
-                    bevy_tween_text_scale
-                        .with(scale_to(Vec3::ONE * text_pop_scale * SCALE_AS_F32)),
+                    bevy_tween_text_scale.with(scale_to(
+                        Vec3::ONE * text_pop_scale * SCALE_AS_F32,
+                    )),
                 ),
                 tween_exact(
                     secs(11.5)..secs(12.),
                     EaseKind::SineIn,
-                    bevy_tween_text_scale.with(scale_to(Vec3::ZERO * SCALE_AS_F32)),
+                    bevy_tween_text_scale
+                        .with(scale_to(Vec3::ZERO * SCALE_AS_F32)),
                 ),
                 tween_exact(
                     secs(10.)..secs(12.),
@@ -275,7 +281,8 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 tween_exact(
                     secs(0.)..secs(9.),
                     EaseKind::CircularOut,
-                    square_and_triangle_scale.with(scale_to(Vec3::ONE * SCALE_AS_F32)),
+                    square_and_triangle_scale
+                        .with(scale_to(Vec3::ONE * SCALE_AS_F32)),
                 ),
                 tween_exact(
                     secs(4.)..secs(10.),
@@ -353,8 +360,9 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
                 tween_exact(
                     secs(11.5)..secs(12.),
                     EaseKind::QuadraticInOut,
-                    dot_grid_scale
-                        .with(scale_to(Vec3::new(0.01, 0.01, 0.) * SCALE_AS_F32)),
+                    dot_grid_scale.with(scale_to(
+                        Vec3::new(0.01, 0.01, 0.) * SCALE_AS_F32,
+                    )),
                 ),
             ),
             go(secs(12.)),
@@ -363,9 +371,11 @@ fn animation(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 type InterpolateSpriteAlpha = Box<dyn Interpolator<Item = Sprite>>;
 fn sprite_alpha(start: f32, end: f32) -> InterpolateSpriteAlpha {
-    Box::new(interpolate::closure(move |sprite: &mut Sprite, value, _| {
-        sprite.color = sprite.color.with_alpha(start.lerp(end, value));
-    }))
+    Box::new(interpolate::closure(
+        move |sprite: &mut Sprite, value, _| {
+            sprite.color = sprite.color.with_alpha(start.lerp(end, value));
+        },
+    ))
 }
 
 fn sprite_alpha_to(to: f32) -> impl Fn(&mut f32) -> InterpolateSpriteAlpha {

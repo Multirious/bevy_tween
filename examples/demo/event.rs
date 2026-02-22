@@ -9,7 +9,10 @@ use bevy_tween::{
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
+        ))
         .add_systems(Startup, setup)
         .add_systems(Update, (effect_system, despawn_effect_system))
         .run();

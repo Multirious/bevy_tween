@@ -405,6 +405,8 @@ pub mod prelude {
 
     pub use crate::BevyTweenRegisterSystems;
     pub use crate::DefaultTweenPlugins;
+
+    pub use crate::DefaultTweenPluginsOnDefaultTime;
 }
 
 #[cfg(feature = "bevy_asset")]
@@ -419,6 +421,9 @@ pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
 
 pub use tween_event::tween_event_system;
+
+/// The default tween plugins on default time context
+pub type DefaultTweenPluginsOnDefaultTime = DefaultTweenPlugins<()>;
 
 /// Default plugins for using crate.
 pub struct DefaultTweenPlugins<TimeCtx = ()>

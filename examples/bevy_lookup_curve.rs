@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_tween::{
     bevy_lookup_curve::{
-        editor::LookupCurveEditor, Knot, KnotInterpolation, LookupCurve,
-        LookupCurvePlugin,
+        Knot, KnotInterpolation, LookupCurve, LookupCurvePlugin,
+        editor::LookupCurveEditor,
     },
     combinator::tween,
     interpolate::translation,
@@ -16,7 +16,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            DefaultTweenPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
             EguiPlugin::default(),
             LookupCurvePlugin,
         ))

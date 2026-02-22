@@ -8,7 +8,10 @@ use bevy_tween::{
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+        .add_plugins((
+            DefaultPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
+        ))
         .add_systems(Startup, setup)
         .run();
 }
@@ -169,29 +172,32 @@ fn setup(mut commands: Commands) {
     commands
         .spawn((sprite(start_x, y), AnimationTarget))
         .with_children(|c| {
-            c.spawn((TimeRunner::new(Duration::from_secs(5)), TimeContext::<()>::default()))
-                .with_children(|c| {
-                    c.spawn((
-                        TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
-                        EaseKind::QuadraticInOut,
-                        ComponentTween::new_target(
-                            TargetComponent::marker(),
-                            Translation {
-                                start: Vec3::new(start_x, y, 0.),
-                                end: Vec3::new(end_x, y, 0.),
-                                delta: false,
-                            },
-                        ),
-                        ComponentTween::new_target(
-                            TargetComponent::marker(),
-                            AngleZ {
-                                start: angle_start,
-                                end: angle_end,
-                                delta: false,
-                            },
-                        ),
-                    ));
-                });
+            c.spawn((
+                TimeRunner::new(Duration::from_secs(5)),
+                TimeContext::<()>::default(),
+            ))
+            .with_children(|c| {
+                c.spawn((
+                    TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),
+                    EaseKind::QuadraticInOut,
+                    ComponentTween::new_target(
+                        TargetComponent::marker(),
+                        Translation {
+                            start: Vec3::new(start_x, y, 0.),
+                            end: Vec3::new(end_x, y, 0.),
+                            delta: false,
+                        },
+                    ),
+                    ComponentTween::new_target(
+                        TargetComponent::marker(),
+                        AngleZ {
+                            start: angle_start,
+                            end: angle_end,
+                            delta: false,
+                        },
+                    ),
+                ));
+            });
         });
     // equivalent to
     //
@@ -214,7 +220,10 @@ fn setup(mut commands: Commands) {
     let sprite = commands.spawn(sprite(start_x, y)).id();
 
     commands
-        .spawn((TimeRunner::new(Duration::from_secs(5)),TimeContext::<()>::default()))
+        .spawn((
+            TimeRunner::new(Duration::from_secs(5)),
+            TimeContext::<()>::default(),
+        ))
         .with_children(|c| {
             c.spawn((
                 TimeSpan::try_from(..Duration::from_secs(5)).unwrap(),

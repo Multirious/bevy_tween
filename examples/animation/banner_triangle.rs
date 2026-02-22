@@ -1,12 +1,12 @@
-use std::f32::consts::TAU;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_tween::{
-    combinator::{parallel, tween_exact, AnimationCommands},
+    combinator::{AnimationCommands, parallel, tween_exact},
     interpolate::{angle_z, translation},
     prelude::*,
     tween::{AnimationTarget, TargetComponent},
 };
+use std::f32::consts::TAU;
 
 fn main() {
     App::new()
@@ -20,7 +20,7 @@ fn main() {
                 }),
                 ..Default::default()
             }),
-            DefaultTweenPlugins,
+            DefaultTweenPluginsOnDefaultTime::default(),
         ))
         .add_systems(Startup, setup)
         .run();
