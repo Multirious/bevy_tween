@@ -14,7 +14,7 @@ where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component<Mutability = Mutable>,
 {
-    component_tween_system_with_time_context::<I, ()>().into_configs()
+    apply_component_tween_system::<I, ()>.into_configs()
 }
 
 /// Alias for [`apply_component_tween_system`] and may contains more systems
@@ -258,7 +258,19 @@ pub fn apply_component_tween_system<I, TimeCtx>(
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `component_tween_system::<BoxedInterpolator<...>>()` for consistency
-pub fn component_dyn_tween_system<C, TimeCtx>()
+pub fn component_dyn_tween_system<C>() -> ScheduleConfigs<ScheduleSystem>
+where
+    C: Component<Mutability = Mutable>,
+{
+    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>, ()>
+        .into_configs()
+}
+
+/// System alias for [`component_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+///
+/// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
+/// You might want to use `component_tween_system::<BoxedInterpolator<...>>()` for consistency
+pub fn component_dyn_tween_system_with_time_context<C, TimeCtx>()
 -> ScheduleConfigs<ScheduleSystem>
 where
     C: Component<Mutability = Mutable>,

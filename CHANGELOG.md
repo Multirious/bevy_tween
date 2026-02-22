@@ -13,7 +13,8 @@ Breaking:
 - Add `animation_for_time_context<TimeCtx>()` for animation creation on different time steps (for example, `Fixed`)
   - In order for tweens to work on a different time context, you have to register another instance of the `DefaultTweenPlugins`, for example: `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())`, see time_context_animation example
   - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeCtx>::for_schedule([your_schedules_here])`
-  - Add `component_tween_system_with_time_context` which is the same as `component_tween_system_with_time_context` but the system has the specified `TimeCtx`
+  - Add `component_tween_system_with_time_context` which is the same as `component_tween_system` but the system has the specified `TimeCtx`
+  - Add `component_dyn_tween_system_with_time_context` which is the same as `component_dyn_tween_system` but the system has the specified `TimeCtx`
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
