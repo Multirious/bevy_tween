@@ -4,7 +4,6 @@ use bevy::render::view::Hdr;
 use bevy::{
     color::{Srgba, palettes::css::WHITE},
     core_pipeline::tonemapping::Tonemapping,
-    ecs::schedule::ScheduleLabel,
     post_process::bloom::Bloom,
     prelude::*,
     window,

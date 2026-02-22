@@ -10,13 +10,16 @@ use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
 
 mod interpolate {
-    use bevy::prelude::*;
+    use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
     use bevy_tween::{prelude::*, resource_tween_system};
 
     pub use bevy_tween::interpolate::*;
 
     pub fn custom_interpolators_plugin(app: &mut App) {
-        app.add_tween_systems(resource_tween_system::<EffectIntensity>());
+        app.add_tween_systems(
+            PostUpdate.intern(),
+            resource_tween_system::<EffectIntensity>(),
+        );
     }
 
     pub struct EffectIntensity {

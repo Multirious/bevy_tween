@@ -13,17 +13,20 @@ pub struct Circle {
 
 mod interpolate {
     use super::Circle;
-    use bevy::prelude::*;
+    use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
     use bevy_tween::{
         component_dyn_tween_system, component_tween_system, prelude::*,
     };
 
     pub fn interpolators_plugin(app: &mut App) {
-        app.add_tween_systems((
-            component_dyn_tween_system::<Circle>(),
-            component_tween_system::<CircleRadius>(),
-            component_tween_system::<CircleHue>(),
-        ));
+        app.add_tween_systems(
+            PostUpdate.intern(),
+            (
+                component_dyn_tween_system::<Circle>(),
+                component_tween_system::<CircleRadius>(),
+                component_tween_system::<CircleHue>(),
+            ),
+        );
     }
 
     pub struct CircleRadius {
