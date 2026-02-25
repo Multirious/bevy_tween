@@ -478,11 +478,13 @@ pub struct TweenCorePlugin {
 
 impl Plugin for TweenCorePlugin {
     fn build(&self, app: &mut App) {
+        let mut time_runner_plugin =
+            bevy_time_runner::TimeRunnerPlugin::<()>::in_schedule(
+                self.app_resource.schedule,
+            );
+        time_runner_plugin.enable_debug = self.enable_debug;
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
-            app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
-                schedule: self.app_resource.schedule,
-                enable_debug: self.enable_debug,
-            });
+            app.add_plugins(time_runner_plugin);
         }
         app.configure_sets(
             self.app_resource.schedule,
