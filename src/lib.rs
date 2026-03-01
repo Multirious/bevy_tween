@@ -431,7 +431,7 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// The schedule to register all default systems in
-    schedule: InternedScheduleLabel,
+    pub schedule: InternedScheduleLabel,
     /// Enable debug information and warnings.
     ///
     /// This currently is passed to [`bevy_time_runner::TimeRunnerPlugin::enable_debug`] field.
