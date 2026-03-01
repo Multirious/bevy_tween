@@ -36,23 +36,27 @@ impl<'r, 'a> AnimationCommands<'r, 'a> {
 pub trait AnimationBuilderExt {
     /// Construct [`AnimationBuilder`] from [`Self`]
     fn animation(&mut self) -> AnimationBuilder<'_>;
-}
 
-/// Extension trait for types that can be used to make an animation.
-pub trait AnimationBuilderExtGeneric {
-    /// Construct [`AnimationBuilder`] from [`Self`]
-    fn animation_for_time_context<TimeCtx>(
+    /// Construct [`AnimationBuilder`] from [`Self`] within the specified time context.
+    fn animation_in_time_context<TimeCtx>(
         &mut self,
     ) -> AnimationBuilder<'_, TimeCtx>
     where
         TimeCtx: Default + Send + Sync + 'static;
 }
 
-impl AnimationBuilderExtGeneric for EntityCommands<'_> {
+impl AnimationBuilderExt for EntityCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`EntityCommands`].
     /// Use this entity as the animator.
     /// Tweens will be spawned as children of this entity.
-    fn animation_for_time_context<TimeCtx>(
+    fn animation(&mut self) -> AnimationBuilder<'_> {
+        self.animation_in_time_context()
+    }
+
+    /// Construct [`AnimationBuilder`] from [`EntityCommands`].
+    /// Use this entity as the animator.
+    /// Tweens will be spawned as children of this entity and only runs within the specified time context.
+    fn animation_in_time_context<TimeCtx>(
         &mut self,
     ) -> AnimationBuilder<'_, TimeCtx>
     where
@@ -61,39 +65,17 @@ impl AnimationBuilderExtGeneric for EntityCommands<'_> {
         AnimationBuilder::new(self.reborrow())
     }
 }
-impl AnimationBuilderExt for EntityCommands<'_> {
-    /// Construct [`AnimationBuilder`] from [`EntityCommands`].
-    /// Use this entity as the animator.
-    /// Tweens will be spawned as children of this entity.
-    fn animation(&mut self) -> AnimationBuilder<'_> {
-        self.animation_for_time_context()
-    }
-}
 
-impl AnimationBuilderExtGeneric for Commands<'_, '_> {
-    /// Construct [`AnimationBuilder`] from [`Commands`].
-    /// This will automatically spawn an entity as the animator.
-    fn animation_for_time_context<TimeCtx>(
-        &mut self,
-    ) -> AnimationBuilder<'_, TimeCtx>
-    where
-        TimeCtx: Default + Send + Sync + 'static,
-    {
-        AnimationBuilder::new(self.spawn_empty())
-    }
-}
 impl AnimationBuilderExt for Commands<'_, '_> {
     /// Construct [`AnimationBuilder`] from [`Commands`].
     /// This will automatically spawn an entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        self.animation_for_time_context()
+        self.animation_in_time_context()
     }
-}
 
-impl AnimationBuilderExtGeneric for ChildSpawnerCommands<'_> {
-    /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
-    /// This will automatically spawn a child entity as the animator.
-    fn animation_for_time_context<TimeCtx>(
+    /// Construct [`AnimationBuilder`] from [`Commands`].
+    /// This will automatically spawn an entity as the animator and only runs within the specified time context.
+    fn animation_in_time_context<TimeCtx>(
         &mut self,
     ) -> AnimationBuilder<'_, TimeCtx>
     where
@@ -102,11 +84,23 @@ impl AnimationBuilderExtGeneric for ChildSpawnerCommands<'_> {
         AnimationBuilder::new(self.spawn_empty())
     }
 }
+
 impl AnimationBuilderExt for ChildSpawnerCommands<'_> {
     /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
     /// This will automatically spawn a child entity as the animator.
     fn animation(&mut self) -> AnimationBuilder<'_> {
-        self.animation_for_time_context()
+        self.animation_in_time_context()
+    }
+
+    /// Construct [`AnimationBuilder`] from [`ChildSpawnerCommands`].
+    /// This will automatically spawn a child entity as the animator and only runs within the specified time context.
+    fn animation_in_time_context<TimeCtx>(
+        &mut self,
+    ) -> AnimationBuilder<'_, TimeCtx>
+    where
+        TimeCtx: Default + Send + Sync + 'static,
+    {
+        AnimationBuilder::new(self.spawn_empty())
     }
 }
 
