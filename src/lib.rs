@@ -490,14 +490,12 @@ where
         Self {
             marker: PhantomData,
             schedule,
-            ..default()
+            enable_debug: true,
         }
     }
 }
-impl<TimeCtx> Default for DefaultTweenPlugins<TimeCtx>
-where
-    TimeCtx: Default + Send + Sync + 'static,
-{
+
+impl Default for DefaultTweenPlugins<()> {
     fn default() -> Self {
         Self {
             schedule: PostUpdate.intern(),
