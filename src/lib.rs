@@ -430,7 +430,7 @@ pub struct DefaultTweenPlugins<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The schedule to register all default systems in
+    /// Register all systems from this plugin to the specified schedule.
     pub schedule: InternedScheduleLabel,
     /// Enable debug information and warnings.
     ///
@@ -485,7 +485,7 @@ impl<TimeCtx> DefaultTweenPlugins<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// Constructor for schedule
+    /// Register all systems from this plugin to the specified schedule.
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             marker: PhantomData::default(),
