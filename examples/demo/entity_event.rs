@@ -7,10 +7,7 @@ use bevy_tween::{
 
 fn main() {
     App::new()
-        .add_plugins((
-            MinimalPlugins,
-            DefaultTweenPluginsOnDefaultTime::default(),
-        ))
+        .add_plugins((MinimalPlugins, DefaultTweenPlugins::default()))
         .add_systems(Startup, setup)
         .add_observer(|trigger: On<TweenEvent<&'static str>>| {
             println!("TweenEvent: {}", trigger.data)

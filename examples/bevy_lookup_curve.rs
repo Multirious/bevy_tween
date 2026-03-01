@@ -16,7 +16,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            DefaultTweenPluginsOnDefaultTime::default(),
+            DefaultTweenPlugins::default(),
             EguiPlugin::default(),
             LookupCurvePlugin,
         ))

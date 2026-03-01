@@ -46,7 +46,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            DefaultTweenPluginsOnDefaultTime::default(),
+            DefaultTweenPlugins::default(),
             interpolate::custom_interpolators_plugin,
         ))
         .add_systems(Startup, setup)

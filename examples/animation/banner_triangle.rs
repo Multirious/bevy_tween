@@ -20,7 +20,7 @@ fn main() {
                 }),
                 ..Default::default()
             }),
-            DefaultTweenPluginsOnDefaultTime::default(),
+            DefaultTweenPlugins::default(),
         ))
         .add_systems(Startup, setup)
         .run();

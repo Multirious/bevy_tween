@@ -79,7 +79,7 @@ fn main() {
     App::new()
         .add_plugins((
             MinimalPlugins,
-            DefaultTweenPluginsOnDefaultTime::default(),
+            DefaultTweenPlugins::default(),
             interpolate::interpolators_plugin,
         ))
         .add_systems(Startup, setup)

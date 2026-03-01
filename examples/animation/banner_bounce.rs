@@ -35,7 +35,7 @@ fn main() {
                 }),
                 ..default()
             }),
-            DefaultTweenPluginsOnDefaultTime::default(),
+            DefaultTweenPlugins::default(),
         ))
         .add_systems(Startup, (animation, setup_camera))
         .run();
