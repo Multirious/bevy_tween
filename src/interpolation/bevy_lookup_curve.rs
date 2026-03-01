@@ -41,8 +41,14 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
+        #[allow(deprecated)]
+        let schedule = app
+            .world()
+            .get_resource::<crate::TweenAppResource>()
+            .map(|a| a.schedule)
+            .unwrap_or(self.schedule);
         app.add_systems(
-            self.schedule,
+            schedule,
             (
                 sample_lookup_curve_system::<TimeCtx>
                     .in_set(TweenSystemSet::UpdateInterpolationValue),
