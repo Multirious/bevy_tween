@@ -15,21 +15,20 @@ use ::bevy_lookup_curve::{LookupCache, LookupCurve};
 use bevy::platform::collections::HashSet;
 use tracing::error;
 
-/// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation on the specified schedule
+/// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation
 pub struct BevyLookupCurveInterpolationPlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The systems' schedules
+    /// The schedule this plugin will register all the systems to.
     pub schedule: InternedScheduleLabel,
-    /// time context marker
     marker: PhantomData<TimeCtx>,
 }
 impl<TimeCtx> BevyLookupCurveInterpolationPlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// Constructor for that schedule
+    /// The plugin will register all systems to this schedule.
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
