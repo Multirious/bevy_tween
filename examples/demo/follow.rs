@@ -20,7 +20,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            DefaultTweenPlugins,
+            DefaultTweenPlugins::default(),
             EguiPlugin::default(),
             ResourceInspectorPlugin::<Config>::new(),
         ))

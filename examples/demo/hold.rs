@@ -1,22 +1,25 @@
 use std::f32::consts::PI;
 
+use bevy::window::CursorIcon;
 use bevy::{
     color::palettes::css::{DEEP_PINK, WHITE},
     prelude::*,
     window::{PrimaryWindow, SystemCursorIcon},
 };
-use bevy::window::CursorIcon;
 use bevy_tween::{bevy_time_runner::TimeRunner, prelude::*};
 use rand::prelude::*;
 
 mod interpolate {
-    use bevy::prelude::*;
+    use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
     use bevy_tween::{prelude::*, resource_tween_system};
 
     pub use bevy_tween::interpolate::*;
 
     pub fn custom_interpolators_plugin(app: &mut App) {
-        app.add_tween_systems(resource_tween_system::<EffectIntensity>());
+        app.add_tween_systems(
+            PostUpdate.intern(),
+            resource_tween_system::<EffectIntensity>(),
+        );
     }
 
     pub struct EffectIntensity {
@@ -27,7 +30,12 @@ mod interpolate {
     impl Interpolator for EffectIntensity {
         type Item = super::EffectIntensitiy;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
+        fn interpolate(
+            &self,
+            item: &mut Self::Item,
+            value: f32,
+            _previous_value: f32,
+        ) {
             item.0 = self.start.lerp(self.end, value)
         }
     }
@@ -52,7 +60,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            DefaultTweenPlugins,
+            DefaultTweenPlugins::default(),
             interpolate::custom_interpolators_plugin,
         ))
         .add_systems(Startup, setup)

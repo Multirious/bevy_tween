@@ -1,9 +1,7 @@
 use super::*;
-use bevy::{
-    ecs::{
-        component::Mutable, query::QueryEntityError, schedule::ScheduleConfigs,
-        system::ScheduleSystem,
-    }
+use bevy::ecs::{
+    component::Mutable, query::QueryEntityError, schedule::ScheduleConfigs,
+    system::ScheduleSystem,
 };
 use bevy::platform::collections::{HashMap, HashSet};
 use std::any::type_name;
@@ -16,7 +14,19 @@ where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component<Mutability = Mutable>,
 {
-    apply_component_tween_system::<I>.into_configs()
+    apply_component_tween_system::<I, ()>.into_configs()
+}
+
+/// Alias for [`apply_component_tween_system`] and may contains more systems
+/// in the future.
+pub fn component_tween_system_with_time_context<I, TimeCtx>()
+-> ScheduleConfigs<ScheduleSystem>
+where
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Component<Mutability = Mutable>,
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    apply_component_tween_system::<I, TimeCtx>.into_configs()
 }
 
 /// [`QueryEntityError`] but implemented hash [`Hash`]
@@ -117,11 +127,16 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 /// }
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn apply_component_tween_system<I>(
+pub fn apply_component_tween_system<I, TimeCtx>(
     q_animation_target: Query<(Option<&ChildOf>, Has<AnimationTarget>)>,
     mut q_tween: Query<
-        (Entity, &Tween<TargetComponent, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
-        Without<SkipTween>,
+        (
+            Entity,
+            &Tween<TargetComponent, I>,
+            &TweenInterpolationValue,
+            &mut TweenPreviousValue,
+        ),
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
     mut q_component: Query<&mut I::Item>,
     mut last_entity_error: Local<HashMap<Entity, QueryEntityErrorWithoutWorld>>,
@@ -129,6 +144,7 @@ pub fn apply_component_tween_system<I>(
 ) where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Component<Mutability = Mutable>,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     let mut entity_error = HashMap::default();
     let mut search_error = HashSet::default();
@@ -246,7 +262,21 @@ pub fn component_dyn_tween_system<C>() -> ScheduleConfigs<ScheduleSystem>
 where
     C: Component<Mutability = Mutable>,
 {
-    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>>
+    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>, ()>
+        .into_configs()
+}
+
+/// System alias for [`component_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
+///
+/// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
+/// You might want to use `component_tween_system::<BoxedInterpolator<...>>()` for consistency
+pub fn component_dyn_tween_system_with_time_context<C, TimeCtx>()
+-> ScheduleConfigs<ScheduleSystem>
+where
+    C: Component<Mutability = Mutable>,
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    apply_component_tween_system::<Box<dyn Interpolator<Item = C>>, TimeCtx>
         .into_configs()
 }
 
@@ -257,7 +287,19 @@ where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Resource,
 {
-    apply_resource_tween_system::<I>.into_configs()
+    apply_resource_tween_system::<I, ()>.into_configs()
+}
+
+/// Alias for [`apply_resource_tween_system`] and may contains more systems
+/// in the future.
+pub fn resource_tween_system_with_time_context<I, TimeCtx>()
+-> ScheduleConfigs<ScheduleSystem>
+where
+    I: Interpolator + Send + Sync + 'static,
+    I::Item: Resource,
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    apply_resource_tween_system::<I, TimeCtx>.into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetResource`] with
@@ -310,16 +352,21 @@ where
 /// }
 /// ```
 #[allow(clippy::type_complexity)]
-pub fn apply_resource_tween_system<I>(
+pub fn apply_resource_tween_system<I, TimeCtx>(
     mut q_tween: Query<
-        (&Tween<TargetResource, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
-        Without<SkipTween>,
+        (
+            &Tween<TargetResource, I>,
+            &TweenInterpolationValue,
+            &mut TweenPreviousValue,
+        ),
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
     resource: Option<ResMut<I::Item>>,
     mut last_error: Local<bool>,
 ) where
     I: Interpolator,
     I::Item: Resource,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     let Some(mut resource) = resource else {
         if !*last_error {
@@ -332,33 +379,41 @@ pub fn apply_resource_tween_system<I>(
         return;
     };
     *last_error = false;
-    q_tween.iter_mut().for_each(|(tween, ease_value, mut previous_value)| {
-        tween.interpolator.interpolate(&mut resource, ease_value.0, previous_value.0);
-        previous_value.0 = ease_value.0;
-    })
+    q_tween
+        .iter_mut()
+        .for_each(|(tween, ease_value, mut previous_value)| {
+            tween.interpolator.interpolate(
+                &mut resource,
+                ease_value.0,
+                previous_value.0,
+            );
+            previous_value.0 = ease_value.0;
+        })
 }
 
 /// System alias for [`apply_resource_tween_system`] that uses boxed dynamic [`Interpolator`]. (`Box<dyn Interpolator`)
 ///
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `resource_tween_system::<BoxedInterpolator<...>>()` for consistency
-pub fn resource_dyn_tween_system<R>() -> ScheduleConfigs<ScheduleSystem>
+pub fn resource_dyn_tween_system<R, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     R: Resource,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_resource_tween_system::<Box<dyn Interpolator<Item = R>>>
+    apply_resource_tween_system::<Box<dyn Interpolator<Item = R>>, TimeCtx>
         .into_configs()
 }
 
 /// Alias for [`apply_asset_tween_system`] and may contains more systems
 /// in the future.
 #[cfg(feature = "bevy_asset")]
-pub fn asset_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
+pub fn asset_tween_system<I, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
     I::Item: Asset,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_asset_tween_system::<I>.into_configs()
+    apply_asset_tween_system::<I, TimeCtx>.into_configs()
 }
 
 /// Apply any [`Tween`] with the [`Interpolator`] that [`TargetAsset`] with
@@ -410,10 +465,14 @@ where
 /// ```
 #[cfg(feature = "bevy_asset")]
 #[allow(clippy::type_complexity)]
-pub fn apply_asset_tween_system<I>(
+pub fn apply_asset_tween_system<I, TimeCtx>(
     mut q_tween: Query<
-        (&Tween<TargetAsset<I::Item>, I>, &TweenInterpolationValue, &mut TweenPreviousValue),
-        Without<SkipTween>,
+        (
+            &Tween<TargetAsset<I::Item>, I>,
+            &TweenInterpolationValue,
+            &mut TweenPreviousValue,
+        ),
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
     asset: Option<ResMut<Assets<I::Item>>>,
     mut last_resource_error: Local<bool>,
@@ -421,6 +480,7 @@ pub fn apply_asset_tween_system<I>(
 ) where
     I: Interpolator,
     I::Item: Asset,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     let mut asset_error = HashSet::default();
 
@@ -486,9 +546,11 @@ pub fn apply_asset_tween_system<I>(
 /// This currently exists for backward compatibility and there's not really any big reason to deprecate it just yet.
 /// You might want to use `asset_tween_system::<BoxedInterpolator<...>>()` for consistency
 #[cfg(feature = "bevy_asset")]
-pub fn asset_dyn_tween_system<A>() -> ScheduleConfigs<ScheduleSystem>
+pub fn asset_dyn_tween_system<A, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
     A: Asset,
+    TimeCtx: Default + Send + Sync + 'static,
 {
-    apply_asset_tween_system::<Box<dyn Interpolator<Item = A>>>.into_configs()
+    apply_asset_tween_system::<Box<dyn Interpolator<Item = A>>, TimeCtx>
+        .into_configs()
 }

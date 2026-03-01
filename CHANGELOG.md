@@ -1,9 +1,21 @@
 # Changelog
 
 ## Unreleased - XXXX-XX-XX
-- Breaking:
-  - Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)
+
+Breaking:
+- you'd now have to specify a schedule for `DefaultTweenPlugins` to run in using the `in_schedule` function
+  - For default usage, you could either manually write: `DefaultTweenPlugins::<()>::in_schedule(PostUpdate.intern())`, or use `DefaultTweenPluginsOnDefaultTime::default()`
+- rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
+- add `enable_time_runner_debug` field to `TweenCorePlugin`
+- Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)
 - Migrate to Bevy 0.18 by [#75](https://github.com/Multirious/bevy_tween/pull/75)
+
+- Add `animation_for_time_context<TimeCtx>()` for animation creation on different time steps (for example, `Fixed`)
+  - In order for tweens to work on a different time context, you have to register another instance of the `DefaultTweenPlugins`, for example: `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())`, see time_context_animation example
+  - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeCtx>::for_schedule([your_schedules_here])`
+  - Add `component_tween_system_with_time_context` which is the same as `component_tween_system` but the system has the specified `TimeCtx`
+  - Add `component_dyn_tween_system_with_time_context` which is the same as `component_dyn_tween_system` but the system has the specified `TimeCtx`
+  - Add `resource_tween_system_with_time_context` which is the same as `resource_tween_system` but the system has the specified `TimeCtx`
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
@@ -31,8 +43,8 @@
 ### Breaking Changes
 
 - `interpolate` functions now take an additional `previous_value` argument, which you can now use to make delta tweens.
-Still, you'd have to update everything that implements `Interpolator` to match the new signature.
-  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is     a required component, so it'll always be on the tween's entity unless you explicitly remove it.
+  Still, you'd have to update everything that implements `Interpolator` to match the new signature.
+  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is a required component, so it'll always be on the tween's entity unless you explicitly remove it.
 
 ### Changes
 

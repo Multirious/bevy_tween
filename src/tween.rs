@@ -214,7 +214,8 @@
 use bevy::prelude::*;
 
 use crate::combinator::TargetState;
-use crate::interpolate::{Interpolator, PreviousValue, CurrentValue};
+use crate::interpolate::{CurrentValue, Interpolator, PreviousValue};
+use bevy_time_runner::{TimeContext, TimeSpanProgress};
 
 mod systems;
 #[cfg(feature = "bevy_asset")]
@@ -223,11 +224,12 @@ pub use systems::{
 };
 pub use systems::{
     apply_component_tween_system, component_dyn_tween_system,
-    component_tween_system,
+    component_dyn_tween_system_with_time_context, component_tween_system,
+    component_tween_system_with_time_context,
 };
 pub use systems::{
     apply_resource_tween_system, resource_dyn_tween_system,
-    resource_tween_system,
+    resource_tween_system, resource_tween_system_with_time_context,
 };
 
 /// Skip a tween from tweening.
@@ -236,7 +238,7 @@ pub use systems::{
 pub struct SkipTween;
 
 /// Automatically managed by an [`Interpolation`] such as [`EaseKind`] and
-/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`](bevy_time_runner::TimeSpanProgress).
+/// [`EaseClosure`] when a tween has the component [`TimeSpanProgress`].
 /// See [`sample_interpolations_system`]
 ///
 /// [`sample_interpolations_system`]: crate::interpolation::sample_interpolations_system
@@ -261,9 +263,7 @@ pub struct Tween<T, I> {
 }
 
 /// Tracks the tween's previous value
-#[derive(
-    Debug, Default, Component, Clone, Copy, Reflect,
-)]
+#[derive(Debug, Default, Component, Clone, Copy, Reflect)]
 #[reflect(Component)]
 pub struct TweenPreviousValue(pub f32);
 
@@ -791,20 +791,21 @@ pub type DefaultTweenEventsPlugin =
 #[doc(hidden)]
 #[allow(deprecated)]
 #[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data>(
+pub fn tween_event_system<Data, TimeCtx>(
     commands: Commands,
     q_tween_event_data: Query<
         (
             Entity,
             &TweenEventData<Data>,
-            &bevy_time_runner::TimeSpanProgress,
+            &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
-        Without<SkipTween>,
+        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
     >,
     event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
     Data: Clone + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
 {
     crate::tween_event::tween_event_system(
         commands,

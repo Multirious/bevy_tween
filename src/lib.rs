@@ -361,6 +361,7 @@
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy::ecs::system::ScheduleSystem;
 use bevy::{app::PluginGroupBuilder, prelude::*};
+use std::marker::PhantomData;
 
 mod utils;
 
@@ -382,7 +383,9 @@ pub mod prelude {
     pub use crate::interpolate::{self, BoxedInterpolator, Interpolator};
     pub use crate::interpolation::EaseKind;
 
-    pub use crate::bevy_time_runner::{Repeat, RepeatStyle, TimeDirection};
+    pub use crate::bevy_time_runner::{
+        Repeat, RepeatStyle, TimeContext, TimeDirection,
+    };
 
     pub use crate::combinator::{AnimationBuilderExt, TransformTargetStateExt};
 
@@ -418,38 +421,102 @@ pub use tween::resource_tween_system;
 pub use tween_event::tween_event_system;
 
 /// Default plugins for using crate.
-///
-/// Plugins:
-/// - [`TweenCorePlugin`]
-/// - [`interpolate::DefaultInterpolatorsPlugin`]
-/// - [`interpolate::DefaultDynInterpolatorsPlugin`]
-/// - [`interpolation::EaseKindPlugin`]
-/// - [`tween_event::DefaultTweenEventPlugins`]
-pub struct DefaultTweenPlugins;
+pub struct DefaultTweenPlugins<TimeCtx = ()>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Register all systems from this plugin to the specified schedule.
+    pub schedule: InternedScheduleLabel,
+    /// Enable debug information and warnings.
+    ///
+    /// This currently is passed to [`bevy_time_runner::TimeRunnerPlugin::enable_debug`] field.
+    pub enable_debug: bool,
+    /// A marker for the plugins time context
+    marker: PhantomData<TimeCtx>,
+}
 
-impl PluginGroup for DefaultTweenPlugins {
+impl<TimeCtx> PluginGroup for DefaultTweenPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     fn build(self) -> bevy::app::PluginGroupBuilder {
-        #[allow(clippy::let_and_return)]
+        let mut tween_core_plugin =
+            TweenCorePlugin::<TimeCtx>::in_schedule(self.schedule);
+        tween_core_plugin.enable_debug = self.enable_debug;
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
-            .add(TweenCorePlugin::default())
-            .add(interpolate::DefaultInterpolatorsPlugin)
-            .add(interpolate::DefaultDynInterpolatorsPlugin)
-            .add(interpolation::EaseKindPlugin)
-            .add_group(tween_event::DefaultTweenEventPlugins);
+            .add(tween_core_plugin)
+            .add_group(tween_event::DefaultTweenEventPlugins::<TimeCtx>::in_schedule(
+                self.schedule,
+            ))
+            .add(
+                interpolation::EaseKindPlugin::<TimeCtx>::in_schedule(
+                    self.schedule,
+                )
+            )
+            .add(
+                interpolate::DefaultInterpolatorsPlugin::<TimeCtx>::in_schedule(
+                    self.schedule,
+                )
+            )
+            .add(
+                interpolate::DefaultDynInterpolatorsPlugin::<TimeCtx>::in_schedule(
+                    self.schedule,
+                )
+            )
+            .add(
+                SystemSetsRegistraitonPlugin {
+                    schedule: self.schedule,
+                }
+            );
+
         #[cfg(feature = "bevy_lookup_curve")]
-        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin);
+        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin::<TimeCtx>::in_schedule(self.schedule));
+
         group
+    }
+}
+
+impl<TimeCtx> DefaultTweenPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Register all systems from this plugin to the specified schedule.
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            marker: PhantomData,
+            schedule,
+            enable_debug: true,
+        }
+    }
+}
+
+impl Default for DefaultTweenPlugins<()> {
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            enable_debug: true,
+            marker: PhantomData,
+        }
     }
 }
 
 /// This resource will be used while initializing tween plugin and systems.
 /// [`BevyTweenRegisterSystems`] for example.
-#[derive(Resource, Clone)]
+#[derive(Clone)]
+#[deprecated(
+    // TODO: since = "...",
+    note = "This resource became less practical after generic_time_context (#78) PR"
+)]
+#[doc(hidden)]
 pub struct TweenAppResource {
     /// Configured schedule for tween systems.
     pub schedule: InternedScheduleLabel,
 }
 
+#[allow(deprecated)]
+impl Resource for TweenAppResource {}
+
+#[allow(deprecated)]
 impl Default for TweenAppResource {
     fn default() -> Self {
         TweenAppResource {
@@ -467,48 +534,82 @@ impl Default for TweenAppResource {
 ///
 ///   [`UpdateInterpolationValue`]: [`TweenSystemSet::UpdateInterpolationValue`]
 ///   [`ApplyTween`]: [`TweenSystemSet::ApplyTween`]
-pub struct TweenCorePlugin {
-    /// See [`TweenAppResource`]
-    pub app_resource: TweenAppResource,
+pub struct TweenCorePlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// The schedule to register the core time-runner plugin in
+    schedule: InternedScheduleLabel,
     /// Enable debug information and warnings.
     ///
     /// This currently is passed to [`bevy_time_runner::TimeRunnerPlugin::enable_debug`] field.
     pub enable_debug: bool,
+    /// A marker for the plugins time context
+    marker: PhantomData<TimeCtx>,
 }
 
-impl Plugin for TweenCorePlugin {
+impl<TimeCtx> Plugin for TweenCorePlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     fn build(&self, app: &mut App) {
         if !app.is_plugin_added::<bevy_time_runner::TimeRunnerPlugin>() {
-            app.add_plugins(bevy_time_runner::TimeRunnerPlugin {
-                schedule: self.app_resource.schedule,
-                enable_debug: self.enable_debug,
-            });
+            let mut time_runner_plugin =
+                bevy_time_runner::TimeRunnerPlugin::<TimeCtx>::in_schedule(
+                    self.schedule,
+                );
+            time_runner_plugin.enable_debug = self.enable_debug;
+            app.add_plugins(time_runner_plugin);
         }
+
+        app.register_type::<tween::AnimationTarget>()
+            .register_type::<tween::TweenInterpolationValue>();
+    }
+}
+
+impl<TimeCtx> TweenCorePlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Constructor for schedule
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            marker: PhantomData,
+            schedule,
+            ..default()
+        }
+    }
+}
+impl<TimeCtx> Default for TweenCorePlugin<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            enable_debug: true,
+            marker: PhantomData,
+        }
+    }
+}
+
+/// A plugin for registering the system sets in specific schedule
+struct SystemSetsRegistraitonPlugin {
+    /// The schedule to register the sets in
+    schedule: InternedScheduleLabel,
+}
+
+impl Plugin for SystemSetsRegistraitonPlugin {
+    fn build(&self, app: &mut App) {
         app.configure_sets(
-            self.app_resource.schedule,
+            self.schedule,
             (
                 TweenSystemSet::UpdateInterpolationValue,
                 TweenSystemSet::ApplyTween,
             )
                 .chain()
                 .after(bevy_time_runner::TimeRunnerSet::Progress),
-        )
-        .insert_resource(self.app_resource.clone())
-        .register_type::<tween::AnimationTarget>()
-        .register_type::<tween::TweenInterpolationValue>();
-    }
-
-    fn cleanup(&self, app: &mut App) {
-        app.world_mut().remove_resource::<TweenAppResource>();
-    }
-}
-
-impl Default for TweenCorePlugin {
-    fn default() -> Self {
-        Self {
-            app_resource: Default::default(),
-            enable_debug: true,
-        }
+        );
     }
 }
 
@@ -532,33 +633,27 @@ pub enum TweenSystemSet {
     ApplyTween,
 }
 
-/// Helper trait to add systems by this crate to your app and avoid mistake
-/// from forgetting to use the intended schedule and set.
+/// Helper trait to add systems by this crate to your app
+/// for different schedules
 pub trait BevyTweenRegisterSystems {
     /// Register tween systems
     fn add_tween_systems<M>(
         &mut self,
+        schedule: InternedScheduleLabel,
         tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) -> &mut Self;
 }
 
 impl BevyTweenRegisterSystems for App {
-    /// Register tween systems in schedule configured in [`TweenAppResource`]
+    /// Register tween systems in schedule
     /// in set [`TweenSystemSet::ApplyTween`]
-    ///
-    /// # Panics
-    ///
-    /// Panics if [`TweenAppResource`] does not exist in world.
     fn add_tween_systems<M>(
         &mut self,
+        schedule: InternedScheduleLabel,
         tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) -> &mut Self {
-        let app_resource = self
-            .world()
-            .get_resource::<TweenAppResource>()
-            .expect("`TweenAppResource` to be is inserted to world");
         self.add_systems(
-            app_resource.schedule,
+            schedule,
             tween_systems.in_set(TweenSystemSet::ApplyTween),
         )
     }
