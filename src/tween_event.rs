@@ -28,14 +28,15 @@
 use bevy_time_runner::TimeContext;
 use std::marker::PhantomData;
 
-use bevy::{app::PluginGroupBuilder, prelude::*};
+use bevy::{
+    app::PluginGroupBuilder,
+    ecs::schedule::{InternedScheduleLabel, ScheduleLabel},
+    prelude::*,
+};
 
 use bevy_time_runner::TimeSpanProgress;
 
-use crate::{
-    InternedScheduleLabel,
-    tween::{SkipTween, TweenInterpolationValue},
-};
+use crate::tween::{SkipTween, TweenInterpolationValue};
 
 /// A plugin for registering the tween event system for tween of type Data for the specified schedule
 pub struct TweenEventPlugin<Data, TimeCtx = ()>
@@ -84,18 +85,49 @@ where
 /// Default tween event plugins:
 /// - `TweenEventPlugin::<()>::default()`,
 /// - `TweenEventPlugin::<&'static str>::default()`
-pub struct DefaultTweenEventPlugins {
-    /// Schedule to register default tweens in
+pub struct DefaultTweenEventPlugins<TimeCtx = ()>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Register all systems from this plugin to the specified schedule.
     pub schedule: InternedScheduleLabel,
+    marker: PhantomData<TimeCtx>,
 }
 
-impl PluginGroup for DefaultTweenEventPlugins {
+impl<TimeCtx> PluginGroup for DefaultTweenEventPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
     #[allow(unused)]
     #[allow(clippy::let_and_return)]
     fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<DefaultTweenEventPlugins>()
-            .add(TweenEventPlugin::<()>::in_schedule(self.schedule))
-            .add(TweenEventPlugin::<&'static str>::in_schedule(self.schedule))
+            .add(TweenEventPlugin::<(), TimeCtx>::in_schedule(self.schedule))
+            .add(TweenEventPlugin::<&'static str, TimeCtx>::in_schedule(
+                self.schedule,
+            ))
+    }
+}
+
+impl<TimeCtx> DefaultTweenEventPlugins<TimeCtx>
+where
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    /// Register all systems from this plugin to the specified schedule.
+    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+        Self {
+            schedule,
+            marker: PhantomData::default(),
+        }
+    }
+}
+
+impl Default for DefaultTweenEventPlugins<()> {
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            marker: Default::default(),
+        }
     }
 }
 
