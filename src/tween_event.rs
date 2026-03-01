@@ -66,8 +66,14 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
+        #[allow(deprecated)]
+        let schedule = app
+            .world()
+            .get_resource::<crate::TweenAppResource>()
+            .map(|a| a.schedule)
+            .unwrap_or(self.schedule);
         app.add_systems(
-            self.schedule,
+            schedule,
             (tween_event_system::<Data, TimeCtx>)
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
