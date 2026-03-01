@@ -223,7 +223,7 @@ pub struct DefaultInterpolatorsPlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The schedule the systems should run on.
+    /// Register all systems from this plugin to the specified schedule.
     pub schedule: InternedScheduleLabel,
     marker: PhantomData<TimeCtx>,
 }
@@ -301,7 +301,7 @@ impl<TimeCtx> DefaultInterpolatorsPlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// Initialize this plugin's system on this schedule
+    /// Register all systems from this plugin to the specified schedule.
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
