@@ -404,3 +404,12 @@ where
         }
     }
 }
+
+impl Default for DefaultDynInterpolatorsPlugin<()> {
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            marker: Default::default(),
+        }
+    }
+}
