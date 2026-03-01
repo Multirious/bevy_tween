@@ -450,9 +450,9 @@ where
         tween_core_plugin.enable_debug = self.enable_debug;
         let group = PluginGroupBuilder::start::<DefaultTweenPlugins>()
             .add(tween_core_plugin)
-            .add_group(tween_event::DefaultTweenEventPlugins {
-                schedule: self.schedule,
-            })
+            .add_group(tween_event::DefaultTweenEventPlugins::<TimeCtx>::in_schedule(
+                self.schedule,
+            ))
             .add(
                 interpolation::EaseKindPlugin::<TimeCtx>::in_schedule(
                     self.schedule,
@@ -475,7 +475,7 @@ where
             );
 
         #[cfg(feature = "bevy_lookup_curve")]
-        group.add_plugins(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationForSchedulePlugin::<TimeCtx>::in_schedule(self.schedule));
+        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin::<TimeCtx>::in_schedule(self.schedule));
 
         group
     }
