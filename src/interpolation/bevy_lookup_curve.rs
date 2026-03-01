@@ -20,7 +20,7 @@ pub struct BevyLookupCurveInterpolationPlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The schedule this plugin will register all the systems to.
+    /// Register all systems from this plugin to the specified schedule.
     pub schedule: InternedScheduleLabel,
     marker: PhantomData<TimeCtx>,
 }
@@ -28,7 +28,7 @@ impl<TimeCtx> BevyLookupCurveInterpolationPlugin<TimeCtx>
 where
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The plugin will register all systems to this schedule.
+    /// Register all systems from this plugin to the specified schedule.
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
