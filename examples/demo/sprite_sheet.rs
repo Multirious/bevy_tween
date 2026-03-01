@@ -5,8 +5,6 @@ mod interpolate {
     use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
     use bevy_tween::prelude::*;
 
-    pub use bevy_tween::interpolate::*;
-
     pub fn custom_interpolators_plugin(app: &mut App) {
         app.add_tween_systems(
             PostUpdate.intern(),
