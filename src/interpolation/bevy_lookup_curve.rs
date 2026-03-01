@@ -53,6 +53,15 @@ where
     }
 }
 
+impl Default for BevyLookupCurveInterpolationPlugin<()> {
+    fn default() -> Self {
+        Self {
+            schedule: PostUpdate.intern(),
+            marker: Default::default(),
+        }
+    }
+}
+
 /// Wrapper for [`LookupCache`] to make it a component
 #[derive(Clone, Debug, Component, Reflect)]
 #[reflect(Component)]
