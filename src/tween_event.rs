@@ -43,7 +43,7 @@ where
     Data: Send + Sync + 'static + Clone,
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// The systems schedule
+    /// Register all systems from this plugin to the specified schedule.
     pub schedule: InternedScheduleLabel,
     marker: PhantomData<(Data, TimeCtx)>,
 }
@@ -52,7 +52,7 @@ where
     Data: Send + Sync + 'static + Clone,
     TimeCtx: Default + Send + Sync + 'static,
 {
-    /// Constructor for schedule
+    /// Register all systems from this plugin to the specified schedule.
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
