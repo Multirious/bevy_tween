@@ -42,7 +42,7 @@ fn spawn_circle_with_tweens(
     ));
 
     circle_commands
-        .animation_for_time_context::<Fixed>()
+        .animation_in_time_context::<Fixed>()
         .repeat(Repeat::Infinitely)
         .repeat_style(RepeatStyle::PingPong)
         .insert(tween(
