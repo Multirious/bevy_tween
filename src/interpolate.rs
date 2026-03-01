@@ -305,7 +305,7 @@ where
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
-            marker: PhantomData::default(),
+            marker: PhantomData,
         }
     }
 }
@@ -400,7 +400,7 @@ where
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
             schedule,
-            marker: PhantomData::default(),
+            marker: PhantomData,
         }
     }
 }

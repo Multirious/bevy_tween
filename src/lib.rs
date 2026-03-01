@@ -488,7 +488,7 @@ where
     /// Register all systems from this plugin to the specified schedule.
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
-            marker: PhantomData::default(),
+            marker: PhantomData,
             schedule,
             ..default()
         }
@@ -502,7 +502,7 @@ where
         Self {
             schedule: PostUpdate.intern(),
             enable_debug: true,
-            marker: PhantomData::default(),
+            marker: PhantomData,
         }
     }
 }
@@ -578,7 +578,7 @@ where
     /// Constructor for schedule
     pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
         Self {
-            marker: PhantomData::default(),
+            marker: PhantomData,
             schedule,
             ..default()
         }
@@ -592,7 +592,7 @@ where
         Self {
             schedule: PostUpdate.intern(),
             enable_debug: true,
-            marker: PhantomData::default(),
+            marker: PhantomData,
         }
     }
 }
