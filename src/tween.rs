@@ -224,11 +224,12 @@ pub use systems::{
 };
 pub use systems::{
     apply_component_tween_system, component_dyn_tween_system,
-    component_tween_system, component_tween_system_with_time_context,
+    component_dyn_tween_system_with_time_context, component_tween_system,
+    component_tween_system_with_time_context,
 };
 pub use systems::{
     apply_resource_tween_system, resource_dyn_tween_system,
-    resource_tween_system,
+    resource_tween_system, resource_tween_system_with_time_context,
 };
 
 /// Skip a tween from tweening.
