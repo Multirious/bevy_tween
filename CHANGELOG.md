@@ -2,20 +2,30 @@
 
 ## Unreleased - XXXX-XX-XX
 
-Breaking:
-- you'd now have to specify a schedule for `DefaultTweenPlugins` to run in using the `in_schedule` function
-  - For default usage, you could either manually write: `DefaultTweenPlugins::<()>::in_schedule(PostUpdate.intern())`, or use `DefaultTweenPluginsOnDefaultTime::default()`
-- rename `TweenAppResource`'s `schedule` field to `default_schedule` now that there can be more
-- add `enable_time_runner_debug` field to `TweenCorePlugin`
-- Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)
-- Migrate to Bevy 0.18 by [#75](https://github.com/Multirious/bevy_tween/pull/75)
+- Migrate to Bevy 0.18 by [#80](https://github.com/Multirious/bevy_tween/pull/80)
 
-- Add `animation_for_time_context<TimeCtx>()` for animation creation on different time steps (for example, `Fixed`)
-  - In order for tweens to work on a different time context, you have to register another instance of the `DefaultTweenPlugins`, for example: `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())`, see time_context_animation example
-  - You may also add events that will be checked on specific schedules using `TweenEventOnSchedulePlugin::<EventDataType, TimeCtx>::for_schedule([your_schedules_here])`
-  - Add `component_tween_system_with_time_context` which is the same as `component_tween_system` but the system has the specified `TimeCtx`
-  - Add `component_dyn_tween_system_with_time_context` which is the same as `component_dyn_tween_system` but the system has the specified `TimeCtx`
-  - Add `resource_tween_system_with_time_context` which is the same as `resource_tween_system` but the system has the specified `TimeCtx`
+- By [#78](https://github.com/Multirious/bevy_tween/pull/78)
+  Breaking:
+  - **All plugins** now have the generic parameter `TimeCtx` and field `schedule` with the method `in_schedule`. This is used to specify the time context and schedule to register all the systems in.
+    For example:
+    - `DefaultTweenPlugins::default()` remains default for `()` time context within `PostUpdate` schedule.
+    - `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())` for `Fixed` time context within `FixedLast` schedule.
+  - **ALL** animation will not run without `bevy_time_runner::TimeContext<TimeCtx>` marker component with the complementary plugin registered. This also apply to all children of the animation entity. The library current make sure that all animation spawned through the framework automatically include this component, but if you do insert any animation components manually, you will have to make sure to include TimeContext component. Consult the docs for more details.
+  - Add `enable_debug` field to `TweenCorePlugin`.
+  - Add `animation_in_time_context<T>()` method to `AnimationBuilderExt`
+  - All tween systems has the generic parameter `TimeCtx` and changed query to only query for tweens entity with `TimeContext<TimeCtx>` component.
+
+  Non-brekaing:
+  - Add `component_tween_system_with_time_context` which is the same as `component_tween_system` but has the generic parameter `TimeCtx`
+  - Add `component_dyn_tween_system_with_time_context` which is the same as `component_dyn_tween_system` but has the generic parameter `TimeCtx`
+  - Add `resource_tween_system_with_time_context` which is the same as `resource_tween_system` but has the generic parameter `TimeCtx`
+
+  - Deprecated `TweenAppResource`. Though all plugins will continued to support it to remain compatible **except plugin groups**.
+
+  Internal:
+  - Add `time_context_animation` example.
+
+Internal:
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
