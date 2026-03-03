@@ -9,7 +9,7 @@
   - **All plugins** now have the generic parameter `TimeCtx` and field `schedule` with the constructor `in_schedule`. This is used to specify the time context and schedule to register all the systems in.
     For example:
     - `DefaultTweenPlugins::default()` remains default for `()` time context within `PostUpdate` schedule.
-    - `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())` for `Fixed` time context within `FixedLast` schedule.
+    - `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast)` for `Fixed` time context within `FixedLast` schedule.
   - **ALL** animation will not run without `bevy_time_runner::TimeContext<TimeCtx>` marker component with the complementary plugin registered. This also apply to all children of the animation entity. The library currently make sure that all animation spawned through **the framework automatically includes this component**, but if you do insert any animation components manually, you will have to make sure to include TimeContext component. Consult the docs for more details.
   - Add `enable_debug` field to `TweenCorePlugin`.
   - `BevyTweenRegisterSystems::add_tween_systems` now expects `schedule` parameter.

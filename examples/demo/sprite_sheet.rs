@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use bevy_tween::{prelude::*, tween::AnimationTarget};
 
 mod interpolate {
-    use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
+    use bevy::prelude::*;
     use bevy_tween::prelude::*;
 
     pub fn custom_interpolators_plugin(app: &mut App) {
         app.add_tween_systems(
-            PostUpdate.intern(),
+            PostUpdate,
             bevy_tween::component_tween_system::<AtlasIndex>(),
         );
     }

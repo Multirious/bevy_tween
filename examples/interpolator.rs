@@ -13,14 +13,14 @@ pub struct Circle {
 
 mod interpolate {
     use super::Circle;
-    use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
+    use bevy::prelude::*;
     use bevy_tween::{
         component_dyn_tween_system, component_tween_system, prelude::*,
     };
 
     pub fn interpolators_plugin(app: &mut App) {
         app.add_tween_systems(
-            PostUpdate.intern(),
+            PostUpdate,
             (
                 component_dyn_tween_system::<Circle>(),
                 component_tween_system::<CircleRadius>(),

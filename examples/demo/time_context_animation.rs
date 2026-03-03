@@ -1,4 +1,3 @@
-use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 use bevy_tween::{combinator::*, prelude::*, tween::AnimationTarget};
 use std::time::Duration;
@@ -11,7 +10,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins,
-            DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern()),
+            DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast),
         ))
         .insert_resource(Time::<Fixed>::from_seconds(0.25))
         .add_systems(Startup, (setup, spawn_circle_with_tweens))
