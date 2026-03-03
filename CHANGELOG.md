@@ -10,8 +10,9 @@
     For example:
     - `DefaultTweenPlugins::default()` remains default for `()` time context within `PostUpdate` schedule.
     - `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())` for `Fixed` time context within `FixedLast` schedule.
-  - **ALL** animation will not run without `bevy_time_runner::TimeContext<TimeCtx>` marker component with the complementary plugin registered. This also apply to all children of the animation entity. The library currently make sure that all animation spawned through the framework automatically includes this component, but if you do insert any animation components manually, you will have to make sure to include TimeContext component. Consult the docs for more details.
+  - **ALL** animation will not run without `bevy_time_runner::TimeContext<TimeCtx>` marker component with the complementary plugin registered. This also apply to all children of the animation entity. The library currently make sure that all animation spawned through **the framework automatically includes this component**, but if you do insert any animation components manually, you will have to make sure to include TimeContext component. Consult the docs for more details.
   - Add `enable_debug` field to `TweenCorePlugin`.
+  - `BevyTweenRegisterSystems::add_tween_systems` now expects `schedule` parameter.
   - Add `animation_in_time_context<T>()` method to `AnimationBuilderExt`
   - All tween systems has the generic parameter `TimeCtx` and changed query to only query for tweens entity with `TimeContext<TimeCtx>` component.
 
