@@ -48,9 +48,9 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// Register all systems from this plugin to the specified schedule.
-    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn in_schedule(schedule: impl ScheduleLabel) -> Self {
         Self {
-            schedule,
+            schedule: schedule.intern(),
             marker: PhantomData,
         }
     }
@@ -453,9 +453,9 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// Register all systems from this plugin to the specified schedule.
-    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn in_schedule(schedule: impl ScheduleLabel) -> Self {
         Self {
-            schedule,
+            schedule: schedule.intern(),
             marker: PhantomData,
         }
     }

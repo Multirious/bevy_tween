@@ -481,10 +481,10 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// Register all systems from this plugin to the specified schedule.
-    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn in_schedule(schedule: impl ScheduleLabel) -> Self {
         Self {
             marker: PhantomData,
-            schedule,
+            schedule: schedule.intern(),
             enable_debug: true,
         }
     }
@@ -572,10 +572,10 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     /// Constructor for schedule
-    pub fn in_schedule(schedule: InternedScheduleLabel) -> Self {
+    pub fn in_schedule(schedule: impl ScheduleLabel) -> Self {
         Self {
             marker: PhantomData,
-            schedule,
+            schedule: schedule.intern(),
             ..default()
         }
     }
@@ -639,7 +639,7 @@ pub trait BevyTweenRegisterSystems {
     /// Register tween systems
     fn add_tween_systems<M>(
         &mut self,
-        schedule: InternedScheduleLabel,
+        schedule: impl ScheduleLabel,
         tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) -> &mut Self;
 }
@@ -649,7 +649,7 @@ impl BevyTweenRegisterSystems for App {
     /// in set [`TweenSystemSet::ApplyTween`]
     fn add_tween_systems<M>(
         &mut self,
-        schedule: InternedScheduleLabel,
+        schedule: impl ScheduleLabel,
         tween_systems: impl IntoScheduleConfigs<ScheduleSystem, M>,
     ) -> &mut Self {
         self.add_systems(
