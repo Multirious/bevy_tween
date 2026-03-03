@@ -116,7 +116,7 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
 ///         PostUpdate,
-///         bevy_tween::tween::apply_component_tween_system::<InterpolateSize>,
+///         bevy_tween::tween::apply_component_tween_system::<InterpolateSize, ()>,
 ///     );
 ///
 ///     // Dynamic interpolator:
@@ -124,6 +124,7 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 ///         PostUpdate,
 ///         bevy_tween::tween::apply_component_tween_system::<
 ///             BoxedInterpolator<Size>,
+///             ()
 ///         >,
 ///     );
 /// }
@@ -343,6 +344,7 @@ where
 ///         PostUpdate,
 ///         bevy_tween::tween::apply_resource_tween_system::<
 ///             InterpolateScreenFade,
+///             (),
 ///         >,
 ///     );
 ///
@@ -351,6 +353,7 @@ where
 ///         PostUpdate,
 ///         bevy_tween::tween::apply_resource_tween_system::<
 ///             BoxedInterpolator<ScreenFade>,
+///             (),
 ///         >,
 ///     );
 /// }
@@ -457,7 +460,7 @@ where
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
 ///         PostUpdate,
-///         bevy_tween::tween::apply_asset_tween_system::<InterpolateRainbow>,
+///         bevy_tween::tween::apply_asset_tween_system::<InterpolateRainbow, ()>,
 ///     );
 ///
 ///     // Dynamic interpolator:
@@ -465,6 +468,7 @@ where
 ///         PostUpdate,
 ///         bevy_tween::tween::apply_asset_tween_system::<
 ///             BoxedInterpolator<Rainbow>,
+///             (),
 ///         >,
 ///     );
 /// }
