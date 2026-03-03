@@ -8,7 +8,7 @@
 //!
 //! fn main() {
 //!     App::default()
-//!         .add_plugins((DefaultPlugins, DefaultTweenPlugins))
+//!         .add_plugins((DefaultPlugins, DefaultTweenPlugins::default()))
 //!         .run();
 //! }
 //! ```

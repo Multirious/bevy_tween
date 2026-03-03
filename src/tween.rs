@@ -137,11 +137,14 @@
 //!     use bevy_tween::component_tween_system;
 //!     use my_interpolate::*;
 //!
-//!     App::new().add_tween_systems((
-//!         component_tween_system::<FooA>(),
-//!         component_tween_system::<FooB>(),
-//!         component_tween_system::<FooC>(),
-//!     ));
+//!     App::new().add_tween_systems(
+//!         PostUpdate,
+//!         (
+//!             component_tween_system::<FooA>(),
+//!             component_tween_system::<FooB>(),
+//!             component_tween_system::<FooC>(),
+//!         )
+//!     );
 //! }
 //! # }
 //! ```
@@ -198,7 +201,7 @@
 //!     // One system to rule them all
 //!     // Note that we're only using the `Foo` type, not `FooA`, `FooB`,
 //!     // and `FooC`!
-//!     App::new().add_tween_systems(component_dyn_tween_system::<Foo>());
+//!     App::new().add_tween_systems(PostUpdate, component_dyn_tween_system::<Foo>());
 //!     // `component_dyn_tween_system` is just an alias for
 //!     // `component_tween_system::<Box<dyn Interpolator<Item = ...>>>`
 //! }

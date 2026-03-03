@@ -115,11 +115,13 @@ impl core::fmt::Display for QueryEntityErrorWithoutWorld {
 ///
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
+///         PostUpdate,
 ///         bevy_tween::tween::apply_component_tween_system::<InterpolateSize>,
 ///     );
 ///
 ///     // Dynamic interpolator:
 ///     app.add_tween_systems(
+///         PostUpdate,
 ///         bevy_tween::tween::apply_component_tween_system::<
 ///             BoxedInterpolator<Size>,
 ///         >,
@@ -338,6 +340,7 @@ where
 ///
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
+///         PostUpdate,
 ///         bevy_tween::tween::apply_resource_tween_system::<
 ///             InterpolateScreenFade,
 ///         >,
@@ -345,6 +348,7 @@ where
 ///
 ///     // Dynamic interpolator:
 ///     app.add_tween_systems(
+///         PostUpdate,
 ///         bevy_tween::tween::apply_resource_tween_system::<
 ///             BoxedInterpolator<ScreenFade>,
 ///         >,
@@ -452,11 +456,13 @@ where
 ///
 ///     // Generic interpolator:
 ///     app.add_tween_systems(
+///         PostUpdate,
 ///         bevy_tween::tween::apply_asset_tween_system::<InterpolateRainbow>,
 ///     );
 ///
 ///     // Dynamic interpolator:
 ///     app.add_tween_systems(
+///         PostUpdate,
 ///         bevy_tween::tween::apply_asset_tween_system::<
 ///             BoxedInterpolator<Rainbow>,
 ///         >,
