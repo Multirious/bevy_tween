@@ -6,11 +6,11 @@
 
 - By [#78](https://github.com/Multirious/bevy_tween/pull/78)
   Breaking:
-  - **All plugins** now have the generic parameter `TimeCtx` and field `schedule` with the method `in_schedule`. This is used to specify the time context and schedule to register all the systems in.
+  - **All plugins** now have the generic parameter `TimeCtx` and field `schedule` with the constructor `in_schedule`. This is used to specify the time context and schedule to register all the systems in.
     For example:
     - `DefaultTweenPlugins::default()` remains default for `()` time context within `PostUpdate` schedule.
     - `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast.intern())` for `Fixed` time context within `FixedLast` schedule.
-  - **ALL** animation will not run without `bevy_time_runner::TimeContext<TimeCtx>` marker component with the complementary plugin registered. This also apply to all children of the animation entity. The library current make sure that all animation spawned through the framework automatically include this component, but if you do insert any animation components manually, you will have to make sure to include TimeContext component. Consult the docs for more details.
+  - **ALL** animation will not run without `bevy_time_runner::TimeContext<TimeCtx>` marker component with the complementary plugin registered. This also apply to all children of the animation entity. The library currently make sure that all animation spawned through the framework automatically includes this component, but if you do insert any animation components manually, you will have to make sure to include TimeContext component. Consult the docs for more details.
   - Add `enable_debug` field to `TweenCorePlugin`.
   - Add `animation_in_time_context<T>()` method to `AnimationBuilderExt`
   - All tween systems has the generic parameter `TimeCtx` and changed query to only query for tweens entity with `TimeContext<TimeCtx>` component.
@@ -22,7 +22,7 @@
 
   - Deprecated `TweenAppResource`. Though all plugins will continued to support it to remain compatible **except plugin groups**.
 
-  Internal:
+  Example:
   - Add `time_context_animation` example.
 
 Internal:
