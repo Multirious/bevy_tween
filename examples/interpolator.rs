@@ -19,11 +19,14 @@ mod interpolate {
     };
 
     pub fn interpolators_plugin(app: &mut App) {
-        app.add_tween_systems((
-            component_dyn_tween_system::<Circle>(),
-            component_tween_system::<CircleRadius>(),
-            component_tween_system::<CircleHue>(),
-        ));
+        app.add_tween_systems(
+            PostUpdate,
+            (
+                component_dyn_tween_system::<Circle>(),
+                component_tween_system::<CircleRadius>(),
+                component_tween_system::<CircleHue>(),
+            ),
+        );
     }
 
     pub struct CircleRadius {
@@ -34,7 +37,12 @@ mod interpolate {
     impl Interpolator for CircleRadius {
         type Item = Circle;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
+        fn interpolate(
+            &self,
+            item: &mut Self::Item,
+            value: f32,
+            _previous_value: f32,
+        ) {
             item.radius = self.start.lerp(self.end, value);
         }
     }
@@ -51,7 +59,12 @@ mod interpolate {
     impl Interpolator for CircleHue {
         type Item = Circle;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
+        fn interpolate(
+            &self,
+            item: &mut Self::Item,
+            value: f32,
+            _previous_value: f32,
+        ) {
             item.hue = self.start.lerp(self.end, value);
         }
     }
@@ -66,7 +79,7 @@ fn main() {
     App::new()
         .add_plugins((
             MinimalPlugins,
-            DefaultTweenPlugins,
+            DefaultTweenPlugins::default(),
             interpolate::interpolators_plugin,
         ))
         .add_systems(Startup, setup)

@@ -1,9 +1,32 @@
 # Changelog
 
 ## Unreleased - XXXX-XX-XX
-- Breaking:
-  - Add `enable_debug` option to `TweenCorePlugin` by [#75](https://github.com/Multirious/bevy_tween/pull/75)
-- Migrate to Bevy 0.18 by [#75](https://github.com/Multirious/bevy_tween/pull/75)
+
+- Migrate to Bevy 0.18 by [#80](https://github.com/Multirious/bevy_tween/pull/80)
+
+- By [#78](https://github.com/Multirious/bevy_tween/pull/78)
+  Breaking:
+  - **All plugins** now have the generic parameter `TimeCtx` and field `schedule` with the constructor `in_schedule`. This is used to specify the time context and schedule to register all the systems in.
+    For example:
+    - `DefaultTweenPlugins::default()` remains default for `()` time context within `PostUpdate` schedule.
+    - `DefaultTweenPlugins::<Fixed>::in_schedule(FixedLast)` for `Fixed` time context within `FixedLast` schedule.
+  - **ALL** animation will not run without `bevy_time_runner::TimeContext<TimeCtx>` marker component with the complementary plugin registered. This also apply to all children of the animation entity. The library currently make sure that all animation spawned through **the framework automatically includes this component**, but if you do insert any animation components manually, you will have to make sure to include TimeContext component. Consult the docs for more details.
+  - Add `enable_debug` field to `TweenCorePlugin`.
+  - `BevyTweenRegisterSystems::add_tween_systems` now expects `schedule` parameter.
+  - Add `animation_in_time_context<T>()` method to `AnimationBuilderExt`
+  - All tween systems has the generic parameter `TimeCtx` and changed query to only query for tweens entity with `TimeContext<TimeCtx>` component.
+
+  Non-brekaing:
+  - Add `component_tween_system_with_time_context` which is the same as `component_tween_system` but has the generic parameter `TimeCtx`
+  - Add `component_dyn_tween_system_with_time_context` which is the same as `component_dyn_tween_system` but has the generic parameter `TimeCtx`
+  - Add `resource_tween_system_with_time_context` which is the same as `resource_tween_system` but has the generic parameter `TimeCtx`
+
+  - Deprecated `TweenAppResource`. Though all plugins will continued to support it to remain compatible **except plugin groups**.
+
+  Example:
+  - Add `time_context_animation` example.
+
+Internal:
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
@@ -31,8 +54,8 @@
 ### Breaking Changes
 
 - `interpolate` functions now take an additional `previous_value` argument, which you can now use to make delta tweens.
-Still, you'd have to update everything that implements `Interpolator` to match the new signature.
-  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is     a required component, so it'll always be on the tween's entity unless you explicitly remove it.
+  Still, you'd have to update everything that implements `Interpolator` to match the new signature.
+  - Now, if you want to interpolate yourself an interpolator that uses `previous_value`, you should query for `TweenPreviousValue` as well. This is a required component, so it'll always be on the tween's entity unless you explicitly remove it.
 
 ### Changes
 

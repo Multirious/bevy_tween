@@ -1,14 +1,9 @@
-use std::time::Duration;
-use bevy::{
-    prelude::*,
-};
 use bevy::color::palettes::basic::WHITE;
 use bevy::color::palettes::css::{BLUE, RED};
-use bevy_tween::{
-    combinator::*, prelude::*,
-    tween::AnimationTarget,
-};
-use bevy_tween::interpolate::{sprite_color_delta_to};
+use bevy::prelude::*;
+use bevy_tween::interpolate::sprite_color_delta_to;
+use bevy_tween::{combinator::*, prelude::*, tween::AnimationTarget};
+use std::time::Duration;
 
 fn secs(secs: f32) -> Duration {
     Duration::from_secs_f32(secs)
@@ -16,11 +11,8 @@ fn secs(secs: f32) -> Duration {
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, DefaultTweenPlugins))
-        .add_systems(Startup, (
-            setup,
-            spawn_circle_with_tweens
-        ))
+        .add_plugins((DefaultPlugins, DefaultTweenPlugins::default()))
+        .add_systems(Startup, (setup, spawn_circle_with_tweens))
         .run();
 }
 
@@ -41,17 +33,17 @@ fn spawn_circle_with_tweens(
     let mut circle_transform_state = circle.transform_state(circle_transform);
     let mut circle_sprite_state = circle.state(WHITE.into());
 
-    let mut circle_commands = commands
-        .spawn((
-           Sprite {
-               image: circle_filled_image,
-               ..default()
-           },
-            circle_transform,
-            AnimationTarget,
-        ));
+    let mut circle_commands = commands.spawn((
+        Sprite {
+            image: circle_filled_image,
+            ..default()
+        },
+        circle_transform,
+        AnimationTarget,
+    ));
 
-    circle_commands.animation()
+    circle_commands
+        .animation()
         .repeat(Repeat::Infinitely)
         .repeat_style(RepeatStyle::PingPong)
         .insert(parallel((
@@ -70,10 +62,10 @@ fn spawn_circle_with_tweens(
                 EaseKind::Linear,
                 circle_sprite_state.with(sprite_color_delta_to(BLUE.into())),
             ),
-             tween(
-                 float_duration,
-                 EaseKind::CubicIn,
-                 circle_sprite_state.with(sprite_color_delta_to(RED.into())),
-             )
+            tween(
+                float_duration,
+                EaseKind::CubicIn,
+                circle_sprite_state.with(sprite_color_delta_to(RED.into())),
+            ),
         )));
 }

@@ -5,10 +5,9 @@ mod interpolate {
     use bevy::prelude::*;
     use bevy_tween::prelude::*;
 
-    pub use bevy_tween::interpolate::*;
-
     pub fn custom_interpolators_plugin(app: &mut App) {
         app.add_tween_systems(
+            PostUpdate,
             bevy_tween::component_tween_system::<AtlasIndex>(),
         );
     }
@@ -25,7 +24,12 @@ mod interpolate {
     impl Interpolator for AtlasIndex {
         type Item = Sprite;
 
-        fn interpolate(&self, item: &mut Self::Item, value: f32, _previous_value: f32) {
+        fn interpolate(
+            &self,
+            item: &mut Self::Item,
+            value: f32,
+            _previous_value: f32,
+        ) {
             let Some(texture_atlas) = &mut item.texture_atlas else {
                 return;
             };
@@ -40,7 +44,7 @@ fn main() {
     App::new()
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
-            DefaultTweenPlugins,
+            DefaultTweenPlugins::default(),
             interpolate::custom_interpolators_plugin,
         ))
         .add_systems(Startup, setup)
