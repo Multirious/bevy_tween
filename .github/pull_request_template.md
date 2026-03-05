@@ -2,6 +2,7 @@
 
 - Describe the objective or issue this PR addresses.
 - If you're fixing a specific issue, say "Fixes #X".
+- If this is a migration PR, 
 
 ## Solution
 
@@ -11,8 +12,6 @@
 
 - Did you test these changes? If so, how?
 - Are there any parts that need more testing?
-- How can other people (reviewers) test your changes? Is there anything specific they need to know?
-- If relevant, what platforms did you test these changes on, and are there any important ones you can't test?
 
 ---
 
@@ -36,3 +35,8 @@ println!("My super cool code.");
 ```
 
 </details>
+
+## To-Do Checklist
+
+- [ ] Write CHANGELOG.md
+- [ ] Update Cargo.lock (If this is not a migration PR nor changing any dependencies, you may remove this)
