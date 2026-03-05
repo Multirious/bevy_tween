@@ -31,6 +31,7 @@ Internal:
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
   - Remove flake-utils dependency from flake.nix
+- Update issue and PR template by [#81](https://github.com/Multirious/bevy_tween/pull/81)
 
 ## v0.11.0 - 2026-01-01
 
