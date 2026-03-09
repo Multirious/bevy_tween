@@ -2,6 +2,8 @@
 
 ## Unreleased - XXXX-XX-XX
 
+## v0.12.0 - 2026-03-09
+
 - Migrate to Bevy 0.18 by [#80](https://github.com/Multirious/bevy_tween/pull/80)
 
 - By [#78](https://github.com/Multirious/bevy_tween/pull/78)
