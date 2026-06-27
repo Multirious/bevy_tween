@@ -248,15 +248,8 @@ where
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
         app.register_type::<tween::AssetTween<sprite::ColorMaterial>>();
 
-        #[allow(deprecated)]
-        let schedule = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .map(|a| a.schedule)
-            .unwrap_or(self.schedule);
-
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             (
                 tween::component_tween_system_with_time_context::<Translation, TimeCtx>(),
                 tween::component_tween_system_with_time_context::<Rotation, TimeCtx>(),
@@ -267,7 +260,7 @@ where
 
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             tween::component_tween_system_with_time_context::<
                 SpriteColor,
                 TimeCtx,
@@ -276,7 +269,7 @@ where
 
         #[cfg(feature = "bevy_ui")]
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             (
                 tween::component_tween_system_with_time_context::<
                     ui::BackgroundColor,
@@ -291,7 +284,7 @@ where
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset",))]
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             tween::asset_tween_system::<sprite::ColorMaterial, TimeCtx>(),
         );
     }
@@ -342,15 +335,8 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
-        #[allow(deprecated)]
-        let schedule = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .map(|a| a.schedule)
-            .unwrap_or(self.schedule);
-
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             tween::component_tween_system_with_time_context::<
                 BoxedInterpolator<Transform>,
                 TimeCtx,
@@ -359,7 +345,7 @@ where
 
         #[cfg(feature = "bevy_sprite")]
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             tween::component_tween_system_with_time_context::<
                 BoxedInterpolator<Sprite>,
                 TimeCtx,
@@ -368,7 +354,7 @@ where
 
         #[cfg(feature = "bevy_ui")]
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             (
                 tween::component_tween_system_with_time_context::<
                     BoxedInterpolator<bevy::prelude::BackgroundColor>,
@@ -383,7 +369,7 @@ where
 
         #[cfg(all(feature = "bevy_sprite", feature = "bevy_asset"))]
         app.add_tween_systems(
-            schedule,
+            self.schedule,
             tween::asset_tween_system::<
                 BoxedInterpolator<bevy::sprite_render::ColorMaterial>,
                 TimeCtx,
