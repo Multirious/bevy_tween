@@ -2,6 +2,8 @@
 
 ## Unreleased - XXXX-XX-XX
 
+- Update nix flake
+
 ## v0.12.0 - 2026-03-09
 
 - Migrate to Bevy 0.18 by [#80](https://github.com/Multirious/bevy_tween/pull/80)
