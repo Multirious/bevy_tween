@@ -288,7 +288,7 @@ where
 pub fn resource_tween_system<I>() -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
-    I::Item: Resource,
+    I::Item: Resource<Mutability = Mutable>,
 {
     apply_resource_tween_system::<I, ()>.into_configs()
 }
@@ -299,7 +299,7 @@ pub fn resource_tween_system_with_time_context<I, TimeCtx>()
 -> ScheduleConfigs<ScheduleSystem>
 where
     I: Interpolator + Send + Sync + 'static,
-    I::Item: Resource,
+    I::Item: Resource<Mutability = Mutable>,
     TimeCtx: Default + Send + Sync + 'static,
 {
     apply_resource_tween_system::<I, TimeCtx>.into_configs()
@@ -372,7 +372,7 @@ pub fn apply_resource_tween_system<I, TimeCtx>(
     mut last_error: Local<bool>,
 ) where
     I: Interpolator,
-    I::Item: Resource,
+    I::Item: Resource<Mutability = Mutable>,
     TimeCtx: Default + Send + Sync + 'static,
 {
     let Some(mut resource) = resource else {
@@ -404,7 +404,7 @@ pub fn apply_resource_tween_system<I, TimeCtx>(
 /// You might want to use `resource_tween_system::<BoxedInterpolator<...>>()` for consistency
 pub fn resource_dyn_tween_system<R, TimeCtx>() -> ScheduleConfigs<ScheduleSystem>
 where
-    R: Resource,
+    R: Resource<Mutability = Mutable>,
     TimeCtx: Default + Send + Sync + 'static,
 {
     apply_resource_tween_system::<Box<dyn Interpolator<Item = R>>, TimeCtx>
@@ -509,7 +509,7 @@ pub fn apply_asset_tween_system<I, TimeCtx>(
         .iter_mut()
         .for_each(|(tween, ease_value, mut previous_value)| match &tween.target {
             TargetAsset::Asset(a) => {
-                let Some(asset) = asset.get_mut(a) else {
+                let Some(mut asset) = asset.get_mut(a) else {
                     if !last_asset_error.contains(&a.id())
                         && !asset_error.contains(&a.id())
                     {
@@ -523,12 +523,12 @@ pub fn apply_asset_tween_system<I, TimeCtx>(
                     asset_error.insert(a.id());
                     return;
                 };
-                tween.interpolator.interpolate(asset, ease_value.0, previous_value.0);
+                tween.interpolator.interpolate(&mut *asset, ease_value.0, previous_value.0);
                 previous_value.0 = ease_value.0;
             }
             TargetAsset::Assets(assets) => {
                 for a in assets {
-                    let Some(a) = asset.get_mut(a) else {
+                    let Some(mut a) = asset.get_mut(a) else {
                         if !last_asset_error.contains(&a.id())
                             && !asset_error.contains(&a.id())
                         {
@@ -542,7 +542,7 @@ pub fn apply_asset_tween_system<I, TimeCtx>(
                         asset_error.insert(a.id());
                         continue;
                     };
-                    tween.interpolator.interpolate(a, ease_value.0, previous_value.0);
+                    tween.interpolator.interpolate(&mut *a, ease_value.0, previous_value.0);
                     previous_value.0 = ease_value.0;
                 }
             }
