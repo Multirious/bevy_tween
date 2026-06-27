@@ -7,39 +7,34 @@
     };
   };
   outputs =
-    inputs:
+    inputs@{ nixpkgs, ... }:
     let
-      forAllSystems =
-        function:
-        inputs.nixpkgs.lib.genAttrs
-          [
-            "x86_64-linux"
-          ]
-          (
-            system:
-            function (
-              import inputs.nixpkgs {
-                inherit system;
-                overlays = [
-                  (import inputs.rust-overlay)
-                ];
-              }
-            )
-          );
+      inherit (nixpkgs) lib;
+      eachSystem = lib.genAttrs [ "x86_64-linux" ];
+      pkgsFor = eachSystem (
+        system:
+        import nixpkgs {
+          inherit system;
+          overlays = [
+            (import inputs.rust-overlay)
+          ];
+        }
+      );
+      forAllSystem = f: lib.mapAttrs f pkgsFor;
     in
     {
-      devShells = forAllSystems (
-        pkgs:
+      devShells = forAllSystem (
+        system: pkgs:
         let
           buildInputs = with pkgs; [
             openssl
             udev
             alsa-lib-with-plugins
             vulkan-loader
-            xorg.libX11
-            xorg.libXcursor
-            xorg.libXi
-            xorg.libXrandr
+            libX11
+            libXcursor
+            libXi
+            libXrandr
             libxkbcommon
             wayland
           ];
