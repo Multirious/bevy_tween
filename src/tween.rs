@@ -218,7 +218,7 @@ use bevy::prelude::*;
 
 use crate::combinator::TargetState;
 use crate::interpolate::{CurrentValue, Interpolator, PreviousValue};
-use bevy_time_runner::{TimeContext, TimeSpanProgress};
+use bevy_time_runner::TimeContext;
 
 mod systems;
 #[cfg(feature = "bevy_asset")]
@@ -759,60 +759,4 @@ impl<A: Asset> IntoTarget for &Vec<Handle<A>> {
     fn into_target(self) -> Self::Target {
         TargetAsset::assets(self.iter().cloned())
     }
-}
-
-#[deprecated(
-    since = "0.6.0",
-    note = "use `bevy_tween::tween_event::TweenEvent` instead"
-)]
-#[allow(missing_docs)]
-#[doc(hidden)]
-pub type TweenEvent<Data> = crate::tween_event::TweenEvent<Data>;
-
-#[deprecated(
-    since = "0.6.0",
-    note = "use `bevy_tween::tween_event::TweenEventData` instead"
-)]
-#[allow(missing_docs)]
-#[doc(hidden)]
-pub type TweenEventData<Data> = crate::tween_event::TweenEventData<Data>;
-
-#[deprecated(
-    since = "0.6.0",
-    note = "use `bevy_tween::tween_event::DefaultTweenEventPlugins` instead"
-)]
-#[allow(missing_docs)]
-#[doc(hidden)]
-pub type DefaultTweenEventsPlugin =
-    crate::tween_event::DefaultTweenEventPlugins;
-
-#[deprecated(
-    since = "0.6.0",
-    note = "use `bevy_tween::tween_event::tween_event_system` instead or `TweenEventPlugin` if you're registering custom tween event"
-)]
-#[allow(missing_docs)]
-#[doc(hidden)]
-#[allow(deprecated)]
-#[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data, TimeCtx>(
-    commands: Commands,
-    q_tween_event_data: Query<
-        (
-            Entity,
-            &TweenEventData<Data>,
-            &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
-        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
-    >,
-    event_writer: MessageWriter<TweenEvent<Data>>,
-) where
-    Data: Clone + Send + Sync + 'static,
-    TimeCtx: Default + Send + Sync + 'static,
-{
-    crate::tween_event::tween_event_system(
-        commands,
-        q_tween_event_data,
-        event_writer,
-    )
 }
