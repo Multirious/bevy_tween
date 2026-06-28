@@ -248,6 +248,7 @@ pub struct SkipTween;
 /// [`Interpolation`]: crate::interpolation::Interpolation
 /// [`EaseKind`]: crate::interpolation::EaseKind
 /// [`EaseClosure`]: crate::interpolation::EaseClosure
+/// [`TimeSpanProgress`]: bevy_time_runner::TimeSpanProgress
 #[derive(Debug, Component, Clone, Copy, PartialEq, Reflect)]
 #[reflect(Component)] // might want to use sparseset but i'm not sure yet
 pub struct TweenInterpolationValue(pub f32);
