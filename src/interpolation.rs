@@ -61,15 +61,9 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
-        #[allow(deprecated)]
-        let schedule = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .map(|a| a.schedule)
-            .unwrap_or(self.schedule);
         app.register_type::<EaseKind>();
         app.add_systems(
-            schedule,
+            self.schedule,
             sample_interpolations_system::<EaseKind, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );
@@ -466,14 +460,8 @@ where
     TimeCtx: Default + Send + Sync + 'static,
 {
     fn build(&self, app: &mut App) {
-        #[allow(deprecated)]
-        let schedule = app
-            .world()
-            .get_resource::<crate::TweenAppResource>()
-            .map(|a| a.schedule)
-            .unwrap_or(self.schedule);
         app.add_systems(
-            schedule,
+            self.schedule,
             sample_interpolations_system::<EaseClosure, TimeCtx>
                 .in_set(TweenSystemSet::UpdateInterpolationValue),
         );

@@ -500,35 +500,10 @@ impl Default for DefaultTweenPlugins<()> {
     }
 }
 
-/// This resource will be used while initializing tween plugin and systems.
-/// [`BevyTweenRegisterSystems`] for example.
-#[derive(Clone)]
-#[deprecated(
-    // TODO: since = "...",
-    note = "This resource became less practical after generic_time_context (#78) PR"
-)]
-#[doc(hidden)]
-pub struct TweenAppResource {
-    /// Configured schedule for tween systems.
-    pub schedule: InternedScheduleLabel,
-}
-
-#[allow(deprecated)]
-impl Resource for TweenAppResource {}
-
-#[allow(deprecated)]
-impl Default for TweenAppResource {
-    fn default() -> Self {
-        TweenAppResource {
-            schedule: PostUpdate.intern(),
-        }
-    }
-}
-
 /// Configure [`TweenSystemSet`] and register types.
 ///
 /// [`TweenSystemSet`] configuration:
-/// - In schedule configured by [`TweenAppResource`]:
+/// - System sets:
 ///   1. [`UpdateInterpolationValue`],
 ///   2. [`ApplyTween`],
 ///
@@ -629,7 +604,7 @@ pub enum TweenSystemSet {
     /// - [`tween::asset_tween_system`]
     ///
     /// Events is not necessary related to tweening but their code is still working in the same area.
-    /// - [`tween::tween_event_system`]
+    /// - [`tween_event::tween_event_system`]
     ApplyTween,
 }
 
