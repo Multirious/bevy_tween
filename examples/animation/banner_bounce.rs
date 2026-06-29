@@ -1,9 +1,8 @@
 use std::f32::consts::PI;
 
-use bevy::render::view::Hdr;
 use bevy::{
     color::{Srgba, palettes::css::WHITE},
-    core_pipeline::tonemapping::Tonemapping,
+    core_pipeline::tonemapping::{DebandDither, Tonemapping},
     post_process::bloom::Bloom,
     prelude::*,
     window,
@@ -46,8 +45,8 @@ fn setup_camera(mut commands: Commands) {
         Camera2d,
         Camera::default(),
         Tonemapping::TonyMcMapface,
-        Hdr,
         Bloom::default(),
+        DebandDither::Enabled,
     ));
 }
 
