@@ -2,6 +2,8 @@
 
 ## Unreleased - XXXX-XX-XX
 
+## v0.13.0 - 2026-07-03
+
 - Migrate to bevy 0.19
 - Update nix flake
 
