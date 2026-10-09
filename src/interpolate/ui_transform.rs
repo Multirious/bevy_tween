@@ -11,6 +11,7 @@ pub struct UiScale {
     /// whether it increments by delta or sets absolute values
     pub delta: bool,
 }
+
 impl Interpolator for UiScale {
     type Item = UiTransform;
 
@@ -31,7 +32,7 @@ impl Interpolator for UiScale {
     }
 }
 
-/// Constructor for [`UiScale`]
+/// Constructor for [`crate::interpolate::UiScale`]
 pub fn ui_scale(start: Vec2, end: Vec2) -> UiScale {
     UiScale {
         start,
@@ -40,7 +41,7 @@ pub fn ui_scale(start: Vec2, end: Vec2) -> UiScale {
     }
 }
 
-/// Constructor for [`UiScale`] relative to previous value using currying.
+/// Constructor for [`crate::interpolate::UiScale`] relative to previous value using currying.
 pub fn ui_scale_to(to: Vec2) -> impl Fn(&mut Vec2) -> UiScale {
     move |state| {
         let start = *state;
@@ -50,7 +51,7 @@ pub fn ui_scale_to(to: Vec2) -> impl Fn(&mut Vec2) -> UiScale {
     }
 }
 
-/// Constructor for [`UiScale`] relative to previous value using currying.
+/// Constructor for [`crate::interpolate::UiScale`] relative to previous value using currying.
 pub fn ui_scale_by(by: Vec2) -> impl Fn(&mut Vec2) -> UiScale {
     move |state| {
         let start = *state;
@@ -60,7 +61,7 @@ pub fn ui_scale_by(by: Vec2) -> impl Fn(&mut Vec2) -> UiScale {
     }
 }
 
-/// Constructor for [`UiScale`] relative to previous value.
+/// Constructor for [`crate::interpolate::UiScale`] relative to previous value.
 /// Since this is a delta tween, it can run alongside other ongoing tweens of that type.
 pub fn ui_scale_delta_by(by: Vec2) -> impl Fn(&mut Vec2) -> UiScale {
     move |state| {
