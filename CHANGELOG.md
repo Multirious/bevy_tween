@@ -3,6 +3,7 @@
 ## Unreleased - XXXX-XX-XX
 
 - Make AnimationTarget derives Clone and Copy by [#90](https://github.com/Multirious/bevy_tween/pull/90)
+- Add workflows to automate updating and releases by [#94](https://github.com/Multirious/bevy_tween/pull/94)
 - Add UiScale interpolator for UiTransform by [#92](https://github.com/Multirious/bevy_tween/pull/92)
 
 ## v0.13.0 - 2026-07-03
