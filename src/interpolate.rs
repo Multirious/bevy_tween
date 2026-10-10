@@ -75,6 +75,8 @@ mod sprite;
 mod transform;
 #[cfg(feature = "bevy_ui")]
 mod ui;
+#[cfg(feature = "bevy_ui")]
+mod ui_transform;
 
 use std::marker::PhantomData;
 
@@ -85,6 +87,9 @@ pub use sprite::*;
 
 #[cfg(feature = "bevy_ui")]
 pub use ui::*;
+
+#[cfg(feature = "bevy_ui")]
+pub use ui_transform::*;
 
 use crate::{BevyTweenRegisterSystems, tween};
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};

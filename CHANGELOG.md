@@ -3,6 +3,7 @@
 ## Unreleased - XXXX-XX-XX
 
 - Make AnimationTarget derives Clone and Copy by [#90](https://github.com/Multirious/bevy_tween/pull/90)
+- Add UiScale interpolator for UiTransform by [#92](https://github.com/Multirious/bevy_tween/pull/92)
 
 ## v0.13.0 - 2026-07-03
 
@@ -36,6 +37,7 @@
   - Add `time_context_animation` example.
 
 Internal:
+
 - Update flake by [#77](https://github.com/Multirious/bevy_tween/pull/77)
   - Use latest instead of a version for stableRust in flake.nix
   - `nix flake update`
