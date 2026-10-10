@@ -325,7 +325,11 @@ impl Default for DefaultInterpolatorsPlugin<()> {
 /// - [`ColorMaterial`] asset if `"bevy_sprite"` feature is enabled.
 /// - [`BackgroundColor`] and [`BorderColor`] components if `"bevy_ui"` feature is enabled.
 ///
-/// [`ColorMaterial`]: bevy::sprite_render::ColorMaterial
+/// [`ColorMaterial`]: bevy::prelude::ColorMaterial
+/// [`BackgroundColor`]: bevy::prelude::BackgroundColor
+/// [`BorderColor`]: bevy::prelude::BorderColor
+/// [`Sprite`]: bevy::prelude::Sprite
+/// [`Transform`]: bevy::prelude::Transform
 pub struct DefaultDynInterpolatorsPlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
