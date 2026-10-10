@@ -94,7 +94,7 @@ pub use ui_transform::*;
 use crate::{BevyTweenRegisterSystems, tween};
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 
-use bevy::prelude::*;
+use bevy::prelude::{App, Plugin, PostUpdate};
 
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
@@ -343,7 +343,7 @@ where
         app.add_tween_systems(
             self.schedule,
             tween::component_tween_system_with_time_context::<
-                BoxedInterpolator<Transform>,
+                BoxedInterpolator<bevy::prelude::Transform>,
                 TimeCtx,
             >(),
         );
@@ -352,7 +352,7 @@ where
         app.add_tween_systems(
             self.schedule,
             tween::component_tween_system_with_time_context::<
-                BoxedInterpolator<Sprite>,
+                BoxedInterpolator<bevy::prelude::Sprite>,
                 TimeCtx,
             >(),
         );
