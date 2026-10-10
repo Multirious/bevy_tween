@@ -2,6 +2,7 @@
 
 ## Unreleased - XXXX-XX-XX
 
+- Fix import conflict for BackgroundColor interpolator [#96](https://github.com/Multirious/bevy_tween/pull/96)
 - Make AnimationTarget derives Clone and Copy by [#90](https://github.com/Multirious/bevy_tween/pull/90)
 - Add UiScale interpolator for UiTransform by [#92](https://github.com/Multirious/bevy_tween/pull/92)
 
