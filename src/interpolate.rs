@@ -94,7 +94,7 @@ pub use ui_transform::*;
 use crate::{BevyTweenRegisterSystems, tween};
 use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 
-use bevy::prelude::*;
+use bevy::prelude::{App, Plugin, PostUpdate};
 
 /// Alias for an `Interpolator` as a boxed trait object.
 pub type BoxedInterpolator<Item> = Box<dyn Interpolator<Item = Item>>;
@@ -325,7 +325,11 @@ impl Default for DefaultInterpolatorsPlugin<()> {
 /// - [`ColorMaterial`] asset if `"bevy_sprite"` feature is enabled.
 /// - [`BackgroundColor`] and [`BorderColor`] components if `"bevy_ui"` feature is enabled.
 ///
-/// [`ColorMaterial`]: bevy::sprite_render::ColorMaterial
+/// [`ColorMaterial`]: bevy::prelude::ColorMaterial
+/// [`BackgroundColor`]: bevy::prelude::BackgroundColor
+/// [`BorderColor`]: bevy::prelude::BorderColor
+/// [`Sprite`]: bevy::prelude::Sprite
+/// [`Transform`]: bevy::prelude::Transform
 pub struct DefaultDynInterpolatorsPlugin<TimeCtx = ()>
 where
     TimeCtx: Default + Send + Sync + 'static,
@@ -343,7 +347,7 @@ where
         app.add_tween_systems(
             self.schedule,
             tween::component_tween_system_with_time_context::<
-                BoxedInterpolator<Transform>,
+                BoxedInterpolator<bevy::prelude::Transform>,
                 TimeCtx,
             >(),
         );
@@ -352,7 +356,7 @@ where
         app.add_tween_systems(
             self.schedule,
             tween::component_tween_system_with_time_context::<
-                BoxedInterpolator<Sprite>,
+                BoxedInterpolator<bevy::prelude::Sprite>,
                 TimeCtx,
             >(),
         );
