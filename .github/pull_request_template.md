@@ -38,5 +38,3 @@ println!("My super cool code.");
 ## To-Do Checklist
 
 - [ ] Write CHANGELOG.md
-- [ ] Update Cargo.lock (If this is not a migration PR nor changing any dependencies, you may remove this)
-- [ ] Update supported version in README.md (If this is not a release PR, you may remove this)

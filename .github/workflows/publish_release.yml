@@ -1,0 +1,36 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - uses: dtolnay/rust-toolchain@stable
+
+    - name: Get release version
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+    - name: Create Release
+      env:
+        GH_TOKEN: ${{ secrets.TOKEN }}
+      run: |
+        current_changelog="$(
+          awk "/## ${RELEASE_VERSION}/{flag=1; next} /## /{flag=0} flag" \
+            CHANGELOG.md
+        )"
+        gh release create $RELEASE_VERSION \
+          --title "Release $RELEASE_VERSION"\
+          --notes "$current_changelog" || true
+
+    - name: Publish to crates.io
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
+      run: |
+        cargo publish
