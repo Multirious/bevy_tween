@@ -29,6 +29,7 @@ bevy_tween = { path = "." }
 
 [dependencies]
 bevy = { workspace = true, features = ["std", "bevy_curve"] }
+
 bevy_time_runner = { version = "0.8.0" }
 serde = { version = "1", features = ["derive"], optional = true }
 tracing = { version = "0.1.41", features = ["std"] }
@@ -52,7 +53,7 @@ bevy_sprite = ["bevy/bevy_sprite", "bevy/bevy_sprite_render"]
 # Adds some built-in interpolators related to ui
 bevy_ui = ["bevy/bevy_ui"]
 # Derive Serialize and Deserialize for some types
-serde = ["dep:serde"]
+serde = ["dep:serde", "bevy/serialize"]
 
 # Private feature enabled during development.
 _dev = ["bevy/zstd_rust"]
