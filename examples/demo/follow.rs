@@ -109,7 +109,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             );
         });
 
-    commands.spawn_scene(config_scene());
+    commands.spawn_scene(config_ui());
 }
 
 fn jeb_follows_cursor(
@@ -177,7 +177,7 @@ struct EaseMenuButton;
 #[derive(Clone, Component, FromTemplate)]
 struct OtherButton(Entity, Entity);
 
-fn config_scene() -> impl Scene {
+fn config_ui() -> impl Scene {
     use bevy::{
         feathers::{
             controls::{
