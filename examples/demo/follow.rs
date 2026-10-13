@@ -174,8 +174,6 @@ fn into_color<T: Into<bevy::color::Srgba>>(color: T) -> Color {
 
 #[derive(Clone, Default, Component)]
 struct EaseMenuButton;
-#[derive(Clone, Component, FromTemplate)]
-struct OtherButton(Entity, Entity);
 
 fn config_ui() -> impl Scene {
     use bevy::{
@@ -253,13 +251,18 @@ fn config_ui() -> impl Scene {
             move |e: On<Activate>,
                   mut config: ResMut<Config>,
                   mut q_button_variant: Query<&mut ButtonVariant>,
-                  q_other_buttons: Query<&OtherButton>| {
+                  q_parent: Query<&ChildOf>,
+                  q_children: Query<&Children>| {
                 config.update_kind = val;
                 *q_button_variant.get_mut(e.entity).unwrap() =
                     ButtonVariant::Primary;
-                let other_buttons = q_other_buttons.get(e.entity).unwrap();
-                for button in [other_buttons.0, other_buttons.1] {
-                    *q_button_variant.get_mut(button).unwrap() =
+                let parent = q_parent.get(e.entity).unwrap();
+                let other_buttons = q_children.get(parent.parent()).unwrap();
+                for button in other_buttons {
+                    if *button == e.entity {
+                        continue;
+                    }
+                    *q_button_variant.get_mut(*button).unwrap() =
                         ButtonVariant::Normal;
                 }
             },
@@ -290,7 +293,7 @@ fn config_ui() -> impl Scene {
             Children [
                 @FeathersSlider {
                     @min: 0.1,
-                    @max: 10.0,
+                    @max: 5.0,
                 }
                 SliderStep(0.1)
                 SliderPrecision(1)
@@ -370,22 +373,20 @@ fn config_ui() -> impl Scene {
                 #CursorMovedButton @FeathersButton {
                     @caption: bsn! { Text("CursorMoved") ThemedText },
                     @corners: RoundedCorners::Left,
+                    @variant: ButtonVariant::Primary,
                 }
-                OtherButton(#CursorStoppedButton, #AnimatorCompletedButton)
                 update_kind_on(UpdateKind::CursorMoved)
                 --
                 #CursorStoppedButton @FeathersButton {
                     @caption: bsn! { Text("CursorStopped") ThemedText },
                     @corners: RoundedCorners::None,
                 }
-                OtherButton(#CursorMovedButton, #AnimatorCompletedButton)
                 update_kind_on(UpdateKind::CursorStopped)
                 --
                 #AnimatorCompletedButton @FeathersButton {
                     @caption: bsn! { Text("AnimatorCompleted") ThemedText },
                     @corners: RoundedCorners::Right,
                 }
-                OtherButton(#CursorMovedButton, #CursorStoppedButton)
                 update_kind_on(UpdateKind::AnimatorCompleted)
             ]
         ]
