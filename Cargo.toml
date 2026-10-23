@@ -26,13 +26,14 @@ categories = ["game-development"]
 [workspace.dependencies]
 bevy = { version = "0.20.0", default-features = false }
 bevy_tween = { path = "." }
+tracing = { version = "0.1.41", features = ["std"] }
 
 [dependencies]
 bevy = { workspace = true, features = ["std", "bevy_curve"] }
 
 bevy_time_runner = { version = "0.8.0" }
 serde = { version = "1", features = ["derive"], optional = true }
-tracing = { version = "0.1.41", features = ["std"] }
+tracing = { workspace = true }
 
 [dev-dependencies]
 rand = "0.9.1"
