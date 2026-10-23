@@ -15,6 +15,9 @@ bevy_tween = { workspace = true }
 bevy_lookup_curve = { version = "0.13.0" }
 tracing = { workspace = true }
 
+[dev-dependencies]
+bevy-inspector-egui = { version = "0.38" }
+
 [[example]]
 name = "lookup_curve"
 path = "examples/lookup_curve.rs"

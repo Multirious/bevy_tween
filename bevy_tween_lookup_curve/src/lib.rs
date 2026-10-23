@@ -21,6 +21,8 @@ use bevy_tween::bevy_time_runner::{TimeContext, TimeSpanProgress};
 use bevy_tween::tween::TweenInterpolationValue;
 use tracing::error;
 
+pub use bevy_lookup_curve;
+
 /// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation
 pub struct BevyLookupCurveInterpolationPlugin<TimeCtx = ()>
 where
