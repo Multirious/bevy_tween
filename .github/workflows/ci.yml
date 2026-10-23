@@ -37,7 +37,12 @@ jobs:
       
     - name: Install dependencies
       if: runner.os == 'linux'
-      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends \
+          libasound2-dev \
+          libudev-dev \
+          libwayland-dev
       
     - name: Install cargo commands
       run: cargo install cargo-all-features
