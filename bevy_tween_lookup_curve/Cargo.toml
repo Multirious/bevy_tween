@@ -13,6 +13,7 @@ categories.workspace = true
 bevy = { workspace = true }
 bevy_tween = { workspace = true }
 bevy_lookup_curve = { version = "0.13.0" }
+tracing = { workspace = true }
 
 [[example]]
 name = "lookup_curve"

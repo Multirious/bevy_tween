@@ -9,9 +9,16 @@
 //! **Systems**:
 //! - [`sample_lookup_curve_system`]
 
-use crate::InternedScheduleLabel;
+use std::marker::PhantomData;
+
+use bevy::ecs::schedule::InternedScheduleLabel;
+use bevy::ecs::schedule::ScheduleLabel;
 use bevy::platform::collections::HashSet;
+use bevy::prelude::*;
 use bevy_lookup_curve::{LookupCache, LookupCurve};
+use bevy_tween::TweenSystemSet;
+use bevy_tween::bevy_time_runner::{TimeContext, TimeSpanProgress};
+use bevy_tween::tween::TweenInterpolationValue;
 use tracing::error;
 
 /// Use [`bevy_lookup_curve`](::bevy_lookup_curve) for interpolation
