@@ -30,7 +30,10 @@ use std::marker::PhantomData;
 
 use bevy::{
     app::PluginGroupBuilder,
-    ecs::schedule::{InternedScheduleLabel, ScheduleLabel},
+    ecs::{
+        query::QueryData,
+        schedule::{InternedScheduleLabel, ScheduleLabel},
+    },
     prelude::*,
 };
 
@@ -69,7 +72,7 @@ where
     fn build(&self, app: &mut App) {
         app.add_systems(
             self.schedule,
-            (tween_event_system::<Data, TimeCtx>)
+            (tween_self_event_system::<Data, TimeCtx>)
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
         .add_message::<TweenEvent<Data>>();
@@ -175,12 +178,11 @@ pub struct TweenEvent<Data = ()> {
     pub entity: Entity,
 }
 
-/// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
+/// Fires [`TweenEvent`] messages with optional user data whenever [`TimeSpanProgress`]
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// cloning the data.
 #[allow(clippy::type_complexity)]
-pub fn tween_event_system<Data, TimeCtx>(
-    mut commands: Commands,
+pub fn tween_message_system<Data, TimeCtx>(
     q_tween_event_data: Query<
         (
             Entity,
@@ -188,7 +190,11 @@ pub fn tween_event_system<Data, TimeCtx>(
             &TimeSpanProgress,
             Option<&TweenInterpolationValue>,
         ),
-        (Without<SkipTween>, With<TimeContext<TimeCtx>>),
+        (
+            Without<SkipTween>,
+            With<TimeContext<TimeCtx>>,
+            With<MessageEmittingTween>,
+        ),
     >,
     mut event_writer: MessageWriter<TweenEvent<Data>>,
 ) where
@@ -203,8 +209,79 @@ pub fn tween_event_system<Data, TimeCtx>(
                 interpolation_value: interpolation_value.map(|v| v.0),
                 entity,
             };
-            commands.trigger(event.clone());
             event_writer.write(event);
+        },
+    );
+}
+
+/// Fires a [`TweenEvent`] to the tweened entity with optional user data
+/// whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the
+/// same entity and data is `Some`, cloning the data.
+#[allow(clippy::type_complexity)]
+pub fn tween_self_event_system<Data, TimeCtx>(
+    mut commands: Commands,
+    q_tween_event_data: Query<
+        (
+            Entity,
+            &TweenEventData<Data>,
+            &TimeSpanProgress,
+            Option<&TweenInterpolationValue>,
+        ),
+        (
+            Without<SkipTween>,
+            With<TimeContext<TimeCtx>>,
+            With<SelfEventEmittingTween>,
+        ),
+    >,
+) where
+    Data: Clone + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    q_tween_event_data.iter().for_each(
+        |(entity, event_data, progress, interpolation_value)| {
+            let event = TweenEvent {
+                data: event_data.0.clone(),
+                progress: *progress,
+                interpolation_value: interpolation_value.map(|v| v.0),
+                entity,
+            };
+            commands.trigger(event.clone());
+        },
+    );
+}
+
+/// Fires a [`TweenEvent`] to the animation root with optional user data
+/// whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the
+/// same entity and data is `Some`, cloning the data.
+#[allow(clippy::type_complexity)]
+pub fn tween_root_event_system<Data, TimeCtx>(
+    mut commands: Commands,
+    q_tween_event_data: Query<
+        (
+            &ChildOf,
+            &TweenEventData<Data>,
+            &TimeSpanProgress,
+            Option<&TweenInterpolationValue>,
+        ),
+        (
+            Without<SkipTween>,
+            With<TimeContext<TimeCtx>>,
+            With<SelfEventEmittingTween>,
+        ),
+    >,
+) where
+    Data: Clone + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    q_tween_event_data.iter().for_each(
+        |(child_of, event_data, progress, interpolation_value)| {
+            let event = TweenEvent {
+                data: event_data.0.clone(),
+                progress: *progress,
+                interpolation_value: interpolation_value.map(|v| v.0),
+                entity: child_of.parent(),
+            };
+            commands.trigger(event.clone());
         },
     );
 }

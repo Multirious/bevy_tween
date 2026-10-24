@@ -418,7 +418,7 @@ pub use tween::component_tween_system;
 pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
 
-pub use tween_event::tween_event_system;
+pub use tween_event::tween_self_event_system;
 
 /// Default plugins for using crate.
 pub struct DefaultTweenPlugins<TimeCtx = ()>
