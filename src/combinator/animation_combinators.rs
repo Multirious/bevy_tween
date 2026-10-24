@@ -82,6 +82,26 @@ where
     }
 }
 
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at current position.
+///
+/// Position is not mutated because the event has no length.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send<Data>(
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch::<Data, (MessageEmittingTween, RootEventEmittingTween)>(event_data)
+}
+
 /// Combinator for dispatching a tween message.
 ///
 /// Message will be emitted at current position.
@@ -161,6 +181,29 @@ where
             With::default(),
         ));
     }
+}
+
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at the provided position.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send_at<Data>(
+    at: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_at::<Data, (MessageEmittingTween, RootEventEmittingTween)>(
+        at, event_data,
+    )
 }
 
 /// Combinator for dispatching a tween message.
@@ -246,6 +289,29 @@ where
             With::default(),
         ));
     }
+}
+
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at the current position for provided length every frame.
+///
+/// Position is at the end of the event.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send_for<Data>(
+    length: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_for::<Data, (MessageEmittingTween, RootEventEmittingTween)>(
+        length, event_data,
+    )
 }
 
 /// Combinator for dispatching a tween message.
@@ -336,6 +402,31 @@ where
         ));
         *pos = end;
     }
+}
+
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at the provided span every frame.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send_exact<S, Data>(
+    span: S,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    S: TryInto<TimeSpan>,
+    S::Error: std::fmt::Debug,
+    Data: Send + Sync + 'static,
+{
+    dispatch_exact::<S, Data, (MessageEmittingTween, RootEventEmittingTween)>(
+        span, event_data,
+    )
 }
 
 /// Combinator for dispatching a tween message.
