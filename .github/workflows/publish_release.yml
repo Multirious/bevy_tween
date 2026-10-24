@@ -33,4 +33,4 @@ jobs:
       env:
         CARGO_REGISTRY_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
       run: |
-        cargo publish
+        cargo publish --workspace
