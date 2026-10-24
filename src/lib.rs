@@ -606,7 +606,9 @@ pub enum TweenSystemSet {
     /// - [`tween::asset_tween_system`]
     ///
     /// Events is not necessary related to tweening but their code is still working in the same area.
-    /// - [`tween_event::tween_event_system`]
+    /// - [`tween_event::tween_message_system`]
+    /// - [`tween_event::tween_self_event_system`]
+    /// - [`tween_event::tween_root_event_system`]
     ApplyTween,
 }
 
