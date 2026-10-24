@@ -141,6 +141,16 @@ where
 #[reflect(Component)]
 pub struct SelfEventEmittingTween;
 
+/// Used to mark message-emitting tweens (tweens that emit a message with `message.data: Data`)
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct MessageEmittingTween;
+
+/// Used to mark root event-emitting tween (tweens that emit an entity event to the animation root)
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct RootEventEmittingTween;
+
 impl<Data: Send + Sync + 'static> TweenEventData<Data> {
     /// Create new [`TweenEventData`] with custom user data.
     pub fn with_data(data: Data) -> Self {
