@@ -72,7 +72,11 @@ where
     fn build(&self, app: &mut App) {
         app.add_systems(
             self.schedule,
-            (tween_self_event_system::<Data, TimeCtx>)
+            (
+                tween_message_system::<Data, TimeCtx>,
+                tween_self_event_system::<Data, TimeCtx>,
+                tween_root_event_system::<Data, TimeCtx>,
+            )
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
         .add_message::<TweenEvent<Data>>();
