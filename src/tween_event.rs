@@ -220,9 +220,9 @@ where
     }
 }
 
-/// Fires [`TweenEvent`] messages with optional user data whenever [`TimeSpanProgress`]
-/// and [`TweenEventData`] exist in the same entity and data is `Some`,
-/// cloning the data.
+/// Fires a [`TweenEvent`] message with optional user data
+/// whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the
+/// same entity and data is `Some`, cloning the data.
 #[allow(clippy::type_complexity)]
 pub fn tween_message_system<Data, TimeCtx>(
     q_tween_event_data: Query<
