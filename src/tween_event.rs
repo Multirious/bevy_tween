@@ -25,16 +25,12 @@
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
-use bevy_time_runner::{TimeContext, TimeRunner};
+use bevy_time_runner::TimeContext;
 use std::marker::PhantomData;
 
 use bevy::{
     app::PluginGroupBuilder,
-    ecs::{
-        query::QueryData,
-        schedule::{InternedScheduleLabel, ScheduleLabel},
-        traversal::Traversal,
-    },
+    ecs::schedule::{InternedScheduleLabel, ScheduleLabel},
     prelude::*,
 };
 
