@@ -270,7 +270,7 @@ pub fn tween_root_event_system<Data, TimeCtx>(
         (
             Without<SkipTween>,
             With<TimeContext<TimeCtx>>,
-            With<SelfEventEmittingTween>,
+            With<RootEventEmittingTween>,
         ),
     >,
 ) where
