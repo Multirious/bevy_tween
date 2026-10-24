@@ -10,12 +10,14 @@
 //! - [`TweenEventData`]
 //!
 //! **Systems**
-//! - [`tween_event_system`]
+//! - [`tween_message_system`]
+//! - [`tween_self_event_system`]
+//! - [`tween_root_event_system`]
 //!
 //! **Events**:
 //! - [`TweenEvent<Data>`]
 //!
-//! Simple event system that fires generic data in a timed manner.
+//! Simple event systems that fires generic data in a timed manner.
 //! Your data is stored in [`TweenEventData`] and the event type is [`TweenEvent`].
 //! Tween event is not necessarily related to tweening.
 //!
