@@ -10,7 +10,7 @@ fn main() {
         .add_plugins((MinimalPlugins, DefaultTweenPlugins::default()))
         .add_systems(Startup, setup)
         .add_observer(|trigger: On<TweenEvent<&'static str>>| {
-            println!("TweenEvent: {}", trigger.data)
+            println!("TweenEvent on {}: {}", trigger.entity, trigger.data)
         })
         .add_observer(|trigger: On<TimeRunnerEnded>| {
             if trigger.is_completed() {
@@ -28,10 +28,15 @@ fn setup(mut commands: Commands) {
         .repeat(Repeat::times(5))
         .insert(forward(Duration::from_secs_f32(0.5)));
 
-    commands.animation().insert(sequence((
-        forward(Duration::from_secs_f32(3.)),
-        event("tween"),
-        forward(Duration::from_secs_f32(0.5)),
-        event("event"),
-    )));
+    commands
+        .animation()
+        .insert(sequence((
+            forward(Duration::from_secs_f32(3.)),
+            event("tween"),
+            forward(Duration::from_secs_f32(0.5)),
+            event("event"),
+        )))
+        .observe(|trigger: On<TweenEvent<&'static str>>| {
+            println!("TweenEvent on root: {}", trigger.data)
+        });
 }

@@ -25,12 +25,16 @@
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
-use bevy_time_runner::TimeContext;
+use bevy_time_runner::{TimeContext, TimeRunner};
 use std::marker::PhantomData;
 
 use bevy::{
     app::PluginGroupBuilder,
-    ecs::schedule::{InternedScheduleLabel, ScheduleLabel},
+    ecs::{
+        query::QueryData,
+        schedule::{InternedScheduleLabel, ScheduleLabel},
+        traversal::Traversal,
+    },
     prelude::*,
 };
 
@@ -155,6 +159,7 @@ impl TweenEventData<()> {
 /// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
 /// by [`tween_event_system`].
 #[derive(Debug, Clone, PartialEq, Message, Reflect, EntityEvent)]
+#[entity_event(propagate = TweenTraversal, auto_propagate)]
 pub struct TweenEvent<Data = ()> {
     /// Custom user data
     pub data: Data,
@@ -164,6 +169,33 @@ pub struct TweenEvent<Data = ()> {
     pub interpolation_value: Option<f32>,
     /// The entity that emitted the event
     pub entity: Entity,
+}
+
+/// Traverses up `ChildOf` components, stopping at the first `TimeRunner`
+/// `TimeRunner` components are inserted on the "root" component of an animation
+/// which allows us to define an entity observer for `TweenEffects` on that root.
+#[derive(QueryData)]
+pub struct TweenTraversal {
+    child_of: Option<&'static ChildOf>,
+    runner: Option<&'static TimeRunner>,
+}
+
+impl<D> Traversal<TweenEvent<D>> for TweenTraversal {
+    fn traverse(item: Self::Item<'_, '_>, _: &TweenEvent<D>) -> Option<Entity> {
+        let TweenTraversalItem { child_of, runner } = item;
+
+        // Current entity is an animation "root", halt.
+        if runner.is_some() {
+            return None;
+        }
+
+        // Send event to parent, if it has one.
+        if let Some(child_of) = child_of {
+            return Some(child_of.parent());
+        }
+
+        None
+    }
 }
 
 /// Fires [`TweenEvent`] with optional user data whenever [`TimeSpanProgress`]
