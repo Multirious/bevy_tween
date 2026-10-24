@@ -65,7 +65,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .animation()
         .repeat(Repeat::Infinitely)
         .insert(sequence((
-            event("bump"),
+            self_event("bump"),
             tween(
                 secs(1.),
                 EaseKind::ExponentialIn,
@@ -76,8 +76,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ),
             ),
             backward(secs(0.2)),
-            event_for(secs(0.2), "small_boom"),
-            event("boom"),
+            self_event_for(secs(0.2), "small_boom"),
+            self_event("boom"),
             tween(
                 secs(1.),
                 EaseKind::CircularOut,

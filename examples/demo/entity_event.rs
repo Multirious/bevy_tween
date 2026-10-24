@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_tween::{
     bevy_time_runner::TimeRunnerEnded,
-    combinator::{event, forward, sequence},
+    combinator::{forward, self_event, sequence},
     prelude::*,
 };
 
@@ -32,9 +32,9 @@ fn setup(mut commands: Commands) {
         .animation()
         .insert(sequence((
             forward(Duration::from_secs_f32(3.)),
-            event("tween"),
+            self_event("tween"),
             forward(Duration::from_secs_f32(0.5)),
-            event("event"),
+            self_event("event"),
         )))
         .observe(|trigger: On<TweenEvent<&'static str>>| {
             println!("TweenEvent on root: {}", trigger.data)

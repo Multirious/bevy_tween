@@ -77,7 +77,7 @@ where
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating a tween event on the tween component.
 ///
 /// Event will be emitted at current position.
 ///
@@ -88,7 +88,7 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn event<Data>(
+pub fn self_event<Data>(
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
@@ -103,7 +103,7 @@ where
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating an tween event on the tween component.
 ///
 /// Event will be emitted at the provided position.
 ///
@@ -114,7 +114,7 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn event_at<Data>(
+pub fn self_event_at<Data>(
     at: Duration,
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
@@ -130,7 +130,7 @@ where
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating an tween event on the tween component.
 ///
 /// Event will be emitted at the current position for provided length every frame.
 ///
@@ -141,7 +141,7 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn event_for<Data>(
+pub fn self_event_for<Data>(
     length: Duration,
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
@@ -160,7 +160,7 @@ where
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating an tween event on the tween component.
 ///
 /// Event will be emitted at the provided span every frame.
 ///
@@ -171,7 +171,7 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn event_exact<S, Data>(
+pub fn self_event_exact<S, Data>(
     span: S,
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
