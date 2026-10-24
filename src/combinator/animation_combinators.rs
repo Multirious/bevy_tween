@@ -1,5 +1,5 @@
 use super::AnimationCommands;
-use crate::prelude::TweenEventData;
+use crate::{prelude::TweenEventData, tween_event::SelfEventEmittingTween};
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpan;
 use std::time::Duration;
@@ -98,6 +98,7 @@ where
         a.spawn((
             TimeSpan::try_from(*pos..=*pos).unwrap(),
             TweenEventData::with_data(event_data),
+            SelfEventEmittingTween,
         ));
     }
 }
@@ -124,6 +125,7 @@ where
         a.spawn((
             TimeSpan::try_from(at..=at).unwrap(),
             TweenEventData::with_data(event_data),
+            SelfEventEmittingTween,
         ));
     }
 }
@@ -152,6 +154,7 @@ where
         a.spawn((
             TimeSpan::try_from(start..end).unwrap(),
             TweenEventData::with_data(event_data),
+            SelfEventEmittingTween,
         ));
         *pos = end;
     }
@@ -181,6 +184,7 @@ where
         a.spawn((
             span.try_into().unwrap(),
             TweenEventData::with_data(event_data),
+            SelfEventEmittingTween,
         ));
     }
 }

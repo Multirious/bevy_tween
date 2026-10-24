@@ -132,15 +132,14 @@ impl Default for DefaultTweenEventPlugins<()> {
 /// Fires [`TweenEvent`] whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity.
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
-#[require(EventEmittingTween)]
 pub struct TweenEventData<Data = ()>(pub Data)
 where
     Data: Send + Sync + 'static;
 
-/// Used to mark event-emitting tweens (tweens with `TweenEventData<Data>` for some registered `Data`)
+/// Used to mark self event-emitting tween (tweens that emit an entity event to the tweening component)
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
-pub struct EventEmittingTween;
+pub struct SelfEventEmittingTween;
 
 impl<Data: Send + Sync + 'static> TweenEventData<Data> {
     /// Create new [`TweenEventData`] with custom user data.
