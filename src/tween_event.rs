@@ -182,18 +182,51 @@ pub struct TweenEvent<Data = ()> {
     pub entity: Entity,
 }
 
+/// QueryData used to construct a [`TweenEvent`] for a given [`TweenEventData`]
+#[derive(QueryData)]
+pub struct TweenSystemData<Data: Send + Sync + 'static> {
+    /// The tween entity the event combinator created
+    pub entity: Entity,
+    /// The data passed to the event combinator
+    pub event_data: &'static TweenEventData<Data>,
+    /// The progress for the event
+    pub progress: &'static TimeSpanProgress,
+    /// The current interpolation value
+    pub interpolation_value: Option<&'static TweenInterpolationValue>,
+}
+
+// Note we need to implement event for the data item,
+// due to how the [`QueryData`] derive is implemented.
+impl<'w, 's, Data> TweenSystemDataItem<'w, 's, Data>
+where
+    Data: Clone + Send + Sync + 'static,
+{
+    /// Constructs a tween event for the given tween data entity
+    pub fn event(&self) -> TweenEvent<Data> {
+        TweenEvent {
+            data: self.event_data.0.clone(),
+            progress: *self.progress,
+            interpolation_value: self.interpolation_value.map(|v| v.0),
+            entity: self.entity,
+        }
+    }
+
+    /// Constructs a tween event for a different tween data entity
+    pub fn event_on(&self, entity: Entity) -> TweenEvent<Data> {
+        TweenEvent {
+            entity,
+            ..self.event()
+        }
+    }
+}
+
 /// Fires [`TweenEvent`] messages with optional user data whenever [`TimeSpanProgress`]
 /// and [`TweenEventData`] exist in the same entity and data is `Some`,
 /// cloning the data.
 #[allow(clippy::type_complexity)]
 pub fn tween_message_system<Data, TimeCtx>(
     q_tween_event_data: Query<
-        (
-            Entity,
-            &TweenEventData<Data>,
-            &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
+        TweenSystemData<Data>,
         (
             Without<SkipTween>,
             With<TimeContext<TimeCtx>>,
@@ -205,17 +238,9 @@ pub fn tween_message_system<Data, TimeCtx>(
     Data: Clone + Send + Sync + 'static,
     TimeCtx: Default + Send + Sync + 'static,
 {
-    q_tween_event_data.iter().for_each(
-        |(entity, event_data, progress, interpolation_value)| {
-            let event = TweenEvent {
-                data: event_data.0.clone(),
-                progress: *progress,
-                interpolation_value: interpolation_value.map(|v| v.0),
-                entity,
-            };
-            event_writer.write(event);
-        },
-    );
+    q_tween_event_data.iter().for_each(|data| {
+        event_writer.write(data.event());
+    });
 }
 
 /// Fires a [`TweenEvent`] to the tweened entity with optional user data
@@ -225,12 +250,7 @@ pub fn tween_message_system<Data, TimeCtx>(
 pub fn tween_self_event_system<Data, TimeCtx>(
     mut commands: Commands,
     q_tween_event_data: Query<
-        (
-            Entity,
-            &TweenEventData<Data>,
-            &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
+        TweenSystemData<Data>,
         (
             Without<SkipTween>,
             With<TimeContext<TimeCtx>>,
@@ -241,17 +261,9 @@ pub fn tween_self_event_system<Data, TimeCtx>(
     Data: Clone + Send + Sync + 'static,
     TimeCtx: Default + Send + Sync + 'static,
 {
-    q_tween_event_data.iter().for_each(
-        |(entity, event_data, progress, interpolation_value)| {
-            let event = TweenEvent {
-                data: event_data.0.clone(),
-                progress: *progress,
-                interpolation_value: interpolation_value.map(|v| v.0),
-                entity,
-            };
-            commands.trigger(event.clone());
-        },
-    );
+    q_tween_event_data.iter().for_each(|data| {
+        commands.trigger(data.event());
+    });
 }
 
 /// Fires a [`TweenEvent`] to the animation root with optional user data
@@ -261,12 +273,7 @@ pub fn tween_self_event_system<Data, TimeCtx>(
 pub fn tween_root_event_system<Data, TimeCtx>(
     mut commands: Commands,
     q_tween_event_data: Query<
-        (
-            &ChildOf,
-            &TweenEventData<Data>,
-            &TimeSpanProgress,
-            Option<&TweenInterpolationValue>,
-        ),
+        (&ChildOf, TweenSystemData<Data>),
         (
             Without<SkipTween>,
             With<TimeContext<TimeCtx>>,
@@ -277,15 +284,7 @@ pub fn tween_root_event_system<Data, TimeCtx>(
     Data: Clone + Send + Sync + 'static,
     TimeCtx: Default + Send + Sync + 'static,
 {
-    q_tween_event_data.iter().for_each(
-        |(child_of, event_data, progress, interpolation_value)| {
-            let event = TweenEvent {
-                data: event_data.0.clone(),
-                progress: *progress,
-                interpolation_value: interpolation_value.map(|v| v.0),
-                entity: child_of.parent(),
-            };
-            commands.trigger(event.clone());
-        },
-    );
+    q_tween_event_data.iter().for_each(|(child_of, data)| {
+        commands.trigger(data.event_on(child_of.parent()));
+    });
 }
