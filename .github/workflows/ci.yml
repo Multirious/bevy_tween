@@ -37,7 +37,12 @@ jobs:
       
     - name: Install dependencies
       if: runner.os == 'linux'
-      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends \
+          libasound2-dev \
+          libudev-dev \
+          libwayland-dev
       
     - name: Install cargo commands
       run: cargo install cargo-all-features
@@ -49,7 +54,7 @@ jobs:
       run: cargo +nightly doc --all-features --no-deps
 
     - name: Check all examples
-      run: cargo check --examples -F bevy_lookup_curve
+      run: cargo check --examples
       
     - name: Run tests
       run: cargo test -F bevy/x11

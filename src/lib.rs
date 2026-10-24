@@ -365,8 +365,6 @@ use std::marker::PhantomData;
 
 mod utils;
 
-#[cfg(feature = "bevy_lookup_curve")]
-pub use bevy_lookup_curve;
 pub use bevy_time_runner;
 
 pub mod interpolate;
@@ -468,9 +466,6 @@ where
                     schedule: self.schedule,
                 }
             );
-
-        #[cfg(feature = "bevy_lookup_curve")]
-        let group = group.add(interpolation::bevy_lookup_curve::BevyLookupCurveInterpolationPlugin::<TimeCtx>::in_schedule(self.schedule));
 
         group
     }

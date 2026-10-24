@@ -9,7 +9,7 @@
 //! **Systems**:
 //! - [`sample_interpolations_system`]
 
-use bevy::math::curve::EaseFunction;
+use bevy::curve::EaseFunction;
 use bevy::prelude::*;
 use bevy_time_runner::TimeContext;
 use std::marker::PhantomData;
@@ -19,9 +19,6 @@ use bevy::ecs::schedule::{InternedScheduleLabel, ScheduleLabel};
 use bevy_time_runner::TimeSpanProgress;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-
-#[cfg(feature = "bevy_lookup_curve")]
-pub mod bevy_lookup_curve;
 
 /// A trait for implementing interpolation algorithms.
 ///

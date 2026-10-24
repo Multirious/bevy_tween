@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_tween::{
+    combinator::tween,
+    interpolate::translation,
+    prelude::*,
+    tween::{AnimationTarget, TargetComponent},
+};
+use bevy_tween_lookup_curve::{
+    LookupCurveHandle,
     bevy_lookup_curve::{
         Knot, KnotInterpolation, LookupCurve, LookupCurvePlugin,
         editor::LookupCurveEditor,
     },
-    combinator::tween,
-    interpolate::translation,
-    interpolation::bevy_lookup_curve::LookupCurveHandle,
-    prelude::*,
-    tween::{AnimationTarget, TargetComponent},
 };
 
 fn main() {
