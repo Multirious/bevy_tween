@@ -99,13 +99,7 @@ pub fn message<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    move |a, pos| {
-        a.spawn((
-            TimeSpan::try_from(*pos..=*pos).unwrap(),
-            TweenEventData::with_data(event_data),
-            MessageEmittingTween,
-        ));
-    }
+    dispatch::<Data, MessageEmittingTween>(event_data)
 }
 
 /// Combinator for creating a tween event on the tween component.
@@ -125,13 +119,7 @@ pub fn self_event<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    move |a, pos| {
-        a.spawn((
-            TimeSpan::try_from(*pos..=*pos).unwrap(),
-            TweenEventData::with_data(event_data),
-            SelfEventEmittingTween,
-        ));
-    }
+    dispatch::<Data, SelfEventEmittingTween>(event_data)
 }
 
 /// Combinator for creating a tween event on the animation root.
@@ -151,11 +139,26 @@ pub fn root_event<Data>(
 where
     Data: Send + Sync + 'static,
 {
+    dispatch::<Data, RootEventEmittingTween>(event_data)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `With` informs how the tween event is dispatched.
+///
+/// Event will be emitted at current position.
+fn dispatch<Data, With>(
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+    With: Default + Bundle,
+{
     move |a, pos| {
         a.spawn((
             TimeSpan::try_from(*pos..=*pos).unwrap(),
             TweenEventData::with_data(event_data),
-            RootEventEmittingTween,
+            With::default(),
         ));
     }
 }
@@ -178,13 +181,7 @@ pub fn message_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    move |a, _pos| {
-        a.spawn((
-            TimeSpan::try_from(at..=at).unwrap(),
-            TweenEventData::with_data(event_data),
-            MessageEmittingTween,
-        ));
-    }
+    dispatch_at::<Data, MessageEmittingTween>(at, event_data)
 }
 
 /// Combinator for creating an tween event on the tween component.
@@ -205,13 +202,7 @@ pub fn self_event_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    move |a, _pos| {
-        a.spawn((
-            TimeSpan::try_from(at..=at).unwrap(),
-            TweenEventData::with_data(event_data),
-            SelfEventEmittingTween,
-        ));
-    }
+    dispatch_at::<Data, SelfEventEmittingTween>(at, event_data)
 }
 
 /// Combinator for creating an tween event on the animation root.
@@ -232,11 +223,27 @@ pub fn root_event_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
+    dispatch_at::<Data, RootEventEmittingTween>(at, event_data)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `With` informs how the tween event is dispatched.
+///
+/// Event will be emitted at the provided position.
+fn dispatch_at<Data, With>(
+    at: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+    With: Default + Bundle,
+{
     move |a, _pos| {
         a.spawn((
             TimeSpan::try_from(at..=at).unwrap(),
             TweenEventData::with_data(event_data),
-            RootEventEmittingTween,
+            With::default(),
         ));
     }
 }
@@ -259,16 +266,7 @@ pub fn message_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    move |a, pos| {
-        let start = *pos;
-        let end = start + length;
-        a.spawn((
-            TimeSpan::try_from(start..end).unwrap(),
-            TweenEventData::with_data(event_data),
-            MessageEmittingTween,
-        ));
-        *pos = end;
-    }
+    dispatch_for::<Data, MessageEmittingTween>(length, event_data)
 }
 
 /// Combinator for creating an tween event on the tween component.
@@ -289,16 +287,7 @@ pub fn self_event_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    move |a, pos| {
-        let start = *pos;
-        let end = start + length;
-        a.spawn((
-            TimeSpan::try_from(start..end).unwrap(),
-            TweenEventData::with_data(event_data),
-            SelfEventEmittingTween,
-        ));
-        *pos = end;
-    }
+    dispatch_for::<Data, SelfEventEmittingTween>(length, event_data)
 }
 
 /// Combinator for creating an tween event on the animation root.
@@ -319,13 +308,31 @@ pub fn root_event_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
+    dispatch_for::<Data, RootEventEmittingTween>(length, event_data)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `With` informs how the tween event is dispatched.
+///
+/// Event will be emitted at the current position for provided length every frame.
+///
+/// Position is at the end of the event.
+fn dispatch_for<Data, With>(
+    length: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+    With: Default + Bundle,
+{
     move |a, pos| {
         let start = *pos;
         let end = start + length;
         a.spawn((
             TimeSpan::try_from(start..end).unwrap(),
             TweenEventData::with_data(event_data),
-            RootEventEmittingTween,
+            With::default(),
         ));
         *pos = end;
     }
@@ -351,13 +358,7 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    move |a, _pos| {
-        a.spawn((
-            span.try_into().unwrap(),
-            TweenEventData::with_data(event_data),
-            SelfEventEmittingTween,
-        ));
-    }
+    dispatch_exact::<S, Data, MessageEmittingTween>(span, event_data)
 }
 
 /// Combinator for creating an tween event on the tween component.
@@ -380,13 +381,7 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    move |a, _pos| {
-        a.spawn((
-            span.try_into().unwrap(),
-            TweenEventData::with_data(event_data),
-            SelfEventEmittingTween,
-        ));
-    }
+    dispatch_exact::<S, Data, SelfEventEmittingTween>(span, event_data)
 }
 
 /// Combinator for creating an tween event on the animation root.
@@ -409,11 +404,31 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
+    dispatch_exact::<S, Data, RootEventEmittingTween>(span, event_data)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `With` informs how the tween event is dispatched.
+///
+/// Event will be emitted at the provided span every frame.
+///
+/// Position is not mutated because the operation is not relative.
+pub fn dispatch_exact<S, Data, With>(
+    span: S,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    S: TryInto<TimeSpan>,
+    S::Error: std::fmt::Debug,
+    Data: Send + Sync + 'static,
+    With: Default + Bundle,
+{
     move |a, _pos| {
         a.spawn((
             span.try_into().unwrap(),
             TweenEventData::with_data(event_data),
-            RootEventEmittingTween,
+            With::default(),
         ));
     }
 }
