@@ -142,7 +142,7 @@ where
     dispatch::<Data, SelfEventEmittingTween>(event_data)
 }
 
-/// Combinator for creating a tween event on the animation root.
+/// Combinator for creating a tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at current position.
 ///
@@ -248,7 +248,7 @@ where
     dispatch_at::<Data, SelfEventEmittingTween>(at, event_data)
 }
 
-/// Combinator for creating an tween event on the animation root.
+/// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the provided position.
 ///
@@ -356,7 +356,7 @@ where
     dispatch_for::<Data, SelfEventEmittingTween>(length, event_data)
 }
 
-/// Combinator for creating an tween event on the animation root.
+/// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the current position for provided length every frame.
 ///
@@ -475,7 +475,7 @@ where
     dispatch_exact::<S, Data, SelfEventEmittingTween>(span, event_data)
 }
 
-/// Combinator for creating an tween event on the animation root.
+/// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the provided span every frame.
 ///
