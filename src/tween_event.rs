@@ -141,11 +141,6 @@ pub struct TweenEventData<Data = ()>(pub Data)
 where
     Data: Send + Sync + 'static;
 
-/// Used to mark self event-emitting tween (tweens that emit an entity event to the tweening component)
-#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
-#[reflect(Component)]
-pub struct SelfEventEmittingTween;
-
 /// Used to mark message-emitting tweens (tweens that emit a tween event message)
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
@@ -155,6 +150,11 @@ pub struct MessageEmittingTween;
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct RootEventEmittingTween;
+
+/// Used to mark self event-emitting tween (tweens that emit an entity event to the tweening component)
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
+#[reflect(Component)]
+pub struct SelfEventEmittingTween;
 
 impl<Data: Send + Sync + 'static> TweenEventData<Data> {
     /// Create new [`TweenEventData`] with custom user data.
@@ -245,29 +245,6 @@ pub fn tween_message_system<Data, TimeCtx>(
     });
 }
 
-/// Fires a [`TweenEvent`] to the tweened entity with optional user data
-/// whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the
-/// same entity and data is `Some`, cloning the data.
-#[allow(clippy::type_complexity)]
-pub fn tween_self_event_system<Data, TimeCtx>(
-    mut commands: Commands,
-    q_tween_event_data: Query<
-        TweenSystemData<Data>,
-        (
-            Without<SkipTween>,
-            With<TimeContext<TimeCtx>>,
-            With<SelfEventEmittingTween>,
-        ),
-    >,
-) where
-    Data: Clone + Send + Sync + 'static,
-    TimeCtx: Default + Send + Sync + 'static,
-{
-    q_tween_event_data.iter().for_each(|data| {
-        commands.trigger(data.event());
-    });
-}
-
 /// Fires a [`TweenEvent`] to the animation root with optional user data
 /// whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the
 /// same entity and data is `Some`, cloning the data.
@@ -288,5 +265,28 @@ pub fn tween_root_event_system<Data, TimeCtx>(
 {
     q_tween_event_data.iter().for_each(|(child_of, data)| {
         commands.trigger(data.event_on(child_of.parent()));
+    });
+}
+
+/// Fires a [`TweenEvent`] to the tweened entity with optional user data
+/// whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the
+/// same entity and data is `Some`, cloning the data.
+#[allow(clippy::type_complexity)]
+pub fn tween_self_event_system<Data, TimeCtx>(
+    mut commands: Commands,
+    q_tween_event_data: Query<
+        TweenSystemData<Data>,
+        (
+            Without<SkipTween>,
+            With<TimeContext<TimeCtx>>,
+            With<SelfEventEmittingTween>,
+        ),
+    >,
+) where
+    Data: Clone + Send + Sync + 'static,
+    TimeCtx: Default + Send + Sync + 'static,
+{
+    q_tween_event_data.iter().for_each(|data| {
+        commands.trigger(data.event());
     });
 }

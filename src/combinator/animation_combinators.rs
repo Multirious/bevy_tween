@@ -122,26 +122,6 @@ where
     dispatch::<Data, MessageEmittingTween>(event_data)
 }
 
-/// Combinator for creating a tween event on the tween component.
-///
-/// Event will be emitted at current position.
-///
-/// Position is not mutated because the event has no length.
-///
-/// <div class="warning">
-///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
-///
-/// </div>
-pub fn self_event<Data>(
-    event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
-where
-    Data: Send + Sync + 'static,
-{
-    dispatch::<Data, SelfEventEmittingTween>(event_data)
-}
-
 /// Combinator for creating a tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at current position.
@@ -160,6 +140,26 @@ where
     Data: Send + Sync + 'static,
 {
     dispatch::<Data, RootEventEmittingTween>(event_data)
+}
+
+/// Combinator for creating a tween event on the tween component.
+///
+/// Event will be emitted at current position.
+///
+/// Position is not mutated because the event has no length.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn self_event<Data>(
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch::<Data, SelfEventEmittingTween>(event_data)
 }
 
 /// Combinator for dispatching a tween event.
@@ -227,27 +227,6 @@ where
     dispatch_at::<Data, MessageEmittingTween>(at, event_data)
 }
 
-/// Combinator for creating an tween event on the tween component.
-///
-/// Event will be emitted at the provided position.
-///
-/// Position is not mutated because the operation is not relative.
-///
-/// <div class="warning">
-///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
-///
-/// </div>
-pub fn self_event_at<Data>(
-    at: Duration,
-    event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
-where
-    Data: Send + Sync + 'static,
-{
-    dispatch_at::<Data, SelfEventEmittingTween>(at, event_data)
-}
-
 /// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the provided position.
@@ -267,6 +246,27 @@ where
     Data: Send + Sync + 'static,
 {
     dispatch_at::<Data, RootEventEmittingTween>(at, event_data)
+}
+
+/// Combinator for creating an tween event on the tween component.
+///
+/// Event will be emitted at the provided position.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn self_event_at<Data>(
+    at: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_at::<Data, SelfEventEmittingTween>(at, event_data)
 }
 
 /// Combinator for dispatching a tween event.
@@ -335,27 +335,6 @@ where
     dispatch_for::<Data, MessageEmittingTween>(length, event_data)
 }
 
-/// Combinator for creating an tween event on the tween component.
-///
-/// Event will be emitted at the current position for provided length every frame.
-///
-/// Position is at the end of the event.
-///
-/// <div class="warning">
-///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
-///
-/// </div>
-pub fn self_event_for<Data>(
-    length: Duration,
-    event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
-where
-    Data: Send + Sync + 'static,
-{
-    dispatch_for::<Data, SelfEventEmittingTween>(length, event_data)
-}
-
 /// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the current position for provided length every frame.
@@ -375,6 +354,27 @@ where
     Data: Send + Sync + 'static,
 {
     dispatch_for::<Data, RootEventEmittingTween>(length, event_data)
+}
+
+/// Combinator for creating an tween event on the tween component.
+///
+/// Event will be emitted at the current position for provided length every frame.
+///
+/// Position is at the end of the event.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn self_event_for<Data>(
+    length: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_for::<Data, SelfEventEmittingTween>(length, event_data)
 }
 
 /// Combinator for dispatching a tween event.
@@ -452,29 +452,6 @@ where
     dispatch_exact::<S, Data, MessageEmittingTween>(span, event_data)
 }
 
-/// Combinator for creating an tween event on the tween component.
-///
-/// Event will be emitted at the provided span every frame.
-///
-/// Position is not mutated because the operation is not relative.
-///
-/// <div class="warning">
-///
-/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
-///
-/// </div>
-pub fn self_event_exact<S, Data>(
-    span: S,
-    event_data: Data,
-) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
-where
-    S: TryInto<TimeSpan>,
-    S::Error: std::fmt::Debug,
-    Data: Send + Sync + 'static,
-{
-    dispatch_exact::<S, Data, SelfEventEmittingTween>(span, event_data)
-}
-
 /// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the provided span every frame.
@@ -496,6 +473,29 @@ where
     Data: Send + Sync + 'static,
 {
     dispatch_exact::<S, Data, RootEventEmittingTween>(span, event_data)
+}
+
+/// Combinator for creating an tween event on the tween component.
+///
+/// Event will be emitted at the provided span every frame.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn self_event_exact<S, Data>(
+    span: S,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    S: TryInto<TimeSpan>,
+    S::Error: std::fmt::Debug,
+    Data: Send + Sync + 'static,
+{
+    dispatch_exact::<S, Data, SelfEventEmittingTween>(span, event_data)
 }
 
 /// Combinator for dispatching a tween event.
