@@ -146,7 +146,7 @@ where
 #[reflect(Component)]
 pub struct SelfEventEmittingTween;
 
-/// Used to mark message-emitting tweens (tweens that emit a message with `message.data: Data`)
+/// Used to mark message-emitting tweens (tweens that emit a tween event message)
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
 pub struct MessageEmittingTween;
