@@ -82,9 +82,9 @@ where
     }
 }
 
-/// Combinator for dispatching a tween event message.
+/// Combinator for dispatching a tween message.
 ///
-/// Event will be emitted at current position.
+/// Message will be emitted at current position.
 ///
 /// Position is not mutated because the event has no length.
 ///
@@ -163,9 +163,9 @@ where
     }
 }
 
-/// Combinator for dispatching a tween event message.
+/// Combinator for dispatching a tween message.
 ///
-/// Event will be emitted at the provided position.
+/// Message will be emitted at the provided position.
 ///
 /// Position is not mutated because the operation is not relative.
 ///
@@ -248,9 +248,9 @@ where
     }
 }
 
-/// Combinator for dispatching a tween event message.
+/// Combinator for dispatching a tween message.
 ///
-/// Event will be emitted at the current position for provided length every frame.
+/// Message will be emitted at the current position for provided length every frame.
 ///
 /// Position is at the end of the event.
 ///
@@ -338,9 +338,9 @@ where
     }
 }
 
-/// Combinator for dispatching a tween event message.
+/// Combinator for dispatching a tween message.
 ///
-/// Event will be emitted at the provided span every frame.
+/// Message will be emitted at the provided span every frame.
 ///
 /// Position is not mutated because the operation is not relative.
 ///
