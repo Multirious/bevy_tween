@@ -11,7 +11,7 @@
 //!
 //! **Systems**
 //! - [`tween_message_system`]
-//! - [`tween_root_event_system`]
+//! - [`tween_event_system`]
 //!
 //! **Events**:
 //! - [`TweenEvent<Data>`]
@@ -75,7 +75,7 @@ where
             self.schedule,
             (
                 tween_message_system::<Data, TimeCtx>,
-                tween_root_event_system::<Data, TimeCtx>,
+                tween_event_system::<Data, TimeCtx>,
             )
                 .in_set(crate::TweenSystemSet::ApplyTween),
         )
@@ -147,7 +147,7 @@ pub struct MessageEmittingTween;
 /// Used to mark root event-emitting tween (tweens that emit an entity event to the animation root)
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash, Component, Reflect)]
 #[reflect(Component)]
-pub struct RootEventEmittingTween;
+pub struct EventEmittingTween;
 
 impl<Data: Send + Sync + 'static> TweenEventData<Data> {
     /// Create new [`TweenEventData`] with custom user data.
@@ -164,7 +164,7 @@ impl TweenEventData<()> {
 }
 
 /// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
-/// by [`tween_message_system`] and [`tween_root_event_system`].
+/// by [`tween_message_system`] and [`tween_event_system`].
 #[derive(Debug, Clone, PartialEq, Message, Reflect, EntityEvent)]
 pub struct TweenEvent<Data = ()> {
     /// Custom user data
@@ -242,14 +242,14 @@ pub fn tween_message_system<Data, TimeCtx>(
 /// whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the
 /// same entity and data is `Some`, cloning the data.
 #[allow(clippy::type_complexity)]
-pub fn tween_root_event_system<Data, TimeCtx>(
+pub fn tween_event_system<Data, TimeCtx>(
     mut commands: Commands,
     q_tween_event_data: Query<
         (&ChildOf, TweenSystemData<Data>),
         (
             Without<SkipTween>,
             With<TimeContext<TimeCtx>>,
-            With<RootEventEmittingTween>,
+            With<EventEmittingTween>,
         ),
     >,
 ) where

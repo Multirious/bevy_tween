@@ -418,7 +418,7 @@ pub use tween::component_tween_system;
 pub use tween::resource_dyn_tween_system;
 pub use tween::resource_tween_system;
 
-pub use tween_event::{tween_message_system, tween_root_event_system};
+pub use tween_event::{tween_event_system, tween_message_system};
 
 /// Default plugins for using crate.
 pub struct DefaultTweenPlugins<TimeCtx = ()>
@@ -605,8 +605,7 @@ pub enum TweenSystemSet {
     ///
     /// Events is not necessary related to tweening but their code is still working in the same area.
     /// - [`tween_event::tween_message_system`]
-    /// - [`tween_event::tween_self_event_system`]
-    /// - [`tween_event::tween_root_event_system`]
+    /// - [`tween_event::tween_event_system`]
     ApplyTween,
 }
 

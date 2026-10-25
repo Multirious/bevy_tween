@@ -1,7 +1,7 @@
 use super::AnimationCommands;
 use crate::{
     prelude::TweenEventData,
-    tween_event::{MessageEmittingTween, RootEventEmittingTween},
+    tween_event::{EventEmittingTween, MessageEmittingTween},
 };
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpan;
@@ -97,7 +97,7 @@ pub fn send<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch::<Data, (MessageEmittingTween, RootEventEmittingTween)>(event_data)
+    dispatch::<Data, (MessageEmittingTween, EventEmittingTween)>(event_data)
 }
 
 /// Combinator for dispatching a tween message.
@@ -131,13 +131,13 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn root_event<Data>(
+pub fn event<Data>(
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
     Data: Send + Sync + 'static,
 {
-    dispatch::<Data, RootEventEmittingTween>(event_data)
+    dispatch::<Data, EventEmittingTween>(event_data)
 }
 
 /// Combinator for dispatching a tween event.
@@ -179,7 +179,7 @@ pub fn send_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_at::<Data, (MessageEmittingTween, RootEventEmittingTween)>(
+    dispatch_at::<Data, (MessageEmittingTween, EventEmittingTween)>(
         at, event_data,
     )
 }
@@ -216,14 +216,14 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn root_event_at<Data>(
+pub fn event_at<Data>(
     at: Duration,
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_at::<Data, RootEventEmittingTween>(at, event_data)
+    dispatch_at::<Data, EventEmittingTween>(at, event_data)
 }
 
 /// Combinator for dispatching a tween event.
@@ -266,7 +266,7 @@ pub fn send_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_for::<Data, (MessageEmittingTween, RootEventEmittingTween)>(
+    dispatch_for::<Data, (MessageEmittingTween, EventEmittingTween)>(
         length, event_data,
     )
 }
@@ -303,14 +303,14 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn root_event_for<Data>(
+pub fn event_for<Data>(
     length: Duration,
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_for::<Data, RootEventEmittingTween>(length, event_data)
+    dispatch_for::<Data, EventEmittingTween>(length, event_data)
 }
 
 /// Combinator for dispatching a tween event.
@@ -360,7 +360,7 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    dispatch_exact::<S, Data, (MessageEmittingTween, RootEventEmittingTween)>(
+    dispatch_exact::<S, Data, (MessageEmittingTween, EventEmittingTween)>(
         span, event_data,
     )
 }
@@ -399,7 +399,7 @@ where
 /// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
 ///
 /// </div>
-pub fn root_event_exact<S, Data>(
+pub fn event_exact<S, Data>(
     span: S,
     event_data: Data,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
@@ -408,7 +408,7 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    dispatch_exact::<S, Data, RootEventEmittingTween>(span, event_data)
+    dispatch_exact::<S, Data, EventEmittingTween>(span, event_data)
 }
 
 /// Combinator for dispatching a tween event.
