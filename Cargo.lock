@@ -1885,7 +1885,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_tween"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "bevy",
  "bevy_time_runner",
@@ -1897,7 +1897,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_tween_lookup_curve"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
