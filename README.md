@@ -103,9 +103,6 @@ How it works:
     Add some built-in interpolators related to sprite.
   - `bevy_ui`<br/>
     Add some built-in interpolators related to ui.
-- Optional
-  - `bevy_lookup_curve`.<br/>
-    Adds interpolation implementation using [`bevy_lookup_curve`](https://github.com/villor/bevy_lookup_curve).
 
 ## Bevy Version Support
 
