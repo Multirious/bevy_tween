@@ -181,13 +181,13 @@ pub struct TweenEvent<Data = ()> {
 #[derive(QueryData)]
 pub struct TweenSystemData<Data: Send + Sync + 'static> {
     /// The tween entity the event combinator created
-    pub entity: Entity,
+    entity: Entity,
     /// The data passed to the event combinator
-    pub event_data: &'static TweenEventData<Data>,
+    event_data: &'static TweenEventData<Data>,
     /// The progress for the event
-    pub progress: &'static TimeSpanProgress,
+    progress: &'static TimeSpanProgress,
     /// The current interpolation value
-    pub interpolation_value: Option<&'static TweenInterpolationValue>,
+    interpolation_value: Option<&'static TweenInterpolationValue>,
 }
 
 // Note we need to implement event for the data item,
