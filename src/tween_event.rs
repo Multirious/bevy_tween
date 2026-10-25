@@ -163,7 +163,7 @@ impl TweenEventData<()> {
     }
 }
 
-/// Fires whenever [`TimeSpanProgress`] and [`TweenEventData`] exist in the same entity
+/// Fires whenever [`TimeSpanProgress`], [`TweenEventData`], and [`MessageEmittingTween`]/[`EventEmittingTween`] exist in the same entity
 /// by [`tween_message_system`] and [`tween_event_system`].
 #[derive(Debug, Clone, PartialEq, Message, Reflect, EntityEvent)]
 pub struct TweenEvent<Data = ()> {
