@@ -26,8 +26,10 @@
 //! See [`DefaultTweenEventPlugins`] for default events which is also added in
 //! [`DefaultTweenPlugins`](crate::DefaultTweenPlugins)
 
-use bevy_time_runner::TimeContext;
+use bevy_time_runner::{TimeContext, TimeRunner};
+use std::fmt::Debug;
 use std::marker::PhantomData;
+use tracing::warn;
 
 use bevy::{
     app::PluginGroupBuilder,
@@ -252,11 +254,22 @@ pub fn tween_event_system<Data, TimeCtx>(
             With<EventEmittingTween>,
         ),
     >,
+    q_tween_roots: Query<(), With<TimeRunner>>,
 ) where
-    Data: Clone + Send + Sync + 'static,
+    Data: Debug + Clone + Send + Sync + 'static,
     TimeCtx: Default + Send + Sync + 'static,
 {
     q_tween_event_data.iter().for_each(|(child_of, data)| {
-        commands.trigger(data.event_on(child_of.parent()));
+        let root = child_of.parent();
+        if !q_tween_roots.contains(root) {
+            warn!(
+                "Could not find an associated animation root for the tween event {:?}\n\
+                 help: make sure you have a `TimeRunner` defined on the entity you plan on animating",
+                data.event()
+            );
+            return;
+        };
+
+        commands.trigger(data.event_on(root));
     });
 }
