@@ -2,6 +2,17 @@
 
 ## Unreleased - XXXX-XX-XX
 
+## v0.14.1 - 2026-10-25
+
+- Fix README.md
+
+## v0.14.0 - 2026-10-25
+
+- Migrate to Bevy v0.20.0 by [#97](https://github.com/Multirious/bevy_tween/pull/97)
+
+  Breaking:
+  - Move bevy_lookup_curve support into a separated crate, `bevy_tween_lookup_curve`.
+
 - Fix import conflict for BackgroundColor interpolator [#96](https://github.com/Multirious/bevy_tween/pull/96)
 - Make AnimationTarget derives Clone and Copy by [#90](https://github.com/Multirious/bevy_tween/pull/90)
 - Add workflows to automate updating and releases by [#94](https://github.com/Multirious/bevy_tween/pull/94)
