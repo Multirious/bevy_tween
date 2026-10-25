@@ -25,7 +25,7 @@ categories = ["game-development"]
 
 [workspace.dependencies]
 bevy = { version = "0.20.0", default-features = false }
-bevy_tween = { path = "." }
+bevy_tween = { version = "0.14.0", path = "." }
 tracing = { version = "0.1.41", features = ["std"] }
 
 [dependencies]
