@@ -2,6 +2,8 @@
 
 ## Unreleased - XXXX-XX-XX
 
+## v0.14.1 - 2026-10-25
+
 - Fix README.md
 
 ## v0.14.0 - 2026-10-25
