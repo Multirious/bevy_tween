@@ -1,6 +1,7 @@
 [package]
 name = "bevy_tween_lookup_curve"
 documentation = "https://docs.rs/bevy_tween"
+description = "bevy_lookup_curve support for bevy_tween"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
