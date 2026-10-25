@@ -256,16 +256,16 @@ pub fn tween_event_system<Data, TimeCtx>(
     >,
     q_tween_roots: Query<(), With<TimeRunner>>,
 ) where
-    Data: Debug + Clone + Send + Sync + 'static,
+    Data: Clone + Send + Sync + 'static,
     TimeCtx: Default + Send + Sync + 'static,
 {
     q_tween_event_data.iter().for_each(|(child_of, data)| {
         let root = child_of.parent();
         if !q_tween_roots.contains(root) {
             warn!(
-                "Could not find an associated animation root for the tween event {:?}\n\
+                "Could not find an associated animation root for a tween event on entity {:?}\n\
                  help: make sure you have a `TimeRunner` defined on the entity you plan on animating",
-                data.event()
+                 data.event().entity,
             );
             return;
         };
