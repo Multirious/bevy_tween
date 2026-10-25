@@ -97,7 +97,7 @@ pub fn send<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch::<Data, (MessageEmittingTween, EventEmittingTween)>(event_data)
+    dispatch(event_data, (MessageEmittingTween, EventEmittingTween))
 }
 
 /// Combinator for dispatching a tween message.
@@ -117,7 +117,7 @@ pub fn message<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch::<Data, MessageEmittingTween>(event_data)
+    dispatch(event_data, MessageEmittingTween)
 }
 
 /// Combinator for creating a tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
@@ -137,26 +137,26 @@ pub fn event<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch::<Data, EventEmittingTween>(event_data)
+    dispatch(event_data, EventEmittingTween)
 }
 
 /// Combinator for dispatching a tween event.
 ///
-/// `With` informs how the tween event is dispatched.
+/// `with` informs how the tween event is dispatched.
 ///
 /// Event will be emitted at current position.
-fn dispatch<Data, With>(
+fn dispatch<Data>(
     event_data: Data,
+    with: impl Bundle,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
     Data: Send + Sync + 'static,
-    With: Default + Bundle,
 {
     move |a, pos| {
         a.spawn((
             TimeSpan::try_from(*pos..=*pos).unwrap(),
             TweenEventData::with_data(event_data),
-            With::default(),
+            with,
         ));
     }
 }
@@ -179,9 +179,7 @@ pub fn send_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_at::<Data, (MessageEmittingTween, EventEmittingTween)>(
-        at, event_data,
-    )
+    dispatch_at(at, event_data, (MessageEmittingTween, EventEmittingTween))
 }
 
 /// Combinator for dispatching a tween message.
@@ -202,7 +200,7 @@ pub fn message_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_at::<Data, MessageEmittingTween>(at, event_data)
+    dispatch_at(at, event_data, MessageEmittingTween)
 }
 
 /// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
@@ -223,27 +221,27 @@ pub fn event_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_at::<Data, EventEmittingTween>(at, event_data)
+    dispatch_at(at, event_data, EventEmittingTween)
 }
 
 /// Combinator for dispatching a tween event.
 ///
-/// `With` informs how the tween event is dispatched.
+/// `with` informs how the tween event is dispatched.
 ///
 /// Event will be emitted at the provided position.
-fn dispatch_at<Data, With>(
+fn dispatch_at<Data>(
     at: Duration,
     event_data: Data,
+    with: impl Bundle,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
     Data: Send + Sync + 'static,
-    With: Default + Bundle,
 {
     move |a, _pos| {
         a.spawn((
             TimeSpan::try_from(at..=at).unwrap(),
             TweenEventData::with_data(event_data),
-            With::default(),
+            with,
         ));
     }
 }
@@ -266,8 +264,10 @@ pub fn send_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_for::<Data, (MessageEmittingTween, EventEmittingTween)>(
-        length, event_data,
+    dispatch_for(
+        length,
+        event_data,
+        (MessageEmittingTween, EventEmittingTween),
     )
 }
 
@@ -289,7 +289,7 @@ pub fn message_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_for::<Data, MessageEmittingTween>(length, event_data)
+    dispatch_for(length, event_data, MessageEmittingTween)
 }
 
 /// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
@@ -310,23 +310,23 @@ pub fn event_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
-    dispatch_for::<Data, EventEmittingTween>(length, event_data)
+    dispatch_for(length, event_data, EventEmittingTween)
 }
 
 /// Combinator for dispatching a tween event.
 ///
-/// `With` informs how the tween event is dispatched.
+/// `with` informs how the tween event is dispatched.
 ///
 /// Event will be emitted at the current position for provided length every frame.
 ///
 /// Position is at the end of the event.
-fn dispatch_for<Data, With>(
+fn dispatch_for<Data>(
     length: Duration,
     event_data: Data,
+    with: impl Bundle,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
     Data: Send + Sync + 'static,
-    With: Default + Bundle,
 {
     move |a, pos| {
         let start = *pos;
@@ -334,7 +334,7 @@ where
         a.spawn((
             TimeSpan::try_from(start..end).unwrap(),
             TweenEventData::with_data(event_data),
-            With::default(),
+            with,
         ));
         *pos = end;
     }
@@ -360,9 +360,7 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    dispatch_exact::<S, Data, (MessageEmittingTween, EventEmittingTween)>(
-        span, event_data,
-    )
+    dispatch_exact(span, event_data, (MessageEmittingTween, EventEmittingTween))
 }
 
 /// Combinator for dispatching a tween message.
@@ -385,7 +383,7 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    dispatch_exact::<S, Data, MessageEmittingTween>(span, event_data)
+    dispatch_exact(span, event_data, MessageEmittingTween)
 }
 
 /// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
@@ -408,31 +406,31 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
-    dispatch_exact::<S, Data, EventEmittingTween>(span, event_data)
+    dispatch_exact(span, event_data, EventEmittingTween)
 }
 
 /// Combinator for dispatching a tween event.
 ///
-/// `With` informs how the tween event is dispatched.
+/// `with` informs how the tween event is dispatched.
 ///
 /// Event will be emitted at the provided span every frame.
 ///
 /// Position is not mutated because the operation is not relative.
-pub fn dispatch_exact<S, Data, With>(
+pub fn dispatch_exact<S, Data>(
     span: S,
     event_data: Data,
+    with: impl Bundle,
 ) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
 where
     S: TryInto<TimeSpan>,
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
-    With: Default + Bundle,
 {
     move |a, _pos| {
         a.spawn((
             span.try_into().unwrap(),
             TweenEventData::with_data(event_data),
-            With::default(),
+            with,
         ));
     }
 }
