@@ -1,9 +1,7 @@
 use super::AnimationCommands;
 use crate::{
     prelude::TweenEventData,
-    tween_event::{
-        MessageEmittingTween, RootEventEmittingTween, SelfEventEmittingTween,
-    },
+    tween_event::{MessageEmittingTween, RootEventEmittingTween},
 };
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpan;
