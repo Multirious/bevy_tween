@@ -15,7 +15,7 @@ resolver = "2"
 members = ["bevy_tween_lookup_curve"]
 
 [workspace.package]
-version = "0.13.0"
+version = "0.14.0"
 edition = "2024"
 authors = ["Multirious", "Rabbival"]
 license = "MIT OR Apache-2.0"
@@ -25,7 +25,7 @@ categories = ["game-development"]
 
 [workspace.dependencies]
 bevy = { version = "0.20.0", default-features = false }
-bevy_tween = { path = "." }
+bevy_tween = { version = "0.14.0", path = "." }
 tracing = { version = "0.1.41", features = ["std"] }
 
 [dependencies]
