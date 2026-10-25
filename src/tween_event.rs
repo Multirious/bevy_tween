@@ -263,9 +263,10 @@ pub fn tween_event_system<Data, TimeCtx>(
         let root = child_of.parent();
         if !q_tween_roots.contains(root) {
             warn!(
-                "Could not find an associated animation root for a tween event on entity {:?}\n\
+                "Could not find an associated animation root for a tween event on entity {:?} with data {:?}\n\
                  help: make sure you have a `TimeRunner` defined on the entity you plan on animating",
                  data.event().entity,
+                 std::any::type_name::<Data>(),
             );
             return;
         };
