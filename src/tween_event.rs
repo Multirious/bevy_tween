@@ -177,6 +177,8 @@ pub struct TweenEvent<Data = ()> {
     pub interpolation_value: Option<f32>,
     /// The entity that emitted the event
     pub entity: Entity,
+    /// The original tween entity that created the event
+    pub tween: Entity,
 }
 
 /// QueryData used to construct a [`TweenEvent`] for a given [`TweenEventData`]
@@ -205,6 +207,7 @@ where
             progress: *self.progress,
             interpolation_value: self.interpolation_value.map(|v| v.0),
             entity: self.entity,
+            tween: self.entity,
         }
     }
 
