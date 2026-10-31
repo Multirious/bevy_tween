@@ -175,7 +175,7 @@ https://github.com/Multirious/bevy_tween/assets/77918086/33a297a6-19f2-4146-a906
 
 ---
 
-`cargo run --example event -F bevy/bevy_winit`<br>
+`cargo run --example message -F bevy/bevy_winit`<br>
 Showcasing the tween event feature.<br>
 
 https://github.com/Multirious/bevy_tween/assets/77918086/9507c467-6428-4aed-bd00-511f05e6e951

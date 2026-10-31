@@ -1,5 +1,8 @@
 use super::AnimationCommands;
-use crate::prelude::TweenEventData;
+use crate::{
+    prelude::TweenEventData,
+    tween_event::{EventEmittingTween, MessageEmittingTween},
+};
 use bevy::prelude::*;
 use bevy_time_runner::TimeSpan;
 use std::time::Duration;
@@ -77,7 +80,47 @@ where
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at current position.
+///
+/// Position is not mutated because the event has no length.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send<Data>(
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch(event_data, (MessageEmittingTween, EventEmittingTween))
+}
+
+/// Combinator for dispatching a tween message.
+///
+/// Message will be emitted at current position.
+///
+/// Position is not mutated because the event has no length.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn message<Data>(
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch(event_data, MessageEmittingTween)
+}
+
+/// Combinator for creating a tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at current position.
 ///
@@ -94,15 +137,73 @@ pub fn event<Data>(
 where
     Data: Send + Sync + 'static,
 {
+    dispatch(event_data, EventEmittingTween)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `with` informs how the tween event is dispatched.
+///
+/// Event will be emitted at current position.
+fn dispatch<Data>(
+    event_data: Data,
+    with: impl Bundle,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
     move |a, pos| {
         a.spawn((
             TimeSpan::try_from(*pos..=*pos).unwrap(),
             TweenEventData::with_data(event_data),
+            with,
         ));
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at the provided position.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send_at<Data>(
+    at: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_at(at, event_data, (MessageEmittingTween, EventEmittingTween))
+}
+
+/// Combinator for dispatching a tween message.
+///
+/// Message will be emitted at the provided position.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn message_at<Data>(
+    at: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_at(at, event_data, MessageEmittingTween)
+}
+
+/// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the provided position.
 ///
@@ -120,15 +221,78 @@ pub fn event_at<Data>(
 where
     Data: Send + Sync + 'static,
 {
+    dispatch_at(at, event_data, EventEmittingTween)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `with` informs how the tween event is dispatched.
+///
+/// Event will be emitted at the provided position.
+fn dispatch_at<Data>(
+    at: Duration,
+    event_data: Data,
+    with: impl Bundle,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
     move |a, _pos| {
         a.spawn((
             TimeSpan::try_from(at..=at).unwrap(),
             TweenEventData::with_data(event_data),
+            with,
         ));
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at the current position for provided length every frame.
+///
+/// Position is at the end of the event.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send_for<Data>(
+    length: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_for(
+        length,
+        event_data,
+        (MessageEmittingTween, EventEmittingTween),
+    )
+}
+
+/// Combinator for dispatching a tween message.
+///
+/// Message will be emitted at the current position for provided length every frame.
+///
+/// Position is at the end of the event.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn message_for<Data>(
+    length: Duration,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
+    dispatch_for(length, event_data, MessageEmittingTween)
+}
+
+/// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the current position for provided length every frame.
 ///
@@ -146,18 +310,83 @@ pub fn event_for<Data>(
 where
     Data: Send + Sync + 'static,
 {
+    dispatch_for(length, event_data, EventEmittingTween)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `with` informs how the tween event is dispatched.
+///
+/// Event will be emitted at the current position for provided length every frame.
+///
+/// Position is at the end of the event.
+fn dispatch_for<Data>(
+    length: Duration,
+    event_data: Data,
+    with: impl Bundle,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    Data: Send + Sync + 'static,
+{
     move |a, pos| {
         let start = *pos;
         let end = start + length;
         a.spawn((
             TimeSpan::try_from(start..end).unwrap(),
             TweenEventData::with_data(event_data),
+            with,
         ));
         *pos = end;
     }
 }
 
-/// Combinator for creating an tween event.
+/// Combinator for creating both a tween event and message.
+///
+/// Event will be emitted at the provided span every frame.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn send_exact<S, Data>(
+    span: S,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    S: TryInto<TimeSpan>,
+    S::Error: std::fmt::Debug,
+    Data: Send + Sync + 'static,
+{
+    dispatch_exact(span, event_data, (MessageEmittingTween, EventEmittingTween))
+}
+
+/// Combinator for dispatching a tween message.
+///
+/// Message will be emitted at the provided span every frame.
+///
+/// Position is not mutated because the operation is not relative.
+///
+/// <div class="warning">
+///
+/// Your event should be registered with [`TweenEventPlugin`](crate::tween_event::TweenEventPlugin).
+///
+/// </div>
+pub fn message_exact<S, Data>(
+    span: S,
+    event_data: Data,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    S: TryInto<TimeSpan>,
+    S::Error: std::fmt::Debug,
+    Data: Send + Sync + 'static,
+{
+    dispatch_exact(span, event_data, MessageEmittingTween)
+}
+
+/// Combinator for creating an tween event on the animation root containing a [`bevy_time_runner::TimeRunner`].
 ///
 /// Event will be emitted at the provided span every frame.
 ///
@@ -177,10 +406,31 @@ where
     S::Error: std::fmt::Debug,
     Data: Send + Sync + 'static,
 {
+    dispatch_exact(span, event_data, EventEmittingTween)
+}
+
+/// Combinator for dispatching a tween event.
+///
+/// `with` informs how the tween event is dispatched.
+///
+/// Event will be emitted at the provided span every frame.
+///
+/// Position is not mutated because the operation is not relative.
+pub fn dispatch_exact<S, Data>(
+    span: S,
+    event_data: Data,
+    with: impl Bundle,
+) -> impl FnOnce(&mut AnimationCommands, &mut Duration)
+where
+    S: TryInto<TimeSpan>,
+    S::Error: std::fmt::Debug,
+    Data: Send + Sync + 'static,
+{
     move |a, _pos| {
         a.spawn((
             span.try_into().unwrap(),
             TweenEventData::with_data(event_data),
+            with,
         ));
     }
 }

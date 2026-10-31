@@ -93,13 +93,13 @@ path = "examples/demo/hold.rs"
 required-features = ["bevy_sprite", "bevy_asset"]
 
 [[example]]
-name = "event"
-path = "examples/demo/event.rs"
+name = "message"
+path = "examples/demo/message.rs"
 required-features = ["bevy_sprite", "bevy_asset"]
 
 [[example]]
-name = "entity_event"
-path = "examples/demo/entity_event.rs"
+name = "events"
+path = "examples/demo/events.rs"
 
 [[example]]
 name = "sprite_sheet"

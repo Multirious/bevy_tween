@@ -2,6 +2,20 @@
 
 ## Unreleased - XXXX-XX-XX
 
+- Separated tween event and message and trigger event at animator root by [#98](https://github.com/Multirious/bevy_tween/pull/98)
+
+  Breaking:
+  
+  `TweenEventData` with `EventEmittingTween` will trigger event at animator root (`TimeRunner`). (Previously was only directly from the entity that holds the event data). The entity that holds the event must be a child of `TimeRunner`, otherwise no event will be triggered and a warning will be emitted.
+
+  The tween event behavior now depends on whether `EventEmittingTween` is in the entity, or, with the new component, `MessagEmittingTween`. Add both component to do both.
+
+  Add `message*` combinators which uses `MessagEmittingTween`.
+  `event*` combinators remained the same, but with the changes, the tween will only emit event. You will need to migrate to use message combinators instead if there are systems that relies on messages. 
+  Add `send*` combinators which add both marker components, similarly to the old `event` combinator with changes to entity event as stated previously.
+
+  Add `tween` field to `TweenEvent` which contains id to the original tween entity that declared the event. `entity` contains the id of the entity that emits the event. For observer events, `tween` is the child tween, `entity` is the animator root. For messages, `tween` and `entity` is the same child tween.
+
 ## v0.14.1 - 2026-10-25
 
 - Fix README.md
